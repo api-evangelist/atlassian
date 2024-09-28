@@ -1,0 +1,1200 @@
+components:
+  schemas:
+    Avatars:
+      additionalProperties: false
+      description: Details about system and custom avatars.
+      properties:
+        custom:
+          description: Custom avatars list.
+          items:
+            $ref: '#/components/schemas/Avatar'
+          readOnly: true
+          type: array
+        system:
+          description: System avatars list.
+          items:
+            $ref: '#/components/schemas/Avatar'
+          readOnly: true
+          type: array
+      type: object
+    StreamingResponseBody:
+      additionalProperties: false
+      type: object
+externalDocs:
+  description: Find out more about Atlassian products and services.
+  url: http://www.atlassian.com
+info:
+  contact:
+    email: ecosystem@atlassian.com
+  description: Needs description.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://atlassian.com/terms/
+  title: ' rest/api/3/universal avatar/'
+  version: 1001.0.0-SNAPSHOT-67b5c6e5f3598d7ec1649016d026468ab2838a77
+openapi: 3.0.1
+paths:
+  /rest/api/3/universal_avatar/type/{type}/owner/{entityId}:
+    get:
+      deprecated: false
+      description: |-
+        Returns the system and custom avatars for a project or issue type.
+
+        This operation can be accessed anonymously.
+
+        **[Permissions](#permissions) required:**
+
+         *  for custom project avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project the avatar belongs to.
+         *  for custom issue type avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for at least one project the issue type is used in.
+         *  for system avatars, none.
+      operationId: getAvatars
+      parameters:
+        - description: The avatar type.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - project
+              - issuetype
+            type: string
+        - description: The ID of the item the avatar is associated with.
+          in: path
+          name: entityId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"custom":[{"id":"1010","isDeletable":true,"isSelected":false,"isSystemAvatar":false,"urls":{"16x16":"https://your-domain.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10080&avatarType=project","24x24":"https://your-domain.atlassian.net/secure/viewavatar?size=small&avatarId=10080&avatarType=project","32x32":"https://your-domain.atlassian.net/secure/viewavatar?size=medium&avatarId=10080&avatarType=project","48x48":"https://your-domain.atlassian.net/secure/viewavatar?avatarId=10080&avatarType=project"}}],"system":[{"id":"1000","isDeletable":false,"isSelected":false,"isSystemAvatar":true,"urls":{"16x16":"https://your-domain.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10040&avatarType=project","24x24":"https://your-domain.atlassian.net/secure/viewavatar?size=small&avatarId=10040&avatarType=project","32x32":"https://your-domain.atlassian.net/secure/viewavatar?size=medium&avatarId=10040&avatarType=project","48x48":"https://your-domain.atlassian.net/secure/viewavatar?avatarId=10040&avatarType=project"}}]}
+              schema:
+                $ref: '#/components/schemas/Avatars'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: >-
+            Returned if the avatar type is invalid, the associated item ID is
+            missing, or the item is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+        - {}
+      summary: 'Get Avatars '
+      tags:
+        - Avatars
+        - Entities
+        - Owners
+        - REST
+        - Types
+        - Universal
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:avatar:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: >-
+        Loads a custom avatar for a project or issue type.
+
+
+        Specify the avatar's local file location in the body of the request.
+        Also, include the following headers:
+
+         *  `X-Atlassian-Token: no-check` To prevent XSRF protection blocking the request, for more information see [Special Headers](#special-request-headers).
+         *  `Content-Type: image/image type` Valid image types are JPEG, GIF, or PNG.
+
+        For example:  
+
+        `curl --request POST `
+
+
+        `--user email@example.com:<api_token> `
+
+
+        `--header 'X-Atlassian-Token: no-check' `
+
+
+        `--header 'Content-Type: image/< image_type>' `
+
+
+        `--data-binary "<@/path/to/file/with/your/avatar>" `
+
+
+        `--url
+        'https://your-domain.atlassian.net/rest/api/3/universal_avatar/type/{type}/owner/{entityId}'`
+
+
+        The avatar is cropped to a square. If no crop parameters are specified,
+        the square originates at the top left of the image. The length of the
+        square's sides is set to the smaller of the height or width of the
+        image.
+
+
+        The cropped image is then used to create avatars of 16x16, 24x24, 32x32,
+        and 48x48 in size.
+
+
+        After creating the avatar use:
+
+         *  [Update issue type](#api-rest-api-3-issuetype-id-put) to set it as the issue type's displayed avatar.
+         *  [Set project avatar](#api-rest-api-3-project-projectIdOrKey-avatar-put) to set it as the project's displayed avatar.
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: storeAvatar
+      parameters:
+        - description: The avatar type.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - project
+              - issuetype
+            type: string
+        - description: The ID of the item the avatar is associated with.
+          in: path
+          name: entityId
+          required: true
+          schema:
+            type: string
+        - description: The X coordinate of the top-left corner of the crop region.
+          in: query
+          name: x
+          schema:
+            default: 0
+            format: int32
+            type: integer
+        - description: The Y coordinate of the top-left corner of the crop region.
+          in: query
+          name: 'y'
+          schema:
+            default: 0
+            format: int32
+            type: integer
+        - description: The length of each side of the crop region.
+          in: query
+          name: size
+          required: true
+          schema:
+            default: 0
+            format: int32
+            type: integer
+      requestBody:
+        content:
+          '*/*':
+            schema: {}
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: >-
+                {"id":"1000","isDeletable":false,"isSelected":false,"isSystemAvatar":true,"urls":{"16x16":"/secure/useravatar?size=xsmall&avatarId=10040&avatarType=project","24x24":"/secure/useravatar?size=small&avatarId=10040&avatarType=project","32x32":"/secure/useravatar?size=medium&avatarId=10040&avatarType=project","48x48":"/secure/useravatar?avatarId=10040&avatarType=project"}}
+              schema:
+                $ref: '#/components/schemas/Avatar'
+          description: Returned if the request is successful.
+        '400':
+          description: |-
+            Returned if:
+
+             *  an image isn't included in the request.
+             *  the image type is unsupported.
+             *  the crop parameters extend the crop area beyond the edge of the image.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permissions.
+        '404':
+          description: >-
+            Returned if the avatar type is invalid, the associated item ID is
+            missing, or the item is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+        - {}
+      summary: 'Load Avatar '
+      tags:
+        - Avatars
+        - Entities
+        - Load
+        - Owners
+        - REST
+        - Types
+        - Universal
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:avatar:jira
+            - read:avatar:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/universal_avatar/type/{type}/owner/{owningObjectId}/avatar/{id}:
+    delete:
+      deprecated: false
+      description: >-
+        Deletes an avatar from a project or issue type.
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: deleteAvatar
+      parameters:
+        - description: The avatar type.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - project
+              - issuetype
+            type: string
+        - description: The ID of the item the avatar is associated with.
+          in: path
+          name: owningObjectId
+          required: true
+          schema:
+            type: string
+        - description: The ID of the avatar.
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            type: integer
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '403':
+          description: >-
+            Returned if the user does not have permission to delete the avatar,
+            the avatar is not deletable.
+        '404':
+          description: >-
+            Returned if the avatar type, associated item ID, or avatar ID is
+            invalid.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+        - {}
+      summary: 'Delete Avatar '
+      tags:
+        - Avatars
+        - Objects
+        - Owners
+        - Owning
+        - REST
+        - Types
+        - Universal
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - delete:avatar:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/universal_avatar/view/type/{type}:
+    get:
+      deprecated: false
+      description: |-
+        Returns the default project or issue type avatar image.
+
+        This operation can be accessed anonymously.
+
+        **[Permissions](#permissions) required:** None.
+      operationId: getAvatarImageByType
+      parameters:
+        - description: The icon type of the avatar.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - issuetype
+              - project
+            type: string
+          x-showInExample: 'true'
+        - description: >-
+            The size of the avatar image. If not provided the default size is
+            returned.
+          in: query
+          name: size
+          schema:
+            enum:
+              - xsmall
+              - small
+              - medium
+              - large
+              - xlarge
+            type: string
+          x-showInExample: 'true'
+        - description: >-
+            The format to return the avatar image in. If not provided the
+            original content format is returned.
+          in: query
+          name: format
+          schema:
+            enum:
+              - png
+              - svg
+            type: string
+          x-showInExample: 'true'
+      responses:
+        '200':
+          content:
+            '*/*': {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingResponseBody'
+            image/png: {}
+            image/svg+xml: {}
+          description: Returned if the request is successful.
+        '401':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: >-
+            Returned if an avatar is not found or an avatar matching the
+            requested size is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - read:jira-work
+        - {}
+      summary: 'Get Avatar Image By Type '
+      tags:
+        - Avatars
+        - Images
+        - REST
+        - Types
+        - Universal
+        - View
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - read:jira-work
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:avatar:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/universal_avatar/view/type/{type}/avatar/{id}:
+    get:
+      deprecated: false
+      description: |-
+        Returns a project or issue type avatar image by ID.
+
+        This operation can be accessed anonymously.
+
+        **[Permissions](#permissions) required:**
+
+         *  For system avatars, none.
+         *  For custom project avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project the avatar belongs to.
+         *  For custom issue type avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for at least one project the issue type is used in.
+      operationId: getAvatarImageByID
+      parameters:
+        - description: The icon type of the avatar.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - issuetype
+              - project
+            type: string
+          x-showInExample: 'true'
+        - description: The ID of the avatar.
+          in: path
+          name: id
+          required: true
+          schema:
+            format: int64
+            type: integer
+          x-showInExample: 'true'
+        - description: >-
+            The size of the avatar image. If not provided the default size is
+            returned.
+          in: query
+          name: size
+          schema:
+            enum:
+              - xsmall
+              - small
+              - medium
+              - large
+              - xlarge
+            type: string
+          x-showInExample: 'true'
+        - description: >-
+            The format to return the avatar image in. If not provided the
+            original content format is returned.
+          in: query
+          name: format
+          schema:
+            enum:
+              - png
+              - svg
+            type: string
+          x-showInExample: 'true'
+      responses:
+        '200':
+          content:
+            '*/*': {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingResponseBody'
+            image/png: {}
+            image/svg+xml: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: >-
+            Returned if an avatar is not found or an avatar matching the
+            requested size is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - read:jira-work
+        - {}
+      summary: 'Get Avatar Image By ID '
+      tags:
+        - Avatars
+        - ID
+        - Images
+        - REST
+        - Types
+        - Universal
+        - View
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - read:jira-work
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:avatar:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/universal_avatar/view/type/{type}/owner/{entityId}:
+    get:
+      deprecated: false
+      description: |-
+        Returns the avatar image for a project or issue type.
+
+        This operation can be accessed anonymously.
+
+        **[Permissions](#permissions) required:**
+
+         *  For system avatars, none.
+         *  For custom project avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project the avatar belongs to.
+         *  For custom issue type avatars, *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for at least one project the issue type is used in.
+      operationId: getAvatarImageByOwner
+      parameters:
+        - description: The icon type of the avatar.
+          in: path
+          name: type
+          required: true
+          schema:
+            enum:
+              - issuetype
+              - project
+            type: string
+          x-showInExample: 'true'
+        - description: The ID of the project or issue type the avatar belongs to.
+          in: path
+          name: entityId
+          required: true
+          schema:
+            type: string
+          x-showInExample: 'true'
+        - description: >-
+            The size of the avatar image. If not provided the default size is
+            returned.
+          in: query
+          name: size
+          schema:
+            enum:
+              - xsmall
+              - small
+              - medium
+              - large
+              - xlarge
+            type: string
+          x-showInExample: 'true'
+        - description: >-
+            The format to return the avatar image in. If not provided the
+            original content format is returned.
+          in: query
+          name: format
+          schema:
+            enum:
+              - png
+              - svg
+            type: string
+          x-showInExample: 'true'
+      responses:
+        '200':
+          content:
+            '*/*': {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingResponseBody'
+            image/png: {}
+            image/svg+xml: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            '*/*':
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+            image/png:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+            image/svg+xml:
+              example: '{"errorMessages":["Human readable error message"],"errors":{}}'
+          description: >-
+            Returned if an avatar is not found or an avatar matching the
+            requested size is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - read:jira-work
+        - {}
+      summary: 'Get Avatar Image By Owner '
+      tags:
+        - Avatars
+        - Entities
+        - Images
+        - Owners
+        - REST
+        - Types
+        - Universal
+        - View
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - read:jira-work
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:avatar:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+servers:
+  - url: https://your-domain.atlassian.net
+tags: []
+x-atlassian-narrative:
+  documents:
+    - anchor: about
+      body: >-
+        The Jira REST API enables you to interact with Jira programmatically.
+        Use this API to 
+
+        [build
+        apps](https://developer.atlassian.com/cloud/jira/platform/integrating-with-jira-cloud/),
+        script interactions with 
+
+        Jira, or develop any other type of integration. This page documents the
+        REST resources available in Jira Cloud, including 
+
+        the HTTP response codes and example requests and responses.
+      title: About
+    - anchor: version
+      body: >
+        This documentation is for **version 3** of the Jira Cloud platform REST
+        API, which is the latest version
+
+        but is in **beta**. [Version
+        2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) and 
+
+        version 3 of the API offer the same collection of operations. However,
+        version 3 provides support for 
+
+        the [Atlassian Document
+        Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) 
+
+        (ADF) in: 
+
+        - `body` in comments, including where comments are used in issue, issue
+        link, and transition resources.
+
+        - `comment` in worklogs.
+
+        - `description` and `environment` fields in issues.
+
+        - `textarea` type custom fields (multi-line text fields) in issues.
+        Single line custom fields 
+          (`textfield`) accept a string and don't handle Atlassian Document Format content.
+
+        However, these new features are under development and may change.
+      title: Version
+    - anchor: authentication
+      body: >
+        ### Forge apps
+
+
+        For Forge apps, [REST API
+        scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) 
+
+        are used when authenticating with Jira Cloud platform. See [Add scopes
+        to call an Atlassian REST
+        API](https://developer.atlassian.com/platform/forge/add-scopes-to-call-an-atlassian-rest-api/)
+        for more details.
+
+
+        The URIs for Forge app REST API calls have this structure:
+
+
+        `/rest/api/3/<resource-name>`
+
+
+        For example, `/rest/api/3/issue/DEMO-1`
+
+
+        ### Connect apps
+
+
+        For Connect apps, authentication (JWT-based) is built into the Connect
+        libraries. Authorization is implemented using either 
+
+        scopes (shown as _App scope required_ for operations on this page) or
+        user impersonation. See 
+
+        [Security for Connect
+        apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/) 
+
+        for details.
+
+
+        The URIs for Connect app REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+
+
+        ### Other integrations
+
+
+        For integrations that are not Forge or Connect apps, use OAuth 2.0
+        authorization code grants (3LO) for security 
+
+        (3LO scopes are shown as for operations _OAuth scopes required_). See 
+
+        [OAuth 2.0 (3LO)
+        apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) 
+
+        for details.
+
+
+        The URIs for OAuth 2.0 (3LO) app REST API calls have this structure:
+
+
+        `https://api.atlassian.com/ex/jira/<cloudId>/rest/api/3/<resource-name>`
+
+
+        For example,
+        `https://api.atlassian.com/ex/jira/35273b54-3f06-40d2-880f-dd28cf8daafa/rest/api/3/issue/DEMO-1`
+
+
+        ### Ad-hoc API calls
+
+
+        For personal scripts, bots, and ad-hoc execution of the REST APIs use
+        basic authentication. See [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
+        for details. 
+
+
+        The URIs for basic authentication REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+      title: Authentication and authorization
+    - anchor: permissions
+      body: >
+        ### Operation permissions
+
+
+        Most operations in this API require permissions. The calling user must
+        have the required permissions for an operation to 
+
+        use it. Note that for Connect apps, the app user must have the required
+        permissions for the operation and the app must 
+
+        have scopes that permit the operation.
+
+
+        A permission can be granted to a group, project role, or issue role that
+        the user is a member of, or granted directly to a user. 
+
+        See [Permissions overview](https://confluence.atlassian.com/x/FQiiLQ)
+        for details. The most common permissions are:
+
+
+        - **Administer the Cloud site**: Users in the _site-admins_ group have
+        this 
+
+        permission. See [Manage
+        groups](https://confluence.atlassian.com/x/24xjL) for details.
+
+        - **Administer Jira**: Granted by the _Jira Administrators_ global
+        permission. There is a default group for this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+        - **Administer a project in Jira**: Granted by the _Administer projects_
+        project permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access a project in Jira**: Granted by the _Browse projects_ project
+        permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access Jira**: Granted by the _Jira Users_ global permission. Users
+        in the default product access group (for example, 
+
+        _jira-software-users-acmesite_) have this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and 
+
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+
+        ### Anonymous access
+
+
+        Some operations provide support for anonymous access. However, anonymous
+        access is only available if 
+
+        the Jira permission needed to access the object or records returned by
+        the operation is granted to 
+
+        the _Public_ group. See [Allowing anonymous access to your
+        project](https://confluence.atlassian.com/x/GDxxLg) 
+
+        for details.
+
+
+        If an operation is called anonymously and anonymous access is not
+        available, the operation will return 
+
+        an error. Note that not all operations that correspond to objects that
+        can be given public access 
+
+        provide for anonymous access.
+      title: Permissions
+    - anchor: expansion
+      body: >+
+        ### Expansion
+
+
+        The Jira REST API uses resource expansion, which means that some parts
+        of a resource are not returned unless specified 
+
+        in the request. This simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the expand query
+        parameter and specify the object(s) to be expanded. 
+
+        If you need to expand nested objects, use the `.` dot notation. If you
+        need to expand multiple objects, use a 
+
+        comma-separated list. 
+
+
+        For example, the following request expands the `names` and
+        `renderedFields` properties for the _JRACLOUD-34423_ issue:
+
+
+        `GET issue/JRACLOUD-34423?expand=names,renderedFields`
+
+
+        To discover which object can be expanded, refer to the `expand` property
+        in the object. 
+
+        In the JSON example below, the resource declares `widgets` as
+        expandable.
+
+
+        ```json
+
+        {
+          "expand": "widgets", 
+          "self": "https://your-domain.atlassian.net/rest/api/3/resource/KEY-1", 
+          "widgets": {
+            "widgets": [],
+            "size": 5
+           }
+        }
+
+        ```
+
+
+        ### Pagination
+
+
+        The Jira REST API uses pagination to improve performance. Pagination is
+        enforced for operations that could return a large 
+
+        collection of items. When you make a request to a paginated resource,
+        the response wraps the returned array of values in 
+
+        a JSON object with paging metadata. For example:
+
+
+        ```json
+
+        {
+            "startAt" : 0,
+            "maxResults" : 10,
+            "total": 200,
+            "isLast": false,
+            "values": [
+                { /* result 0 */ },
+                { /* result 1 */ },
+                { /* result 2 */ }
+            ]
+        }
+
+        ```
+
+
+        *   `startAt` is the index of the first item returned in the page.
+
+        *   `maxResults` is the maximum number of items that a page can return.
+        Each operation can have a different limit for
+            the number of items returned, and these limits may change without notice. To find the maximum number of items 
+            that an operation could return, set `maxResults` to a large number—for example, over 1000—and if the returned value of `maxResults` is less than the requested value, the returned value is the maximum.
+        *    `total` is the total number of items contained in all pages. This
+        number **_may change_** as the client 
+
+        requests the subsequent pages, therefore the client should always assume
+        that the requested page can be empty. Note 
+
+        that this property is not returned for all operations.
+
+        *   `isLast` indicates whether the page returned is the last one. Note
+        that this property is not returned for all operations.
+
+
+        ### Ordering
+
+
+        Some operations support ordering the elements of a response by a field.
+        Check the documentation for the operation to 
+
+        confirm whether ordering of a response is supported and which fields can
+        be used. Responses are listed in ascending order 
+
+        by default. You can change the order using the `orderby` query parameter
+        with a `-` or `+` symbol. For example:
+
+
+        *   `?orderBy=name` to order by `name` field ascending.
+
+        *   `?orderBy=+name` to order by `name` field ascending.
+
+        *   `?orderBy=-name` to order by `name` field descending.
+
+
+      title: Expansion, pagination, and ordering
+    - anchor: timestamps
+      body: >
+        By default, top-level timestamps (e.g. updated and created) are returned
+        in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format, in the system
+        default user time zone.
+
+
+        To return date time data in the logged in user's timezone, please refer
+        to `renderedFields` property under the `expand` query parameter in
+        relevant APIs.
+      title: Timestamps
+    - anchor: special-request-headers
+      body: >-
+        The following request and response headers define important metadata for
+        the Jira Cloud REST API resources.
+
+
+        -   `X-Atlassian-Token` (request): Operations that accept
+        multipart/form-data must include the `X-Atlassian-Token: no-check`
+
+        header in requests. Otherwise the request is blocked by cross-site
+        request forgery (CSRF/XSRF) protection.
+
+        -   `X-Force-Accept-Language` (request): controls how the standard HTTP
+        `Accept-Language` header is processed.
+
+        By default `Accept-Language` is ignored and the response is in the
+        language configured in the user's profile or,
+
+        when no language is configured for the user, the default Jira instance
+        language. For the response to recognize
+
+        `Accept-Language` send `X-Force-Accept-Language = true` as well. If
+        `Accept-Language` requests a language that Jira
+
+        can return the response is in that language, otherwise Jira returns the
+        response in the default language. If
+
+        `Accept-Language` is not specified the response is in the default
+        language.
+
+        -   `X-AAccountId` (response): This response header contains the
+        Atlassian account ID of the authenticated user.
+      title: Special headers
+    - anchor: anonymous-operations
+      body: |2-
+         Jira provides for all permissions, except the [global permission](https://confluence.atlassian.com/x/x4dKLg) Administer Jira, to be assigned to *Anyone*. Once a permission is assigned to *Anyone*, anyone knowing a project's URL is able to use the features in Jira enabled by the permission. However, the Jira REST API does not enable anonymous access for operations by default. This means that an anonymous user who may be able to perform an action through Jira, may not be able to perform the same action where it's enabled by the REST API. 
+
+         The operations that provide anonymous access are annotated "This operation can be accessed anonymously."
+      title: Anonymous operations
+    - anchor: async-operations
+      body: >-
+        Some Jira REST API operations may trigger long-running or
+        computationally expensive tasks. In these cases, the operation 
+
+        will schedule an asynchronous task and return a `303 (See Other)`
+        response, indicating the location of the queued task 
+
+        in the `Location` header. You can query this task to get progress
+        updates.
+
+
+        When the task finishes, the response object will contain the `result`
+        field. The content of the field is specific to the 
+
+        operation that created the task. Refer to the operation’s documentation
+        for more information.
+
+
+        Note that asynchronous tasks are not guaranteed to be run in order. In
+        other words, if you need your tasks to execute 
+
+        in a certain order, you should start a task only after the prerequisite
+        task(s) have finished.
+      title: Asynchronous operations
+    - anchor: experimental
+      body: >
+        Features and methods marked as experimental may change without notice.
+        Feedback on experimental functionality is welcome. 
+
+        Report your suggestions and bugs in the [ACJIRA
+        project](https://ecosystem.atlassian.net/projects/ACJIRA) (preferred) or
+        use the 
+
+        **Give docs feedback** link at the top of this page. 
+      title: Experimental features
+    - anchor: status-codes
+      body: >-
+        The Jira Cloud platform REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Operations that return an error status code may also return a response
+        body containing details of the error or errors. 
+
+        The schema for the response body is shown below:
+
+
+
+        ```json
+
+        {
+          "id": "https://docs.atlassian.com/jira/REST/schema/error-collection#",
+          "title": "Error Collection",
+          "type": "object",
+          "properties": {
+            "errorMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "errors": {
+              "type": "object",
+              "patternProperties": {
+                ".+": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "status": { 
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        }
+
+        ```
+      title: Status codes

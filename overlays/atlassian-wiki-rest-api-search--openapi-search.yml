@@ -1,0 +1,328 @@
+openapi: 3.0.1
+info:
+  title: ' wiki/rest/api/search/'
+  description: Needs description.
+  termsOfService: https://atlassian.com/terms/
+  version: 1.0.0
+externalDocs:
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+servers:
+  - url: //your-domain.atlassian.net
+tags: []
+paths:
+  /wiki/rest/api/search/user:
+    get:
+      tags:
+        - REST
+        - Search
+        - Users
+        - Wiki
+      summary: 'Search Users '
+      description: >-
+        Searches for users using user-specific queries from the
+
+        [Confluence Query Language
+        (CQL)](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).
+
+
+        Note that CQL input queries submitted through the
+        `/wiki/rest/api/search/user` endpoint only support user-specific fields
+        like `user`, `user.fullname`, `user.accountid`, and `user.userkey`.
+
+
+        Note that some user fields may be set to null depending on the user's
+        privacy settings.
+
+        These are: email, profilePicture, displayName, and timeZone.
+      operationId: searchUser
+      parameters:
+        - name: cql
+          in: query
+          description: >-
+            The CQL query to be used for the search. See
+
+            [Advanced Searching using
+            CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/)
+
+            for instructions on how to build a CQL query.
+
+
+            Example queries:
+                      cql=type=user will return all users
+                      cql=user="1234" will return user with accountId "1234"
+                      You can also use IN, NOT IN, != operators
+                      cql=user IN ("12", "34") will return users with accountids "12" and "34"
+                      cql=user.fullname~jo will return users with nickname/full name starting with "jo"
+                      cql=user.accountid="123" will return user with accountId "123"
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          description: The starting index of the returned users.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of user objects to return per page.
+            Note, this may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+        - name: expand
+          in: query
+          description: >-
+            A multi-value parameter indicating which properties of the user to
+            expand.
+
+
+            - `operations` returns the operations for the user, which are used
+
+            when setting permissions.
+
+            - `personalSpace` returns the personal space of the user.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sitePermissionTypeFilter
+          in: query
+          description: >-
+            Filters users by permission type. Use `none` to default to licensed
+            users, `externalCollaborator`
+
+            for external/guest users, and `all` to include all permission types.
+          schema:
+            type: string
+            default: none
+            enum:
+              - all
+              - externalCollaborator
+              - none
+      responses:
+        '200':
+          description: Returned if the requested results are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPageResponseSearchResult'
+        '400':
+          description: Returned if the CQL query cannot be parsed.
+          content: {}
+        '403':
+          description: |-
+            Returned if the calling user does not have permission to access
+            Confluence.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:content-details:confluence
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    SearchPageResponseSearchResult:
+      required:
+        - _links
+        - cqlQuery
+        - limit
+        - results
+        - searchDuration
+        - size
+        - start
+        - totalSize
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int32
+        cqlQuery:
+          type: string
+        searchDuration:
+          type: integer
+          format: int32
+        archivedResultCount:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+x-atlassian-narrative:
+  documents:
+    - title: About
+      anchor: about
+      body: >-
+        This is the reference for the Confluence Cloud REST API. This API is the
+        primary way to get and
+
+        modify data in Confluence Cloud, whether you are developing an app or
+        any other integration.
+
+        Use it to interact with Confluence entities, like pages and blog posts,
+        spaces, users, groups,
+
+        and more.
+    - title: Authentication and authorization
+      anchor: auth
+      body: >-
+        **Authentication:** If you are building a Cloud app, authentication is
+        implemented via JWT or OAuth 2.0, depending on what you are building
+        (see [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)).
+        Otherwise, if you are authenticating directly against the REST API, the
+        REST API supports basic auth (see [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+        **Authorization:** If you are building a Cloud app, authorization can be
+        implemented by
+        [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by
+        [OAuth 2.0 user
+        impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps).
+        Otherwise, if you are making calls directly against the REST API,
+        authorization is based on the user used in the authentication process.
+
+
+        See [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)
+        for more details on authentication and authorization.
+    - title: Status codes
+      anchor: status-code
+      body: >-
+        The Confluence REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Responses that return an error status code will also return a response
+        body, similar to the following:
+
+        ```json
+
+        {
+          "statusCode": 404,
+          "data": {
+            "authorized": false,
+            "valid": false,
+            "errors": [
+              {
+                "message": {
+                  "translation": "This is an example error message.",
+                  "args": []
+                }
+              }
+            ],
+            "successful": false
+          },
+          "message": "This is an example error message."
+        }
+
+        ```
+    - title: Using the REST API
+      anchor: using
+      body: >-
+        **Expansion:** The Confluence REST API uses resource expansion: some
+        parts of a resource are not returned unless explicitly specified. This
+        simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the `expand` query
+        parameter and specify the entities to be expanded. If you need to expand
+        nested entities, use the `.` dot notation. For example, the following
+        request will expand information about the requested content's space and
+        labels:
+
+        ```
+
+        GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+        ```
+
+        **Pagination:** The Confluence REST API uses pagination: a method that
+        returns a response with multiple objects can only return a limited
+        number at one time. This limits the size of responses and conserves
+        server resources.
+
+
+        Use the 'limit' and 'start' query parameters to specify pagination:
+
+
+        - `limit` is the number of objects to return per page. This may be
+        restricted by system limits.
+
+        - `start` is the index of the first item returned in the page of
+        results. The base index is 0.
+
+
+        For example, the following request will return ten content objects,
+        starting from the fifth object.
+
+        ```
+
+        GET /wiki/rest/api/content?start=4&limit=10
+
+        ```
+
+        **Special headers:**
+
+
+        - `X-Atlassian-Token: no-check` request header must be specified for
+        methods
+
+        that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks.
+        This is
+
+        stated in the method description, if required. For more information, see
+        this
+
+        [KB
+        article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).
+    - title: Capabilities
+      anchor: capabilities
+      body: >-
+        **Webhooks:** A webhook is a user-defined callback over HTTP. You can
+        use Confluence webhooks to notify your app or web application when
+        certain events occur in Confluence. For example, when a page is created
+        or updated. To learn more, see
+        [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+        **Content properties:** Content properties are a key-value storage
+        associated with a piece of Confluence content. If you are building an
+        app, this is one form of persistence that you can use. You can use the
+        Confluence REST API to get, update, and delete content properties. To
+        learn more, see [Content properties in the REST
+        API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+        **CQL:** The Confluence Query Language (CQL) allows you to perform
+        complex searches for content using an SQL-like syntax in the `search`
+        resource. To learn more, see [Advanced searching using
+        CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).

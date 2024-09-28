@@ -1,0 +1,1575 @@
+components:
+  schemas:
+    PageBeanWorkflowTransitionRules:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          readOnly: true
+          type: array
+      type: object
+    WorkflowTransitionRulesUpdateErrors:
+      additionalProperties: false
+      description: >-
+        Details of any errors encountered while updating workflow transition
+        rules.
+      properties:
+        updateResults:
+          description: A list of workflows.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrorDetails'
+          type: array
+      required:
+        - updateResults
+      type: object
+    PageBeanWorkflow:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/Workflow'
+          readOnly: true
+          type: array
+      type: object
+    WorkflowTransitionProperty:
+      additionalProperties: true
+      description: Details about the server Jira is running on.
+      properties:
+        id:
+          description: The ID of the transition property.
+          readOnly: true
+          type: string
+        key:
+          description: >-
+            The key of the transition property. Also known as the name of the
+            transition property.
+          readOnly: true
+          type: string
+        value:
+          description: The value of the transition property.
+          type: string
+      required:
+        - value
+      type: object
+externalDocs:
+  description: Find out more about Atlassian products and services.
+  url: http://www.atlassian.com
+info:
+  contact:
+    email: ecosystem@atlassian.com
+  description: Needs description.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://atlassian.com/terms/
+  title: ' rest/api/3/workflow/'
+  version: 1001.0.0-SNAPSHOT-67b5c6e5f3598d7ec1649016d026468ab2838a77
+openapi: 3.0.1
+paths:
+  /rest/api/3/workflow/rule/config:
+    get:
+      deprecated: false
+      description: >-
+        Returns a [paginated](#pagination) list of workflows with transition
+        rules. The workflows can be filtered to return only those containing
+        workflow transition rules:
+
+         *  of one or more transition rule types, such as [workflow post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/).
+         *  matching one or more transition rule keys.
+
+        Only workflows containing transition rules created by the calling
+        [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps)
+        or
+        [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps)
+        app are returned.
+
+
+        Due to server-side optimizations, workflows with an empty list of rules
+        may be returned; these workflows can be ignored.
+
+
+        **[Permissions](#permissions) required:** Only
+        [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps)
+        or
+        [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps)
+        apps can use this operation.
+      operationId: getWorkflowTransitionRuleConfigurations
+      parameters:
+        - description: >-
+            The index of the first item to return in a page of results (page
+            offset).
+          in: query
+          name: startAt
+          schema:
+            default: 0
+            format: int64
+            type: integer
+        - description: The maximum number of items to return per page.
+          in: query
+          name: maxResults
+          schema:
+            default: 10
+            format: int32
+            maximum: 50
+            type: integer
+        - description: The types of the transition rules to return.
+          in: query
+          name: types
+          required: true
+          schema:
+            items:
+              default: ''
+              enum:
+                - postfunction
+                - condition
+                - validator
+              type: string
+            type: array
+            uniqueItems: true
+        - description: >-
+            The transition rule class keys, as defined in the Connect or the
+            Forge app descriptor, of the transition rules to return.
+          in: query
+          name: keys
+          schema:
+            items:
+              default: ''
+              type: string
+            type: array
+            uniqueItems: true
+        - description: The list of workflow names to filter by.
+          in: query
+          name: workflowNames
+          schema:
+            items:
+              default: ''
+              maxLength: 50
+              type: string
+            maxLength: 50
+            type: array
+            uniqueItems: true
+        - description: The list of `tags` to filter by.
+          in: query
+          name: withTags
+          schema:
+            items:
+              default: ''
+              maxLength: 20
+              type: string
+            maxLength: 20
+            type: array
+            uniqueItems: true
+        - description: >-
+            Whether draft or published workflows are returned. If not provided,
+            both workflow types are returned.
+          in: query
+          name: draft
+          schema:
+            type: boolean
+        - description: >-
+            Use [expand](#expansion) to include additional information in the
+            response. This parameter accepts `transition`, which, for each rule,
+            returns information about the transition the rule is assigned to.
+          in: query
+          name: expand
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"isLast":true,"maxResults":10,"startAt":0,"total":1,"values":[{"workflowId":{"name":"My
+                Workflow
+                name","draft":false},"postFunctions":[{"id":"b4d6cbdc-59f5-11e9-8647-d663bd873d93","key":"postfunction-key","configuration":{"value":"{
+                \"color\": \"red\" }","disabled":false,"tag":"Sample
+                tag"},"transition":{"id":1,"name":"Open"}}],"conditions":[{"id":"d663bd873d93-59f5-11e9-8647-b4d6cbdc","key":"condition-key","configuration":{"value":"{
+                \"size\": \"medium\" }","disabled":false,"tag":"Another
+                tag"},"transition":{"id":1,"name":"Open"}}],"validators":[{"id":"11e9-59f5-b4d6cbdc-8647-d663bd873d93","key":"validator-key","configuration":{"value":"\"{
+                \\\"shape\\\": \\\"square\\\"
+                }\"","disabled":false},"transition":{"id":1,"name":"Open"}}]}]}
+              schema:
+                $ref: '#/components/schemas/PageBeanWorkflowTransitionRules'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect or Forge app.
+        '404':
+          description: Returned if any transition rule type is not supported.
+        '503':
+          description: >-
+            Returned if we encounter a problem while trying to access the
+            required data.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Get Workflow Transition Rule Configurations '
+      tags:
+        - Configurations
+        - REST
+        - Rules
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:workflow:jira
+          state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: >-
+        Updates configuration of workflow transition rules. The following rule
+        types are supported:
+
+         *  [post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/)
+         *  [conditions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-condition/)
+         *  [validators](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-validator/)
+
+        Only rules created by the calling
+        [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps)
+        or
+        [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps)
+        app can be updated.
+
+
+        To assist with app migration, this operation can be used to:
+
+         *  Disable a rule.
+         *  Add a `tag`. Use this to filter rules in the [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
+
+        Rules are enabled if the `disabled` parameter is not provided.
+
+
+        **[Permissions](#permissions) required:** Only
+        [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps)
+        or
+        [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps)
+        apps can use this operation.
+      operationId: updateWorkflowTransitionRuleConfigurations
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              workflows:
+                - conditions:
+                    - configuration:
+                        disabled: false
+                        tag: Another tag
+                        value: '{ "size": "medium" }'
+                      id: d663bd873d93-59f5-11e9-8647-b4d6cbdc
+                  postFunctions:
+                    - configuration:
+                        disabled: false
+                        tag: Sample tag
+                        value: '{ "color": "red" }'
+                      id: b4d6cbdc-59f5-11e9-8647-d663bd873d93
+                  validators:
+                    - configuration:
+                        disabled: false
+                        value: '{ "shape": "square" }'
+                      id: 11e9-59f5-b4d6cbdc-8647-d663bd873d93
+                  workflowId:
+                    draft: false
+                    name: My Workflow name
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionRulesUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"updateResults":[{"workflowId":{"name":"Workflow with one rule
+                not
+                updated","draft":false},"ruleUpdateErrors":{"example-rule-id":["The
+                rule with this id does not exist:
+                example-rule-id"]},"updateErrors":[]},{"workflowId":{"name":"Workflow
+                with all rules successfully
+                updated","draft":true},"ruleUpdateErrors":{},"updateErrors":[]},{"workflowId":{"name":"Non-existing
+                workflow","draft":false},"ruleUpdateErrors":{},"updateErrors":["Workflow
+                not found: WorkflowIdBean{name=Non-existing workflow,
+                draft=false}"]}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrors'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect or Forge app.
+        '503':
+          description: >-
+            Returned if we encounter a problem while trying to access the
+            required data.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Update Workflow Transition Rule Configurations '
+      tags:
+        - Configurations
+        - REST
+        - Rules
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/rule/config/delete:
+    put:
+      deprecated: false
+      description: >-
+        Deletes workflow transition rules from one or more workflows. These rule
+        types are supported:
+
+         *  [post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/)
+         *  [conditions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-condition/)
+         *  [validators](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-validator/)
+
+        Only rules created by the calling Connect app can be deleted.
+
+
+        **[Permissions](#permissions) required:** Only Connect apps can use this
+        operation.
+      operationId: deleteWorkflowTransitionRuleConfigurations
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              workflows:
+                - workflowId:
+                    draft: false
+                    name: Internal support workflow
+                  workflowRuleIds:
+                    - b4d6cbdc-59f5-11e9-8647-d663bd873d93
+                    - d663bd873d93-59f5-11e9-8647-b4d6cbdc
+                    - 11e9-59f5-b4d6cbdc-8647-d663bd873d93
+            schema:
+              $ref: '#/components/schemas/WorkflowsWithTransitionRulesDetails'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"updateResults":[{"workflowId":{"name":"Workflow with one rule
+                not
+                updated","draft":false},"ruleUpdateErrors":{"example-rule-id":["The
+                rule with this id does not exist:
+                example-rule-id"]},"updateErrors":[]},{"workflowId":{"name":"Workflow
+                with all rules successfully
+                updated","draft":true},"ruleUpdateErrors":{},"updateErrors":[]},{"workflowId":{"name":"Non-existing
+                workflow","draft":false},"ruleUpdateErrors":{},"updateErrors":["Workflow
+                not found: WorkflowIdBean{name=Non-existing workflow,
+                draft=false}"]}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrors'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: >-
+                {"errorMessages":["Jira Administration permission is required to
+                access workflow
+                configuration."],"errors":{},"httpStatusCode":{"empty":false,"present":true}}
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect app.
+      security:
+        - basicAuth: []
+      summary: 'Delete Workflow Transition Rule Configurations '
+      tags:
+        - Configurations
+        - REST
+        - Rules
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/search:
+    get:
+      deprecated: false
+      description: >-
+        Returns a [paginated](#pagination) list of published classic workflows.
+        When workflow names are specified, details of those workflows are
+        returned. Otherwise, all published classic workflows are returned.
+
+
+        This operation does not return next-gen workflows.
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: getWorkflowsPaginated
+      parameters:
+        - description: >-
+            The index of the first item to return in a page of results (page
+            offset).
+          in: query
+          name: startAt
+          schema:
+            default: 0
+            format: int64
+            type: integer
+        - description: The maximum number of items to return per page.
+          in: query
+          name: maxResults
+          schema:
+            default: 50
+            format: int32
+            type: integer
+        - description: >-
+            The name of a workflow to return. To include multiple workflows,
+            provide an ampersand-separated list. For example,
+            `workflowName=name1&workflowName=name2`.
+          in: query
+          name: workflowName
+          schema:
+            items:
+              default: ''
+              type: string
+            type: array
+            uniqueItems: true
+        - description: >-
+            Use [expand](#expansion) to include additional information in the
+            response. This parameter accepts a comma-separated list. Expand
+            options include:
+
+             *  `transitions` For each workflow, returns information about the transitions inside the workflow.
+             *  `transitions.rules` For each workflow transition, returns information about its rules. Transitions are included automatically if this expand is requested.
+             *  `transitions.properties` For each workflow transition, returns information about its properties. Transitions are included automatically if this expand is requested.
+             *  `statuses` For each workflow, returns information about the statuses inside the workflow.
+             *  `statuses.properties` For each workflow status, returns information about its properties. Statuses are included automatically if this expand is requested.
+             *  `default` For each workflow, returns information about whether this is the default workflow.
+             *  `schemes` For each workflow, returns information about the workflow schemes the workflow is assigned to.
+             *  `projects` For each workflow, returns information about the projects the workflow is assigned to, through workflow schemes.
+             *  `hasDraftWorkflow` For each workflow, returns information about whether the workflow has a draft version.
+             *  `operations` For each workflow, returns information about the actions that can be undertaken on the workflow.
+          in: query
+          name: expand
+          schema:
+            type: string
+        - description: >-
+            String used to perform a case-insensitive partial match with
+            workflow name.
+          in: query
+          name: queryString
+          schema:
+            type: string
+        - description: |-
+            [Order](#ordering) the results by a field:
+
+             *  `name` Sorts by workflow name.
+             *  `created` Sorts by create time.
+             *  `updated` Sorts by update time.
+          in: query
+          name: orderBy
+          schema:
+            enum:
+              - name
+              - '-name'
+              - +name
+              - created
+              - '-created'
+              - +created
+              - updated
+              - +updated
+              - '-updated'
+            type: string
+        - description: Filters active and inactive workflows.
+          in: query
+          name: isActive
+          schema:
+            type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"isLast":false,"maxResults":1,"startAt":0,"total":5,"values":[{"id":{"name":"SCRUM
+                Workflow","entityId":"5ed312c5-f7a6-4a78-a1f6-8ff7f307d063"},"description":"A
+                workflow used for Software projects in the SCRUM
+                methodology","transitions":[{"id":"5","name":"In
+                Progress","description":"Start working on the
+                issue.","from":["10","13"],"to":"14","type":"directed","screen":{"id":"10000","name":"Issue
+                screen"},"rules":{"conditionsTree":{"nodeType":"compound","operator":"AND","conditions":[{"nodeType":"simple","type":"PermissionCondition","configuration":{"permissionKey":"WORK_ON_ISSUES"}},{"nodeType":"simple","type":"PermissionCondition","configuration":{"permissionKey":"RESOLVE_ISSUES"}}]},"validators":[{"type":"FieldRequiredValidator","configuration":{"errorMessage":"A
+                custom error
+                message","fields":["description","assignee"],"ignoreContext":true}}],"postFunctions":[{"type":"UpdateIssueStatusFunction"},{"type":"GenerateChangeHistoryFunction"},{"type":"FireIssueEventFunction"}]},"properties":{"jira.fieldscreen.id":1}}],"statuses":[{"id":"3","name":"In
+                Progress","properties":{"issueEditable":false,"jira.issue.editable":"false"}}],"isDefault":false,"schemes":[{"id":"10001","name":"Test
+                Workflow
+                Scheme"}],"projects":[{"avatarUrls":{"16x16":"secure/projectavatar?size=xsmall&pid=10000","24x24":"secure/projectavatar?size=small&pid=10000","32x32":"secure/projectavatar?size=medium&pid=10000","48x48":"secure/projectavatar?size=large&pid=10000"},"id":"10000","key":"EX","name":"Example","projectCategory":{"description":"Project
+                category description","id":"10000","name":"A project
+                category"},"projectTypeKey":"ProjectTypeKey{key='software'}","self":"project/EX","simplified":false}],"hasDraftWorkflow":true,"operations":{"canEdit":true,"canDelete":false},"created":"2018-12-10T16:30:15.000+0000","updated":"2018-12-11T11:45:13.000+0000"}]}
+              schema:
+                $ref: '#/components/schemas/PageBeanWorkflow'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: >-
+                {"errorMessages":["Only Jira administrators can access
+                workflows."],"errors":{}}
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-project
+      summary: 'Get Workflows Paginated '
+      tags:
+        - Paginated
+        - REST
+        - Search
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-project
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:group:jira
+            - read:issue-security-level:jira
+            - read:project-role:jira
+            - read:screen:jira
+            - read:status:jira
+            - read:user:jira
+            - read:workflow:jira
+            - read:webhook:jira
+            - read:avatar:jira
+            - read:project-category:jira
+            - read:project:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/transitions/{transitionId}/properties:
+    delete:
+      deprecated: false
+      description: >-
+        Deletes a property from a workflow transition. Transition properties are
+        used to change the behavior of a transition. For more information, see
+        [Transition
+        properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties)
+        and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: deleteWorkflowTransitionProperty
+      parameters:
+        - description: >-
+            The ID of the transition. To get the ID, view the workflow in text
+            mode in the Jira admin settings. The ID is shown next to the
+            transition.
+          in: path
+          name: transitionId
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - description: >-
+            The name of the transition property to delete, also known as the
+            name of the property.
+          in: query
+          name: key
+          required: true
+          schema:
+            type: string
+        - description: The name of the workflow that the transition belongs to.
+          in: query
+          name: workflowName
+          required: true
+          schema:
+            type: string
+        - description: >-
+            The workflow status. Set to `live` for inactive workflows or `draft`
+            for draft workflows. Active workflows cannot be edited.
+          in: query
+          name: workflowMode
+          schema:
+            enum:
+              - live
+              - draft
+            type: string
+      responses:
+        '200':
+          description: 200 response
+        '304':
+          description: >-
+            Returned if no changes were made by the request. For example, trying
+            to delete a property that cannot be found.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Delete Workflow Transition Property '
+      tags:
+        - Properties
+        - REST
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - delete:workflow.property:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+    get:
+      deprecated: false
+      description: >-
+        Returns the properties on a workflow transition. Transition properties
+        are used to change the behavior of a transition. For more information,
+        see [Transition
+        properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties)
+        and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: getWorkflowTransitionProperties
+      parameters:
+        - description: >-
+            The ID of the transition. To get the ID, view the workflow in text
+            mode in the Jira administration console. The ID is shown next to the
+            transition.
+          in: path
+          name: transitionId
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - description: >-
+            Some properties with keys that have the *jira.* prefix are reserved,
+            which means they are not editable. To include these properties in
+            the results, set this parameter to *true*.
+          in: query
+          name: includeReservedKeys
+          schema:
+            default: false
+            type: boolean
+        - description: >-
+            The key of the property being returned, also known as the name of
+            the property. If this parameter is not specified, all properties on
+            the transition are returned.
+          in: query
+          name: key
+          schema:
+            type: string
+        - description: The name of the workflow that the transition belongs to.
+          in: query
+          name: workflowName
+          required: true
+          schema:
+            type: string
+        - description: >-
+            The workflow status. Set to *live* for active and inactive
+            workflows, or *draft* for draft workflows.
+          in: query
+          name: workflowMode
+          schema:
+            default: live
+            enum:
+              - live
+              - draft
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                [{"id":"jira.i18n.title","key":"jira.i18n.title","value":"some.title"},{"id":"jira.permission","key":"jira.permission","value":"createissue"}]
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have admin permission
+        '404':
+          description: Returned if the workflow transition or property is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Get Workflow Transition Properties '
+      tags:
+        - Properties
+        - REST
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:workflow.property:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: >-
+        Adds a property to a workflow transition. Transition properties are used
+        to change the behavior of a transition. For more information, see
+        [Transition
+        properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties)
+        and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: createWorkflowTransitionProperty
+      parameters:
+        - description: >-
+            The ID of the transition. To get the ID, view the workflow in text
+            mode in the Jira admin settings. The ID is shown next to the
+            transition.
+          in: path
+          name: transitionId
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - description: >-
+            The key of the property being added, also known as the name of the
+            property. Set this to the same value as the `key` defined in the
+            request body.
+          in: query
+          name: key
+          required: true
+          schema:
+            type: string
+        - description: The name of the workflow that the transition belongs to.
+          in: query
+          name: workflowName
+          required: true
+          schema:
+            type: string
+        - description: >-
+            The workflow status. Set to *live* for inactive workflows or *draft*
+            for draft workflows. Active workflows cannot be edited.
+          in: query
+          name: workflowMode
+          schema:
+            default: live
+            enum:
+              - live
+              - draft
+            type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: createissue
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionProperty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"key":"jira.i18n.title","value":"some.title","id":"jira.i18n.title"}
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '400':
+          description: >-
+            Returned if a workflow property with the same key is present on the
+            transition.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Create Workflow Transition Property '
+      tags:
+        - Properties
+        - REST
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow.property:jira
+            - read:workflow.property:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: >-
+        Updates a workflow transition by changing the property value. Trying to
+        update a property that does not exist results in a new property being
+        added to the transition. Transition properties are used to change the
+        behavior of a transition. For more information, see [Transition
+        properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties)
+        and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).
+
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: updateWorkflowTransitionProperty
+      parameters:
+        - description: >-
+            The ID of the transition. To get the ID, view the workflow in text
+            mode in the Jira admin settings. The ID is shown next to the
+            transition.
+          in: path
+          name: transitionId
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - description: >-
+            The key of the property being updated, also known as the name of the
+            property. Set this to the same value as the `key` defined in the
+            request body.
+          in: query
+          name: key
+          required: true
+          schema:
+            type: string
+        - description: The name of the workflow that the transition belongs to.
+          in: query
+          name: workflowName
+          required: true
+          schema:
+            type: string
+        - description: >-
+            The workflow status. Set to `live` for inactive workflows or `draft`
+            for draft workflows. Active workflows cannot be edited.
+          in: query
+          name: workflowMode
+          schema:
+            enum:
+              - live
+              - draft
+            type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: createissue
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionProperty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"key":"jira.i18n.title","value":"some.title","id":"jira.i18n.title"}
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '304':
+          description: >-
+            Returned if no changes were made by the request. For example,
+            attempting to update a property with its current value.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Update Workflow Transition Property '
+      tags:
+        - Properties
+        - REST
+        - Transitions
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow.property:jira
+            - read:workflow.property:jira
+          state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/{entityId}:
+    delete:
+      deprecated: false
+      description: >-
+        Deletes a workflow.
+
+
+        The workflow cannot be deleted if it is:
+
+         *  an active workflow.
+         *  a system workflow.
+         *  associated with any workflow scheme.
+         *  associated with any draft workflow scheme.
+
+        **[Permissions](#permissions) required:** *Administer Jira* [global
+        permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: deleteInactiveWorkflow
+      parameters:
+        - description: The entity ID of the workflow.
+          in: path
+          name: entityId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Returned if the workflow is deleted.
+        '400':
+          content:
+            application/json:
+              example: >-
+                {"errorMessages":["Cannot delete an active
+                workflow."],"errors":{}}
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: >-
+                {"errorMessages":["Only Jira administrators can access the
+                workflow configuration."],"errors":{}}
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The workflow was not found."],"errors":{}}'
+          description: Returned if the workflow is not found.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Delete Inactive Workflow '
+      tags:
+        - Entities
+        - Inactive
+        - REST
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - delete:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+servers:
+  - url: https://your-domain.atlassian.net
+tags: []
+x-atlassian-narrative:
+  documents:
+    - anchor: about
+      body: >-
+        The Jira REST API enables you to interact with Jira programmatically.
+        Use this API to 
+
+        [build
+        apps](https://developer.atlassian.com/cloud/jira/platform/integrating-with-jira-cloud/),
+        script interactions with 
+
+        Jira, or develop any other type of integration. This page documents the
+        REST resources available in Jira Cloud, including 
+
+        the HTTP response codes and example requests and responses.
+      title: About
+    - anchor: version
+      body: >
+        This documentation is for **version 3** of the Jira Cloud platform REST
+        API, which is the latest version
+
+        but is in **beta**. [Version
+        2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) and 
+
+        version 3 of the API offer the same collection of operations. However,
+        version 3 provides support for 
+
+        the [Atlassian Document
+        Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) 
+
+        (ADF) in: 
+
+        - `body` in comments, including where comments are used in issue, issue
+        link, and transition resources.
+
+        - `comment` in worklogs.
+
+        - `description` and `environment` fields in issues.
+
+        - `textarea` type custom fields (multi-line text fields) in issues.
+        Single line custom fields 
+          (`textfield`) accept a string and don't handle Atlassian Document Format content.
+
+        However, these new features are under development and may change.
+      title: Version
+    - anchor: authentication
+      body: >
+        ### Forge apps
+
+
+        For Forge apps, [REST API
+        scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) 
+
+        are used when authenticating with Jira Cloud platform. See [Add scopes
+        to call an Atlassian REST
+        API](https://developer.atlassian.com/platform/forge/add-scopes-to-call-an-atlassian-rest-api/)
+        for more details.
+
+
+        The URIs for Forge app REST API calls have this structure:
+
+
+        `/rest/api/3/<resource-name>`
+
+
+        For example, `/rest/api/3/issue/DEMO-1`
+
+
+        ### Connect apps
+
+
+        For Connect apps, authentication (JWT-based) is built into the Connect
+        libraries. Authorization is implemented using either 
+
+        scopes (shown as _App scope required_ for operations on this page) or
+        user impersonation. See 
+
+        [Security for Connect
+        apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/) 
+
+        for details.
+
+
+        The URIs for Connect app REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+
+
+        ### Other integrations
+
+
+        For integrations that are not Forge or Connect apps, use OAuth 2.0
+        authorization code grants (3LO) for security 
+
+        (3LO scopes are shown as for operations _OAuth scopes required_). See 
+
+        [OAuth 2.0 (3LO)
+        apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) 
+
+        for details.
+
+
+        The URIs for OAuth 2.0 (3LO) app REST API calls have this structure:
+
+
+        `https://api.atlassian.com/ex/jira/<cloudId>/rest/api/3/<resource-name>`
+
+
+        For example,
+        `https://api.atlassian.com/ex/jira/35273b54-3f06-40d2-880f-dd28cf8daafa/rest/api/3/issue/DEMO-1`
+
+
+        ### Ad-hoc API calls
+
+
+        For personal scripts, bots, and ad-hoc execution of the REST APIs use
+        basic authentication. See [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
+        for details. 
+
+
+        The URIs for basic authentication REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+      title: Authentication and authorization
+    - anchor: permissions
+      body: >
+        ### Operation permissions
+
+
+        Most operations in this API require permissions. The calling user must
+        have the required permissions for an operation to 
+
+        use it. Note that for Connect apps, the app user must have the required
+        permissions for the operation and the app must 
+
+        have scopes that permit the operation.
+
+
+        A permission can be granted to a group, project role, or issue role that
+        the user is a member of, or granted directly to a user. 
+
+        See [Permissions overview](https://confluence.atlassian.com/x/FQiiLQ)
+        for details. The most common permissions are:
+
+
+        - **Administer the Cloud site**: Users in the _site-admins_ group have
+        this 
+
+        permission. See [Manage
+        groups](https://confluence.atlassian.com/x/24xjL) for details.
+
+        - **Administer Jira**: Granted by the _Jira Administrators_ global
+        permission. There is a default group for this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+        - **Administer a project in Jira**: Granted by the _Administer projects_
+        project permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access a project in Jira**: Granted by the _Browse projects_ project
+        permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access Jira**: Granted by the _Jira Users_ global permission. Users
+        in the default product access group (for example, 
+
+        _jira-software-users-acmesite_) have this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and 
+
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+
+        ### Anonymous access
+
+
+        Some operations provide support for anonymous access. However, anonymous
+        access is only available if 
+
+        the Jira permission needed to access the object or records returned by
+        the operation is granted to 
+
+        the _Public_ group. See [Allowing anonymous access to your
+        project](https://confluence.atlassian.com/x/GDxxLg) 
+
+        for details.
+
+
+        If an operation is called anonymously and anonymous access is not
+        available, the operation will return 
+
+        an error. Note that not all operations that correspond to objects that
+        can be given public access 
+
+        provide for anonymous access.
+      title: Permissions
+    - anchor: expansion
+      body: >+
+        ### Expansion
+
+
+        The Jira REST API uses resource expansion, which means that some parts
+        of a resource are not returned unless specified 
+
+        in the request. This simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the expand query
+        parameter and specify the object(s) to be expanded. 
+
+        If you need to expand nested objects, use the `.` dot notation. If you
+        need to expand multiple objects, use a 
+
+        comma-separated list. 
+
+
+        For example, the following request expands the `names` and
+        `renderedFields` properties for the _JRACLOUD-34423_ issue:
+
+
+        `GET issue/JRACLOUD-34423?expand=names,renderedFields`
+
+
+        To discover which object can be expanded, refer to the `expand` property
+        in the object. 
+
+        In the JSON example below, the resource declares `widgets` as
+        expandable.
+
+
+        ```json
+
+        {
+          "expand": "widgets", 
+          "self": "https://your-domain.atlassian.net/rest/api/3/resource/KEY-1", 
+          "widgets": {
+            "widgets": [],
+            "size": 5
+           }
+        }
+
+        ```
+
+
+        ### Pagination
+
+
+        The Jira REST API uses pagination to improve performance. Pagination is
+        enforced for operations that could return a large 
+
+        collection of items. When you make a request to a paginated resource,
+        the response wraps the returned array of values in 
+
+        a JSON object with paging metadata. For example:
+
+
+        ```json
+
+        {
+            "startAt" : 0,
+            "maxResults" : 10,
+            "total": 200,
+            "isLast": false,
+            "values": [
+                { /* result 0 */ },
+                { /* result 1 */ },
+                { /* result 2 */ }
+            ]
+        }
+
+        ```
+
+
+        *   `startAt` is the index of the first item returned in the page.
+
+        *   `maxResults` is the maximum number of items that a page can return.
+        Each operation can have a different limit for
+            the number of items returned, and these limits may change without notice. To find the maximum number of items 
+            that an operation could return, set `maxResults` to a large number—for example, over 1000—and if the returned value of `maxResults` is less than the requested value, the returned value is the maximum.
+        *    `total` is the total number of items contained in all pages. This
+        number **_may change_** as the client 
+
+        requests the subsequent pages, therefore the client should always assume
+        that the requested page can be empty. Note 
+
+        that this property is not returned for all operations.
+
+        *   `isLast` indicates whether the page returned is the last one. Note
+        that this property is not returned for all operations.
+
+
+        ### Ordering
+
+
+        Some operations support ordering the elements of a response by a field.
+        Check the documentation for the operation to 
+
+        confirm whether ordering of a response is supported and which fields can
+        be used. Responses are listed in ascending order 
+
+        by default. You can change the order using the `orderby` query parameter
+        with a `-` or `+` symbol. For example:
+
+
+        *   `?orderBy=name` to order by `name` field ascending.
+
+        *   `?orderBy=+name` to order by `name` field ascending.
+
+        *   `?orderBy=-name` to order by `name` field descending.
+
+
+      title: Expansion, pagination, and ordering
+    - anchor: timestamps
+      body: >
+        By default, top-level timestamps (e.g. updated and created) are returned
+        in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format, in the system
+        default user time zone.
+
+
+        To return date time data in the logged in user's timezone, please refer
+        to `renderedFields` property under the `expand` query parameter in
+        relevant APIs.
+      title: Timestamps
+    - anchor: special-request-headers
+      body: >-
+        The following request and response headers define important metadata for
+        the Jira Cloud REST API resources.
+
+
+        -   `X-Atlassian-Token` (request): Operations that accept
+        multipart/form-data must include the `X-Atlassian-Token: no-check`
+
+        header in requests. Otherwise the request is blocked by cross-site
+        request forgery (CSRF/XSRF) protection.
+
+        -   `X-Force-Accept-Language` (request): controls how the standard HTTP
+        `Accept-Language` header is processed.
+
+        By default `Accept-Language` is ignored and the response is in the
+        language configured in the user's profile or,
+
+        when no language is configured for the user, the default Jira instance
+        language. For the response to recognize
+
+        `Accept-Language` send `X-Force-Accept-Language = true` as well. If
+        `Accept-Language` requests a language that Jira
+
+        can return the response is in that language, otherwise Jira returns the
+        response in the default language. If
+
+        `Accept-Language` is not specified the response is in the default
+        language.
+
+        -   `X-AAccountId` (response): This response header contains the
+        Atlassian account ID of the authenticated user.
+      title: Special headers
+    - anchor: anonymous-operations
+      body: |2-
+         Jira provides for all permissions, except the [global permission](https://confluence.atlassian.com/x/x4dKLg) Administer Jira, to be assigned to *Anyone*. Once a permission is assigned to *Anyone*, anyone knowing a project's URL is able to use the features in Jira enabled by the permission. However, the Jira REST API does not enable anonymous access for operations by default. This means that an anonymous user who may be able to perform an action through Jira, may not be able to perform the same action where it's enabled by the REST API. 
+
+         The operations that provide anonymous access are annotated "This operation can be accessed anonymously."
+      title: Anonymous operations
+    - anchor: async-operations
+      body: >-
+        Some Jira REST API operations may trigger long-running or
+        computationally expensive tasks. In these cases, the operation 
+
+        will schedule an asynchronous task and return a `303 (See Other)`
+        response, indicating the location of the queued task 
+
+        in the `Location` header. You can query this task to get progress
+        updates.
+
+
+        When the task finishes, the response object will contain the `result`
+        field. The content of the field is specific to the 
+
+        operation that created the task. Refer to the operation’s documentation
+        for more information.
+
+
+        Note that asynchronous tasks are not guaranteed to be run in order. In
+        other words, if you need your tasks to execute 
+
+        in a certain order, you should start a task only after the prerequisite
+        task(s) have finished.
+      title: Asynchronous operations
+    - anchor: experimental
+      body: >
+        Features and methods marked as experimental may change without notice.
+        Feedback on experimental functionality is welcome. 
+
+        Report your suggestions and bugs in the [ACJIRA
+        project](https://ecosystem.atlassian.net/projects/ACJIRA) (preferred) or
+        use the 
+
+        **Give docs feedback** link at the top of this page. 
+      title: Experimental features
+    - anchor: status-codes
+      body: >-
+        The Jira Cloud platform REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Operations that return an error status code may also return a response
+        body containing details of the error or errors. 
+
+        The schema for the response body is shown below:
+
+
+
+        ```json
+
+        {
+          "id": "https://docs.atlassian.com/jira/REST/schema/error-collection#",
+          "title": "Error Collection",
+          "type": "object",
+          "properties": {
+            "errorMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "errors": {
+              "type": "object",
+              "patternProperties": {
+                ".+": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "status": { 
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        }
+
+        ```
+      title: Status codes

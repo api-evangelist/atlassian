@@ -1,0 +1,1862 @@
+components:
+  schemas:
+    WorkflowCapabilities:
+      additionalProperties: false
+      properties:
+        connectRules:
+          description: The Connect provided ecosystem rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowConnectRule'
+          type: array
+        editorScope:
+          description: >-
+            The scope of the workflow capabilities. `GLOBAL` for company-managed
+            projects and `PROJECT` for team-managed projects.
+          enum:
+            - PROJECT
+            - GLOBAL
+          type: string
+        forgeRules:
+          description: The Forge provided ecosystem rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowForgeRule'
+          type: array
+        projectTypes:
+          description: The types of projects that this capability set is available for.
+          enum:
+            - software
+            - service_desk
+            - product_discovery
+            - business
+            - unknown
+          items:
+            description: The types of projects that this capability set is available for.
+            enum:
+              - software
+              - service_desk
+              - product_discovery
+              - business
+              - unknown
+            type: string
+          type: array
+        systemRules:
+          description: The Atlassian provided system rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowSystemRule'
+          type: array
+        triggerRules:
+          description: The trigger rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowTriggers'
+          type: array
+      type: object
+    WorkflowCreateResponse:
+      additionalProperties: false
+      description: Details of the created workflows and statuses.
+      properties:
+        statuses:
+          description: List of created statuses.
+          items:
+            $ref: '#/components/schemas/JiraWorkflowStatus'
+          type: array
+          uniqueItems: true
+        workflows:
+          description: List of created workflows.
+          items:
+            $ref: '#/components/schemas/JiraWorkflow'
+          type: array
+          uniqueItems: true
+      type: object
+    WorkflowValidationErrorList:
+      additionalProperties: false
+      properties:
+        errors:
+          description: The list of validation errors.
+          items:
+            $ref: '#/components/schemas/WorkflowValidationError'
+          type: array
+      type: object
+    WorkflowUpdateResponse:
+      additionalProperties: false
+      properties:
+        statuses:
+          description: List of updated statuses.
+          items:
+            $ref: '#/components/schemas/JiraWorkflowStatus'
+          type: array
+          uniqueItems: true
+        taskId:
+          description: >-
+            If there is a [asynchronous task](#async-operations) operation, as a
+            result of this update.
+          nullable: true
+          type: string
+        workflows:
+          description: List of updated workflows.
+          items:
+            $ref: '#/components/schemas/JiraWorkflow'
+          type: array
+          uniqueItems: true
+      type: object
+externalDocs:
+  description: Find out more about Atlassian products and services.
+  url: http://www.atlassian.com
+info:
+  contact:
+    email: ecosystem@atlassian.com
+  description: Needs description.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://atlassian.com/terms/
+  title: ' rest/api/3/workflows/'
+  version: 1001.0.0-SNAPSHOT-67b5c6e5f3598d7ec1649016d026468ab2838a77
+openapi: 3.0.1
+paths:
+  /rest/api/3/workflows/capabilities:
+    get:
+      deprecated: false
+      description: >-
+        Get the list of workflow capabilities for a specific workflow using
+        either the workflow ID, or the project and issue type ID pair. The
+        response includes the scope of the workflow, defined as
+        global/project-based, and a list of project types that the workflow is
+        scoped to. It also includes all rules organised into their broad
+        categories (conditions, validators, actions, triggers, screens) as well
+        as the source location (Atlassian-provided, Connect, Forge).
+
+
+        **[Permissions](#permissions) required:**
+
+         *  *Administer Jira* project permission to access all, including global-scoped, workflows
+         *  *Administer projects* project permissions to access project-scoped workflows
+
+        The current list of Atlassian-provided rules:
+
+
+        #### Validators ####
+
+
+        A validator rule that checks if a user has the required permissions to
+        execute the transition in the workflow.
+
+
+        ##### Permission validator #####
+
+
+        A validator rule that checks if a user has the required permissions to
+        execute the transition in the workflow.
+
+            {
+               "ruleKey": "system:check-permission-validator",
+               "parameters": {
+                 "permissionKey": "ADMINISTER_PROJECTS"
+               }
+             }
+
+        Parameters:
+
+         *  `permissionKey` The permission required to perform the transition. Allowed values: [built-in Jira permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#built-in-permissions).
+
+        ##### Parent or child blocking validator #####
+
+
+        A validator to block the child issue\\u2019s transition depending on the
+        parent issue\\u2019s status.
+
+            {
+               "ruleKey" : "system:parent-or-child-blocking-validator"
+               "parameters" : {
+                 "blocker" : "PARENT"
+                 "statusIds" : "1,2,3"
+               }
+             }
+
+        Parameters:
+
+         *  `blocker` currently only supports `PARENT`.
+         *  `statusIds` a comma-separated list of status IDs.
+
+        ##### Previous status validator #####
+
+
+        A validator that checks if an issue has transitioned through specified
+        previous status(es) before allowing the current transition to occur.
+
+            {
+               "ruleKey": "system:previous-status-validator",
+               "parameters": {
+                 "previousStatusIds": "10014",
+                 "mostRecentStatusOnly": "true"
+               }
+             }
+
+        Parameters:
+
+         *  `previousStatusIds` a comma-separated list of status IDs, currently only support one ID.
+         *  `mostRecentStatusOnly` when `true` only considers the most recent status for the condition evaluation. Allowed values: `true`, `false`.
+
+        ##### Validate a field value #####
+
+
+        A validation that ensures a specific field's value meets the defined
+        criteria before allowing an issue to transition in the workflow.
+
+
+        Depending on the rule type, the result will vary:
+
+
+        ###### Field required ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "fieldRequired",
+                 "fieldsRequired": "assignee",
+                 "ignoreContext": "true",
+                 "errorMessage": "An assignee must be set!"
+               }
+             }
+
+        Parameters:
+
+         *  `fieldsRequired` the ID of the field that is required. For a custom field, it would look like `customfield_123`.
+         *  `ignoreContext` controls the impact of context settings on field validation. When set to `true`, the validator doesn't check a required field if its context isn't configured for the current issue. When set to `false`, the validator requires a field even if its context is invalid. Allowed values: `true`, `false`.
+         *  `errorMessage` is the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don't provide one (Optional).
+
+        ###### Field changed ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "fieldChanged",
+                 "groupsExemptFromValidation": "6862ac20-8672-4f68-896d-4854f5efb79e",
+                 "fieldKey": "versions",
+                 "errorMessage": "Affect versions must be modified before transition"
+               }
+             }
+
+        Parameters:
+
+         *  `groupsExemptFromValidation` a comma-separated list of group IDs to be exempt from the validation.
+         *  `fieldKey` the ID of the field that has changed. For a custom field, it would look like `customfield_123`.
+         *  `errorMessage` the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don't provide one (Optional).
+
+        ###### Field has a single value ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "fieldHasSingleValue",
+                 "fieldKey": "created",
+                 "excludeSubtasks": "true"
+               }
+             }
+
+        Parameters:
+
+         *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.
+         *  `excludeSubtasks` Option to exclude values copied from sub-tasks. Allowed values: `true`, `false`.
+
+        ###### Field matches regular expression ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "fieldMatchesRegularExpression",
+                 "regexp": "[0-9]{4}",
+                 "fieldKey": "description"
+               }
+             }
+
+        Parameters:
+
+         *  `regexp` the regular expression used to validate the field\\u2019s content.
+         *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.
+
+        ###### Date field comparison ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "dateFieldComparison",
+                 "date1FieldKey": "duedate",
+                 "date2FieldKey": "customfield_10054",
+                 "includeTime": "true",
+                 "conditionSelected": ">="
+               }
+             }
+
+        Parameters:
+
+         *  `date1FieldKey` the ID of the first field to compare. For a custom field, it would look like `customfield_123`.
+         *  `date2FieldKey` the ID of the second field to compare. For a custom field, it would look like `customfield_123`.
+         *  `includeTime` if `true`, compares both date and time. Allowed values: `true`, `false`.
+         *  `conditionSelected` the condition to compare with. Allowed values: `>`, `>=`, `=`, `<=`, `<`, `!=`.
+
+        ###### Date range comparison ######
+
+            {
+               "ruleKey": "system:validate-field-value",
+               "parameters": {
+                 "ruleType": "windowDateComparison",
+                 "date1FieldKey": "customfield_10009",
+                 "date2FieldKey": "customfield_10054",
+                 "numberOfDays": "3"
+               }
+             }
+
+        Parameters:
+
+         *  `date1FieldKey` the ID of the first field to compare. For a custom field, it would look like `customfield_123`.
+         *  `date2FieldKey` the ID of the second field to compare. For a custom field, it would look like `customfield_123`.
+         *  `numberOfDays` maximum number of days past the reference date (`date2FieldKey`) to pass validation.
+
+        This rule is composed by aggregating the following legacy rules:
+
+         *  FieldRequiredValidator
+         *  FieldChangedValidator
+         *  FieldHasSingleValueValidator
+         *  RegexpFieldValidator
+         *  DateFieldValidator
+         *  WindowsDateValidator
+
+        ##### Proforma: Forms attached validator #####
+
+
+        Validates that one or more forms are attached to the issue.
+
+            {
+               "ruleKey" : "system:proforma-forms-attached"
+               "parameters" : {}
+             }
+
+        ##### Proforma: Forms submitted validator #####
+
+
+        Validates that all forms attached to the issue have been submitted.
+
+            {
+               "ruleKey" : "system:proforma-forms-submitted"
+               "parameters" : {}
+             }
+
+        #### Conditions ####
+
+
+        Conditions enable workflow rules that govern whether a transition can
+        execute.
+
+
+        ##### Check field value #####
+
+
+        A condition rule evaluates as true if a specific field's value meets the
+        defined criteria. This rule ensures that an issue can only transition to
+        the next step in the workflow if the field's value matches the desired
+        condition.
+
+            {
+               "ruleKey": "system:check-field-value",
+               "parameters": {
+                 "fieldId": "description",
+                 "fieldValue": "[\"Done\"]",
+                 "comparator": "=",
+                 "comparisonType": "STRING"
+               }
+             }
+
+        Parameters:
+
+         *  `fieldId` The ID of the field to check the value of. For non-system fields, it will look like `customfield_123`. Note: `fieldId` is used interchangeably with the idea of `fieldKey` here, they refer to the same field.
+         *  `fieldValue` the list of values to check against the field\\u2019s value.
+         *  `comparator` The comparison logic. Allowed values: `>`, `>=`, `=`, `<=`, `<`, `!=`.
+         *  `comparisonType` The type of data being compared. Allowed values: `STRING`, `NUMBER`, `DATE`, `DATE_WITHOUT_TIME`, `OPTIONID`.
+
+        ##### Restrict issue transition #####
+
+
+        This rule ensures that issue transitions are restricted based on user
+        accounts, roles, group memberships, and permissions, maintaining control
+        over who can transition an issue. This condition evaluates as `true` if
+        any of the following criteria is met.
+
+            {
+               "ruleKey": "system:restrict-issue-transition",
+               "parameters": {
+                 "accountIds": "allow-reporter,5e68ac137d64450d01a77fa0",
+                 "roleIds": "10002,10004",
+                 "groupIds": "703ff44a-7dc8-4f4b-9aa6-a65bf3574fa4",
+                 "permissionKeys": "ADMINISTER_PROJECTS",
+                 "groupCustomFields": "customfield_10028",
+                 "allowUserCustomFields": "customfield_10072,customfield_10144,customfield_10007",
+                 "denyUserCustomFields": "customfield_10107"
+               }
+             }
+
+        Parameters:
+
+         *  `accountIds` a comma-separated list of the user account IDs. It also allows generic values like: `allow-assignee`, `allow-reporter`, and `accountIds` Note: This is only supported in team-managed projects
+         *  `roleIds` a comma-separated list of role IDs.
+         *  `groupIds` a comma-separated list of group IDs.
+         *  `permissionKeys` a comma-separated list of permission keys. Allowed values: [built-in Jira permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#built-in-permissions).
+         *  `groupCustomFields` a comma-separated list of group custom field IDs.
+         *  `allowUserCustomFields` a comma-separated list of user custom field IDs to allow for issue transition.
+         *  `denyUserCustomFields` a comma-separated list of user custom field IDs to deny for issue transition.
+
+        This rule is composed by aggregating the following legacy rules:
+
+         *  AllowOnlyAssignee
+         *  AllowOnlyReporter
+         *  InAnyProjectRoleCondition
+         *  InProjectRoleCondition
+         *  UserInAnyGroupCondition
+         *  UserInGroupCondition
+         *  PermissionCondtion
+         *  InGroupCFCondition
+         *  UserIsInCustomFieldCondition
+
+        ##### Previous status condition #####
+
+
+        A condition that evaluates based on an issue's previous status(es) and
+        specific criteria.
+
+            {
+               "ruleKey" : "system:previous-status-condition"
+               "parameters" : {
+                 "previousStatusIds" : "10004",
+                 "not": "true",
+                 "mostRecentStatusOnly" : "true",
+                 "includeCurrentStatus": "true",
+                 "ignoreLoopTransitions": "true"
+               }
+             }
+
+        Parameters:
+
+         *  `previousStatusIds` a comma-separated list of status IDs, current only support one ID.
+         *  `not` indicates if the condition should be reversed. When `true` it checks that the issue has not been in the selected statuses. Allowed values: `true`, `false`.
+         *  `mostRecentStatusOnly` when true only considers the most recent status for the condition evaluation. Allowed values: `true`, `false`.
+         *  `includeCurrentStatus` includes the current status when evaluating if the issue has been through the selected statuses. Allowed values: `true`, `false`.
+         *  `ignoreLoopTransitions` ignore loop transitions. Allowed values: `true`, `false`.
+
+        ##### Parent or child blocking condition #####
+
+
+        A condition to block the parent\\u2019s issue transition depending on
+        the child\\u2019s issue status.
+
+            {
+               "ruleKey" : "system:parent-or-child-blocking-condition"
+               "parameters" : {
+                 "blocker" : "CHILD",
+                 "statusIds" : "1,2,3"
+               }
+             }
+
+        Parameters:
+
+         *  `blocker` currently only supports `CHILD`.
+         *  `statusIds` a comma-separated list of status IDs.
+
+        ##### Separation of duties #####
+
+
+        A condition preventing the user from performing, if the user has already
+        performed a transition on the issue.
+
+            {
+               "ruleKey": "system:separation-of-duties",
+               "parameters": {
+                 "fromStatusId": "10161",
+                 "toStatusId": "10160"
+               }
+             }
+
+        Parameters:
+
+         *  `fromStatusId` represents the status ID from which the issue is transitioning. It ensures that the user performing the current transition has not performed any actions when the issue was in the specified status.
+         *  `toStatusId` represents the status ID to which the issue is transitioning. It ensures that the user performing the current transition is not the same user who has previously transitioned the issue.
+
+        ##### Restrict transitions #####
+
+
+        A condition preventing all users from transitioning the issue can also
+        optionally include APIs as well.
+
+            {
+               "ruleKey": "system:restrict-from-all-users",
+               "parameters": {
+                 "restrictMode": "users"
+               }
+             }
+
+        Parameters:
+
+         *  `restrictMode` restricts the issue transition including/excluding APIs. Allowed values: `"users"`, `"usersAndAPI"`.
+
+        ##### Jira Service Management block until approved #####
+
+
+        Block an issue transition until approval. Note: This is only supported
+        in team-managed projects.
+
+            {
+               "ruleKey": "system:jsd-approvals-block-until-approved",
+               "parameters": {
+                 "approvalConfigurationJson": "{"statusExternalUuid...}"
+               }
+             }
+
+        Parameters:
+
+         *  `approvalConfigurationJson` a stringified JSON holding the Jira Service Management approval configuration.
+
+        ##### Jira Service Management block until rejected #####
+
+
+        Block an issue transition until rejected. Note: This is only supported
+        in team-managed projects.
+
+            {
+               "ruleKey": "system:jsd-approvals-block-until-rejected",
+               "parameters": {
+                 "approvalConfigurationJson": "{"statusExternalUuid...}"
+               }
+             }
+
+        Parameters:
+
+         *  `approvalConfigurationJson` a stringified JSON holding the Jira Service Management approval configuration.
+
+        ##### Block in progress approval #####
+
+
+        Condition to block issue transition if there is pending approval. Note:
+        This is only supported in company-managed projects.
+
+            {
+               "ruleKey": "system:block-in-progress-approval",
+               "parameters": {}
+             }
+
+        #### Post functions ####
+
+
+        Post functions carry out any additional processing required after a
+        workflow transition is executed.
+
+
+        ##### Change assignee #####
+
+
+        A post function rule that changes the assignee of an issue after a
+        transition.
+
+            {
+               "ruleKey": "system:change-assignee",
+               "parameters": {
+                 "type": "to-selected-user",
+                 "accountId": "example-account-id"
+               }
+             }
+
+        Parameters:
+
+         *  `type` the parameter used to determine the new assignee. Allowed values: `to-selected-user`, `to-unassigned`, `to-current-user`, `to-current-user`, `to-default-user`, `to-default-user`
+         *  `accountId` the account ID of the user to assign the issue to. This parameter is required only when the type is `"to-selected-user"`.
+
+        ##### Copy field value #####
+
+
+        A post function that automates the process of copying values between
+        fields during a specific transition, ensuring data consistency and
+        reducing manual effort.
+
+            {
+               "ruleKey": "system:copy-value-from-other-field",
+               "parameters": {
+                 "sourceFieldKey": "description",
+                 "targetFieldKey": "components",
+                 "issueSource": "SAME"
+               }
+             }
+
+        Parameters:
+
+         *  `sourceFieldKey` the field key to copy from. For a custom field, it would look like `customfield_123`
+         *  `targetFieldKey` the field key to copy to. For a custom field, it would look like `customfield_123`
+         *  `issueSource` `SAME` or `PARENT`. Defaults to `SAME` if no value is provided.
+
+        ##### Update field #####
+
+
+        A post function that updates or appends a specific field with the given
+        value.
+
+            {
+               "ruleKey": "system:update-field",
+               "parameters": {
+                 "field": "customfield_10056",
+                 "value": "asdf",
+                 "mode": "append"
+               }
+             }
+
+        Parameters:
+
+         *  `field` the ID of the field to update. For a custom field, it would look like `customfield_123`
+         *  `value` the value to update the field with.
+         *  `mode` `append` or `replace`. Determines if a value will be appended to the current value, or if the current value will be replaced.
+
+        ##### Trigger webhook #####
+
+
+        A post function that automatically triggers a predefined webhook when a
+        transition occurs in the workflow.
+
+            {
+               "ruleKey": "system:trigger-webhook",
+               "parameters": {
+                 "webhookId": "1"
+               }
+             }
+
+        Parameters:
+
+         *  `webhookId` the ID of the webhook.
+
+        #### Screen ####
+
+
+        ##### Remind people to update fields #####
+
+
+        A screen rule that prompts users to update a specific field when they
+        interact with an issue screen during a transition. This rule is useful
+        for ensuring that users provide or modify necessary information before
+        moving an issue to the next step in the workflow.
+
+            {
+               "ruleKey": "system:remind-people-to-update-fields",
+               "params": {
+                 "remindingFieldIds": "assignee,customfield_10025",
+                 "remindingMessage": "The message",
+                 "remindingAlwaysAsk": "true"
+               }
+             }
+
+        Parameters:
+
+         *  `remindingFieldIds` a comma-separated list of field IDs. Note: `fieldId` is used interchangeably with the idea of `fieldKey` here, they refer to the same field.
+         *  `remindingMessage` the message to display when prompting the users to update the fields.
+         *  `remindingAlwaysAsk` always remind to update fields. Allowed values: `true`, `false`.
+
+        ##### Shared transition screen #####
+
+
+        A common screen that is shared between transitions in a workflow.
+
+            {
+               "ruleKey": "system:transition-screen",
+               "params": {
+                 "screenId": "3"
+               }
+             }
+
+        Parameters:
+
+         *  `screenId` the ID of the screen.
+
+        #### Connect & Forge ####
+
+
+        ##### Connect rules #####
+
+
+        Validator/Condition/Post function for Connect app.
+
+            {
+               "ruleKey": "connect:expression-validator",
+               "parameters": {
+                 "appKey": "com.atlassian.app",
+                 "config": "",
+                 "id": "90ce590f-e90c-4cd3-8281-165ce41f2ac3",
+                 "disabled": "false",
+                 "tag": ""
+               }
+             }
+
+        Parameters:
+
+         *  `ruleKey` Validator: `connect:expression-validator`, Condition: `connect:expression-condition`, and Post function: `connect:remote-workflow-function`
+         *  `appKey` the reference to the Connect app
+         *  `config` a JSON payload string describing the configuration
+         *  `id` the ID of the rule
+         *  `disabled` determine if the Connect app is disabled. Allowed values: `true`, `false`.
+         *  `tag` additional tags for the Connect app
+
+        ##### Forge rules #####
+
+
+        Validator/Condition/Post function for Forge app.
+
+            {
+               "ruleKey": "forge:expression-validator",
+               "parameters": {
+                 "key": "ari:cloud:ecosystem::extension/{appId}/{environmentId}/static/{moduleKey}",
+                 "config": "{"searchString":"workflow validator"}",
+                 "id": "a865ddf6-bb3f-4a7b-9540-c2f8b3f9f6c2"
+               }
+             }
+
+        Parameters:
+
+         *  `ruleKey` Validator: `forge:expression-validator`, Condition: `forge:expression-condition`, and Post function: `forge:workflow-post-function`
+         *  `key` the identifier for the Forge app
+         *  `config` the persistent stringified JSON configuration for the Forge rule
+         *  `id` the ID of the Forge rule
+      operationId: workflowCapabilities
+      parameters:
+        - in: query
+          name: workflowId
+          schema:
+            type: string
+        - in: query
+          name: projectId
+          schema:
+            type: string
+        - in: query
+          name: issueTypeId
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"connectRules":[{"addonKey":"com.atlassian.jira.refapp","createUrl":"/validators/jira-expression/create?id={validator.id}","description":"Validates
+                if the given Jira expression is
+                true.","editUrl":"/validators/jira-expression/edit?id={validator.id}","moduleKey":"jiraExpressionValidator","name":"Jira
+                expression validator (by
+                APPNAME)","ruleKey":"connect:expression-validator","ruleType":"Validator","viewUrl":"/validators/jira-expression/view?id={validator.id}"}],"editorScope":"GLOBAL","forgeRules":[{"description":"A
+                Jira workflow validator
+                example.","id":"ari:cloud:ecosystem::extension/9df6d15f-1bbe-443e-be08-150309e8dbb0/f6a3bed3-737f-4e7a-8942-130df302b749/static/workflow-validator-example-workflow-validator","name":"workflow-validator","ruleKey":"forge:expression-validator","ruleType":"Validator"}],"projectTypes":["software","business"],"systemRules":[{"description":"Automatically
+                assign a request to someone after moving the request using a
+                particular
+                transition.","incompatibleRuleKeys":[],"isAvailableForInitialTransition":true,"isVisible":true,"name":"Assign
+                a
+                request","ruleKey":"system:change-assignee","ruleType":"Function"}],"triggerRules":[{"availableTypes":[{"description":"Automatically
+                transitions the issue when a related branch is created in a
+                connected repository","name":"Branch
+                created","type":"com.atlassian.jira.plugins.jira-development-integration-plugin:branch-created-trigger"}],"ruleKey":"system:development-triggers"}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowCapabilities'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing,
+            or the caller doesn't have permissions to perform the operation.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Get Available Workflow Capabilities '
+      tags:
+        - Available
+        - Capabilities
+        - REST
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - read:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/create:
+    post:
+      deprecated: false
+      description: |-
+        Create workflows and related statuses.
+
+        **[Permissions](#permissions) required:**
+
+         *  *Administer Jira* project permission to create all, including global-scoped, workflows
+         *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: createWorkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              scope:
+                type: GLOBAL
+              statuses:
+                - description: ''
+                  name: To Do
+                  statusCategory: TODO
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - description: ''
+                  name: In Progress
+                  statusCategory: IN_PROGRESS
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - description: ''
+                  name: Done
+                  statusCategory: DONE
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+              workflows:
+                - description: ''
+                  name: Software workflow 1
+                  startPointLayout:
+                    x: -100.00030899047852
+                    'y': -153.00020599365234
+                  statuses:
+                    - layout:
+                        x: 114.99993896484375
+                        'y': -16
+                      properties: {}
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    - layout:
+                        x: 317.0000915527344
+                        'y': -16
+                      properties: {}
+                      statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                    - layout:
+                        x: 508.000244140625
+                        'y': -16
+                      properties: {}
+                      statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  transitions:
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '1'
+                      name: Create
+                      properties: {}
+                      to:
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      triggers: []
+                      type: INITIAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '11'
+                      name: To Do
+                      properties: {}
+                      to:
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '21'
+                      name: In Progress
+                      properties: {}
+                      to:
+                        statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '31'
+                      name: Done
+                      properties: {}
+                      to:
+                        statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"statuses":[{"description":"","id":"10001","name":"To
+                Do","scope":{"type":"GLOBAL"},"statusCategory":"TODO","statusReference":"10001","usages":[]},{"description":"","id":"10002","name":"In
+                Progress","scope":{"type":"GLOBAL"},"statusCategory":"IN_PROGRESS","statusReference":"10002","usages":[]},{"description":"","id":"10003","name":"Done","scope":{"type":"GLOBAL"},"statusCategory":"DONE","statusReference":"10003","usages":[]}],"workflows":[{"description":"","id":"b9ff2384-d3b6-4d4e-9509-3ee19f607168","isEditable":true,"name":"Software
+                workflow
+                1","scope":{"type":"GLOBAL"},"startPointLayout":{"x":-100.00030899047852,"y":-153.00020599365234},"statuses":[{"deprecated":false,"layout":{"x":114.99993896484375,"y":-16.0},"properties":{},"statusReference":"10001"},{"deprecated":false,"layout":{"x":317.0000915527344,"y":-16.0},"properties":{},"statusReference":"10002"},{"deprecated":false,"layout":{"x":508.000244140625,"y":-16.0},"properties":{},"statusReference":"10003"}],"transitions":[{"actions":[],"description":"","from":[],"id":"31","name":"Done","properties":{},"to":{"statusReference":"10003"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"11","name":"To
+                Do","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"21","name":"In
+                Progress","properties":{},"to":{"statusReference":"10002"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"1","name":"Create","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"INITIAL","validators":[]}],"usages":[],"version":{"id":"f010ac1b-3dd3-43a3-aa66-0ee8a447f76e","versionNumber":0}}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowCreateResponse'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing,
+            or the caller doesn't have permissions to perform the operation.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Bulk Create Workflows '
+      tags:
+        - Bulk
+        - REST
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/create/validation:
+    post:
+      deprecated: false
+      description: |-
+        Validate the payload for bulk create workflows.
+
+        **[Permissions](#permissions) required:**
+
+         *  *Administer Jira* project permission to create all, including global-scoped, workflows
+         *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: validateCreateWorkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              payload:
+                scope:
+                  type: GLOBAL
+                statuses:
+                  - description: ''
+                    name: To Do
+                    statusCategory: TODO
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  - description: ''
+                    name: In Progress
+                    statusCategory: IN_PROGRESS
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  - description: ''
+                    name: Done
+                    statusCategory: DONE
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                workflows:
+                  - description: ''
+                    name: Software workflow 1
+                    startPointLayout:
+                      x: -100.00030899047852
+                      'y': -153.00020599365234
+                    statuses:
+                      - layout:
+                          x: 114.99993896484375
+                          'y': -16
+                        properties: {}
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      - layout:
+                          x: 317.0000915527344
+                          'y': -16
+                        properties: {}
+                        statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                      - layout:
+                          x: 508.000244140625
+                          'y': -16
+                        properties: {}
+                        statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                    transitions:
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '1'
+                        name: Create
+                        properties: {}
+                        to:
+                          statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                        triggers: []
+                        type: INITIAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '11'
+                        name: To Do
+                        properties: {}
+                        to:
+                          statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '21'
+                        name: In Progress
+                        properties: {}
+                        to:
+                          statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '31'
+                        name: Done
+                        properties: {}
+                        to:
+                          statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+              validationOptions:
+                levels:
+                  - ERROR
+                  - WARNING
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateValidateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"errors":[{"code":"NON_UNIQUE_STATUS_NAME","elementReference":{"statusReference":"1f0443ff-47e4-4306-9c26-0af696059a43"},"level":"ERROR","message":"You
+                must use a unique status name.","type":"STATUS"}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowValidationErrorList'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing,
+            or the caller doesn't have permissions to perform the operation.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Validate Create Workflows '
+      tags:
+        - Ation
+        - REST
+        - Val
+        - Validate
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/update:
+    post:
+      deprecated: false
+      description: |-
+        Update workflows and related statuses.
+
+        **[Permissions](#permissions) required:**
+
+         *  *Administer Jira* project permission to create all, including global-scoped, workflows
+         *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: updateWorkflows
+      parameters:
+        - description: >-
+            Use [expand](#expansion) to include additional information in the
+            response. This parameter accepts a comma-separated list. Expand
+            options include:
+
+             *  `workflows.usages` Returns the project and issue types that each workflow is associated with.
+             *  `statuses.usages` Returns the project and issue types that each status is associated with.
+          in: query
+          name: expand
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              statuses:
+                - description: ''
+                  name: To Do
+                  statusCategory: TODO
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - description: ''
+                  name: In Progress
+                  statusCategory: IN_PROGRESS
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - description: ''
+                  name: Done
+                  statusCategory: DONE
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+              workflows:
+                - defaultStatusMappings:
+                    - newStatusReference: '10011'
+                      oldStatusReference: '10010'
+                  description: ''
+                  id: '10001'
+                  startPointLayout:
+                    x: -100.00030899047852
+                    'y': -153.00020599365234
+                  statusMappings:
+                    - issueTypeId: '10002'
+                      projectId: '10003'
+                      statusMigrations:
+                        - newStatusReference: '10011'
+                          oldStatusReference: '10010'
+                  statuses:
+                    - layout:
+                        x: 114.99993896484375
+                        'y': -16
+                      properties: {}
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    - layout:
+                        x: 317.0000915527344
+                        'y': -16
+                      properties: {}
+                      statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                    - layout:
+                        x: 508.000244140625
+                        'y': -16
+                      properties: {}
+                      statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  transitions:
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '1'
+                      name: Create
+                      properties: {}
+                      to:
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      triggers: []
+                      type: INITIAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '11'
+                      name: To Do
+                      properties: {}
+                      to:
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '21'
+                      name: In Progress
+                      properties: {}
+                      to:
+                        statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+                    - actions: []
+                      description: ''
+                      from: []
+                      id: '31'
+                      name: Done
+                      properties: {}
+                      to:
+                        statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                      triggers: []
+                      type: GLOBAL
+                      validators: []
+                  version:
+                    id: 6f6c988b-2590-4358-90c2-5f7960265592
+                    versionNumber: 1
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"statuses":[{"description":"","id":"10001","name":"To
+                Do","scope":{"type":"GLOBAL"},"statusCategory":"TODO","statusReference":"10001","usages":[]},{"description":"","id":"10002","name":"In
+                Progress","scope":{"type":"GLOBAL"},"statusCategory":"IN_PROGRESS","statusReference":"10002","usages":[]},{"description":"","id":"10003","name":"Done","scope":{"type":"GLOBAL"},"statusCategory":"DONE","statusReference":"10003","usages":[]}],"taskId":"10001","workflows":[{"description":"","id":"b9ff2384-d3b6-4d4e-9509-3ee19f607168","isEditable":true,"name":"Software
+                workflow
+                1","scope":{"type":"GLOBAL"},"startPointLayout":{"x":-100.00030899047852,"y":-153.00020599365234},"statuses":[{"deprecated":false,"layout":{"x":114.99993896484375,"y":-16.0},"properties":{},"statusReference":"10001"},{"deprecated":false,"layout":{"x":317.0000915527344,"y":-16.0},"properties":{},"statusReference":"10002"},{"deprecated":false,"layout":{"x":508.000244140625,"y":-16.0},"properties":{},"statusReference":"10003"}],"transitions":[{"actions":[],"description":"","from":[],"id":"31","name":"Done","properties":{},"to":{"statusReference":"10003"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"11","name":"To
+                Do","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"21","name":"In
+                Progress","properties":{},"to":{"statusReference":"10002"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"1","name":"Create","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"INITIAL","validators":[]}],"usages":[],"version":{"id":"f010ac1b-3dd3-43a3-aa66-0ee8a447f76e","versionNumber":0}}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowUpdateResponse'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing,
+            or the caller doesn't have permissions to perform the operation.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Bulk Update Workflows '
+      tags:
+        - Bulk
+        - REST
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/update/validation:
+    post:
+      deprecated: false
+      description: |-
+        Validate the payload for bulk update workflows.
+
+        **[Permissions](#permissions) required:**
+
+         *  *Administer Jira* project permission to create all, including global-scoped, workflows
+         *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: validateUpdateWorkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              payload:
+                statuses:
+                  - description: ''
+                    name: To Do
+                    statusCategory: TODO
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  - description: ''
+                    name: In Progress
+                    statusCategory: IN_PROGRESS
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  - description: ''
+                    name: Done
+                    statusCategory: DONE
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                workflows:
+                  - defaultStatusMappings:
+                      - newStatusReference: '10011'
+                        oldStatusReference: '10010'
+                    description: ''
+                    id: '10001'
+                    startPointLayout:
+                      x: -100.00030899047852
+                      'y': -153.00020599365234
+                    statusMappings:
+                      - issueTypeId: '10002'
+                        projectId: '10003'
+                        statusMigrations:
+                          - newStatusReference: '10011'
+                            oldStatusReference: '10010'
+                    statuses:
+                      - layout:
+                          x: 114.99993896484375
+                          'y': -16
+                        properties: {}
+                        statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                      - layout:
+                          x: 317.0000915527344
+                          'y': -16
+                        properties: {}
+                        statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                      - layout:
+                          x: 508.000244140625
+                          'y': -16
+                        properties: {}
+                        statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                    transitions:
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '1'
+                        name: Create
+                        properties: {}
+                        to:
+                          statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                        triggers: []
+                        type: INITIAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '11'
+                        name: To Do
+                        properties: {}
+                        to:
+                          statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '21'
+                        name: In Progress
+                        properties: {}
+                        to:
+                          statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+                      - actions: []
+                        description: ''
+                        from: []
+                        id: '31'
+                        name: Done
+                        properties: {}
+                        to:
+                          statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                        triggers: []
+                        type: GLOBAL
+                        validators: []
+                    version:
+                      id: 6f6c988b-2590-4358-90c2-5f7960265592
+                      versionNumber: 1
+              validationOptions:
+                levels:
+                  - ERROR
+                  - WARNING
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdateValidateRequestBean'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: >-
+                {"errors":[{"code":"NON_UNIQUE_STATUS_NAME","elementReference":{"statusReference":"1f0443ff-47e4-4306-9c26-0af696059a43"},"level":"ERROR","message":"You
+                must use a unique status name.","type":"STATUS"}]}
+              schema:
+                $ref: '#/components/schemas/WorkflowValidationErrorList'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing,
+            or the caller doesn't have permissions to perform the operation.
+      security:
+        - basicAuth: []
+        - OAuth2:
+            - manage:jira-configuration
+      summary: 'Validate Update Workflows '
+      tags:
+        - Ation
+        - REST
+        - Val
+        - Validate
+        - Workflows
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+        - scheme: OAuth2
+          scopes:
+            - manage:jira-configuration
+          state: Current
+        - scheme: OAuth2
+          scopes:
+            - write:workflow:jira
+          state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+servers:
+  - url: https://your-domain.atlassian.net
+tags: []
+x-atlassian-narrative:
+  documents:
+    - anchor: about
+      body: >-
+        The Jira REST API enables you to interact with Jira programmatically.
+        Use this API to 
+
+        [build
+        apps](https://developer.atlassian.com/cloud/jira/platform/integrating-with-jira-cloud/),
+        script interactions with 
+
+        Jira, or develop any other type of integration. This page documents the
+        REST resources available in Jira Cloud, including 
+
+        the HTTP response codes and example requests and responses.
+      title: About
+    - anchor: version
+      body: >
+        This documentation is for **version 3** of the Jira Cloud platform REST
+        API, which is the latest version
+
+        but is in **beta**. [Version
+        2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) and 
+
+        version 3 of the API offer the same collection of operations. However,
+        version 3 provides support for 
+
+        the [Atlassian Document
+        Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) 
+
+        (ADF) in: 
+
+        - `body` in comments, including where comments are used in issue, issue
+        link, and transition resources.
+
+        - `comment` in worklogs.
+
+        - `description` and `environment` fields in issues.
+
+        - `textarea` type custom fields (multi-line text fields) in issues.
+        Single line custom fields 
+          (`textfield`) accept a string and don't handle Atlassian Document Format content.
+
+        However, these new features are under development and may change.
+      title: Version
+    - anchor: authentication
+      body: >
+        ### Forge apps
+
+
+        For Forge apps, [REST API
+        scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) 
+
+        are used when authenticating with Jira Cloud platform. See [Add scopes
+        to call an Atlassian REST
+        API](https://developer.atlassian.com/platform/forge/add-scopes-to-call-an-atlassian-rest-api/)
+        for more details.
+
+
+        The URIs for Forge app REST API calls have this structure:
+
+
+        `/rest/api/3/<resource-name>`
+
+
+        For example, `/rest/api/3/issue/DEMO-1`
+
+
+        ### Connect apps
+
+
+        For Connect apps, authentication (JWT-based) is built into the Connect
+        libraries. Authorization is implemented using either 
+
+        scopes (shown as _App scope required_ for operations on this page) or
+        user impersonation. See 
+
+        [Security for Connect
+        apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/) 
+
+        for details.
+
+
+        The URIs for Connect app REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+
+
+        ### Other integrations
+
+
+        For integrations that are not Forge or Connect apps, use OAuth 2.0
+        authorization code grants (3LO) for security 
+
+        (3LO scopes are shown as for operations _OAuth scopes required_). See 
+
+        [OAuth 2.0 (3LO)
+        apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) 
+
+        for details.
+
+
+        The URIs for OAuth 2.0 (3LO) app REST API calls have this structure:
+
+
+        `https://api.atlassian.com/ex/jira/<cloudId>/rest/api/3/<resource-name>`
+
+
+        For example,
+        `https://api.atlassian.com/ex/jira/35273b54-3f06-40d2-880f-dd28cf8daafa/rest/api/3/issue/DEMO-1`
+
+
+        ### Ad-hoc API calls
+
+
+        For personal scripts, bots, and ad-hoc execution of the REST APIs use
+        basic authentication. See [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
+        for details. 
+
+
+        The URIs for basic authentication REST API calls have this structure:
+
+
+        `https://<site-url>/rest/api/3/<resource-name>`
+
+
+        For example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`
+      title: Authentication and authorization
+    - anchor: permissions
+      body: >
+        ### Operation permissions
+
+
+        Most operations in this API require permissions. The calling user must
+        have the required permissions for an operation to 
+
+        use it. Note that for Connect apps, the app user must have the required
+        permissions for the operation and the app must 
+
+        have scopes that permit the operation.
+
+
+        A permission can be granted to a group, project role, or issue role that
+        the user is a member of, or granted directly to a user. 
+
+        See [Permissions overview](https://confluence.atlassian.com/x/FQiiLQ)
+        for details. The most common permissions are:
+
+
+        - **Administer the Cloud site**: Users in the _site-admins_ group have
+        this 
+
+        permission. See [Manage
+        groups](https://confluence.atlassian.com/x/24xjL) for details.
+
+        - **Administer Jira**: Granted by the _Jira Administrators_ global
+        permission. There is a default group for this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+        - **Administer a project in Jira**: Granted by the _Administer projects_
+        project permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access a project in Jira**: Granted by the _Browse projects_ project
+        permission for a project. This can be 
+
+        granted to a user, a group, a project role, and more. 
+
+        See [Managing project
+        permissions](https://confluence.atlassian.com/x/yodKLg) for details.
+
+        - **Access Jira**: Granted by the _Jira Users_ global permission. Users
+        in the default product access group (for example, 
+
+        _jira-software-users-acmesite_) have this permission. 
+
+        See [Manage groups](https://confluence.atlassian.com/x/24xjL) and 
+
+        [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg)
+        for details.
+
+
+        ### Anonymous access
+
+
+        Some operations provide support for anonymous access. However, anonymous
+        access is only available if 
+
+        the Jira permission needed to access the object or records returned by
+        the operation is granted to 
+
+        the _Public_ group. See [Allowing anonymous access to your
+        project](https://confluence.atlassian.com/x/GDxxLg) 
+
+        for details.
+
+
+        If an operation is called anonymously and anonymous access is not
+        available, the operation will return 
+
+        an error. Note that not all operations that correspond to objects that
+        can be given public access 
+
+        provide for anonymous access.
+      title: Permissions
+    - anchor: expansion
+      body: >+
+        ### Expansion
+
+
+        The Jira REST API uses resource expansion, which means that some parts
+        of a resource are not returned unless specified 
+
+        in the request. This simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the expand query
+        parameter and specify the object(s) to be expanded. 
+
+        If you need to expand nested objects, use the `.` dot notation. If you
+        need to expand multiple objects, use a 
+
+        comma-separated list. 
+
+
+        For example, the following request expands the `names` and
+        `renderedFields` properties for the _JRACLOUD-34423_ issue:
+
+
+        `GET issue/JRACLOUD-34423?expand=names,renderedFields`
+
+
+        To discover which object can be expanded, refer to the `expand` property
+        in the object. 
+
+        In the JSON example below, the resource declares `widgets` as
+        expandable.
+
+
+        ```json
+
+        {
+          "expand": "widgets", 
+          "self": "https://your-domain.atlassian.net/rest/api/3/resource/KEY-1", 
+          "widgets": {
+            "widgets": [],
+            "size": 5
+           }
+        }
+
+        ```
+
+
+        ### Pagination
+
+
+        The Jira REST API uses pagination to improve performance. Pagination is
+        enforced for operations that could return a large 
+
+        collection of items. When you make a request to a paginated resource,
+        the response wraps the returned array of values in 
+
+        a JSON object with paging metadata. For example:
+
+
+        ```json
+
+        {
+            "startAt" : 0,
+            "maxResults" : 10,
+            "total": 200,
+            "isLast": false,
+            "values": [
+                { /* result 0 */ },
+                { /* result 1 */ },
+                { /* result 2 */ }
+            ]
+        }
+
+        ```
+
+
+        *   `startAt` is the index of the first item returned in the page.
+
+        *   `maxResults` is the maximum number of items that a page can return.
+        Each operation can have a different limit for
+            the number of items returned, and these limits may change without notice. To find the maximum number of items 
+            that an operation could return, set `maxResults` to a large number—for example, over 1000—and if the returned value of `maxResults` is less than the requested value, the returned value is the maximum.
+        *    `total` is the total number of items contained in all pages. This
+        number **_may change_** as the client 
+
+        requests the subsequent pages, therefore the client should always assume
+        that the requested page can be empty. Note 
+
+        that this property is not returned for all operations.
+
+        *   `isLast` indicates whether the page returned is the last one. Note
+        that this property is not returned for all operations.
+
+
+        ### Ordering
+
+
+        Some operations support ordering the elements of a response by a field.
+        Check the documentation for the operation to 
+
+        confirm whether ordering of a response is supported and which fields can
+        be used. Responses are listed in ascending order 
+
+        by default. You can change the order using the `orderby` query parameter
+        with a `-` or `+` symbol. For example:
+
+
+        *   `?orderBy=name` to order by `name` field ascending.
+
+        *   `?orderBy=+name` to order by `name` field ascending.
+
+        *   `?orderBy=-name` to order by `name` field descending.
+
+
+      title: Expansion, pagination, and ordering
+    - anchor: timestamps
+      body: >
+        By default, top-level timestamps (e.g. updated and created) are returned
+        in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format, in the system
+        default user time zone.
+
+
+        To return date time data in the logged in user's timezone, please refer
+        to `renderedFields` property under the `expand` query parameter in
+        relevant APIs.
+      title: Timestamps
+    - anchor: special-request-headers
+      body: >-
+        The following request and response headers define important metadata for
+        the Jira Cloud REST API resources.
+
+
+        -   `X-Atlassian-Token` (request): Operations that accept
+        multipart/form-data must include the `X-Atlassian-Token: no-check`
+
+        header in requests. Otherwise the request is blocked by cross-site
+        request forgery (CSRF/XSRF) protection.
+
+        -   `X-Force-Accept-Language` (request): controls how the standard HTTP
+        `Accept-Language` header is processed.
+
+        By default `Accept-Language` is ignored and the response is in the
+        language configured in the user's profile or,
+
+        when no language is configured for the user, the default Jira instance
+        language. For the response to recognize
+
+        `Accept-Language` send `X-Force-Accept-Language = true` as well. If
+        `Accept-Language` requests a language that Jira
+
+        can return the response is in that language, otherwise Jira returns the
+        response in the default language. If
+
+        `Accept-Language` is not specified the response is in the default
+        language.
+
+        -   `X-AAccountId` (response): This response header contains the
+        Atlassian account ID of the authenticated user.
+      title: Special headers
+    - anchor: anonymous-operations
+      body: |2-
+         Jira provides for all permissions, except the [global permission](https://confluence.atlassian.com/x/x4dKLg) Administer Jira, to be assigned to *Anyone*. Once a permission is assigned to *Anyone*, anyone knowing a project's URL is able to use the features in Jira enabled by the permission. However, the Jira REST API does not enable anonymous access for operations by default. This means that an anonymous user who may be able to perform an action through Jira, may not be able to perform the same action where it's enabled by the REST API. 
+
+         The operations that provide anonymous access are annotated "This operation can be accessed anonymously."
+      title: Anonymous operations
+    - anchor: async-operations
+      body: >-
+        Some Jira REST API operations may trigger long-running or
+        computationally expensive tasks. In these cases, the operation 
+
+        will schedule an asynchronous task and return a `303 (See Other)`
+        response, indicating the location of the queued task 
+
+        in the `Location` header. You can query this task to get progress
+        updates.
+
+
+        When the task finishes, the response object will contain the `result`
+        field. The content of the field is specific to the 
+
+        operation that created the task. Refer to the operation’s documentation
+        for more information.
+
+
+        Note that asynchronous tasks are not guaranteed to be run in order. In
+        other words, if you need your tasks to execute 
+
+        in a certain order, you should start a task only after the prerequisite
+        task(s) have finished.
+      title: Asynchronous operations
+    - anchor: experimental
+      body: >
+        Features and methods marked as experimental may change without notice.
+        Feedback on experimental functionality is welcome. 
+
+        Report your suggestions and bugs in the [ACJIRA
+        project](https://ecosystem.atlassian.net/projects/ACJIRA) (preferred) or
+        use the 
+
+        **Give docs feedback** link at the top of this page. 
+      title: Experimental features
+    - anchor: status-codes
+      body: >-
+        The Jira Cloud platform REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Operations that return an error status code may also return a response
+        body containing details of the error or errors. 
+
+        The schema for the response body is shown below:
+
+
+
+        ```json
+
+        {
+          "id": "https://docs.atlassian.com/jira/REST/schema/error-collection#",
+          "title": "Error Collection",
+          "type": "object",
+          "properties": {
+            "errorMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "errors": {
+              "type": "object",
+              "patternProperties": {
+                ".+": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "status": { 
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        }
+
+        ```
+      title: Status codes
