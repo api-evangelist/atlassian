@@ -26,6 +26,7 @@ Atlassian is a software company that develops collaboration, productivity, and p
 This API resource provides the functionality to retrieve and update configuration settings for an announcement banner on a website or application. Users can access this resource to manage the appearance and content of the banner displayed to their audience.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-announcement-banner/#api-group-announcement-banner](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-announcement-banner/#api-group-announcement-banner)
+r
 
 #### Tags
 
@@ -61,6 +62,7 @@ This resource represents the values of custom fields added by Forge apps. Use it
 This resource represents app properties. Use it to store arbitrary data for your Connect app.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-app-properties/#api-group-app-properties](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-app-properties/#api-group-app-properties)
+r
 
 #### Tags
 
@@ -79,6 +81,7 @@ This resource represents app properties. Use it to store arbitrary data for your
 This resource represents application roles. Use it to get details of an application role or all application roles.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-group-application-roles](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-group-application-roles)
+r
 
 #### Tags
 
@@ -96,6 +99,7 @@ This resource represents application roles. Use it to get details of an applicat
 This resource represents issue attachments and the attachment settings for Jira. Use it to get the metadata for an attachment, delete an attachment, and view the metadata for the contents of an attachment. Also, use it to get the attachment settings for Jira.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-group-issue-attachments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-group-issue-attachments)
+r
 
 #### Tags
 
@@ -123,6 +127,7 @@ Atlassian Audit (Advanced Auditing for DC customers) is a cross-product feature 
 
 
 **Human URL:** [https://developer.atlassian.com/server/framework/atlassian-sdk/audit/](https://developer.atlassian.com/server/framework/atlassian-sdk/audit/)
+r
 
 #### Tags
 
@@ -140,6 +145,7 @@ Atlassian Audit (Advanced Auditing for DC customers) is a cross-product feature 
 This resource represents system and custom avatars. Use it to obtain the details of system or custom avatars, add and remove avatars from a project or issue type, and obtain avatar images.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-group-avatars](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-group-avatars)
+r
 
 #### Tags
 
@@ -155,6 +161,7 @@ This resource represents system and custom avatars. Use it to obtain the details
 Use to manage the classification levels that are used across Jira.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-classification-levels/#api-group-classification-levels](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-classification-levels/#api-group-classification-levels)
+r
 
 #### Tags
 
@@ -167,6 +174,7 @@ Use to manage the classification levels that are used across Jira.
 This resource represents issue comments. Use it to get, create, update, and delete a comment from an issue, get all comments from issue, get a list of comments by comment ID.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-group-issue-comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-group-issue-comments)
+r
 
 #### Tags
 
@@ -185,6 +193,7 @@ This resource represents issue comments. Use it to get, create, update, and dele
 This resource represents project components. Use it to get, create, update, and delete project components. Also get components for project and get a count of issues by component.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-group-project-components](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-group-project-components)
+r
 
 #### Tags
 
@@ -203,6 +212,7 @@ This resource represents project components. Use it to get, create, update, and 
 This resource represents various settings in Jira. Use it to get and update Jira settings and properties.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-group-jira-settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-group-jira-settings)
+r
 
 #### Tags
 
@@ -225,6 +235,7 @@ This resource represents various settings in Jira. Use it to get and update Jira
 This resource represents custom issue field select list options created in Jira or using the REST API. This resource supports the following field types Checkboxes, Radio Buttons, Select List (single choice), Select List (multiple choices), Select List (cascading).
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-group-issue-custom-field-options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-group-issue-custom-field-options)
+r
 
 #### Tags
 
@@ -241,6 +252,7 @@ This resource represents custom issue field select list options created in Jira 
 This resource represents dashboards. Use it to obtain the details of dashboards as well as get, create, update, or remove item properties and gadgets from dashboards.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-group-dashboards](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-group-dashboards)
+r
 
 #### Tags
 
@@ -269,6 +281,7 @@ Atlassian is adding the ability for customers to block app access to data using 
 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/data-security-policy-developer-guide/](https://developer.atlassian.com/cloud/jira/platform/data-security-policy-developer-guide/)
+r
 
 #### Tags
 
@@ -286,6 +299,7 @@ Atlassian is adding the ability for customers to block app access to data using 
 Used to manage events that are aavailable across the resources made available via Jira API.
 
 **Human URL:** [https://developer.atlassian.com/platform/forge/events-reference/jira/](https://developer.atlassian.com/platform/forge/events-reference/jira/)
+r
 
 #### Tags
 
@@ -298,6 +312,7 @@ Used to manage events that are aavailable across the resources made available vi
 Jira expressions is a domain-specific language designed with Jira in mind, evaluated on the Jira Cloud side. It can be used to evaluate custom code in the context of Jira entities.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-expressions/#api-group-jira-expressions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-expressions/#api-group-jira-expressions)
+r
 
 #### Tags
 
@@ -316,6 +331,7 @@ Jira expressions is a domain-specific language designed with Jira in mind, evalu
 This resource represents issue fields, both system and custom fields. Use it to get fields, field configurations, and create custom fields.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-group-issue-fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-group-issue-fields)
+r
 
 #### Tags
 
@@ -362,6 +378,7 @@ This resource represents issue fields, both system and custom fields. Use it to 
 This resource represents issue field configurations. Use it to get, set, and delete field configurations and field configuration schemes.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-group-issue-field-configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-group-issue-field-configurations)
+r
 
 #### Tags
 
@@ -379,6 +396,7 @@ This resource represents issue field configurations. Use it to get, set, and del
 This resource represents issue field configurations. Use it to get, set, and delete field configurations and field configuration schemes.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-group-issue-field-configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-group-issue-field-configurations)
+r
 
 #### Tags
 
@@ -406,6 +424,7 @@ OpenAPI
 This resource represents filters. Use it to get, create, update, or delete filters. Also use it to configure the columns for a filter and set favorite filters.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-group-filters](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-group-filters)
+r
 
 #### Tags
 
@@ -435,6 +454,7 @@ This resource represents filters. Use it to get, create, update, or delete filte
 This resource represents groups of users. Use it to get, create, find, and delete groups as well as add and remove users from groups. ([WARNING] The standard Atlassian group names are default names only and can be edited or deleted. 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-groups/#api-group-groups](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-groups/#api-group-groups)
+r
 
 #### Tags
 
@@ -453,6 +473,7 @@ This resource represents groups of users. Use it to get, create, find, and delet
 This resource represents groups of users. Use it to get, create, find, and delete groups as well as add and remove users from groups. ([WARNING] The standard Atlassian group names are default names only and can be edited or deleted. 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-group-groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-group-groups)
+r
 
 #### Tags
 
@@ -469,6 +490,7 @@ This resource represents groups of users. Use it to get, create, find, and delet
 This resource represents a list of users and a list of groups. Use it to obtain the details to populate user and group picker suggestions list.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-group-and-user-picker/#api-group-group-and-user-picker](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-group-and-user-picker/#api-group-group-and-user-picker)
+r
 
 #### Tags
 
@@ -481,6 +503,7 @@ This resource represents a list of users and a list of groups. Use it to obtain 
 This resource represents license metrics. Use it to get available metrics for Jira licences.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-license-metrics/#api-group-license-metrics](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-license-metrics/#api-group-license-metrics)
+r
 
 #### Tags
 
@@ -496,6 +519,7 @@ This resource represents license metrics. Use it to get available metrics for Ji
 Used to managine issues for Jira resources.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-group-issues](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-group-issues)
+r
 
 #### Tags
 
@@ -550,6 +574,7 @@ Used to managine issues for Jira resources.
 This resource represents links between issues. Use it to get, create, and delete links between issues.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-links/#api-group-issue-links](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-links/#api-group-issue-links)
+r
 
 #### Tags
 
@@ -565,6 +590,7 @@ This resource represents links between issues. Use it to get, create, and delete
 This resource represents links between issues. Use it to get, create, and delete links between issues.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-links/#api-group-issue-links](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-links/#api-group-issue-links)
+r
 
 #### Tags
 
@@ -583,6 +609,7 @@ This resource represents issue link types. Use it to get, create, update, and de
 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-link-types/#api-group-issue-link-types](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-link-types/#api-group-issue-link-types)
+r
 
 #### Tags
 
@@ -599,6 +626,7 @@ This resource represents issue link types. Use it to get, create, update, and de
 This is for managing the issues across Jira resources.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-group-issues](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-group-issues)
+r
 
 #### Tags
 
@@ -616,6 +644,7 @@ This is for managing the issues across Jira resources.
 This resource represents issue security schemes. Use it to get an issue security scheme or a list of issue security schemes. Issue security schemes control which users or groups of users can view an issue. When an issue security scheme is associated with a project, its security levels can be applied to issues in that project. Sub-tasks also inherit the security level of their parent issue.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-group-issue-security-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-group-issue-security-schemes)
+r
 
 #### Tags
 
@@ -642,6 +671,7 @@ This resource represents issue security schemes. Use it to get an issue security
 This resource represents issues types. Use it to get, create, update, and delete issue types, get all issue types for a user, get alternative issue types, and set an avatar for an issue type.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-types/#api-group-issue-types](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-types/#api-group-issue-types)
+r
 
 #### Tags
 
@@ -665,6 +695,7 @@ This resource represents issues types. Use it to get, create, update, and delete
 This resource represents issue type schemes in classic projects. Use it to get issue type schemes and a list of the projects that use them, associate issue type schemes with projects, add issue types to issue type schemes, delete issue types from issue type schemes, create, update, and delete issue type schemes, change the order of issue types in issue type schemes.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-group-issue-type-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-group-issue-type-schemes)
+r
 
 #### Tags
 
@@ -691,6 +722,7 @@ This resource represents issue type schemes in classic projects. Use it to get i
 This resource represents issue type screen schemes. Use it to get issue type screen schemes and a list of the projects that use them, create issue type screen schemes, update issue type screen schemes, delete issue type screen schemes, associate issue type screen schemes with projects, append issue type to screen scheme mappings to issue type screen schemes, remove issue type to screen scheme mappings from issue type screen schemes., update default screen scheme of issue type screen scheme.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-group-issue-type-screen-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-group-issue-type-screen-schemes)
+r
 
 #### Tags
 
@@ -716,6 +748,7 @@ This resource represents issue type screen schemes. Use it to get issue type scr
 This resource represents various ways to search for issues. Use it to search for issues with a JQL query and find issues to populate an issue picker.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-group-issue-search](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-group-issue-search)
+r
 
 #### Tags
 
@@ -754,6 +787,7 @@ This resource represents various ways to search for issues. Use it to search for
 This resource represents available labels. Use it to get available labels for the global label field.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-group-labels](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-group-labels)
+r
 
 #### Tags
 
@@ -768,6 +802,7 @@ Atlassian Connect provides a set of REST APIs specifically designed for use by c
 
 
 **Human URL:** [https://developer.atlassian.com/platform/marketplace/license-api-for-cloud-apps/](https://developer.atlassian.com/platform/marketplace/license-api-for-cloud-apps/)
+r
 
 #### Tags
 
@@ -787,6 +822,7 @@ Atlassian Connect provides a set of REST APIs specifically designed for use by c
 This resource represents permissions. Use it to obtain details of all permissions and determine whether the user has certain permissions.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-group-permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-group-permissions)
+r
 
 #### Tags
 
@@ -799,6 +835,7 @@ This resource represents permissions. Use it to obtain details of all permission
 This resource represents information about the current user, such as basic details, group membership, application roles, preferences, and locale. Use it to get, create, update, and delete (restore default) values of the user's preferences and locale.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-group-myself](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-group-myself)
+r
 
 #### Tags
 
@@ -815,6 +852,7 @@ This resource represents information about the current user, such as basic detai
 This resource represents information about the current user, such as basic details, group membership, application roles, preferences, and locale. Use it to get, create, update, and delete (restore default) values of the user's preferences and locale.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-group-myself](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-group-myself)
+r
 
 #### Tags
 
@@ -827,6 +865,7 @@ This resource represents information about the current user, such as basic detai
 This resource represents notification schemes, lists of events and the recipients who will receive notifications for those events. Use it to get details of a notification scheme and a list of notification schemes.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-group-issue-notification-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-group-issue-notification-schemes)
+r
 
 #### Tags
 
@@ -847,6 +886,7 @@ This resource represents notification schemes, lists of events and the recipient
 This resource represents permissions. Use it to obtain details of all permissions and determine whether the user has certain permissions.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-group-permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-group-permissions)
+r
 
 #### Tags
 
@@ -865,6 +905,7 @@ This resource represents permissions. Use it to obtain details of all permission
 This resource represents permission schemes for a project. Use this resource to get details of a project's issue security levels available to the calling user, get the permission scheme associated with the project or assign different permission scheme to the project, get details of a project's issue security scheme.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-group-project-permission-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-group-project-permission-schemes)
+r
 
 #### Tags
 
@@ -883,6 +924,7 @@ This resource represents permission schemes for a project. Use this resource to 
 his resource represents issue priorities. Use it to get, create and update issue priorities and details for individual issue priorities.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-priorities/#api-group-issue-priorities](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-priorities/#api-group-issue-priorities)
+r
 
 #### Tags
 
@@ -901,6 +943,7 @@ his resource represents issue priorities. Use it to get, create and update issue
 This resource represents projects. Use it to get, create, update, and delete projects. Also get statuses available to a project, a project's notification schemes, and update a project's type.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-group-projects](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-group-projects)
+r
 
 #### Tags
 
@@ -960,6 +1003,7 @@ This resource represents projects. Use it to get, create, update, and delete pro
 This resource represents project categories. Use it to create, update, and delete project categories as well as obtain a list of all project categories and details of individual categories. For more information on managing project categories, see Adding, assigning, and deleting project categories.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-group-project-categories](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-group-project-categories)
+r
 
 #### Tags
 
@@ -976,6 +1020,7 @@ This resource represents project categories. Use it to create, update, and delet
 This resource provides validation for project keys and names.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-key-and-name-validation/#api-group-project-key-and-name-validation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-key-and-name-validation/#api-group-project-key-and-name-validation)
+r
 
 #### Tags
 
@@ -997,6 +1042,7 @@ This resource provides validation for project keys and names.
 This resource represents issue resolution values. Use it to obtain a list of all issue resolution values and the details of individual resolution values.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-group-issue-resolutions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-group-issue-resolutions)
+r
 
 #### Tags
 
@@ -1015,6 +1061,7 @@ This resource represents issue resolution values. Use it to obtain a list of all
 This resource represents the roles that users can play in projects. Use this resource to get, create, update, and delete project roles.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-project-roles/#api-group-project-roles](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-project-roles/#api-group-project-roles)
+r
 
 #### Tags
 
@@ -1034,6 +1081,7 @@ This resource represents the roles that users can play in projects. Use this res
 This resource represents the screens used to record issue details. Use it to get details of all screens, get details of all the fields available for use on screens, create screens, delete screens, update screens, add a field to the default screen.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-screens/](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-screens/)
+r
 
 #### Tags
 
@@ -1057,6 +1105,7 @@ This resource represents the screens used to record issue details. Use it to get
 This resource represents screen schemes in classic projects. Use it to get, create, update, and delete screen schemes.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-screen-schemes/#api-group-screen-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-screen-schemes/#api-group-screen-schemes)
+r
 
 #### Tags
 
@@ -1073,6 +1122,7 @@ This resource represents screen schemes in classic projects. Use it to get, crea
 This resource represents various ways to search for issues. Use it to search for issues with a JQL query and find issues to populate an issue picker.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-group-issue-search](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-group-issue-search)
+r
 
 #### Tags
 
@@ -1091,6 +1141,7 @@ This resource represents various ways to search for issues. Use it to search for
 This resource represents issue security levels. Use it to obtain the details of any issue security level. For more information about issue security levels, see Configuring issue-level security.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-level/#api-group-issue-security-level](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-level/#api-group-issue-security-level)
+r
 
 #### Tags
 
@@ -1108,6 +1159,7 @@ This resource represents issue security levels. Use it to obtain the details of 
 This resource provides information about the Jira instance.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-server-info/#api-group-server-info](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-server-info/#api-group-server-info)
+r
 
 #### Tags
 
@@ -1120,6 +1172,7 @@ This resource provides information about the Jira instance.
 This resource represents various settings in Jira. Use it to get and update Jira settings and properties.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-group-jira-settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-group-jira-settings)
+r
 
 #### Tags
 
@@ -1139,6 +1192,7 @@ This resource represents various settings in Jira. Use it to get and update Jira
 This resource represents issue workflow statuses. Use it to obtain a list of all statuses associated with workflows and the details of a status.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
+r
 
 #### Tags
 
@@ -1154,6 +1208,7 @@ This resource represents issue workflow statuses. Use it to obtain a list of all
 This resource represents status categories. Use it to obtain a list of all status categories and the details of a category. Status categories provided a mechanism for categorizing statuses.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-group-workflow-status-categories](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-group-workflow-status-categories)
+r
 
 #### Tags
 
@@ -1171,6 +1226,7 @@ This resource represents status categories. Use it to obtain a list of all statu
 This resource represents issue workflow statuses. Use it to obtain a list of all statuses associated with workflows and the details of a status.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
+r
 
 #### Tags
 
@@ -1187,6 +1243,7 @@ This resource represents issue workflow statuses. Use it to obtain a list of all
 This resource represents a long-running asynchronous tasks. Use it to obtain details about the progress of a long-running task or cancel a long-running task.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-tasks/#api-group-tasks](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-tasks/#api-group-tasks)
+r
 
 #### Tags
 
@@ -1202,6 +1259,7 @@ This resource represents a long-running asynchronous tasks. Use it to obtain det
 UI modifications is a feature available for Forge apps only. It enables Forge apps to control how selected Jira fields behave on the following views: global issue create, issue view. For example: hide specific fields, set them as required, etc.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-ui-modifications--apps-/#api-group-ui-modifications--apps-](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-ui-modifications--apps-/#api-group-ui-modifications--apps-)
+r
 
 #### Tags
 
@@ -1217,6 +1275,7 @@ UI modifications is a feature available for Forge apps only. It enables Forge ap
 This resource represents system and custom avatars. Use it to obtain the details of system or custom avatars, add and remove avatars from a project or issue type, and obtain avatar images.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-avatars/#api-group-avatars](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-avatars/#api-group-avatars)
+r
 
 #### Tags
 
@@ -1241,6 +1300,7 @@ This resource represents system and custom avatars. Use it to obtain the details
 This resource represent users. Use it to get, get a list of, create, and delete users, get, set, and reset a user's default issue table columns, get a list of the groups the user belongs to, and get a list of user account IDs for a list of usernames or user keys.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-group-users](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-group-users)
+r
 
 #### Tags
 
@@ -1279,6 +1339,7 @@ This resource represent users. Use it to get, get a list of, create, and delete 
 This resource represent users. Use it to get, get a list of, create, and delete users, get, set, and reset a user's default issue table columns, get a list of the groups the user belongs to, and get a list of user account IDs for a list of usernames or user keys.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/)
+r
 
 #### Tags
 
@@ -1294,6 +1355,7 @@ This resource represent users. Use it to get, get a list of, create, and delete 
 This resource represents project versions. Use it to get, get lists of, create, update, move, merge, and delete project versions. This resource also provides counts of issues by version.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-group-project-versions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-group-project-versions)
+r
 
 #### Tags
 
@@ -1322,6 +1384,7 @@ This resource represents project versions. Use it to get, get lists of, create, 
 A webhook is a user-defined callback over HTTP. You can use Jira webhooks to notify your app or web application when certain events occur in Jira. For example, you might want to alert your remote application when an issue is updated or when sprint is started. Using a webhook to do this means that your remote application doesn't have to periodically poll Jira (via the REST APIs) to determine whether changes have occurred.
 
 **Human URL:** [https://developer.atlassian.com/server/jira/platform/webhooks/](https://developer.atlassian.com/server/jira/platform/webhooks/)
+r
 
 #### Tags
 
@@ -1340,6 +1403,7 @@ A webhook is a user-defined callback over HTTP. You can use Jira webhooks to not
 This resource represents workflows. Use it to Get workflows, Create workflows, Update workflows, Delete inactive workflows, Get workflow capabilities
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-group-workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-group-workflows)
+r
 
 #### Tags
 
@@ -1362,6 +1426,7 @@ This resource represents workflows. Use it to Get workflows, Create workflows, U
 This resource represents workflows. Use it to Get workflows, Create workflows, Update workflows, Delete inactive workflows, Get workflow capabilities
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/)
+r
 
 #### Tags
 
@@ -1382,6 +1447,7 @@ This resource represents workflows. Use it to Get workflows, Create workflows, U
 This resource represents workflow schemes. Use it to manage workflow schemes and the workflow scheme's workflows and issue types. A workflow scheme maps issue types to workflows. A workflow scheme can be associated with one or more projects, which enables the projects to use the workflow-issue type mappings.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-workflow-schemes/#api-group-workflow-schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-workflow-schemes/#api-group-workflow-schemes)
+r
 
 #### Tags
 
@@ -1415,6 +1481,7 @@ This resource represents workflow schemes. Use it to manage workflow schemes and
 This resource represents issue worklogs. Use it to get, create, update, and delete worklogs, obtain lists of updated or deleted worklogs.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-group-issue-worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-group-issue-worklogs)
+r
 
 #### Tags
 
@@ -1432,6 +1499,7 @@ Connect is a development framework for extending Atlassian cloud products. Conne
 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/getting-started-with-connect/](https://developer.atlassian.com/cloud/jira/platform/getting-started-with-connect/)
+r
 
 #### Tags
 
@@ -1454,6 +1522,7 @@ Connect is a development framework for extending Atlassian cloud products. Conne
 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/getting-started-with-connect/](https://developer.atlassian.com/cloud/jira/platform/getting-started-with-connect/)
+r
 
 #### Tags
 
@@ -1474,6 +1543,7 @@ Connect is a development framework for extending Atlassian cloud products. Conne
 This Atlassian Connect feature provide a mechanism for apps to signal readiness for new API behaviors as well as selectively enrol during the introduction / deprecation period for the purposes of testing. Development of this mechanism was motivated by the introduction of API changes that are not backward compatible (e.g. the removal of legacy user references from our public cloud REST APIs). Such changes will break existing apps that do not yet support the new API version.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/connect-api-migration/](https://developer.atlassian.com/cloud/jira/platform/connect-api-migration/)
+r
 
 #### Tags
 
@@ -1502,6 +1572,7 @@ This Atlassian Connect feature provide a mechanism for apps to signal readiness 
 This resource represents a service registry. Use it to retrieve attributes related to a service registry in JSM.
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-service-registry/#api-group-service-registry](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-service-registry/#api-group-service-registry)
+r
 
 #### Tags
 
@@ -1514,6 +1585,7 @@ This resource represents a service registry. Use it to retrieve attributes relat
 Forge is Atlassian's new development platform for building Jira and Confluence Cloud apps. 
 
 **Human URL:** [https://developer.atlassian.com/cloud/jira/platform/forge/](https://developer.atlassian.com/cloud/jira/platform/forge/)
+r
 
 #### Tags
 
@@ -1533,6 +1605,7 @@ Forge is Atlassian's new development platform for building Jira and Confluence C
 Allows you to create, get, set, and export audit records from Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-audit/#api-group-audit](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-audit/#api-group-audit)
+r
 
 #### Tags
 
@@ -1555,6 +1628,7 @@ Allows you to create, get, set, and export audit records from Confluence.
 This is the reference for the Confluence Cloud REST API v2, with definitions and performance intended to be an improvement over v1. You can click on the meatball menu in the upper right to download the spec or Postman collection.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v2/intro/#about](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/#about)
+r
 
 #### Tags
 
@@ -1635,6 +1709,7 @@ This is the reference for the Confluence Cloud REST API v2, with definitions and
 Allows you to manage the various state of content published to Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-states/#api-group-content-states](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-states/#api-group-content-states)
+r
 
 #### Tags
 
@@ -1657,6 +1732,7 @@ Allows you to manage the various state of content published to Confluence.
 Provides you the ability to manage the content body of Confluence pages.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-body/#api-group-content-body](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-body/#api-group-content-body)
+r
 
 #### Tags
 
@@ -1681,6 +1757,7 @@ Provides you the ability to manage the content body of Confluence pages.
 Allows you to manage inline tasks across Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-inline-tasks#api-group-inline-tasks](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-inline-tasks#api-group-inline-tasks)
+r
 
 #### Tags
 
@@ -1704,6 +1781,7 @@ Allows you to manage inline tasks across Confluence.
 Provides the ability to label content across Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-labels/#api-group-content-labels](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-labels/#api-group-content-labels)
+r
 
 #### Tags
 
@@ -1716,6 +1794,7 @@ Provides the ability to label content across Confluence.
 Returns all user groups. The returned groups are ordered alphabetically in ascending order by group name.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-group/#api-wiki-rest-api-group-get](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-group/#api-wiki-rest-api-group-get)
+r
 
 #### Tags
 
@@ -1740,6 +1819,7 @@ Returns all user groups. The returned groups are ordered alphabetically in ascen
 Returns information about all active long-running tasks (e.g. space export), such as how long each task has been running and the percentage of each task that has completed.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-long-running-task/#api-wiki-rest-api-longtask-get](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-long-running-task/#api-wiki-rest-api-longtask-get)
+r
 
 #### Tags
 
@@ -1757,6 +1837,7 @@ Returns information about all active long-running tasks (e.g. space export), suc
 Provides the ability to manage relationships between content across Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-relation/](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-relation/)
+r
 
 #### Tags
 
@@ -1781,6 +1862,7 @@ Provides the ability to manage relationships between content across Confluence.
 Searches content across Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-search/#api-group-search](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-search/#api-group-search)
+r
 
 #### Tags
 
@@ -1797,6 +1879,7 @@ Searches content across Confluence.
 Manages the settings for Confluence groups.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-settings/#api-group-settings](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-settings/#api-group-settings)
+r
 
 #### Tags
 
@@ -1823,6 +1906,7 @@ Manages the settings for Confluence groups.
 Used to manage all of the Confluence spaces for an account.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-space/#api-group-space](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-space/#api-group-space)
+r
 
 #### Tags
 
@@ -1855,6 +1939,7 @@ Used to manage all of the Confluence spaces for an account.
 Provides the ability to manage the templates applied across Confluence.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-template/#api-group-template](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-template/#api-group-template)
+r
 
 #### Tags
 
@@ -1874,6 +1959,7 @@ Provides the ability to manage the templates applied across Confluence.
 Provides the ability to manage users as part of a Confluence instance.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-user/#api-group-user](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-user/#api-group-user)
+r
 
 #### Tags
 
@@ -1910,6 +1996,7 @@ Provides the ability to manage users as part of a Confluence instance.
 Connect modules are how Connect apps extend and interact with Confluence. If you're not familiar with Connect apps, learn how Connect works first.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/connect-modules/](https://developer.atlassian.com/cloud/confluence/connect-modules/)
+r
 
 #### Tags
 
@@ -1929,6 +2016,7 @@ Connect modules are how Connect apps extend and interact with Confluence. If you
 The Confluence Cloud Analytics REST API provides endpoints to access analytics data for Confluence content. It allows you to retrieve information such as the total number of views and distinct viewers for specific content within Confluence Cloud. This API enables developers to integrate analytics functionalities into their applications or services, providing insights into content engagement and audience interactions within Confluence Cloud.
 
 **Human URL:** [https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-analytics/#api-group-analytics](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-analytics/#api-group-analytics)
+r
 
 #### Tags
 
@@ -1949,6 +2037,7 @@ The addon resource is intended to use used by Bitbucket Cloud Connect Apps, and 
 
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-addon/#api-group-addon](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-addon/#api-group-addon)
+r
 
 #### Tags
 
@@ -1968,6 +2057,7 @@ The addon resource is intended to use used by Bitbucket Cloud Connect Apps, and 
 Webhooks provide a way to configure Bitbucket Cloud to make requests to your server (or another external service) whenever certain events occur in Bitbucket Cloud.
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-webhooks/#api-group-webhooks](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-webhooks/#api-group-webhooks)
+r
 
 #### Tags
 
@@ -1986,6 +2076,7 @@ Webhooks provide a way to configure Bitbucket Cloud to make requests to your ser
 Pull requests are a feature that makes it easier for developers to collaborate using Bitbucket. They provide a user-friendly web interface for discussing proposed changes before integrating them into the official project.
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-group-pullrequests](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-group-pullrequests)
+r
 
 #### Tags
 
@@ -1998,6 +2089,7 @@ Pull requests are a feature that makes it easier for developers to collaborate u
 A Git repository is a virtual storage of your project. It allows you to save versions of your code, which you can access when needed. The repo resource allows you to access public repos, or repos that belong to a specific workspace.
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-group-repositories](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-group-repositories)
+r
 
 #### Tags
 
@@ -2149,6 +2241,7 @@ A Git repository is a virtual storage of your project. It allows you to save ver
 Snippets allow you share code segments or files with yourself, members of your workspace, or the world. Like pull requests, repositories and workspaces, the full set of snippets is defined by what the current user has access to. This includes all snippets owned by any of the workspaces the user is a member of, or snippets by other users that the current user is either watching or has collaborated on (for instance by commenting on it).
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-snippets/#api-group-snippets](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-snippets/#api-group-snippets)
+r
 
 #### Tags
 
@@ -2198,6 +2291,7 @@ Needs description.
 The users resource allows you to access public information associated with a user account. Most resources in the users endpoint have been deprecated in favor of workspaces.
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-users/#api-group-users](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-users/#api-group-users)
+r
 
 #### Tags
 
@@ -2233,6 +2327,7 @@ The users resource allows you to access public information associated with a use
 A workspace is where you create repositories, collaborate on your code, and organize different streams of work in your Bitbucket Cloud account. Workspaces replace the use of teams and users in API calls.
 
 **Human URL:** [https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-group-workspaces](https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-group-workspaces)
+r
 
 #### Tags
 
