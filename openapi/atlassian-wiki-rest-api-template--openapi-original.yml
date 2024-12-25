@@ -1,0 +1,564 @@
+openapi: 3.0.1
+info:
+  title: ' wiki/rest/api/template/'
+  description: Needs description.
+  termsOfService: https://atlassian.com/terms/
+  version: 1.0.0
+externalDocs:
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+servers:
+  - url: //your-domain.atlassian.net
+tags: []
+paths:
+  /wiki/rest/api/template/blueprint:
+    get:
+      tags:
+        - - - - Template
+      summary: Get blueprint templates
+      description: >-
+        Returns all templates provided by blueprints. Use this method to
+        retrieve
+
+        all global blueprint templates or all blueprint templates in a space.
+
+
+        Note, all global blueprints are inherited by each space. Space
+        blueprints
+
+        can be customised without affecting the global blueprints.
+
+
+        **[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:
+
+        'View' permission for the space to view blueprints for the space and
+        permission
+
+        to access the Confluence site ('Can use' global permission) to view
+        global blueprints.
+      operationId: getBlueprintTemplates
+      parameters:
+        - name: spaceKey
+          in: query
+          description: |-
+            The key of the space to be queried for templates. If the `spaceKey`
+            is not specified, global blueprint templates will be returned.
+          schema:
+            type: string
+        - name: start
+          in: query
+          description: The starting index of the returned templates.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of templates to return per page.
+            Note, this may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+        - name: expand
+          in: query
+          description: |-
+            A multi-value parameter indicating which properties of the template
+            to expand.
+
+            - `body` returns the content of the template in storage format.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - body
+      responses:
+        '200':
+          description: Returned if the requested templates are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintTemplateArray'
+        '403':
+          description: |-
+            Returned if the calling user does not have permission to view
+            blueprint templates.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:template:confluence
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/template/page:
+    get:
+      tags:
+        - - - - Template
+      summary: Get content templates
+      description: >-
+        Returns all content templates. Use this method to retrieve all global
+
+        content templates or all content templates in a space.
+
+
+        **[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:
+
+        'View' permission for the space to view space templates and permission
+        to
+
+        access the Confluence site ('Can use' global permission) to view global
+        templates.
+      operationId: getContentTemplates
+      parameters:
+        - name: spaceKey
+          in: query
+          description: |-
+            The key of the space to be queried for templates. If the `spaceKey`
+            is not specified, global templates will be returned.
+          schema:
+            type: string
+        - name: start
+          in: query
+          description: The starting index of the returned templates.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of templates to return per page.
+            Note, this may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+        - name: expand
+          in: query
+          description: |-
+            A multi-value parameter indicating which properties of the template
+            to expand.
+
+            - `body` returns the content of the template in storage format.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - body
+      responses:
+        '200':
+          description: Returned if the requested templates are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplateArray'
+        '403':
+          description: |-
+            Returned if the calling user does not have permission to view the
+            content templates.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:template:confluence
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/template/{contentTemplateId}:
+    get:
+      tags:
+        - - - - Template
+      summary: Get content template
+      description: >-
+        Returns a content template. This includes information about template,
+
+        like the name, the space or blueprint that the template is in, the body
+
+        of the template, and more.
+
+
+        **[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:
+
+        'View' permission for the space to view space templates and permission
+        to
+
+        access the Confluence site ('Can use' global permission) to view global
+        templates.
+      operationId: getContentTemplate
+      parameters:
+        - name: contentTemplateId
+          in: path
+          description: The ID of the content template to be returned.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned if the requested template is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate'
+        '403':
+          description: |-
+            Returned if;
+
+            - There is no template with the given ID.
+            - The calling user does not have permission to view the template.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:template:confluence
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    delete:
+      tags:
+        - - - - Template
+      summary: Remove template
+      description: >-
+        Deletes a template. This results in different actions depending on the
+
+        type of template:
+
+
+        - If the template is a content template, it is deleted.
+
+        - If the template is a modified space-level blueprint template, it
+        reverts
+
+        to the template inherited from the global-level blueprint template.
+
+        - If the template is a modified global-level blueprint template, it
+        reverts
+
+        to the default global-level blueprint template.
+
+         Note, unmodified blueprint templates cannot be deleted.
+
+        **[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:
+                'Admin' permission for the space to delete a space template or 'Confluence Administrator'
+                global permission to delete a global template.
+      operationId: removeTemplate
+      parameters:
+        - name: contentTemplateId
+          in: path
+          description: The ID of the template to be deleted.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Returned if the template has been successfully been deleted.
+          content: {}
+        '403':
+          description: |-
+            Returned if;
+
+            - There is no template with the given ID.
+            - The calling user does not have permission to delete the template.
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-content
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-content
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - write:template:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: DELETE
+components:
+  schemas:
+    BlueprintTemplateArray:
+      required:
+        - _links
+        - limit
+        - results
+        - size
+        - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintTemplate'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentTemplateArray:
+      required:
+        - _links
+        - limit
+        - results
+        - size
+        - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentTemplate'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentTemplate:
+      required:
+        - _links
+        - description
+        - labels
+        - name
+        - templateId
+        - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+        originalTemplate:
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+x-atlassian-narrative:
+  documents:
+    - title: About
+      anchor: about
+      body: >-
+        This is the reference for the Confluence Cloud REST API. This API is the
+        primary way to get and
+
+        modify data in Confluence Cloud, whether you are developing an app or
+        any other integration.
+
+        Use it to interact with Confluence entities, like pages and blog posts,
+        spaces, users, groups,
+
+        and more.
+    - title: Authentication and authorization
+      anchor: auth
+      body: >-
+        **Authentication:** If you are building a Cloud app, authentication is
+        implemented via JWT or OAuth 2.0, depending on what you are building
+        (see [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)).
+        Otherwise, if you are authenticating directly against the REST API, the
+        REST API supports basic auth (see [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+        **Authorization:** If you are building a Cloud app, authorization can be
+        implemented by
+        [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by
+        [OAuth 2.0 user
+        impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps).
+        Otherwise, if you are making calls directly against the REST API,
+        authorization is based on the user used in the authentication process.
+
+
+        See [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)
+        for more details on authentication and authorization.
+    - title: Status codes
+      anchor: status-code
+      body: >-
+        The Confluence REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Responses that return an error status code will also return a response
+        body, similar to the following:
+
+        ```json
+
+        {
+          "statusCode": 404,
+          "data": {
+            "authorized": false,
+            "valid": false,
+            "errors": [
+              {
+                "message": {
+                  "translation": "This is an example error message.",
+                  "args": []
+                }
+              }
+            ],
+            "successful": false
+          },
+          "message": "This is an example error message."
+        }
+
+        ```
+    - title: Using the REST API
+      anchor: using
+      body: >-
+        **Expansion:** The Confluence REST API uses resource expansion: some
+        parts of a resource are not returned unless explicitly specified. This
+        simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the `expand` query
+        parameter and specify the entities to be expanded. If you need to expand
+        nested entities, use the `.` dot notation. For example, the following
+        request will expand information about the requested content's space and
+        labels:
+
+        ```
+
+        GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+        ```
+
+        **Pagination:** The Confluence REST API uses pagination: a method that
+        returns a response with multiple objects can only return a limited
+        number at one time. This limits the size of responses and conserves
+        server resources.
+
+
+        Use the 'limit' and 'start' query parameters to specify pagination:
+
+
+        - `limit` is the number of objects to return per page. This may be
+        restricted by system limits.
+
+        - `start` is the index of the first item returned in the page of
+        results. The base index is 0.
+
+
+        For example, the following request will return ten content objects,
+        starting from the fifth object.
+
+        ```
+
+        GET /wiki/rest/api/content?start=4&limit=10
+
+        ```
+
+        **Special headers:**
+
+
+        - `X-Atlassian-Token: no-check` request header must be specified for
+        methods
+
+        that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks.
+        This is
+
+        stated in the method description, if required. For more information, see
+        this
+
+        [KB
+        article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).
+    - title: Capabilities
+      anchor: capabilities
+      body: >-
+        **Webhooks:** A webhook is a user-defined callback over HTTP. You can
+        use Confluence webhooks to notify your app or web application when
+        certain events occur in Confluence. For example, when a page is created
+        or updated. To learn more, see
+        [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+        **Content properties:** Content properties are a key-value storage
+        associated with a piece of Confluence content. If you are building an
+        app, this is one form of persistence that you can use. You can use the
+        Confluence REST API to get, update, and delete content properties. To
+        learn more, see [Content properties in the REST
+        API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+        **CQL:** The Confluence Query Language (CQL) allows you to perform
+        complex searches for content using an SQL-like syntax in the `search`
+        resource. To learn more, see [Advanced searching using
+        CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).
