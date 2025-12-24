@@ -2890,13 +2890,23 @@ paths:
         ChooseTags: true
     post:
       tags:
-        - - - - Commits
-      description: |-
-        Identical to `GET /repositories/{workspace}/{repo_slug}/commits`,
-        except that POST allows clients to place the include and exclude
-        parameters in the request body to avoid URL length issues.
-
-        **Note that this resource does NOT support new commit creation.**
+        - Lists
+        - Commits
+      description: >-
+        The Atlassian Bitbucket Repositories API endpoint
+        /repositories/{workspace}/{repo_slug}/commits allows users to retrieve a
+        paginated list of commits from a specific repository by making a POST
+        request. This operation provides advanced filtering capabilities through
+        include and exclude parameters, enabling developers to narrow down
+        commits based on branches, tags, bookmarks, or specific commit hashes.
+        Users can specify the workspace identifier and repository slug in the
+        path parameters to target a particular repository, while the request
+        body can contain arrays of references to include or exclude from the
+        results. The response returns commit objects containing metadata such as
+        commit hash, author information, commit message, timestamp, and parent
+        references, making it useful for analyzing repository history,
+        generating changelogs, or implementing custom git workflows that require
+        filtered commit information.
       summary: List Commits With Include/exclude
       responses:
         '200':
@@ -2922,6 +2932,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommitsWithInclude/Exclude
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -2942,77 +2955,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/commits/{revision}:
     get:
       tags:
-        - - - - Commits
+        - Lists
+        - Commits
       description: >-
-        These are the repository's commits. They are paginated and returned
-
-        in reverse chronological order, similar to the output of `git log`.
-
-        Like these tools, the DAG can be filtered.
-
-
-        #### GET /repositories/{workspace}/{repo_slug}/commits/master
-
-
-        Returns all commits on ref `master` (similar to `git log master`).
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/dev?include=foo&exclude=master
-
-
-        Returns all commits on ref `dev` or `foo`, except those that are
-        reachable on
-
-        `master` (similar to `git log dev foo ^master`).
-
-
-        An optional `path` parameter can be specified that will limit the
-
-        results to commits that affect that path. `path` can either be a file
-
-        or a directory. If a directory is specified, commits are returned that
-
-        have modified any file in the directory tree rooted by `path`. It is
-
-        important to note that if the `path` parameter is specified, the commits
-
-        returned by this endpoint may no longer be a DAG, parent commits that
-
-        do not modify the path will be omitted from the response.
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/dev?path=README.md&include=foo&include=bar&exclude=master
-
-
-        Returns all commits that are on refs `dev` or `foo` or `bar`, but not on
-        `master`
-
-        that changed the file README.md.
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/dev?path=src/&include=foo&exclude=master
-
-
-        Returns all commits that are on refs `dev` or `foo`, but not on `master`
-
-        that changed to a file in any file in the directory src or its children.
-
-
-        Because the response could include a very large number of commits, it
-
-        is paginated. Follow the 'next' link in the response to navigate to the
-
-        next page of commits. As with other paginated resources, do not
-
-        construct your own links.
-
-
-        When the include and exclude parameters are more than can fit in a
-
-        query string, clients can use a `x-www-form-urlencoded` POST instead.
+        This API endpoint retrieves a paginated list of commits for a specific
+        revision in a Bitbucket repository. By making a GET request to
+        /repositories/{workspace}/{repo_slug}/commits/{revision}, you can access
+        commit history starting from the specified revision, which can be a
+        branch name, tag, or commit SHA. The endpoint returns commit details
+        including author information, commit messages, timestamps, and parent
+        commit references. The response is paginated to handle repositories with
+        extensive commit histories, and you can use query parameters to control
+        pagination and filter results. This operation is useful for tracking
+        changes, auditing code history, or building integrations that need to
+        analyze commit data for a particular branch or point in the repository's
+        timeline.
       summary: List Commits For Revision
       responses:
         '200':
@@ -3038,19 +2995,27 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommitsForRevision
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Commits
+        - Lists
+        - Commits
       description: >-
-        Identical to `GET
-        /repositories/{workspace}/{repo_slug}/commits/{revision}`,
-
-        except that POST allows clients to place the include and exclude
-
-        parameters in the request body to avoid URL length issues.
-
-
-        **Note that this resource does NOT support new commit creation.**
+        This API operation retrieves a paginated list of commits from a specific
+        repository in Bitbucket that are reachable from a given revision. The
+        endpoint accepts a workspace identifier, repository slug, and a revision
+        parameter (such as a branch name, tag, or commit SHA) in the URL path.
+        It supports POST method to allow for more complex filtering through
+        include and exclude parameters in the request body, enabling users to
+        specify which commits to include or exclude from the results based on
+        branches, tags, or other revisions. This is particularly useful for
+        generating commit histories between specific points in the repository's
+        history or for filtering out commits from certain branches while
+        focusing on others. The response returns commit objects containing
+        information such as commit hash, author, date, message, and parent
+        commits in a paginated format.
       summary: List Commits For Revision Using Include/exclude
       responses:
         '200':
@@ -3076,6 +3041,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommitsForRevisionUsingInclude/Exclude
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -3102,12 +3070,18 @@ paths:
   /repositories/{workspace}/{repo_slug}/components:
     get:
       tags:
-        - - - - Issue tracker
-      description: |-
-        Returns the components that have been defined in the issue tracker.
-
-        This resource is only available on repositories that have the issue
-        tracker enabled.
+        - Lists
+      description: >-
+        This GET operation retrieves a paginated list of components associated
+        with a specific repository in Bitbucket. By providing the workspace
+        identifier and repository slug in the path parameters, you can access
+        all components that have been defined for issue tracking purposes within
+        that repository. Components are used to organize and categorize issues,
+        allowing teams to group related issues by product areas, modules, or
+        functional aspects of the codebase. The response returns component
+        details including their names, descriptions, and associated metadata,
+        helping developers and project managers understand the structural
+        organization of issues within the repository.
       summary: List Components
       responses:
         '200':
@@ -3130,6 +3104,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: listComponents
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -3150,8 +3127,19 @@ paths:
   /repositories/{workspace}/{repo_slug}/components/{component_id}:
     get:
       tags:
-        - - - - Issue tracker
-      description: Returns the specified issue tracker component object.
+        - Get
+        - Component
+        - Issues
+      description: >-
+        This API operation retrieves detailed information about a specific
+        component within a Bitbucket repository's issue tracking system. By
+        providing the workspace identifier, repository slug, and component ID in
+        the endpoint path, users can fetch metadata and configuration details
+        for that particular component, which is typically used to categorize and
+        organize issues within the repository. Components help teams structure
+        their issue tracking by grouping related issues together, such as by
+        feature area, module, or subsystem, and this GET request returns the
+        properties and settings associated with the specified component.
       summary: Get Component For Issues
       responses:
         '200':
@@ -3174,6 +3162,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: getComponentForIssues
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: component_id
         in: path
