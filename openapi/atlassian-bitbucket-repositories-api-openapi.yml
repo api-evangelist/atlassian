@@ -3128,7 +3128,7 @@ paths:
     get:
       tags:
         - Get
-        - Component
+        - Components
         - Issues
       description: >-
         This API operation retrieves detailed information about a specific
@@ -3191,20 +3191,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/default-reviewers:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Default
+        - Reviewers
       description: >-
-        Returns the repository's default reviewers.
-
-
-        These are the users that are automatically added as reviewers on every
-
-        new pull request that is created. To obtain the repository's default
-        reviewers
-
-        as well as the default reviewers inherited from the project, use the
-
-        [effective-default-reveiwers](#api-repositories-workspace-repo-slug-effective-default-reviewers-get)
-        endpoint.
+        This API endpoint retrieves the list of default reviewers configured for
+        a specific Bitbucket repository within a workspace. When called with a
+        GET request to /repositories/{workspace}/{repo_slug}/default-reviewers,
+        it returns information about users who are automatically added as
+        reviewers when new pull requests are created in the specified
+        repository. The endpoint requires the workspace identifier and
+        repository slug as path parameters to identify the target repository,
+        and it provides visibility into the repository's pull request review
+        settings, helping teams understand who will be automatically notified
+        and assigned to review code changes.
       summary: List Default Reviewers
       responses:
         '200':
@@ -3232,6 +3232,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listDefaultReviewers
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
     parameters:
       - name: repo_slug
         in: path
@@ -3253,7 +3256,17 @@ paths:
     delete:
       tags:
         - - - - Pullrequests
-      description: Removes a default reviewer from the repository.
+      description: >-
+        This API operation removes a specific user from the default reviewers
+        list for a Bitbucket repository within a given workspace. When executed,
+        it sends a DELETE request to the endpoint using the workspace
+        identifier, repository slug, and the target username of the reviewer to
+        be removed. Once successfully completed, the specified user will no
+        longer be automatically added as a reviewer on new pull requests created
+        in that repository. This is useful for managing team permissions and
+        workflow automation when team members change roles or leave projects,
+        allowing repository administrators to maintain accurate default reviewer
+        configurations without affecting existing pull requests.
       summary: Remove User From The Default Reviewers
       responses:
         '204':
@@ -3283,15 +3296,21 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: removeUserFromTheDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
     get:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Returns the specified reviewer.
-
-        This can be used to test whether a user is among the repository's
-        default reviewers list. A 404 indicates that that specified user is not
-        a default reviewer.
+        - Get
+        - Default
+      description: >-
+        Retrieves information about a specific default reviewer for a Bitbucket
+        repository within a workspace. This GET endpoint allows you to fetch
+        details of a user who has been designated as a default reviewer for pull
+        requests in the specified repository by providing the workspace
+        identifier, repository slug, and the target username of the reviewer.
+        The operation returns the default reviewer's configuration and user
+        details, enabling you to verify reviewer assignments and understand the
+        current code review workflow settings for the repository.
       summary: Get Default Reviewer
       responses:
         '200':
@@ -3325,14 +3344,25 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getDefaultReviewer
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Adds the specified user to the repository's list of default
-        reviewers.
-
-        This method is idempotent. Adding a user a second time has no effect.
+        - Add
+        - Users
+        - Default
+        - Reviewers
+      description: >-
+        This API operation adds a specific user to the default reviewers list
+        for a Bitbucket repository within a given workspace. By making a PUT
+        request to the endpoint with the workspace identifier, repository slug,
+        and target username, administrators can configure automatic reviewer
+        assignments for pull requests in that repository. When a user is added
+        as a default reviewer, they will be automatically included in the
+        reviewer list whenever a new pull request is created in the repository,
+        streamlining the code review process and ensuring consistent oversight
+        from designated team members.
       summary: Add User To The Default Reviewers
       responses:
         '200':
@@ -3374,6 +3404,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: addUserToTheDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -3402,8 +3435,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/deploy-keys:
     get:
       tags:
-        - - - - Deployments
-      description: Returns all deploy-keys belonging to a repository.
+        - Lists
+        - Repositories
+        - Deploy
+        - Keys
+      description: >-
+        This API operation retrieves a paginated list of all deploy keys that
+        have been configured for a specific Bitbucket repository within a
+        workspace. Deploy keys are SSH keys that grant read-only or read-write
+        access to a single repository, commonly used for automated deployment
+        processes or CI/CD pipelines. By sending a GET request to this endpoint
+        with the appropriate workspace identifier and repository slug,
+        authenticated users can view all deploy keys associated with that
+        repository, including details such as the key's label, public key value,
+        creation date, and access permissions, enabling repository
+        administrators to audit and manage automated access to their codebase.
       summary: List Repository Deploy Keys
       responses:
         '200':
@@ -3454,38 +3500,25 @@ paths:
         - basic: []
         - api_key: []
       operationId: listRepositoryDeployKeys
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Deployments
+        - Add
+        - Repositories
+        - Deploy
+        - Keys
       description: >-
-        Create a new deploy key in a repository. Note: If authenticating a
-        deploy key
-
-        with an OAuth consumer, any changes to the OAuth consumer will
-        subsequently
-
-        invalidate the deploy key.
-
-
-
-        Example:
-
-        ```
-
-        $ curl -X POST \
-
-        -H "Authorization <auth header>" \
-
-        -H "Content-type: application/json" \
-
-        https://api.bitbucket.org/2.0/repositories/mleu/test/deploy-keys -d \
-
-        '{
-            "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAK/b1cHHDr/TEV1JGQl+WjCwStKG6Bhrv0rFpEsYlyTBm1fzN0VOJJYn4ZOPCPJwqse6fGbXntEs+BbXiptR+++HycVgl65TMR0b5ul5AgwrVdZdT7qjCOCgaSV74/9xlHDK8oqgGnfA7ZoBBU+qpVyaloSjBdJfLtPY/xqj4yHnXKYzrtn/uFc4Kp9Tb7PUg9Io3qohSTGJGVHnsVblq/rToJG7L5xIo0OxK0SJSQ5vuId93ZuFZrCNMXj8JDHZeSEtjJzpRCBEXHxpOPhAcbm4MzULgkFHhAVgp4JbkrT99/wpvZ7r9AdkTg7HGqL3rlaDrEcWfL7Lu6TnhBdq5 mleu@C02W454JHTD8",
-            "label": "mydeploykey"
-        }'
-
-        ```
+        This API operation allows you to add a new deploy key to a specific
+        Bitbucket repository within a workspace. Deploy keys are SSH keys that
+        grant read-only or read-write access to a repository, typically used for
+        automated deployment processes or CI/CD pipelines. By making a POST
+        request to this endpoint with the workspace identifier and repository
+        slug, along with the required key details in the request body (such as
+        the SSH public key and an optional label), you can programmatically
+        register a new deploy key that will enable secure, automated access to
+        the repository without requiring user credentials.
       summary: Add Repository Deploy Key
       responses:
         '200':
@@ -3534,6 +3567,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: addRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -3554,8 +3590,23 @@ paths:
   /repositories/{workspace}/{repo_slug}/deploy-keys/{key_id}:
     delete:
       tags:
-        - - - - Deployments
-      description: This deletes a deploy key from a repository.
+        - Delete
+        - Repositories
+        - Deploy
+        - Keys
+      description: >-
+        This API operation removes a specific deploy key from a Bitbucket
+        repository by sending a DELETE request to the endpoint with the
+        workspace identifier, repository slug, and deploy key ID as path
+        parameters. Deploy keys are SSH keys that grant read-only or read-write
+        access to a repository, typically used for automated deployment
+        processes or CI/CD pipelines. When this operation is executed
+        successfully, it permanently deletes the specified deploy key from the
+        repository, revoking any access that was previously granted through that
+        key. This is useful for security management, such as when rotating keys,
+        removing access for deprecated deployment systems, or cleaning up unused
+        authentication credentials. The operation requires appropriate
+        permissions on the repository to manage deploy keys.
       summary: Delete Repository Deploy Key
       responses:
         '204':
@@ -3577,10 +3628,26 @@ paths:
         - basic: []
         - api_key: []
       operationId: deleteRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
-        - - - - Deployments
-      description: Returns the deploy key belonging to a specific key.
+        - Get
+        - Repositories
+        - Deploy
+        - Keys
+      description: >-
+        This API operation retrieves detailed information about a specific
+        deploy key that has been added to a Bitbucket repository. By providing
+        the workspace identifier, repository slug, and the unique key ID, you
+        can fetch the complete configuration and metadata associated with that
+        particular SSH deploy key, including its label, the actual public key
+        content, creation timestamp, and access permissions. Deploy keys are
+        typically used to grant read-only or read-write access to repositories
+        for automated deployment systems and CI/CD pipelines without requiring a
+        user account, and this endpoint allows administrators to verify and
+        audit the deploy keys currently configured for their repository.
       summary: Get Repository Deploy Key
       responses:
         '200':
@@ -3627,35 +3694,28 @@ paths:
         - basic: []
         - api_key: []
       operationId: getRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Deployments
+        - Update
+        - Repositories
+        - Deploy
+        - Keys
       description: >-
-        Create a new deploy key in a repository.
-
-
-        The same key needs to be passed in but the comment and label can change.
-
-
-        Example:
-
-        ```
-
-        $ curl -X PUT \
-
-        -H "Authorization <auth header>" \
-
-        -H "Content-type: application/json" \
-
-        https://api.bitbucket.org/2.0/repositories/mleu/test/deploy-keys/1234 -d
-        \
-
-        '{
-            "label": "newlabel",
-            "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAK/b1cHHDr/TEV1JGQl+WjCwStKG6Bhrv0rFpEsYlyTBm1fzN0VOJJYn4ZOPCPJwqse6fGbXntEs+BbXiptR+++HycVgl65TMR0b5ul5AgwrVdZdT7qjCOCgaSV74/9xlHDK8oqgGnfA7ZoBBU+qpVyaloSjBdJfLtPY/xqj4yHnXKYzrtn/uFc4Kp9Tb7PUg9Io3qohSTGJGVHnsVblq/rToJG7L5xIo0OxK0SJSQ5vuId93ZuFZrCNMXj8JDHZeSEtjJzpRCBEXHxpOPhAcbm4MzULgkFHhAVgp4JbkrT99/wpvZ7r9AdkTg7HGqL3rlaDrEcWfL7Lu6TnhBdq5 newcomment",
-        }'
-
-        ```
+        This API operation updates an existing deploy key for a specific
+        repository in Bitbucket by making a PUT request to the endpoint with the
+        workspace ID, repository slug, and deploy key ID as path parameters.
+        Deploy keys are SSH keys that provide read-only or read-write access to
+        a single repository, commonly used for automated deployment processes or
+        CI/CD pipelines. The operation allows you to modify properties of an
+        existing deploy key such as its label, the actual key value, or access
+        permissions, enabling administrators to maintain and update deployment
+        credentials without having to delete and recreate them. Authentication
+        is required to perform this operation, and the user must have
+        administrative permissions on the repository to successfully update
+        deploy key configurations.
       summary: Update Repository Deploy Key
       responses:
         '200':
@@ -3708,6 +3768,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: updateRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: key_id
         in: path
@@ -3734,8 +3797,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/deployments:
     get:
       tags:
-        - - - - Deployments
-      description: Find deployments
+        - Lists
+        - Deployments
+      description: >-
+        This API operation retrieves a paginated list of deployments for a
+        specific repository within an Atlassian Bitbucket workspace. By sending
+        a GET request to the endpoint with the workspace identifier and
+        repository slug as path parameters, users can fetch deployment
+        information associated with that repository. The response typically
+        includes details about each deployment such as deployment environment,
+        state, timestamps, and related commit information. This endpoint is
+        useful for tracking and monitoring the deployment history of a
+        repository across different environments like production, staging, or
+        development, enabling teams to maintain visibility over their deployment
+        pipeline and release management processes.
       summary: List Deployments
       operationId: listDeployments
       parameters:
@@ -3765,11 +3840,23 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/deployments/{deployment_uuid}:
     get:
       tags:
-        - - - - Deployments
-      description: Retrieve a deployment
+        - Get
+        - Deployments
+      description: >-
+        This GET operation retrieves detailed information about a specific
+        deployment in a Bitbucket repository by providing the workspace
+        identifier, repository slug, and unique deployment UUID in the endpoint
+        path. It allows users to fetch comprehensive deployment data including
+        deployment status, environment details, timestamps, and associated
+        metadata for a particular deployment instance within the specified
+        repository, enabling monitoring and tracking of deployment activities
+        across different environments in the Bitbucket deployment pipeline.
       summary: Get Deployment
       operationId: getDeployment
       parameters:
@@ -3811,11 +3898,25 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables:
     get:
       tags:
-        - - - - Pipelines
-      description: Find deployment environment level variables.
+        - Lists
+        - Variables
+        - Environments
+      description: >-
+        This GET operation retrieves all deployment variables configured for a
+        specific environment within a Bitbucket repository's deployment
+        configuration. By providing the workspace identifier, repository slug,
+        and environment UUID in the path parameters, the API returns a list of
+        variables that have been defined for that particular deployment
+        environment, including both their names and values. These variables are
+        typically used to store environment-specific configuration settings,
+        credentials, or other data needed during the deployment process to that
+        environment.
       summary: List Variables For An Environment
       operationId: listVariablesForAnEnvironment
       parameters:
@@ -3851,10 +3952,26 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pipelines
-      description: Create a deployment environment level variable.
+        - Create
+        - Variables
+        - Environments
+      description: >-
+        Creates a new deployment variable for a specific environment within a
+        Bitbucket repository's deployment configuration. This operation requires
+        specifying the workspace, repository slug, and environment UUID in the
+        path, allowing teams to define environment-specific variables such as
+        API keys, connection strings, or configuration values that will be
+        available during the deployment process. The variable details including
+        the key name, value, and optionally whether it should be secured or
+        hidden are provided in the request body. This enables teams to manage
+        configuration across different deployment environments like development,
+        staging, and production while maintaining security and flexibility in
+        their CI/CD pipelines.
       summary: Create Variable For An Environment
       operationId: createVariableForAnEnvironment
       parameters:
@@ -3916,11 +4033,26 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables/{variable_uuid}:
     put:
       tags:
-        - - - - Pipelines
-      description: Update a deployment environment level variable.
+        - Update
+        - Variables
+        - Environments
+      description: >-
+        Updates an existing deployment environment variable for a specific
+        environment in a Bitbucket repository. This operation requires
+        specifying the workspace, repository slug, environment UUID, and
+        variable UUID in the request path. The PUT method allows you to modify
+        the variable's configuration such as its key, value, secured status, and
+        other properties. This is useful for managing environment-specific
+        configuration values like API keys, database connection strings, or
+        feature flags that are used during the deployment pipeline. The request
+        must include authentication credentials with appropriate permissions to
+        modify deployment variables in the specified repository and environment.
       summary: Update Variable For An Environment
       operationId: updateVariableForAnEnvironment
       parameters:
@@ -3977,10 +4109,25 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       tags:
-        - - - - Pipelines
-      description: Delete a deployment environment level variable.
+        - Delete
+        - Variables
+        - Environments
+      description: >-
+        This API operation allows you to delete a specific deployment variable
+        associated with an environment in a Bitbucket repository. By providing
+        the workspace identifier, repository slug, environment UUID, and
+        variable UUID in the request path, you can permanently remove a variable
+        that was previously configured for deployment purposes. This is useful
+        when cleaning up unused configuration variables or removing sensitive
+        information that is no longer needed for your deployment pipeline. The
+        deletion is performed via an HTTP DELETE request and requires
+        appropriate authentication and permissions to modify deployment
+        environment settings within the specified Bitbucket repository.
       summary: Delete Variable For An Environment
       operationId: deleteVariableForAnEnvironment
       parameters:
@@ -4026,68 +4173,26 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/diff/{spec}:
     get:
       tags:
-        - - - - Commits
+        - Compare
+        - Commits
       description: >-
-        Produces a raw git-style diff.
-
-
-        #### Single commit spec
-
-
-        If the `spec` argument to this API is a single commit, the diff is
-
-        produced against the first parent of the specified commit.
-
-
-        #### Two commit spec
-
-
-        Two commits separated by `..` may be provided as the `spec`, e.g.,
-
-        `3a8b42..9ff173`. When two commits are provided and the `topic` query
-
-        parameter is true, this API produces a 2-way three dot diff.
-
-        This is the diff between source commit and the merge base of the source
-
-        commit and the destination commit. When the `topic` query param is
-        false,
-
-        a simple git-style diff is produced.
-
-
-        The two commits are interpreted as follows:
-
-
-        * First commit: the commit containing the changes we wish to preview
-
-        * Second commit: the commit representing the state to which we want to
-          compare the first commit
-        * **Note**: This is the opposite of the order used in `git diff`.
-
-
-        #### Comparison to patches
-
-
-        While similar to patches, diffs:
-
-
-        * Don't have a commit header (username, commit message, etc)
-
-        * Support the optional `path=foo/bar.py` query param to filter
-          the diff to just that one file diff
-
-        #### Response
-
-
-        The raw diff is returned as-is, in whatever encoding the files in the
-
-        repository use. It is not decoded into unicode. As such, the
-
-        content-type is `text/plain`.
+        This API operation retrieves the diff between two commits in a Bitbucket
+        repository, allowing developers to see the changes made between
+        specified points in the code history. By providing the workspace
+        identifier, repository slug, and a spec parameter that defines the
+        commits to compare (typically in the format of commit1..commit2 or a
+        single commit reference), the endpoint returns detailed information
+        about added, modified, and deleted lines across all affected files. The
+        response includes unified diff format data that shows line-by-line
+        changes, file paths, and metadata about the modifications, making it
+        useful for code review processes, analyzing changes between branches or
+        releases, and understanding the evolution of the codebase over time.
       summary: Compare Two Commits
       responses:
         '200':
@@ -4174,6 +4279,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: compareTwoCommits
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -4202,48 +4310,19 @@ paths:
   /repositories/{workspace}/{repo_slug}/diffstat/{spec}:
     get:
       tags:
-        - - - - Commits
+        - Compare
+        - Commits
       description: >-
-        Produces a response in JSON format with a record for every path
-
-        modified, including information on the type of the change and the
-
-        number of lines added and removed.
-
-
-        #### Single commit spec
-
-
-        If the `spec` argument to this API is a single commit, the diff is
-
-        produced against the first parent of the specified commit.
-
-
-        #### Two commit spec
-
-
-        Two commits separated by `..` may be provided as the `spec`, e.g.,
-
-        `3a8b42..9ff173`. When two commits are provided and the `topic` query
-
-        parameter is true, this API produces a 2-way three dot diff.
-
-        This is the diff between source commit and the merge base of the source
-
-        commit and the destination commit. When the `topic` query param is
-        false,
-
-        a simple git-style diff is produced.
-
-
-        The two commits are interpreted as follows:
-
-
-        * First commit: the commit containing the changes we wish to preview
-
-        * Second commit: the commit representing the state to which we want to
-          compare the first commit
-        * **Note**: This is the opposite of the order used in `git diff`.
+        This API endpoint retrieves diff statistics comparing changes between
+        two commits in a Bitbucket repository. By specifying the workspace,
+        repository slug, and a spec parameter (which typically contains the
+        commit range or comparison specification), it returns statistical
+        information about the differences between the specified commits,
+        including metrics such as the number of files changed, lines added, and
+        lines removed. This is particularly useful for analyzing the scope and
+        impact of changes between different points in a repository's history
+        without retrieving the full diff content, making it more efficient for
+        generating summaries or reports of code changes.
       summary: Compare Two Commit Diff Stats
       responses:
         '200':
@@ -4296,6 +4375,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: compareTwoCommitDiffStats
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: ignore_whitespace
         in: query
@@ -4370,8 +4452,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/downloads:
     get:
       tags:
-        - - - - Downloads
-      description: Returns a list of download links associated with the repository.
+        - Lists
+        - Download
+        - Artifacts
+      description: >-
+        This API operation retrieves a paginated list of download artifacts that
+        have been uploaded to a specific Bitbucket repository. By making a GET
+        request to the endpoint with the appropriate workspace and repository
+        slug parameters, users can view all files that are available for
+        download from the repository's downloads section. These artifacts are
+        typically release binaries, compiled packages, or other distributable
+        files that repository maintainers want to make available to users
+        separately from the source code. The response includes metadata about
+        each download artifact such as filename, size, upload date, and download
+        URL, allowing developers and automated systems to programmatically
+        access and manage repository downloads.
       summary: List Download Artifacts
       responses:
         '200':
@@ -4395,20 +4490,26 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listDownloadArtifacts
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Downloads
-      description: |-
-        Upload new download artifacts.
-
-        To upload files, perform a `multipart/form-data` POST containing one
-        or more `files` fields:
-
-            $ echo Hello World > hello.txt
-            $ curl -s -u evzijst -X POST https://api.bitbucket.org/2.0/repositories/evzijst/git-tests/downloads -F files=@hello.txt
-
-        When a file is uploaded with the same name as an existing artifact,
-        then the existing file will be replaced.
+        - Upload
+        - Download
+        - Artifacts
+      description: >-
+        This API operation allows you to upload a download artifact to a
+        specific Bitbucket repository within a workspace. By sending a POST
+        request to the endpoint with the workspace ID and repository slug as
+        path parameters, you can attach files that will be made available as
+        downloads for the repository. These artifacts are typically binary
+        files, releases, or other distributable assets that you want to make
+        accessible to users who have access to the repository. The uploaded
+        files are stored separately from the repository's version control system
+        and can be downloaded directly through Bitbucket's download interface,
+        making this useful for sharing compiled binaries, documentation
+        packages, or other supplementary materials related to your project.
       summary: Upload Download Artifact
       responses:
         '201':
@@ -4437,6 +4538,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: uploadDownloadArtifact
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -4457,8 +4561,22 @@ paths:
   /repositories/{workspace}/{repo_slug}/downloads/{filename}:
     delete:
       tags:
-        - - - - Downloads
-      description: Deletes the specified download artifact from the repository.
+        - Delete
+        - Download
+        - Artifacts
+      description: >-
+        The Delete Download Artifact operation in the Atlassian Bitbucket
+        Repositories API allows users to remove a specific download artifact
+        from a repository by making a DELETE request to the endpoint
+        /repositories/{workspace}/{repo_slug}/downloads/{filename}. This
+        operation requires three path parameters: the workspace identifier, the
+        repository slug, and the exact filename of the artifact to be deleted.
+        When executed successfully, it permanently removes the specified file
+        from the repository's downloads section, which is typically used for
+        storing release artifacts, binaries, or other distributable files
+        associated with the repository. This operation is useful for managing
+        repository storage, removing outdated releases, or cleaning up
+        unnecessary files from the downloads area.
       summary: Delete Download Artifact
       responses:
         '204':
@@ -4486,17 +4604,29 @@ paths:
           scopes:
             - write:repository:bitbucket
       operationId: deleteDownloadArtifact
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
-        - - - - Downloads
-      description: |-
-        Return a redirect to the contents of a download artifact.
-
-        This endpoint returns the actual file contents and not the artifact's
-        metadata.
-
-            $ curl -s -L https://api.bitbucket.org/2.0/repositories/evzijst/git-tests/downloads/hello.txt
-            Hello World
+        - Get
+        - Download
+        - Artifacts
+        - Link
+      description: >-
+        The Atlassian Bitbucket Repositories API endpoint
+        `/repositories/{workspace}/{repo_slug}/downloads/{filename}` using the
+        GET method retrieves a redirect link to download a specific file
+        artifact that has been uploaded to a repository's downloads section.
+        This operation requires three path parameters: the workspace ID or slug
+        that owns the repository, the repository slug identifier, and the exact
+        filename of the download artifact you want to access. When called,
+        instead of returning the file content directly, the API responds with a
+        302 redirect to the actual download URL where the file is stored,
+        allowing clients to fetch the artifact from Bitbucket's storage
+        infrastructure. This is particularly useful for accessing release
+        binaries, documentation archives, or other supplementary files
+        associated with a repository that aren't part of the source code itself.
       summary: Get Download Artifact Link
       responses:
         '302':
@@ -4519,6 +4649,9 @@ paths:
         - basic: []
         - api_key: []
       operationId: getDownloadArtifactLink
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: filename
         in: path
@@ -4545,8 +4678,24 @@ paths:
   /repositories/{workspace}/{repo_slug}/effective-branching-model:
     get:
       tags:
-        - - - - Branching model
-      description: ''
+        - Get
+        - Effective
+        - Currently
+        - Branching
+        - Models
+        - Repositories
+      description: >-
+        This API operation retrieves the effective branching model currently
+        applied to a specific Bitbucket repository within a given workspace. By
+        providing the workspace identifier and repository slug as path
+        parameters, it returns the active branching model configuration that
+        governs how branches are organized and managed in that repository,
+        including details about production branches, development branches, and
+        any branch prefixes or patterns that are in use. This is particularly
+        useful for understanding the workflow strategy implemented for the
+        repository, whether it follows Git Flow, trunk-based development, or a
+        custom branching strategy, and helps developers align their work with
+        the established branch management conventions.
       summary: Get The Effective, Or Currently Applied, Branching Model For Repository
       responses:
         '200':
@@ -4586,6 +4735,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getTheEffective,OrCurrentlyApplied,BranchingModelForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -4606,18 +4758,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/effective-default-reviewers:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Effective
+        - Default
+        - Reviewers
       description: >-
-        Returns the repository's effective default reviewers. This includes both
-        default
-
-        reviewers defined at the repository level as well as those inherited
-        from its project.
-
-
-        These are the users that are automatically added as reviewers on every
-
-        new pull request that is created.
+        This GET operation retrieves the effective default reviewers for a
+        specific repository in Bitbucket. By calling this endpoint with the
+        workspace and repository slug parameters, you can obtain a list of users
+        who are automatically added as reviewers to pull requests in that
+        repository. The "effective" designation means it returns not only the
+        reviewers explicitly configured for this specific repository, but also
+        includes any default reviewers inherited from workspace-level settings,
+        providing a complete view of all users who will be automatically
+        assigned as reviewers when new pull requests are created in the
+        repository.
       summary: List Effective Default Reviewers
       responses:
         '200':
@@ -4662,6 +4817,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listEffectiveDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -4682,8 +4840,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/environments:
     get:
       tags:
-        - - - - Deployments
-      description: Find environments
+        - Lists
+        - Environments
+      description: >-
+        This API operation retrieves a paginated list of deployment environments
+        configured for a specific Bitbucket repository within a given workspace.
+        By making a GET request to the endpoint with the workspace identifier
+        and repository slug as path parameters, users can view all environments
+        (such as production, staging, or development) that have been set up for
+        the repository, enabling them to manage and track deployments across
+        different stages of their software delivery pipeline. The response
+        includes environment details such as names, types, and associated
+        configurations, which are essential for implementing proper deployment
+        strategies and maintaining environment-specific settings within the
+        Bitbucket ecosystem.
       summary: List Environments
       operationId: listEnvironments
       parameters:
@@ -4713,10 +4883,26 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Deployments
-      description: Create an environment.
+        - Create
+        - Environments
+      description: >-
+        The Create an Environment operation in the Atlassian Bitbucket
+        Repositories API allows users to create a new deployment environment
+        within a specific repository by sending a POST request to the
+        /repositories/{workspace}/{repo_slug}/environments endpoint. This
+        operation requires specifying both the workspace identifier and
+        repository slug in the URL path, and enables teams to define distinct
+        deployment targets such as development, staging, or production
+        environments for their code. The created environment can then be
+        referenced in deployment pipelines and used to manage
+        environment-specific variables, restrictions, and deployment history,
+        providing better control over the software delivery process within
+        Bitbucket's CI/CD workflow.
       summary: Create An Environment
       operationId: createAnEnvironment
       parameters:
@@ -4770,12 +4956,26 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/environments/{environment_uuid}:
     get:
       tags:
-        - - - - Deployments
+        - Get
+        - Environments
       summary: Get An Environment
-      description: Retrieve an environment
+      description: >-
+        Retrieves detailed information about a specific deployment environment
+        within a Bitbucket repository. This endpoint requires the workspace
+        identifier, repository slug, and the unique UUID of the environment you
+        want to retrieve. The operation returns comprehensive details about the
+        environment including its name, type, environment variables, deployment
+        restrictions, and any associated configuration. This is useful for
+        auditing environment settings, verifying deployment configurations, or
+        integrating environment data into external tools and workflows. Access
+        to this endpoint typically requires appropriate repository permissions
+        and authentication credentials.
       operationId: getAnEnvironment
       parameters:
         - name: workspace
@@ -4816,10 +5016,24 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       tags:
-        - - - - Deployments
-      description: Delete an environment
+        - Delete
+        - Environments
+      description: >-
+        This API operation allows you to permanently remove a specific
+        deployment environment from a Bitbucket repository by sending a DELETE
+        request to the endpoint with the workspace identifier, repository slug,
+        and environment UUID as path parameters. When executed, it deletes the
+        environment configuration and all associated settings, which may include
+        environment variables, deployment restrictions, and deployment history
+        tied to that particular environment. This is typically used when an
+        environment is no longer needed, such as when decommissioning a staging
+        or testing environment, and requires appropriate permissions to execute
+        successfully.
       summary: Delete An Environment
       operationId: deleteAnEnvironment
       parameters:
@@ -4857,11 +5071,27 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/environments/{environment_uuid}/changes:
     post:
       tags:
-        - - - - Deployments
-      description: Update an environment
+        - Update
+        - Environments
+      description: >-
+        This POST operation updates a specific environment within a Bitbucket
+        repository by modifying its configuration settings. The endpoint
+        requires three path parameters: the workspace identifier, repository
+        slug, and the unique UUID of the environment to be updated. It allows
+        teams to modify environment properties such as name, environment type,
+        deployment restrictions, and other configuration details that govern how
+        code is deployed to that particular environment. This is particularly
+        useful for maintaining and adjusting deployment pipelines, updating
+        access controls, or changing environment-specific settings as project
+        requirements evolve. The operation requires appropriate authentication
+        and permissions to modify deployment environments within the specified
+        repository.
       summary: Update An Environment
       operationId: updateAnEnvironment
       parameters:
@@ -4899,6 +5129,9 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/filehistory/{commit}/{path}:
     get:
       tags:
