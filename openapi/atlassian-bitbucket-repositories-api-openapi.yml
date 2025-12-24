@@ -238,55 +238,20 @@ paths:
       operationId: getRepository
     post:
       tags:
-        - - - - Repositories
+        - Create
+        - Repositories
       description: >-
-        Creates a new repository.
-
-
-        Note: In order to set the project for the newly created repository,
-
-        pass in either the project key or the project UUID as part of the
-
-        request body as shown in the examples below:
-
-
-        ```
-
-        $ curl -X POST -H "Content-Type: application/json" -d '{
-            "scm": "git",
-            "project": {
-                "key": "MARS"
-            }
-        }' https://api.bitbucket.org/2.0/repositories/teamsinspace/hablanding
-
-        ```
-
-
-        or
-
-
-        ```
-
-        $ curl -X POST -H "Content-Type: application/json" -d '{
-            "scm": "git",
-            "project": {
-                "key": "{ba516952-992a-4c2d-acbd-17d502922f96}"
-            }
-        }' https://api.bitbucket.org/2.0/repositories/teamsinspace/hablanding
-
-        ```
-
-
-        The project must be assigned for all repositories. If the project is not
-        provided,
-
-        the repository is automatically assigned to the oldest project in the
-        workspace.
-
-
-        Note: In the examples above, the workspace ID `teamsinspace`,
-
-        and/or the repository name `hablanding` can be replaced by UUIDs.
+        This API operation creates a new repository within a specified workspace
+        in Atlassian Bitbucket. By sending a POST request to the endpoint with
+        the workspace identifier and desired repository slug as path parameters,
+        users can programmatically provision a new Git repository with
+        configurable settings such as the repository name, description, privacy
+        level (public or private), and project association. The request body
+        typically includes repository metadata and configuration options, while
+        the response returns the newly created repository object containing
+        details like the repository UUID, clone URLs, creation timestamp, and
+        other relevant properties that can be used for subsequent operations or
+        integrations.
       summary: Create Repository
       responses:
         '200':
@@ -331,7 +296,8 @@ paths:
       operationId: createRepository
     put:
       tags:
-        - - - - Repositories
+        - Update
+        - Repositories
       description: |-
         Since this endpoint can be used to both update and to create a
         repository, the request body depends on the intent.
@@ -431,7 +397,9 @@ paths:
   /repositories/{workspace}/{repo_slug}/branch-restrictions:
     get:
       tags:
-        - - - - Branch restrictions
+        - Lists
+        - Branches
+        - Restrictions
       description: |-
         Returns a paginated list of all branch restrictions on the
         repository.
@@ -489,82 +457,26 @@ paths:
       operationId: listBranchRestrictions
     post:
       tags:
-        - - - - Branch restrictions
+        - Create
+        - Branches
+        - Restriction
+        - Rules
       description: >-
-        Creates a new branch restriction rule for a repository.
-
-
-        `kind` describes what will be restricted. Allowed values include:
-
-        `push`, `force`, `delete`, `restrict_merges`,
-        `require_tasks_to_be_completed`,
-
-        `require_approvals_to_merge`,
-        `require_default_reviewer_approvals_to_merge`,
-
-        `require_no_changes_requested`, `require_passing_builds_to_merge`,
-        `require_commits_behind`,
-
-        `reset_pullrequest_approvals_on_change`,
-        `smart_reset_pullrequest_approvals`,
-
-        `reset_pullrequest_changes_requested_on_change`,
-        `require_all_dependencies_merged`,
-
-        `enforce_merge_checks`, and `allow_auto_merge_when_builds_pass`.
-
-
-        Different kinds of branch restrictions have different requirements:
-
-
-        * `push` and `restrict_merges` require `users` and `groups` to be
-          specified. Empty lists are allowed, in which case permission is
-          denied for everybody.
-
-        The restriction applies to all branches that match. There are
-
-        two ways to match a branch. It is configured in `branch_match_kind`:
-
-
-        1. `glob`: Matches a branch against the `pattern`. A `'*'` in
-           `pattern` will expand to match zero or more characters, and every
-           other character matches itself. For example, `'foo*'` will match
-           `'foo'` and `'foobar'`, but not `'barfoo'`. `'*'` will match all
-           branches.
-        2. `branching_model`: Matches a branch against the repository's
-           branching model. The `branch_type` controls the type of branch
-           to match. Allowed values include: `production`, `development`,
-           `bugfix`, `release`, `feature` and `hotfix`.
-
-        The combination of `kind` and match must be unique. This means that
-
-        two `glob` restrictions in a repository cannot have the same `kind` and
-
-        `pattern`. Additionally, two `branching_model` restrictions in a
-
-        repository cannot have the same `kind` and `branch_type`.
-
-
-        `users` and `groups` are lists of users and groups that are except from
-
-        the restriction. They can only be configured in `push` and
-
-        `restrict_merges` restrictions. The `push` restriction stops a user
-
-        pushing to matching branches unless that user is in `users` or is a
-
-        member of a group in `groups`. The `restrict_merges` stops a user
-
-        merging pull requests to matching branches unless that user is in
-
-        `users` or is a member of a group in `groups`. Adding new users or
-
-        groups to an existing restriction should be done via `PUT`.
-
-
-        Note that branch restrictions with overlapping matchers is allowed,
-
-        but the resulting behavior may be surprising.
+        The POST operation on the
+        /repositories/{workspace}/{repo_slug}/branch-restrictions endpoint in
+        the Atlassian Bitbucket Repositories API allows repository
+        administrators to create branch restriction rules that enforce specific
+        workflows and access controls on branches within a repository. By
+        specifying the workspace and repository slug in the path parameters,
+        users can define restrictions such as preventing force pushes, requiring
+        a minimum number of approvals before merging, restricting who can push
+        to specific branches, or enforcing merge strategies. These restrictions
+        help teams maintain code quality, implement secure development
+        practices, and ensure that critical branches like main or production are
+        protected from unauthorized or accidental modifications. The request
+        body typically includes parameters defining the restriction type, the
+        branch pattern to which the rule applies, and any additional
+        configuration options specific to the chosen restriction type.
       summary: Create Branch Restriction Rule
       responses:
         '201':
@@ -631,8 +543,23 @@ paths:
   /repositories/{workspace}/{repo_slug}/branch-restrictions/{id}:
     delete:
       tags:
-        - - - - Branch restrictions
-      description: Deletes an existing branch restriction rule.
+        - Delete
+        - Branches
+        - Restriction
+        - Rules
+      description: >-
+        This API operation removes a specific branch restriction rule from a
+        Bitbucket repository by making a DELETE request to the endpoint with the
+        workspace identifier, repository slug, and the unique ID of the branch
+        restriction rule to be deleted. Branch restrictions are used to enforce
+        policies on repository branches, such as preventing force pushes,
+        requiring pull request approvals, or limiting who can push to specific
+        branches. By deleting a restriction rule, administrators can remove
+        previously enforced constraints, allowing more flexible access to the
+        affected branches. This operation requires appropriate permissions
+        within the workspace and repository, and once executed, the specified
+        restriction rule is permanently removed from the repository's
+        configuration.
       summary: Delete Branch Restriction Rule
       responses:
         '204':
@@ -670,8 +597,22 @@ paths:
       operationId: deleteBranchRestrictionRule
     get:
       tags:
-        - - - - Branch restrictions
-      description: Returns a specific branch restriction rule.
+        - Get
+        - Branches
+        - Restriction
+        - Rules
+      description: >-
+        This GET operation retrieves a specific branch restriction rule from a
+        Bitbucket repository by its unique identifier. By providing the
+        workspace name, repository slug, and the restriction rule ID in the
+        endpoint path, users can fetch detailed information about a particular
+        branch protection configuration. The response returns the complete rule
+        definition including the restriction type, branch patterns, users or
+        groups affected, and any specific permissions or merge requirements that
+        have been configured. This endpoint is useful for auditing existing
+        branch protection policies, validating security configurations, or
+        retrieving rule details before making updates to repository access
+        controls.
       summary: Get Branch Restriction Rule
       responses:
         '200':
@@ -713,17 +654,25 @@ paths:
       operationId: getBranchRestrictionRule
     put:
       tags:
-        - - - - Branch restrictions
+        - Update
+        - Branches
+        - Restriction
+        - Rules
       description: >-
-        Updates an existing branch restriction rule.
-
-
-        Fields not present in the request body are ignored.
-
-
-        See
-        [`POST`](/cloud/bitbucket/rest/api-group-branch-restrictions/#api-repositories-workspace-repo-slug-branch-restrictions-post)
-        for details.
+        This PUT operation updates an existing branch restriction rule in a
+        Bitbucket repository by specifying the workspace, repository slug, and
+        the unique identifier of the restriction rule. Branch restrictions are
+        used to control who can push, merge, or delete branches based on
+        patterns and user permissions, helping teams enforce workflows and
+        protect critical branches like main or production. The request requires
+        authentication and appropriate repository permissions, and the body
+        should contain the updated rule configuration including the restriction
+        kind (such as push, delete, or require approvals), branch pattern
+        matching criteria, and the users or groups affected by the rule. Upon
+        successful execution, the API returns the updated branch restriction
+        object with all its properties, allowing administrators to
+        programmatically manage and modify repository access controls and merge
+        strategies.
       summary: Update Branch Restriction Rule
       responses:
         '200':
@@ -796,7 +745,10 @@ paths:
   /repositories/{workspace}/{repo_slug}/branching-model:
     get:
       tags:
-        - - - - Branching model
+        - Get
+        - Branching
+        - Model
+        - Repositories
       description: >-
         Return the branching model as applied to the repository. This view is
 
@@ -911,7 +863,10 @@ paths:
   /repositories/{workspace}/{repo_slug}/branching-model/settings:
     get:
       tags:
-        - - - - Branching model
+        - Get
+        - Branching
+        - Model
+        - Repositories
       description: >-
         Return the branching model configuration for a repository. The returned
 
@@ -1002,60 +957,20 @@ paths:
       operationId: getTheBranchingModelConfigForRepository
     put:
       tags:
-        - - - - Branching model
-      description: |-
-        Update the branching model configuration for a repository.
-
-        The `development` branch can be configured to a specific branch or to
-        track the main branch. When set to a specific branch it must
-        currently exist. Only the passed properties will be updated. The
-        properties not passed will be left unchanged. A request without a
-        `development` property will leave the development branch unchanged.
-
-        It is possible for the `development` branch to be invalid. This
-        happens when it points at a specific branch that has been
-        deleted. This is indicated in the `is_valid` field for the branch. It is
-        not possible to update the settings for `development` if that
-        would leave the branch in an invalid state. Such a request will be
-        rejected.
-
-        The `production` branch can be a specific branch, the main
-        branch or disabled. When set to a specific branch it must currently
-        exist. The `enabled` property can be used to enable (`true`) or
-        disable (`false`) it. Only the passed properties will be updated. The
-        properties not passed will be left unchanged. A request without a
-        `production` property will leave the production branch unchanged.
-
-        It is possible for the `production` branch to be invalid. This
-        happens when it points at a specific branch that has been
-        deleted. This is indicated in the `is_valid` field for the branch. A
-        request that would leave `production` enabled and invalid will be
-        rejected. It is possible to update `production` and make it invalid if
-        it would also be left disabled.
-
-        The `branch_types` property contains the branch types to be updated.
-        Only the branch types passed will be updated. All updates will be
-        rejected if it would leave the branching model in an invalid state.
-        For branch types this means that:
-
-        1. The prefixes for all enabled branch types are valid. For example,
-           it is not possible to use '*' inside a Git prefix.
-        2. A prefix of an enabled branch type must not be a prefix of another
-           enabled branch type. This is to ensure that a branch can be easily
-           classified by its prefix unambiguously.
-
-        It is possible to store an invalid prefix if that branch type would be
-        left disabled. Only the passed properties will be updated. The
-        properties not passed will be left unchanged. Each branch type must
-        have a `kind` property to identify it.
-
-        There is currently a side effect when using this API endpoint. If the
-        repository is inheriting branching model settings from its project,
-        updating the branching model for this repository will disable the
-        project setting inheritance.
-
-
-        We have deprecated this side effect and will remove it on 1 August 2022.
+        - Update
+        - Branching
+        - Model
+        - Repositories
+      description: >-
+        This PUT endpoint allows you to update the branching model configuration
+        settings for a specific repository in Bitbucket. By providing the
+        workspace and repository slug in the path, you can customize how
+        branches are structured and managed within that repository, including
+        settings for branch types, naming conventions, and workflow patterns.
+        This operation modifies the existing branching model configuration and
+        returns the updated settings, enabling teams to enforce consistent
+        branching strategies such as Git Flow or custom branch models across
+        their development workflow.
       summary: Update The Branching Model Config For Repository
       responses:
         '200':
@@ -1141,8 +1056,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}:
     get:
       tags:
-        - - - - Commits
-      description: Returns the specified commit.
+        - Get
+        - Commits
+      description: >-
+        The Get Commit operation in the Atlassian Bitbucket Repositories API
+        retrieves detailed information about a specific commit within a
+        repository by using the GET method on the endpoint
+        /repositories/{workspace}/{repo_slug}/commit/{commit}. This operation
+        requires three path parameters: the workspace identifier, the repository
+        slug, and the commit hash or reference, and returns comprehensive commit
+        data including the commit message, author information, timestamp, parent
+        commits, and the changes introduced in that commit. This is useful for
+        examining the details of individual code changes, tracking project
+        history, or integrating commit information into external tools and
+        workflows.
       summary: Get Commit
       responses:
         '200':
@@ -1278,14 +1205,18 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}/approve:
     delete:
       tags:
-        - - - - Commits
-      description: |-
-        Redact the authenticated user's approval of the specified commit.
-
-        This operation is only available to users that have explicit access to
-        the repository. In contrast, just the fact that a repository is
-        publicly accessible to users does not give them the ability to approve
-        commits.
+        - Unapprove
+        - Commits
+      description: >-
+        This API operation removes the authenticated user's approval from a
+        specific commit in a Bitbucket repository. By sending a DELETE request
+        to the endpoint with the workspace identifier, repository slug, and
+        commit hash, users can revoke their previously given approval for that
+        commit. This is useful in code review workflows where approvals may need
+        to be withdrawn if issues are discovered after initial review or if
+        changes need to be reconsidered. The operation requires proper
+        authentication and the user must have previously approved the commit in
+        order to successfully unapprove it.
       summary: Unapprove Commit
       responses:
         '204':
@@ -1311,14 +1242,19 @@ paths:
       operationId: unapproveCommit
     post:
       tags:
-        - - - - Commits
-      description: |-
-        Approve the specified commit as the authenticated user.
-
-        This operation is only available to users that have explicit access to
-        the repository. In contrast, just the fact that a repository is
-        publicly accessible to users does not give them the ability to approve
-        commits.
+        - Approve
+        - Commits
+      description: >-
+        This API operation allows a user to approve a specific commit in a
+        Bitbucket repository by sending a POST request to the designated
+        endpoint. The request requires three path parameters: the workspace
+        identifier, the repository slug, and the commit hash that needs
+        approval. When executed, it records the authenticated user's approval of
+        the specified commit, which can be used in code review workflows and to
+        track which team members have reviewed and endorsed particular changes.
+        This approval mechanism helps teams maintain code quality standards and
+        implement peer review processes before merging code into protected
+        branches.
       summary: Approve Commit
       responses:
         '200':
