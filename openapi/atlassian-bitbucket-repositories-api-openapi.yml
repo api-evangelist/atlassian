@@ -3685,26 +3685,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/deploy_key'
               examples:
-                response:
-                  value:
-                    comment: newcomment
-                    last_used: null
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/repositories/mleu/test/deploy-keys/1234
-                    repository:
-                      full_name: mleu/test
-                      name: test
-                      type: repository
-                      uuid: '{85d08b4e-571d-44e9-a507-fa476535aa98}'
-                    label: newlabel
-                    created_on: '2018-08-15T23:50:59.993890+00:00'
-                    key: >-
-                      ssh-rsa
-                      AAAAB3NzaC1yc2EAAAADAQABAAABAQDAK/b1cHHDr/TEV1JGQl+WjCwStKG6Bhrv0rFpEsYlyTBm1fzN0VOJJYn4ZOPCPJwqse6fGbXntEs+BbXiptR+++HycVgl65TMR0b5ul5AgwrVdZdT7qjCOCgaSV74/9xlHDK8oqgGnfA7ZoBBU+qpVyaloSjBdJfLtPY/xqj4yHnXKYzrtn/uFc4Kp9Tb7PUg9Io3qohSTGJGVHnsVblq/rToJG7L5xIo0OxK0SJSQ5vuId93ZuFZrCNMXj8JDHZeSEtjJzpRCBEXHxpOPhAcbm4MzULgkFHhAVgp4JbkrT99/wpvZ7r9AdkTg7HGqL3rlaDrEcWfL7Lu6TnhBdq5
-                    id: 1234
-                    type: deploy_key
+                deploy-key_2:
+                  $ref: '#/components/examples/deploy-key_2'
         '400':
           description: If the submitted key or related value is invalid
           content:
@@ -3731,6 +3713,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     parameters:
       - name: key_id
         in: path
@@ -3795,6 +3778,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_deployments'
+              examples:
+                paginated-deployments:
+                  $ref: '#/components/examples/paginated-deployments'
       security:
         - oauth2:
             - pipeline
@@ -3803,6 +3789,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
   /repositories/{workspace}/{repo_slug}/deployments/{deployment_uuid}:
     get:
       tags:
@@ -3847,6 +3834,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment'
+              examples:
+                deployment:
+                  $ref: '#/components/examples/deployment'
         '404':
           description: No account, repository or deployment with the UUID provided exists.
           content:
@@ -3861,6 +3851,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
   /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables:
     get:
       tags:
@@ -3907,6 +3898,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_deployment_variable'
+              examples:
+                paginated-deployment-variables:
+                  $ref: '#/components/examples/paginated-deployment-variables'
       security:
         - oauth2:
             - pipeline
@@ -3915,6 +3909,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     post:
       tags:
         - Create
@@ -19709,11 +19704,20 @@ components:
             Page number of the current results. This is an optional element that
             is not provided in all responses.
         values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/deployment'
-          description: The values of the current page.
+          additionalProperties: true
+          type: object
+          title: Deployment
+          description: A Bitbucket Deployment.
+          properties:
+            uuid:
+              type: string
+              description: The UUID identifying the deployment.
+            state:
+              $ref: '#/components/schemas/deployment_state'
+            environment:
+              $ref: '#/components/schemas/deployment_environment'
+            release:
+              $ref: '#/components/schemas/deployment_release'
         size:
           type: integer
           description: >-
@@ -19771,11 +19775,27 @@ components:
             Page number of the current results. This is an optional element that
             is not provided in all responses.
         values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/deployment_variable'
-          description: The values of the current page.
+          additionalProperties: true
+          type: object
+          title: Deployment Variable
+          description: A Pipelines deployment variable.
+          properties:
+            uuid:
+              type: string
+              description: The UUID identifying the variable.
+            key:
+              type: string
+              description: The unique name of the variable.
+            value:
+              type: string
+              description: >-
+                The value of the variable. If the variable is secured, this will
+                be empty.
+            secured:
+              type: boolean
+              description: >-
+                If true, this variable will be treated as secured. The value
+                will never be exposed in the logs or the REST API.
         size:
           type: integer
           description: >-
@@ -23945,24 +23965,62 @@ components:
         username: myworkspace
         display_name: My Workspace
     deploy-key_2:
-      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDak9i...
       repository:
-        name: my-repo
-        full_name: myusername/my-repo
-        uuid: '{12345678-1234-1234-1234-123456789abc}'
-      comment: deploy@production-server
-      label: Production Server Deploy Key
-      added_on: '2023-11-15T10:30:00Z'
-      last_used: '2024-01-20T14:45:30Z'
+        uuid: '{1234abcd-5678-efgh-9012-ijklmnopqrst}'
+        name: my-repository
+        full_name: myworkspace/my-repository
+      comment: deploy@example.com
+      label: Production Deploy Key
+      added_on: '2024-01-15T10:30:00Z'
+      last_used: '2024-01-20T14:45:00Z'
       links:
         self:
           href: >-
-            https://api.bitbucket.org/2.0/repositories/myusername/my-repo/deploy-keys/123
-          name: production-deploy-key
+            https://api.bitbucket.org/2.0/repositories/myworkspace/my-repository/deploy-keys/123
+          name: Production Deploy Key
       owner:
-        username: myusername
-        display_name: My Display Name
-        uuid: '{87654321-4321-4321-4321-cba987654321}'
+        uuid: '{abcd1234-efgh-5678-ijkl-9012mnopqrst}'
+        username: myworkspace
+        display_name: My Workspace
+    paginated-deployments:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        state: {}
+        environment: {}
+        release: {}
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/deployments?page=2
+      previous: https://api.bitbucket.org/2.0/deployments?page=0
+    deployment:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      state:
+        name: COMPLETED
+        status: successful
+      environment:
+        uuid: 987e6543-e21b-45d3-a456-426614174999
+        name: production
+        type: production
+      release:
+        uuid: 456e7890-e12b-34d5-a678-426614174111
+        name: v1.2.3
+        url: >-
+          https://api.bitbucket.org/2.0/repositories/workspace/repo/deployments/releases/1
+    paginated-deployment-variables:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        key: DATABASE_URL
+        value: postgresql://localhost:5432/mydb
+        secured: false
+      size: 42
+      pagelen: 10
+      next: >-
+        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/deployments/variables?page=2
+      previous: >-
+        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/deployments/variables?page=0
   reponses: {}
   parameters: {}
   responses: {}
