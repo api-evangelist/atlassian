@@ -5393,6 +5393,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_webhook_subscriptions'
+              examples:
+                paginated-webhook-subscriptions:
+                  $ref: '#/components/examples/paginated-webhook-subscriptions'
         '403':
           description: >-
             If the authenticated user does not have permission to access the
@@ -5416,6 +5419,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     post:
       tags:
         - Create
@@ -5449,6 +5453,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription:
+                  $ref: '#/components/examples/webhook-subscription'
         '403':
           description: >-
             If the authenticated user does not have permission to install
@@ -5472,6 +5479,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     parameters:
       - name: repo_slug
         in: path
@@ -5555,6 +5563,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2'
         '404':
           description: If the webhook or repository does not exist.
           content:
@@ -5570,6 +5581,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     put:
       tags:
         - Update
@@ -5594,6 +5606,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2'
         '403':
           description: >-
             If the authenticated user does not have permission to update the
@@ -5617,6 +5632,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     parameters:
       - name: repo_slug
         in: path
@@ -5666,6 +5682,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_issues'
+              examples:
+                paginated-issues:
+                  $ref: '#/components/examples/paginated-issues'
         '404':
           description: >-
             The specified repository does not exist or does not have the issue
@@ -5683,6 +5702,7 @@ paths:
       x-api-evangelist-processing:
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     post:
       tags:
         - Create
@@ -20182,11 +20202,89 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/webhook_subscription'
-          minItems: 0
-          uniqueItems: true
+          type: object
+          title: Webhook Subscription
+          description: A Webhook subscription.
+          properties:
+            uuid:
+              type: string
+              description: The webhook's id
+            url:
+              type: string
+              description: The URL events get delivered to.
+              format: uri
+            description:
+              type: string
+              description: A user-defined description of the webhook.
+            subject_type:
+              type: string
+              description: >-
+                The type of entity. Set to either `repository` or `workspace`
+                based on where the subscription is defined.
+              enum:
+                - repository
+                - workspace
+            subject:
+              $ref: '#/components/schemas/object'
+            active:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            events:
+              type: array
+              description: The events this webhook is subscribed to.
+              items:
+                type: string
+                enum:
+                  - pullrequest:comment_reopened
+                  - pullrequest:approved
+                  - issue:comment_created
+                  - repo:push
+                  - pullrequest:comment_deleted
+                  - pullrequest:fulfilled
+                  - pullrequest:comment_created
+                  - pullrequest:comment_updated
+                  - pullrequest:updated
+                  - repo:commit_status_created
+                  - pullrequest:unapproved
+                  - repo:updated
+                  - pullrequest:comment_resolved
+                  - repo:transfer
+                  - repo:commit_status_updated
+                  - pullrequest:changes_request_created
+                  - issue:updated
+                  - repo:created
+                  - pullrequest:changes_request_removed
+                  - pullrequest:rejected
+                  - pullrequest:created
+                  - issue:created
+                  - repo:imported
+                  - repo:commit_comment_created
+                  - project:updated
+                  - repo:fork
+                  - repo:deleted
+              minItems: 1
+              uniqueItems: true
+            secret_set:
+              type: boolean
+              description: >-
+                Indicates whether or not the hook has an associated secret. It
+                is not possible to see the hook's secret. This field is ignored
+                during updates.
+            secret:
+              type: string
+              description: >-
+                The secret to associate with the hook. The secret is never
+                returned via the API. As such, this field is only used during
+                updates. The secret can be set to `null` or "" to remove the
+                secret (or create a hook with no secret). Leaving out the secret
+                field during updates will leave the secret unchanged. Leaving
+                out the secret during creation will create a hook with no
+                secret.
+              minLength: 0
+              maxLength: 128
+          additionalProperties: true
       additionalProperties: false
     webhook_subscription:
       allOf:
@@ -20317,11 +20415,154 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/issue'
-          minItems: 0
-          uniqueItems: true
+          type: object
+          title: Issue
+          description: An issue.
+          properties:
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                html:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                comments:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                attachments:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                watch:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                vote:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+            id:
+              type: integer
+            repository:
+              $ref: '#/components/schemas/repository'
+            title:
+              type: string
+            reporter:
+              $ref: '#/components/schemas/account'
+            assignee:
+              $ref: '#/components/schemas/account'
+            created_on:
+              type: string
+              format: date-time
+            updated_on:
+              type: string
+              format: date-time
+            edited_on:
+              type: string
+              format: date-time
+            state:
+              type: string
+              enum:
+                - submitted
+                - new
+                - open
+                - resolved
+                - on hold
+                - invalid
+                - duplicate
+                - wontfix
+                - closed
+            kind:
+              type: string
+              enum:
+                - bug
+                - enhancement
+                - proposal
+                - task
+            priority:
+              type: string
+              enum:
+                - trivial
+                - minor
+                - major
+                - critical
+                - blocker
+            milestone:
+              $ref: '#/components/schemas/milestone'
+            version:
+              $ref: '#/components/schemas/version'
+            component:
+              $ref: '#/components/schemas/component'
+            votes:
+              type: integer
+            content:
+              type: object
+              properties:
+                raw:
+                  type: string
+                  description: The text as it was typed by a user.
+                markup:
+                  type: string
+                  description: >-
+                    The type of markup language the raw content is to be
+                    interpreted in.
+                  enum:
+                    - markdown
+                    - creole
+                    - plaintext
+                html:
+                  type: string
+                  description: The user's content rendered as HTML.
+              additionalProperties: false
+          additionalProperties: true
       additionalProperties: false
     issue_job_status:
       type: object
@@ -24097,6 +24338,105 @@ components:
       previous: >-
         https://api.example.com/repositories/user/repo/commits/abc123/files?page=0
       values: []
+    paginated-webhook-subscriptions:
+      size: 25
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/workspaces/my-workspace/hooks?page=2
+      previous: https://api.bitbucket.org/2.0/workspaces/my-workspace/hooks?page=0
+      values:
+        uuid: '{b3329d9d-fcb5-4c19-a5b5-4b0411dc93d1}'
+        url: https://example.com/webhooks/bitbucket
+        description: Webhook for CI/CD pipeline triggers
+        subject_type: repository
+        subject: {}
+        active: true
+        created_at: '2023-11-15T10:30:00Z'
+        events:
+          - repo:push
+          - pullrequest:created
+          - pullrequest:updated
+          - pullrequest:approved
+          - pullrequest:fulfilled
+        secret_set: true
+    webhook-subscription:
+      uuid: '{d7a4e3b2-5c1f-4a8b-9e2d-3f6c8a1b4e9d}'
+      url: https://example.com/webhooks/bitbucket
+      description: Webhook for monitoring pull request and repository events
+      subject_type: repository
+      subject: {}
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+        - repo:push
+        - pullrequest:created
+        - pullrequest:approved
+        - pullrequest:fulfilled
+        - issue:created
+      secret_set: true
+      secret: my-secure-webhook-secret-123
+    webhook-subscription_2:
+      uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+      url: https://example.com/webhooks/bitbucket
+      description: Webhook for monitoring pull request events
+      subject_type: repository
+      subject:
+        type: repository
+        name: my-repo
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+        - pullrequest:created
+        - pullrequest:approved
+        - pullrequest:fulfilled
+        - repo:push
+      secret_set: true
+      secret: my-webhook-secret-key-12345
+    paginated-issues:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/example/repo/issues?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/example/repo/issues?page=0
+      values:
+        links:
+          self:
+            href: https://api.bitbucket.org/2.0/repositories/example/repo/issues/123
+            name: 'Issue #123'
+          html:
+            href: https://bitbucket.org/example/repo/issues/123
+            name: View Issue
+          comments:
+            href: >-
+              https://api.bitbucket.org/2.0/repositories/example/repo/issues/123/comments
+            name: Comments
+          attachments:
+            href: >-
+              https://api.bitbucket.org/2.0/repositories/example/repo/issues/123/attachments
+            name: Attachments
+          watch:
+            href: >-
+              https://api.bitbucket.org/2.0/repositories/example/repo/issues/123/watch
+            name: Watch
+          vote:
+            href: >-
+              https://api.bitbucket.org/2.0/repositories/example/repo/issues/123/vote
+            name: Vote
+        id: 123
+        title: Fix login button not responding on mobile devices
+        created_on: '2023-10-15T14:30:00Z'
+        updated_on: '2023-10-16T09:45:00Z'
+        edited_on: '2023-10-16T09:45:00Z'
+        state: open
+        kind: bug
+        priority: major
+        votes: 5
+        content:
+          raw: The login button does not respond to touch events on iOS devices.
+          markup: markdown
+          html: >-
+            <p>The login button does not respond to touch events on iOS
+            devices.</p>
   reponses: {}
   parameters: {}
   responses: {}
