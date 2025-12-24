@@ -2244,75 +2244,23 @@ paths:
         ChooseTags: true
     post:
       tags:
-        - - - - Reports
-              - Commits
-      description: >
-        Bulk upload of annotations.
-
-        Annotations are individual findings that have been identified as part of
-        a report, for example, a line of code that represents a vulnerability.
-        These annotations can be attached to a specific file and even a specific
-        line in that file, however, that is optional. Annotations are not
-        mandatory and a report can contain up to 1000 annotations.
-
-
-        Add the annotations you want to upload as objects in a JSON array and
-        make sure each annotation has the external_id field set to a unique
-        value. If you want to use an existing id from your own system, we
-        recommend prefixing it with your system's name to avoid collisions, for
-        example, mySystem-annotation001. The external id can later be used to
-        identify the report as an alternative to the generated
-        [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid).
-        You can upload up to 100 annotations per POST request.
-
-
-        ### Sample cURL request:
-
-        ```
-
-        curl --location
-        'https://api.bitbucket.org/2.0/repositories/<username>/<reposity-name>/commit/<commit-hash>/reports/mysystem-001/annotations'
-        \
-
-        --header 'Content-Type: application/json' \
-
-        --data-raw '[
-          {
-                "external_id": "mysystem-annotation001",
-                "title": "Security scan report",
-                "annotation_type": "VULNERABILITY",
-                "summary": "This line represents a security threat.",
-                "severity": "HIGH",
-              "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",
-                "line": 42
-          },
-          {
-                "external_id": "mySystem-annotation002",
-                "title": "Bug report",
-                "annotation_type": "BUG",
-                "result": "FAILED",
-                "summary": "This line might introduce a bug.",
-                "severity": "MEDIUM",
-              "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Helper.java",
-                "line": 13
-          }
-        ]'
-
-        ```
-
-
-        ### Possible field values:
-
-        annotation_type: VULNERABILITY, CODE_SMELL, BUG
-
-        result: PASSED, FAILED, IGNORED, SKIPPED
-
-        severity: HIGH, MEDIUM, LOW, CRITICAL
-
-
-        Please refer to the [Code Insights
-        documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html)
-        for more information.
+        - Bulk
+        - Create
+        - Update
+        - Annotations
+      description: >-
+        Creates or updates individual annotation objects within a specified
+        commit report in a Bitbucket repository, allowing developers to
+        programmatically add code analysis findings, linting errors, test
+        results, or other automated feedback directly to a specific commit. The
+        operation requires the workspace ID, repository slug, commit hash, and
+        report ID as path parameters, and accepts an array of annotation objects
+        in the request body, each containing details such as line number,
+        severity, annotation type, summary, and optional description. This bulk
+        operation enables CI/CD pipelines and development tools to efficiently
+        attach multiple code quality insights to a single commit, making review
+        feedback immediately visible within the Bitbucket interface and helping
+        teams maintain code standards through automated checks.
       operationId: bulkCreateOrUpdateAnnotations
       summary: Bulk Create Or Update Annotations
       parameters:
@@ -2367,12 +2315,24 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations/{annotationId}:
     get:
       tags:
-        - - - - Reports
-              - Commits
-      description: Returns a single Annotation matching the provided ID.
+        - Get
+        - Annotations
+      description: >-
+        This API operation retrieves a specific annotation associated with a
+        code insights report for a particular commit in a Bitbucket repository.
+        By providing the workspace identifier, repository slug, commit hash,
+        report ID, and annotation ID in the URL path, users can fetch detailed
+        information about a single annotation that was previously created for
+        code quality, security findings, or other automated analysis results.
+        The annotation typically contains metadata such as the file path, line
+        number, severity level, and description of an issue or finding detected
+        in the code at that specific commit point.
       summary: Get An Annotation
       operationId: getAnAnnotation
       parameters:
@@ -2431,63 +2391,27 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Reports
-              - Commits
-      description: >
-        Creates or updates an individual annotation for the specified report.
-
-        Annotations are individual findings that have been identified as part of
-        a report, for example, a line of code that represents a vulnerability.
-        These annotations can be attached to a specific file and even a specific
-        line in that file, however, that is optional. Annotations are not
-        mandatory and a report can contain up to 1000 annotations.
-
-
-        Just as reports, annotation needs to be uploaded with a unique ID that
-        can later be used to identify the report as an alternative to the
-        generated
-        [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid).
-        If you want to use an existing id from your own system, we recommend
-        prefixing it with your system's name to avoid collisions, for example,
-        mySystem-annotation001.
-
-
-        ### Sample cURL request:
-
-        ```
-
-        curl --request PUT
-        'https://api.bitbucket.org/2.0/repositories/<username>/<reposity-name>/commit/<commit-hash>/reports/mySystem-001/annotations/mysystem-annotation001'
-        \
-
-        --header 'Content-Type: application/json' \
-
-        --data-raw '{
-            "title": "Security scan report",
-            "annotation_type": "VULNERABILITY",
-            "summary": "This line represents a security thread.",
-            "severity": "HIGH",
-            "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",
-            "line": 42
-        }'
-
-        ```
-
-
-        ### Possible field values:
-
-        annotation_type: VULNERABILITY, CODE_SMELL, BUG
-
-        result: PASSED, FAILED, IGNORED, SKIPPED
-
-        severity: HIGH, MEDIUM, LOW, CRITICAL
-
-
-        Please refer to the [Code Insights
-        documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html)
-        for more information.
+        - Create
+        - Update
+        - Annotations
+      description: >-
+        This PUT operation allows users to create or update a specific
+        annotation for a code report associated with a particular commit in a
+        Bitbucket repository. By providing the workspace identifier, repository
+        slug, commit hash, report ID, and annotation ID in the URL path,
+        developers can add detailed feedback or metadata about specific lines or
+        sections of code within that commit's report. Annotations are typically
+        used in CI/CD pipelines or code analysis tools to highlight issues,
+        warnings, or suggestions directly within the Bitbucket interface,
+        enabling better code review workflows and automated quality checks. If
+        an annotation with the specified ID already exists, this operation
+        updates it with the new information provided in the request body;
+        otherwise, it creates a new annotation with that ID.
       operationId: createOrUpdateAnAnnotation
       summary: Create Or Update An Annotation
       parameters:
@@ -2548,11 +2472,25 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       tags:
-        - - - - Reports
-              - Commits
-      description: Deletes a single Annotation matching the provided ID.
+        - Delete
+        - Annotations
+      description: >-
+        Deletes a specific annotation from a report associated with a commit in
+        a Bitbucket repository. This operation removes an individual annotation
+        identified by its unique annotationId from a report (specified by
+        reportId) that was previously attached to a particular commit. The
+        annotation could represent various code analysis findings such as
+        linting errors, security vulnerabilities, or test failures that were
+        previously reported through Bitbucket's commit insights feature. Once
+        deleted, the annotation will no longer appear in the commit's report
+        overview or affect the overall report status, allowing teams to clean up
+        outdated or incorrect analysis results while maintaining the integrity
+        of their code review and CI/CD workflows.
       summary: Delete An Annotation
       operationId: deleteAnAnnotation
       parameters:
@@ -2596,11 +2534,26 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses:
     get:
       tags:
-        - - - - Commit statuses
-      description: Returns all statuses (e.g. build results) for a specific commit.
+        - Lists
+        - Commits
+        - Statuses
+      description: >-
+        This API operation retrieves all build statuses associated with a
+        specific commit in a Bitbucket repository. By providing the workspace
+        ID, repository slug, and commit hash, you can fetch a paginated list of
+        status objects that represent the state of various CI/CD builds,
+        deployments, or other automated checks that have been reported for that
+        particular commit. Each status includes information such as the state
+        (successful, failed, in progress), key, name, URL, description, and
+        timestamp, allowing developers and integrations to track and display the
+        overall health and validation results of a commit across multiple build
+        systems and tools.
       summary: List Commit Statuses For Commit
       responses:
         '200':
@@ -2646,6 +2599,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommitStatusesForCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -2672,51 +2628,24 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses/build:
     post:
       tags:
-        - - - - Commit statuses
+        - Create
+        - Builds
+        - Status
+        - Commits
       description: >-
-        Creates a new build status against the specified commit.
-
-
-        If the specified key already exists, the existing status object will
-
-        be overwritten.
-
-
-        Example:
-
-
-        ```
-
-        curl
-        https://api.bitbucket.org/2.0/repositories/my-workspace/my-repo/commit/e10dae226959c2194f2b07b077c07762d93821cf/statuses/build/          
-        -X POST -u jdoe -H 'Content-Type: application/json'           -d '{
-            "key": "MY-BUILD",
-            "state": "SUCCESSFUL",
-            "description": "42 tests passed",
-            "url": "https://www.example.org/my-build-result"
-          }'
-        ```
-
-
-        When creating a new commit status, you can use a URI template for the
-        URL.
-
-        Templates are URLs that contain variable names that Bitbucket will
-
-        evaluate at runtime whenever the URL is displayed anywhere similar to
-
-        parameter substitution in
-
-        [Bitbucket
-        Connect](https://developer.atlassian.com/bitbucket/concepts/context-parameters.html).
-
-        For example, one could use
-        `https://foo.com/builds/{repository.full_name}`
-
-        which Bitbucket will turn into `https://foo.com/builds/foo/bar` at
-        render time.
-
-        The context variables available are `repository` and `commit`.
+        This POST endpoint creates a build status for a specific commit in a
+        Bitbucket repository, allowing external CI/CD systems and build tools to
+        report the status of automated builds back to Bitbucket. The endpoint
+        requires the workspace ID, repository slug, and commit hash as path
+        parameters, and accepts a JSON payload containing build status
+        information such as state (successful, failed, in progress), key, name,
+        URL, and description. When invoked, it associates the provided build
+        status with the specified commit, which then becomes visible in the
+        Bitbucket UI on pull requests and commit pages, enabling teams to track
+        build results and prevent merging of code that fails automated checks.
+        This integration is essential for maintaining CI/CD pipelines and
+        ensuring code quality by providing real-time feedback on build outcomes
+        directly within the version control interface.
       summary: Create Build Status For Commit
       responses:
         '201':
@@ -2750,6 +2679,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: createBuildStatusForCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -2776,8 +2708,23 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses/build/{key}:
     get:
       tags:
-        - - - - Commit statuses
-      description: Returns the specified build status for a commit.
+        - Get
+        - Builds
+        - Status
+        - Commits
+      description: >-
+        Retrieves a specific build status object associated with a commit in a
+        Bitbucket repository, identified by a unique key. This endpoint allows
+        you to query the detailed status information of a particular build or
+        CI/CD pipeline execution that was reported for a given commit. You must
+        provide the workspace identifier, repository slug, commit hash, and the
+        unique key of the build status you want to retrieve. The response
+        includes comprehensive details about the build execution such as its
+        state (successful, failed, in progress), description, URL to view the
+        build results, and timestamp information. This is particularly useful
+        for integrating with external CI/CD systems, monitoring build pipelines,
+        or displaying build status information in custom dashboards and
+        applications.
       summary: Get Build Status For Commit
       responses:
         '200':
@@ -2805,23 +2752,29 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getBuildStatusForCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Commit statuses
-      description: |-
-        Used to update the current status of a build status object on the
-        specific commit.
-
-        This operation can also be used to change other properties of the
-        build status:
-
-        * `state`
-        * `name`
-        * `description`
-        * `url`
-        * `refname`
-
-        The `key` cannot be changed.
+        - Update
+        - Builds
+        - Status
+        - Commits
+      description: >-
+        This API operation updates the build status for a specific commit in a
+        Bitbucket repository by making a PUT request to the endpoint that
+        identifies a unique build status entry through the workspace name,
+        repository slug, commit hash, and a unique key identifier. It allows
+        developers and CI/CD systems to modify the state of an existing build
+        status record associated with a particular commit, enabling them to
+        update information such as whether the build is in progress, successful,
+        failed, or stopped, along with relevant metadata like build URLs,
+        descriptions, and timestamps. This is particularly useful for continuous
+        integration workflows where build systems need to communicate the
+        current state of automated builds and tests back to Bitbucket, providing
+        visibility to team members about the health and status of code changes
+        directly within the repository interface.
       summary: Update Build Status For Commit
       responses:
         '200':
@@ -2855,6 +2808,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: updateBuildStatusForCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -2887,87 +2843,23 @@ paths:
   /repositories/{workspace}/{repo_slug}/commits:
     get:
       tags:
-        - - - - Commits
+        - Lists
+        - Commits
       description: >-
-        These are the repository's commits. They are paginated and returned
-
-        in reverse chronological order, similar to the output of `git log`.
-
-        Like these tools, the DAG can be filtered.
-
-
-        #### GET /repositories/{workspace}/{repo_slug}/commits/
-
-
-        Returns all commits in the repo in topological order (newest commit
-
-        first). All branches and tags are included (similar to
-
-        `git log --all`).
-
-
-        #### GET /repositories/{workspace}/{repo_slug}/commits/?exclude=master
-
-
-        Returns all commits in the repo that are not on master
-
-        (similar to `git log --all ^master`).
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/?include=foo&include=bar&exclude=fu&exclude=fubar
-
-
-        Returns all commits that are on refs `foo` or `bar`, but not on `fu` or
-
-        `fubar` (similar to `git log foo bar ^fu ^fubar`).
-
-
-        An optional `path` parameter can be specified that will limit the
-
-        results to commits that affect that path. `path` can either be a file
-
-        or a directory. If a directory is specified, commits are returned that
-
-        have modified any file in the directory tree rooted by `path`. It is
-
-        important to note that if the `path` parameter is specified, the commits
-
-        returned by this endpoint may no longer be a DAG, parent commits that
-
-        do not modify the path will be omitted from the response.
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/?path=README.md&include=foo&include=bar&exclude=master
-
-
-        Returns all commits that are on refs `foo` or `bar`, but not on `master`
-
-        that changed the file README.md.
-
-
-        #### GET
-        /repositories/{workspace}/{repo_slug}/commits/?path=src/&include=foo&include=bar&exclude=master
-
-
-        Returns all commits that are on refs `foo` or `bar`, but not on `master`
-
-        that changed to a file in any file in the directory src or its children.
-
-
-        Because the response could include a very large number of commits, it
-
-        is paginated. Follow the 'next' link in the response to navigate to the
-
-        next page of commits. As with other paginated resources, do not
-
-        construct your own links.
-
-
-        When the include and exclude parameters are more than can fit in a
-
-        query string, clients can use a `x-www-form-urlencoded` POST instead.
+        The List Commits operation in the Atlassian Bitbucket Repositories API
+        retrieves a paginated list of commits from a specific repository by
+        making a GET request to the endpoint
+        /repositories/{workspace}/{repo_slug}/commits. This endpoint requires
+        two path parameters: the workspace ID or slug that owns the repository,
+        and the repo_slug which uniquely identifies the repository within that
+        workspace. The response returns commit objects in reverse chronological
+        order by default, with each commit containing metadata such as the
+        commit hash, author information, timestamp, commit message, and parent
+        commit references. Optional query parameters can be used to filter the
+        results by branch, tag, or specific commit ranges, and to control
+        pagination through the result set. This API operation is commonly used
+        for displaying commit history, tracking changes, or integrating
+        repository activity into external tools and dashboards.
       summary: List Commits
       responses:
         '200':
@@ -2993,6 +2885,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommits
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
         - - - - Commits
