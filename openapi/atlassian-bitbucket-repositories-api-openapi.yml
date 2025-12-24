@@ -10857,9 +10857,21 @@ paths:
         ChooseTags: true
     put:
       tags:
-        - - - - Pipelines
+        - Update
+        - Variables
+        - Repositories
       summary: Update Variable For Repository
-      description: Update a repository level variable.
+      description: >-
+        Updates an existing pipeline variable for a specific repository in
+        Bitbucket, identified by the workspace name, repository slug, and the
+        variable's unique UUID. This operation allows you to modify the
+        variable's properties such as its name, value, security settings
+        (whether it's secured/masked), and other configuration options that
+        control how the variable behaves within the pipeline execution context.
+        The variable can be used across all pipelines in the repository to store
+        configuration values, credentials, or other environment-specific data,
+        and when marked as secured, its value will be hidden in pipeline logs
+        and UI to protect sensitive information.
       operationId: updateVariableForRepository
       parameters:
         - name: workspace
@@ -10914,11 +10926,29 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       tags:
-        - - - - Pipelines
+        - Delete
+        - Variables
+        - Repositories
       summary: Delete Variable For Repository
-      description: Delete a repository level variable.
+      description: >-
+        Deletes a specific pipeline variable from a Bitbucket repository's
+        configuration by targeting its unique identifier. This operation removes
+        the variable identified by the variable_uuid parameter from the
+        specified repository within the given workspace, permanently eliminating
+        it from the pipeline's environment variables. Once deleted, the variable
+        will no longer be available for use in any pipeline executions for that
+        repository, and this action cannot be undone. The operation requires
+        appropriate permissions on the repository and is commonly used when
+        cleaning up unused variables, removing sensitive information, or
+        managing pipeline configuration changes. Authentication is required, and
+        the workspace, repository slug, and variable UUID must all be provided
+        as path parameters to successfully identify and delete the target
+        variable.
       operationId: deleteVariableForRepository
       parameters:
         - name: workspace
@@ -10960,6 +10990,9 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/properties/{app_key}/{property_name}:
     put:
       responses:
@@ -10968,9 +11001,15 @@ paths:
       operationId: updateRepositoryApplicationProperty
       summary: Update Repository Application Property
       description: >-
-        Update an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a repository.
+        Updates an application property value for a specific repository in
+        Bitbucket. This endpoint allows applications to store and modify custom
+        metadata or configuration data associated with a particular repository
+        by specifying the workspace, repository slug, application key, and
+        property name. The operation replaces the existing property value with
+        the new data provided in the request body, enabling applications to
+        maintain persistent, repository-specific settings or state information
+        that can be retrieved and modified as needed throughout the application
+        lifecycle.
       parameters:
         - required: true
           in: path
@@ -11001,11 +11040,17 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/application_property'
       tags:
-        - - - - properties
+        - Update
+        - Repositories
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       responses:
         '204':
@@ -11013,9 +11058,19 @@ paths:
       operationId: deleteRepositoryApplicationProperty
       summary: Delete Repository Application Property
       description: >-
-        Delete an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a repository.
+        This API operation allows you to delete a specific application property
+        associated with a Bitbucket repository within a given workspace. By
+        sending a DELETE request to the endpoint with the workspace identifier,
+        repository slug, application key, and property name as path parameters,
+        you can remove custom metadata or configuration data that was previously
+        stored against the repository by a specific application. This is
+        particularly useful for cleaning up application-specific settings,
+        removing obsolete configuration values, or managing the lifecycle of
+        properties created by Atlassian Connect apps or other integrations that
+        extend Bitbucket's functionality. The operation requires appropriate
+        permissions to modify repository settings and will permanently remove
+        the specified property from the repository's application property
+        collection.
       parameters:
         - required: true
           in: path
@@ -11044,11 +11099,17 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Delete
+        - Repositories
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       responses:
         '200':
@@ -11060,9 +11121,16 @@ paths:
       operationId: getRepositoryApplicationProperty
       summary: Get Repository Application Property
       description: >-
-        Retrieve an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a repository.
+        This API operation retrieves a specific application property stored
+        against a Bitbucket repository within a given workspace. By providing
+        the workspace identifier, repository slug, application key, and property
+        name as path parameters, developers can fetch custom metadata or
+        configuration values that have been previously set by an application for
+        that particular repository. This is useful for applications that need to
+        store and retrieve repository-specific settings or data, such as
+        integration configurations, feature flags, or custom attributes that
+        extend the repository's functionality beyond Bitbucket's native
+        features.
       parameters:
         - required: true
           in: path
@@ -11091,32 +11159,37 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Get
+        - Repositories
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/pullrequests:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Pull
+        - Requests
       description: >-
-        Returns all pull requests on the specified repository.
-
-
-        By default only open pull requests are returned. This can be controlled
-
-        using the `state` query parameter. To retrieve pull requests that are
-
-        in one of multiple states, repeat the `state` parameter for each
-
-        individual state.
-
-
-        This endpoint also supports filtering and sorting of the results. See
-
-        [filtering and sorting](/cloud/bitbucket/rest/intro/#filtering) for more
-        details.
+        The Get Pull Requests operation retrieves a paginated list of all pull
+        requests in a specified Bitbucket repository within a workspace. By
+        making a GET request to
+        /repositories/{workspace}/{repo_slug}/pullrequests, developers can
+        access comprehensive information about pull requests including their
+        status (open, merged, declined), authors, source and destination
+        branches, creation dates, titles, descriptions, and reviewer
+        information. This endpoint supports various query parameters for
+        filtering results by state, sorting options, and pagination controls,
+        making it essential for monitoring code review workflows, integrating
+        with CI/CD pipelines, generating reports on team collaboration, and
+        building custom dashboards that track the progress of proposed code
+        changes across repository branches.
       summary: List Pull Requests
       responses:
         '200':
@@ -11157,98 +11230,24 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listPullRequests
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pullrequests
+        - Create
+        - Pull
+        - Requests
       description: >-
-        Creates a new pull request where the destination repository is
-
-        this repository and the author is the authenticated user.
-
-
-        The minimum required fields to create a pull request are `title` and
-
-        `source`, specified by a branch name.
-
-
-        ```
-
-        curl
-        https://api.bitbucket.org/2.0/repositories/my-workspace/my-repository/pullrequests
-        \
-            -u my-username:my-password \
-            --request POST \
-            --header 'Content-Type: application/json' \
-            --data '{
-                "title": "My Title",
-                "source": {
-                    "branch": {
-                        "name": "staging"
-                    }
-                }
-            }'
-        ```
-
-
-        If the pull request's `destination` is not specified, it will default
-
-        to the `repository.mainbranch`. To open a pull request to a
-
-        different branch, say from a feature branch to a staging branch,
-
-        specify a `destination` (same format as the `source`):
-
-
-        ```
-
-        {
-            "title": "My Title",
-            "source": {
-                "branch": {
-                    "name": "my-feature-branch"
-                }
-            },
-            "destination": {
-                "branch": {
-                    "name": "staging"
-                }
-            }
-        }
-
-        ```
-
-
-        Reviewers can be specified by adding an array of user objects as the
-
-        `reviewers` property.
-
-
-        ```
-
-        {
-            "title": "My Title",
-            "source": {
-                "branch": {
-                    "name": "my-feature-branch"
-                }
-            },
-            "reviewers": [
-                {
-                    "uuid": "{504c3b62-8120-4f0c-a7bc-87800b9d6f70}"
-                }
-            ]
-        }
-
-        ```
-
-
-        Other fields:
-
-
-        * `description` - a string
-
-        * `close_source_branch` - boolean that specifies if the source branch
-        should be closed upon merging
+        Creates a new pull request in the specified Bitbucket repository within
+        a workspace. This operation requires providing the workspace ID and
+        repository slug in the URL path, along with a request body containing
+        essential pull request details such as the title, source and destination
+        branches, description, and optionally reviewers or other metadata. The
+        API returns the newly created pull request object with details including
+        its ID, state, author information, creation timestamp, and links to
+        related resources. Authentication is required, and the user must have
+        write access to the repository to successfully create a pull request.
       summary: Create Pull Request
       responses:
         '201':
@@ -11305,6 +11304,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: createPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -11325,312 +11327,24 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/activity:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Pull
+        - Requests
+        - Activity
+        - Logs
       description: >-
-        Returns a paginated list of the pull request's activity log.
-
-
-        This handler serves both a v20 and internal endpoint. The v20 endpoint
-
-        returns reviewer comments, updates, approvals and request changes. The
-        internal
-
-        endpoint includes those plus tasks and attachments.
-
-
-        Comments created on a file or a line of code have an inline property.
-
-
-        Comment example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "comment": {
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695/comments/118571088"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695/_/diff#comment-118571088"
-                            }
-                        },
-                        "deleted": false,
-                        "pullrequest": {
-                            "type": "pullrequest",
-                            "id": 5695,
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                                }
-                            },
-                            "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                        },
-                        "content": {
-                            "raw": "inline with to a dn from lines",
-                            "markup": "markdown",
-                            "html": "<p>inline with to a dn from lines</p>",
-                            "type": "rendered"
-                        },
-                        "created_on": "2019-09-27T00:33:46.039178+00:00",
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "created_on": "2019-09-27T00:33:46.039178+00:00",
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "updated_on": "2019-09-27T00:33:46.055384+00:00",
-                        "inline": {
-                            "context_lines": "",
-                            "to": null,
-                            "path": "",
-                            "outdated": false,
-                            "from": 211
-                        },
-                        "type": "pullrequest_comment",
-                        "id": 118571088
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
-
-
-        Updates include a state property of OPEN, MERGED, or DECLINED.
-
-
-        Update example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "update": {
-                        "description": "",
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it",
-                        "destination": {
-                            "commit": {
-                                "type": "commit",
-                                "hash": "6a2c16e4a152",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/commit/6a2c16e4a152"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/commits/6a2c16e4a152"
-                                    }
-                                }
-                            },
-                            "branch": {
-                                "name": "master"
-                            },
-                            "repository": {
-                                "name": "Atlaskit-MK-2",
-                                "type": "repository",
-                                "full_name": "atlassian/atlaskit-mk-2",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2"
-                                    },
-                                    "avatar": {
-                                        "href": "https://bytebucket.org/ravatar/%7B%7D?ts=js"
-                                    }
-                                },
-                                "uuid": "{}"
-                            }
-                        },
-                        "reason": "",
-                        "source": {
-                            "commit": {
-                                "type": "commit",
-                                "hash": "728c8bad1813",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/commit/728c8bad1813"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/commits/728c8bad1813"
-                                    }
-                                }
-                            },
-                            "branch": {
-                                "name": "username/NONE-add-onClick-prop-for-accessibility"
-                            },
-                            "repository": {
-                                "name": "Atlaskit-MK-2",
-                                "type": "repository",
-                                "full_name": "atlassian/atlaskit-mk-2",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2"
-                                    },
-                                    "avatar": {
-                                        "href": "https://bytebucket.org/ravatar/%7B%7D?ts=js"
-                                    }
-                                },
-                                "uuid": "{}"
-                            }
-                        },
-                        "state": "OPEN",
-                        "author": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "date": "2019-05-10T06:48:25.305565+00:00"
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
-
-
-        Approval example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "approval": {
-                        "date": "2019-09-27T00:37:19.849534+00:00",
-                        "pullrequest": {
-                            "type": "pullrequest",
-                            "id": 5695,
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                                }
-                            },
-                            "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                        },
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        }
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
+        This API endpoint retrieves the activity log for all pull requests
+        within a specific repository in a Bitbucket workspace. By making a GET
+        request to this endpoint with the workspace and repository slug
+        parameters, you can access a chronological record of activities
+        including comments, approvals, status changes, updates, and other events
+        related to pull requests. The response provides a comprehensive audit
+        trail of interactions and modifications made to pull requests in the
+        repository, which is useful for tracking collaboration, reviewing
+        decision-making processes, and monitoring the lifecycle of code review
+        activities. This endpoint is commonly used for generating reports,
+        analyzing team workflows, or integrating pull request activity into
+        external monitoring and notification systems.
       summary: List Pull Request Activity Log
       responses:
         '200':
@@ -11654,6 +11368,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listPullRequestActivityLog
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -11674,8 +11391,22 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}:
     get:
       tags:
-        - - - - Pullrequests
-      description: Returns the specified pull request.
+        - Get
+        - Pull
+        - Requests
+      description: >-
+        The Get Pull Request operation retrieves detailed information about a
+        specific pull request within a Bitbucket repository by providing the
+        workspace identifier, repository slug, and pull request ID in the
+        endpoint path. This API returns comprehensive data about the pull
+        request including its title, description, source and destination
+        branches, author information, creation and update timestamps, current
+        state (open, merged, declined, or superseded), reviewers, participants,
+        merge commit details if applicable, and associated metadata such as task
+        counts and comment activity. This endpoint is commonly used to display
+        pull request details in integrations, dashboards, or custom tooling that
+        needs to programmatically access and present code review information
+        from Bitbucket repositories.
       summary: Get Pull Request
       responses:
         '200':
@@ -11703,15 +11434,26 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Mutates the specified pull request.
-
-        This can be used to change the pull request's branches or description.
-
-        Only open pull requests can be mutated.
+        - Update
+        - Pull
+        - Requests
+      description: >-
+        This API operation allows you to update an existing pull request in a
+        Bitbucket repository by sending a PUT request to the specified endpoint
+        with the workspace name, repository slug, and pull request ID. You can
+        modify various properties of the pull request such as the title,
+        description, source and destination branches, reviewers, and close
+        source branch settings. The request body should contain a JSON object
+        with the fields you want to update, and the operation returns the
+        updated pull request object with all its current properties including
+        metadata, participants, and branch information. Authentication is
+        required to perform this operation, and you must have appropriate
+        permissions to modify the pull request in the specified repository.
       summary: Update Pull Request
       responses:
         '200':
@@ -11756,6 +11498,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: updatePullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -11782,312 +11527,23 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/activity:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Pull
+        - Requests
+        - Activity
+        - Logs
       description: >-
-        Returns a paginated list of the pull request's activity log.
-
-
-        This handler serves both a v20 and internal endpoint. The v20 endpoint
-
-        returns reviewer comments, updates, approvals and request changes. The
-        internal
-
-        endpoint includes those plus tasks and attachments.
-
-
-        Comments created on a file or a line of code have an inline property.
-
-
-        Comment example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "comment": {
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695/comments/118571088"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695/_/diff#comment-118571088"
-                            }
-                        },
-                        "deleted": false,
-                        "pullrequest": {
-                            "type": "pullrequest",
-                            "id": 5695,
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                                }
-                            },
-                            "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                        },
-                        "content": {
-                            "raw": "inline with to a dn from lines",
-                            "markup": "markdown",
-                            "html": "<p>inline with to a dn from lines</p>",
-                            "type": "rendered"
-                        },
-                        "created_on": "2019-09-27T00:33:46.039178+00:00",
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "created_on": "2019-09-27T00:33:46.039178+00:00",
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "updated_on": "2019-09-27T00:33:46.055384+00:00",
-                        "inline": {
-                            "context_lines": "",
-                            "to": null,
-                            "path": "",
-                            "outdated": false,
-                            "from": 211
-                        },
-                        "type": "pullrequest_comment",
-                        "id": 118571088
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
-
-
-        Updates include a state property of OPEN, MERGED, or DECLINED.
-
-
-        Update example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "update": {
-                        "description": "",
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it",
-                        "destination": {
-                            "commit": {
-                                "type": "commit",
-                                "hash": "6a2c16e4a152",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/commit/6a2c16e4a152"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/commits/6a2c16e4a152"
-                                    }
-                                }
-                            },
-                            "branch": {
-                                "name": "master"
-                            },
-                            "repository": {
-                                "name": "Atlaskit-MK-2",
-                                "type": "repository",
-                                "full_name": "atlassian/atlaskit-mk-2",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2"
-                                    },
-                                    "avatar": {
-                                        "href": "https://bytebucket.org/ravatar/%7B%7D?ts=js"
-                                    }
-                                },
-                                "uuid": "{}"
-                            }
-                        },
-                        "reason": "",
-                        "source": {
-                            "commit": {
-                                "type": "commit",
-                                "hash": "728c8bad1813",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/commit/728c8bad1813"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/commits/728c8bad1813"
-                                    }
-                                }
-                            },
-                            "branch": {
-                                "name": "username/NONE-add-onClick-prop-for-accessibility"
-                            },
-                            "repository": {
-                                "name": "Atlaskit-MK-2",
-                                "type": "repository",
-                                "full_name": "atlassian/atlaskit-mk-2",
-                                "links": {
-                                    "self": {
-                                        "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2"
-                                    },
-                                    "html": {
-                                        "href": "https://bitbucket.org/atlassian/atlaskit-mk-2"
-                                    },
-                                    "avatar": {
-                                        "href": "https://bytebucket.org/ravatar/%7B%7D?ts=js"
-                                    }
-                                },
-                                "uuid": "{}"
-                            }
-                        },
-                        "state": "OPEN",
-                        "author": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        },
-                        "date": "2019-05-10T06:48:25.305565+00:00"
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
-
-
-        Approval example:
-
-        ```
-
-        {
-            "pagelen": 20,
-            "values": [
-                {
-                    "approval": {
-                        "date": "2019-09-27T00:37:19.849534+00:00",
-                        "pullrequest": {
-                            "type": "pullrequest",
-                            "id": 5695,
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                                }
-                            },
-                            "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                        },
-                        "user": {
-                            "display_name": "Name Lastname",
-                            "uuid": "{}",
-                            "links": {
-                                "self": {
-                                    "href": "https://api.bitbucket.org/2.0/users/%7B%7D"
-                                },
-                                "html": {
-                                    "href": "https://bitbucket.org/%7B%7D/"
-                                },
-                                "avatar": {
-                                    "href": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/:/128"
-                                }
-                            },
-                            "type": "user",
-                            "nickname": "Name",
-                            "account_id": ""
-                        }
-                    },
-                    "pull_request": {
-                        "type": "pullrequest",
-                        "id": 5695,
-                        "links": {
-                            "self": {
-                                "href": "https://api.bitbucket.org/2.0/repositories/atlassian/atlaskit-mk-2/pullrequests/5695"
-                            },
-                            "html": {
-                                "href": "https://bitbucket.org/atlassian/atlaskit-mk-2/pull-requests/5695"
-                            }
-                        },
-                        "title": "username/NONE: small change from onFocus to onClick to handle tabbing through the page and not expand the editor unless a click event triggers it"
-                    }
-                }
-            ]
-        }
-
-        ```
+        This API endpoint retrieves the activity log for a specific pull request
+        in a Bitbucket repository, returning a chronological list of all events
+        and actions that have occurred throughout the pull request's lifecycle.
+        The activity log includes comments, approvals, declines, updates to the
+        pull request description or title, commits added or removed, merge
+        events, and other state changes. To access this endpoint, you need to
+        provide the workspace identifier, repository slug, and pull request ID
+        as path parameters. The response provides a comprehensive audit trail of
+        the pull request, making it useful for tracking collaboration,
+        understanding the review process, monitoring pull request progress, and
+        generating reports on team activity and code review workflows.
       summary: List Pull Request Activity Log
       responses:
         '200':
@@ -12111,6 +11567,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listPullRequestActivityLog
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12137,10 +11596,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve:
     delete:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Redact the authenticated user's approval of the specified pull
-        request.
+        - Unapprove
+        - Pull
+        - Requests
+      description: >-
+        This API operation removes a user's approval from a specific pull
+        request in a Bitbucket repository. By sending a DELETE request to the
+        endpoint with the workspace identifier, repository slug, and pull
+        request ID, an authenticated user can retract their previously given
+        approval for that pull request. This is useful when a reviewer needs to
+        withdraw their approval due to new concerns, additional changes
+        required, or if they want to re-review the code after new commits have
+        been added. The operation requires appropriate permissions within the
+        repository and affects the pull request's approval status, potentially
+        impacting merge requirements if the repository has configured a minimum
+        number of approvals needed before merging.
       summary: Unapprove Pull Request
       responses:
         '204':
@@ -12178,10 +11648,27 @@ paths:
           scopes:
             - write:pullrequest:bitbucket
       operationId: unapprovePullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pullrequests
-      description: Approve the specified pull request as the authenticated user.
+        - Approve
+        - Pull
+        - Requests
+      description: >-
+        This operation allows an authenticated user to approve a specific pull
+        request within a Bitbucket repository by sending a POST request to the
+        endpoint with the workspace identifier, repository slug, and pull
+        request ID as path parameters. When executed, it registers the user's
+        approval vote for the pull request, indicating they have reviewed the
+        proposed changes and agree they should be merged into the target branch.
+        The approval is typically used as part of a code review workflow and may
+        be required before the pull request can be merged, depending on the
+        repository's merge checks and branch permissions settings. The operation
+        returns details about the approval status and requires the user to have
+        appropriate permissions to review pull requests in the specified
+        repository.
       summary: Approve Pull Request
       responses:
         '200':
@@ -12216,6 +11703,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: approvePullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12242,18 +11732,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments:
     get:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Returns a paginated list of the pull request's comments.
-
-        This includes both global, inline comments and replies.
-
-        The default sorting is oldest to newest and can be overridden with
-        the `sort` query parameter.
-
-        This endpoint also supports filtering and sorting of the results. See
-        [filtering and sorting](/cloud/bitbucket/rest/intro/#filtering) for more
-        details.
+        - Lists
+        - Comments
+        - Pull
+        - Requests
+      description: >-
+        Returns a paginated list of all comments made on a specific pull request
+        in a Bitbucket repository, identified by the workspace, repository slug,
+        and pull request ID. The comments are returned in chronological order
+        and include both inline code comments and general pull request comments.
+        Each comment object contains details such as the comment content, author
+        information, creation timestamp, and any associated metadata like the
+        file path and line number for inline comments. This endpoint supports
+        pagination parameters to navigate through large comment threads and
+        helps developers review feedback, discussions, and code review notes
+        associated with a particular pull request.
       summary: List Comments On Pull Request
       responses:
         '200':
@@ -12287,13 +11780,27 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listCommentsOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Creates a new pull request comment.
-
-        Returns the newly created pull request comment.
+        - Create
+        - Comments
+        - Pull
+        - Requests
+      description: >-
+        This API operation allows you to create a new comment on a specific pull
+        request within a Bitbucket repository. By making a POST request to the
+        endpoint with the workspace identifier, repository slug, and pull
+        request ID, you can add inline code comments, general feedback, or
+        discussion points to the pull request. The operation requires
+        authentication and appropriate permissions to comment on the target
+        repository, and the request body typically includes the comment content
+        and optionally the file path and line number if creating an inline
+        comment on specific code changes. The response returns the newly created
+        comment object with details such as the comment ID, author information,
+        timestamp, and content.
       summary: Create Comment On Pull Request
       responses:
         '201':
@@ -12337,6 +11844,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: createCommentOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12363,8 +11873,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments/{comment_id}:
     delete:
       tags:
-        - - - - Pullrequests
-      description: Deletes a specific pull request comment.
+        - Delete
+        - Comments
+        - Pull
+        - Requests
+      description: >-
+        This API operation allows you to delete a specific comment from a pull
+        request in a Bitbucket repository. By sending a DELETE request to the
+        endpoint with the workspace identifier, repository slug, pull request
+        ID, and comment ID, you can permanently remove a comment that was
+        previously posted on a pull request. This is useful for moderating
+        discussions, removing outdated information, or cleaning up spam or
+        inappropriate comments from pull request conversations. The operation
+        requires appropriate permissions to delete comments, typically limited
+        to the comment author or users with administrative access to the
+        repository.
       summary: Delete Comment On Pull Request
       responses:
         '204':
@@ -12394,10 +11917,24 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: deleteCommentOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
-        - - - - Pullrequests
-      description: Returns a specific pull request comment.
+        - Get
+        - Comments
+        - Pull
+        - Requests
+      description: >-
+        This API endpoint retrieves a specific comment from a pull request in a
+        Bitbucket repository by providing the workspace identifier, repository
+        slug, pull request ID, and comment ID as path parameters. It returns
+        detailed information about the comment including its content, author,
+        creation timestamp, inline positioning if applicable, and any metadata
+        associated with the comment. This is useful for fetching individual
+        comment details when you need to display, analyze, or process specific
+        feedback left on a pull request without retrieving all comments at once.
       summary: Get Comment On Pull Request
       responses:
         '200':
@@ -12429,10 +11966,26 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getCommentOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Pullrequests
-      description: Updates a specific pull request comment.
+        - Update
+        - Comments
+        - Pull
+        - Requests
+      description: >-
+        This API operation allows you to update an existing comment on a
+        specific pull request within a Bitbucket repository. By sending a PUT
+        request to the endpoint with the workspace name, repository slug, pull
+        request ID, and comment ID, you can modify the content of a previously
+        posted comment. This is useful for correcting mistakes, adding
+        additional information, or clarifying previous statements made during
+        code review discussions. The operation requires appropriate
+        authentication and permissions to edit comments, typically allowing
+        users to modify only their own comments unless they have elevated
+        privileges within the repository.
       summary: Update Comment On Pull Request
       responses:
         '200':
@@ -12471,6 +12024,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: updateCommentOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: comment_id
         in: path
@@ -12503,8 +12059,19 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments/{comment_id}/resolve:
     delete:
       tags:
-        - - - - Pullrequests
-      description: ''
+        - Reopen
+        - Comments
+        - Threads
+      description: >-
+        This API operation allows you to reopen a previously resolved comment
+        thread on a pull request in a Bitbucket repository. By sending a DELETE
+        request to the specified endpoint with the workspace identifier,
+        repository slug, pull request ID, and comment ID, you can change the
+        status of a comment thread from resolved back to open, making it active
+        again for further discussion. This is useful when an issue that was
+        thought to be addressed needs to be revisited or when a resolved comment
+        requires additional attention or clarification before the pull request
+        can be merged.
       summary: Reopen Comment Thread
       responses:
         '204':
@@ -12536,10 +12103,25 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: reopenCommentThread
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pullrequests
-      description: ''
+        - Resolve
+        - Comments
+        - Threads
+      description: >-
+        This API operation resolves a comment thread on a specific pull request
+        in a Bitbucket repository by marking it as resolved, indicating that the
+        discussion or issue raised in the comment has been addressed or is no
+        longer relevant. The endpoint requires authentication and accepts the
+        workspace identifier, repository slug, pull request ID, and comment ID
+        as path parameters to uniquely identify the comment thread to be
+        resolved. When invoked via a POST request, it updates the comment's
+        resolution status, allowing teams to track which feedback items have
+        been handled during code review processes and maintaining a clear record
+        of resolved discussions within the pull request workflow.
       summary: Resolve Comment Thread
       responses:
         '200':
@@ -12580,6 +12162,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: resolveCommentThread
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: comment_id
         in: path
@@ -12612,12 +12197,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/commits:
     get:
       tags:
-        - - - - Pullrequests
-      description: |-
-        Returns a paginated list of the pull request's commits.
-
-        These are the commits that are being merged into the destination
-        branch when the pull requests gets accepted.
+        - Lists
+        - Commits
+        - Pull
+        - Requests
+      description: >-
+        This endpoint retrieves a paginated list of all commits associated with
+        a specific pull request in a Bitbucket repository. By providing the
+        workspace identifier, repository slug, and pull request ID in the path
+        parameters, the API returns commit details including commit hashes,
+        author information, timestamps, and commit messages for all commits that
+        are part of the specified pull request. This is particularly useful for
+        reviewing the complete change history within a pull request,
+        understanding the development progression, performing code reviews, or
+        generating audit trails of modifications made during the pull request
+        lifecycle.
       summary: List Commits On Pull Request
       responses:
         '200':
@@ -12650,6 +12244,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listCommitsOnPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12676,8 +12273,22 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/decline:
     post:
       tags:
-        - - - - Pullrequests
-      description: Declines the pull request.
+        - Decline
+        - Pull
+        - Requests
+      description: >-
+        This API endpoint allows an authorized user to decline an open pull
+        request in a Bitbucket repository by making a POST request to the
+        specified path with the workspace name, repository slug, and pull
+        request ID as parameters. When invoked, it marks the pull request as
+        declined, effectively rejecting the proposed changes without merging
+        them into the target branch. The operation requires appropriate
+        permissions and can only be performed on pull requests that are in an
+        open state. Upon successful execution, the pull request's state is
+        updated to declined, and the operation cannot be undone through the API,
+        though the pull request can be reopened if needed. This is typically
+        used when a pull request's changes are no longer needed, don't meet
+        project standards, or when an alternative solution has been chosen.
       summary: Decline Pull Request
       responses:
         '200':
@@ -12706,6 +12317,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: declinePullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12732,12 +12346,22 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/diff:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Changes
+        - Pull
+        - Requests
       description: >-
-        Redirects to the [repository
-        diff](/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-diff-spec-get)
-
-        with the revspec that corresponds to the pull request.
+        This API operation retrieves the raw diff output for a specific pull
+        request in a Bitbucket repository, showing all the line-by-line code
+        changes between the source and destination branches. By providing the
+        workspace identifier, repository slug, and pull request ID, developers
+        can programmatically access the complete diff content that displays
+        additions, deletions, and modifications across all affected files in the
+        pull request. This is particularly useful for automated code review
+        tools, CI/CD pipelines, or custom integrations that need to analyze the
+        actual code changes without using the Bitbucket web interface, allowing
+        teams to build workflows around pull request content inspection,
+        validation, or documentation generation.
       summary: List Changes In Pull Request
       responses:
         '302':
@@ -12758,6 +12382,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listChangesInPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12784,12 +12411,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/diffstat:
     get:
       tags:
-        - - - - Pullrequests
+        - Get
+        - Pull
+        - Requests
       description: >-
-        Redirects to the [repository
-        diffstat](/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-diffstat-spec-get)
-
-        with the revspec that corresponds to the pull request.
+        This API endpoint retrieves the diffstat (difference statistics) for a
+        specific pull request in a Bitbucket repository, providing a summary of
+        changes made in the pull request including the number of lines added,
+        removed, and modified across all affected files. By making a GET request
+        to this endpoint with the required path parameters (workspace,
+        repository slug, and pull request ID), developers can programmatically
+        access detailed statistics about code changes without needing to parse
+        the full diff, making it useful for code review tools, CI/CD pipelines,
+        and reporting dashboards that need to display or analyze the scope and
+        impact of proposed changes before merging.
       summary: Get The Diff Stat For Pull Request
       responses:
         '302':
@@ -12810,6 +12445,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getTheDiffStatForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12836,8 +12474,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/merge:
     post:
       tags:
-        - - - - Pullrequests
-      description: Merges the pull request.
+        - Merge
+        - Pull
+        - Requests
+      description: >-
+        This API operation merges a pull request in a Bitbucket repository by
+        sending a POST request to the specified endpoint with the workspace
+        name, repository slug, and pull request ID. When executed, it attempts
+        to merge the source branch into the destination branch of the pull
+        request, effectively incorporating the proposed changes into the target
+        branch. The operation requires appropriate permissions and will only
+        succeed if the pull request is in a mergeable state with no conflicts,
+        all required approvals are met, and any configured merge checks have
+        passed. Upon successful execution, the API returns details about the
+        merge commit and updates the pull request status to merged, optionally
+        closing the source branch if configured to do so.
       summary: Merge Pull Request
       responses:
         '200':
@@ -12895,6 +12546,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: mergePullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -12921,76 +12575,25 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/merge/task-status/{task_id}:
     get:
       tags:
-        - - - - Pullrequests
+        - Get
+        - Merge
+        - Task
+        - Status
+        - Pull
+        - Requests
       description: >-
-        When merging a pull request takes too long, the client receives a
-
-        task ID along with a 202 status code. The task ID can be used in a call
-
-        to this endpoint to check the status of a merge task.
-
-
-        ```
-
-        curl -X GET
-        https://api.bitbucket.org/2.0/repositories/atlassian/bitbucket/pullrequests/2286/merge/task-status/<task_id>
-
-        ```
-
-
-        If the merge task is not yet finished, a PENDING status will be
-        returned.
-
-
-        ```
-
-        HTTP/2 200
-
-        {
-            "task_status": "PENDING",
-            "links": {
-                "self": {
-                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/bitbucket/pullrequests/2286/merge/task-status/<task_id>"
-                }
-            }
-        }
-
-        ```
-
-
-        If the merge was successful, a SUCCESS status will be returned.
-
-
-        ```
-
-        HTTP/2 200
-
-        {
-            "task_status": "SUCCESS",
-            "links": {
-                "self": {
-                    "href": "https://api.bitbucket.org/2.0/repositories/atlassian/bitbucket/pullrequests/2286/merge/task-status/<task_id>"
-                }
-            },
-            "merge_result": <the merged pull request object>
-        }
-
-        ```
-
-
-        If the merge task failed, an error will be returned.
-
-
-        ```
-
-        {
-            "type": "error",
-            "error": {
-                "message": "<error message>"
-            }
-        }
-
-        ```
+        This API endpoint retrieves the current status of a merge task for a
+        specific pull request in a Bitbucket repository. By providing the
+        workspace identifier, repository slug, pull request ID, and task ID in
+        the URL path, you can query whether a merge operation is still in
+        progress, has completed successfully, or has failed. This is
+        particularly useful for monitoring asynchronous merge operations, as
+        merging pull requests can sometimes be a time-consuming process
+        depending on repository size, conflicts, and post-merge hooks. The
+        endpoint returns status information that helps developers track merge
+        operations without having to repeatedly check the pull request state
+        manually, enabling better automation and integration with CI/CD
+        pipelines.
       summary: Get The Merge Task Status For Pull Request
       responses:
         '200':
@@ -13016,6 +12619,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getTheMergeTaskStatusForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -13048,12 +12654,24 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/patch:
     get:
       tags:
-        - - - - Pullrequests
+        - Get
+        - Patch
+        - Pull
+        - Requests
       description: >-
-        Redirects to the [repository
-        patch](/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-patch-spec-get)
-
-        with the revspec that corresponds to pull request.
+        The Get The Patch For Pull Request operation in the Atlassian Bitbucket
+        Repositories API retrieves a unified diff patch representation of a
+        specific pull request by making a GET request to the endpoint
+        /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/patch.
+        This endpoint requires three path parameters: the workspace identifier,
+        the repository slug, and the pull request ID. When invoked, it returns
+        the complete patch file showing all code changes included in the pull
+        request in standard unified diff format, which can be used for code
+        review, applying changes to other branches, or integrating with external
+        tools that consume patch files. This operation is particularly useful
+        for developers who need to programmatically access pull request changes
+        outside of the Bitbucket web interface or integrate pull request data
+        into custom workflows and CI/CD pipelines.
       summary: Get The Patch For Pull Request
       responses:
         '302':
@@ -13074,6 +12692,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: getThePatchForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -13100,8 +12721,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/request-changes:
     delete:
       tags:
-        - - - - Pullrequests
-      description: ''
+        - Remove
+        - Change
+        - Requests
+        - Pull
+      description: >-
+        This API operation removes a change request from a specific pull request
+        in a Bitbucket repository. When invoked, it deletes an existing request
+        for changes that was previously submitted on the pull request identified
+        by the pull_request_id within the specified repository (repo_slug) and
+        workspace. This DELETE endpoint allows users to retract their feedback
+        indicating that changes were needed, typically used when the reviewer no
+        longer requires modifications to be made to the pull request or wants to
+        update their review status. The operation requires authentication and
+        appropriate permissions to modify reviews on the target pull request.
       summary: Remove Change Request For Pull Request
       responses:
         '204':
@@ -13139,10 +12772,25 @@ paths:
           scopes:
             - write:pullrequest:bitbucket
       operationId: removeChangeRequestForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Pullrequests
-      description: ''
+        - Requests
+        - Changes
+        - Pull
+      description: >-
+        This API operation allows users to formally request changes on a
+        specific pull request within a Bitbucket repository. By making a POST
+        request to the endpoint with the workspace identifier, repository slug,
+        and pull request ID, reviewers can indicate that modifications are
+        needed before the pull request can be approved and merged. This action
+        typically changes the pull request's review status and notifies the pull
+        request author that revisions are required, facilitating the code review
+        process by providing a clear signal that the current implementation
+        needs improvement or corrections before it can be accepted into the
+        target branch.
       summary: Request Changes For Pull Request
       responses:
         '200':
@@ -13185,6 +12833,9 @@ paths:
             - read:pullrequest:bitbucket
             - write:pullrequest:bitbucket
       operationId: requestChangesForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
@@ -13211,11 +12862,21 @@ paths:
   /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/statuses:
     get:
       tags:
-        - - - - Pullrequests
-              - Commit statuses
-      description: |-
-        Returns all statuses (e.g. build results) for the given pull
-        request.
+        - Lists
+        - Commits
+        - Statuses
+        - Pull
+        - Requests
+      description: >-
+        This API operation retrieves all commit statuses associated with a
+        specific pull request in a Bitbucket repository. By providing the
+        workspace identifier, repository slug, and pull request ID as path
+        parameters, the GET request returns a list of build statuses that have
+        been posted to the commits within that pull request, including
+        information such as the state (successful, failed, in progress),
+        description, and URL of each status check. This is particularly useful
+        for understanding the CI/CD pipeline results and other automated checks
+        that have run against the changes proposed in the pull request.
       summary: List Commit Statuses For Pull Request
       responses:
         '200':
@@ -13261,6 +12922,9 @@ paths:
           scopes:
             - read:pullrequest:bitbucket
       operationId: listCommitStatusesForPullRequest
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: pull_request_id
         in: path
