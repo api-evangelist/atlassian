@@ -134,16 +134,16 @@ paths:
         - Delete
         - Repositories
       description: >-
-        This API operation permanently deletes a specified repository from a
-        Bitbucket workspace. By sending a DELETE request to the endpoint with
-        the workspace identifier and repository slug, authorized users can
-        remove the entire repository including all its contents, history,
-        branches, commits, and associated metadata. This is a destructive action
-        that cannot be undone, so it should be used with caution and typically
-        requires administrative permissions for the workspace. The operation is
-        useful for cleaning up obsolete or test repositories, but care must be
-        taken as it will also remove all forks, pull requests, and other
-        resources associated with the repository.
+        The Delete Repository operation in the Atlassian Bitbucket Repositories
+        API allows you to permanently remove a repository from a workspace by
+        sending a DELETE request to the `/repositories/{workspace}/{repo_slug}`
+        endpoint. This operation requires you to specify both the workspace
+        identifier and the repository slug in the URL path. Once executed, the
+        repository and all its associated data, including source code, branches,
+        commits, and pull requests, will be irreversibly deleted from Bitbucket.
+        This is a destructive action that typically requires appropriate
+        permissions, such as administrator access to the repository, and should
+        be used with caution as it cannot be undone.
       summary: Delete Repository
       responses:
         '204':
@@ -190,26 +190,25 @@ paths:
           scopes:
             - delete:repository:bitbucket
       operationId: deleteRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
         - Get
         - Repositories
       description: >-
-        The Get Repository operation in the Atlassian Bitbucket Repositories API
-        retrieves detailed information about a specific repository within a
-        workspace by making a GET request to the
-        /repositories/{workspace}/{repo_slug} endpoint. This operation requires
-        two path parameters: the workspace ID or slug that owns the repository,
-        and the repository slug that uniquely identifies the repository within
-        that workspace. When successfully executed, it returns comprehensive
-        repository metadata including the repository name, description, size,
-        language, creation date, last update timestamp, visibility settings
-        (public or private), fork and watch counts, clone URLs for both HTTPS
-        and SSH protocols, and information about the repository owner and main
-        branch. This endpoint is commonly used by developers and applications to
-        programmatically access repository details for integration purposes,
-        automation workflows, or to display repository information in custom
-        dashboards and tools.
+        This API operation retrieves detailed information about a specific
+        Bitbucket repository within a workspace by providing the workspace
+        identifier and repository slug as path parameters. When you make a GET
+        request to this endpoint, it returns comprehensive metadata about the
+        repository including its name, description, visibility settings (public
+        or private), creation date, size, language, fork information, owner
+        details, and various URLs for accessing the repository through different
+        protocols. This is useful for applications that need to display
+        repository information, verify repository existence, check permissions,
+        or gather data about a repository before performing other operations on
+        it.
       summary: Get Repository
       responses:
         '200':
@@ -243,6 +242,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
         - Create
@@ -251,14 +253,15 @@ paths:
         This API operation creates a new repository within a specified workspace
         in Atlassian Bitbucket. By sending a POST request to the endpoint with
         the workspace identifier and desired repository slug as path parameters,
-        users can programmatically provision a new Git repository with
-        configurable settings such as the repository name, description, privacy
-        level (public or private), and project association. The request body
-        typically includes repository metadata and configuration options, while
-        the response returns the newly created repository object containing
-        details like the repository UUID, clone URLs, creation timestamp, and
-        other relevant properties that can be used for subsequent operations or
-        integrations.
+        users can programmatically initialize a new repository with configurable
+        settings such as project assignment, description, privacy settings
+        (public or private), and other repository-specific properties passed in
+        the request body. The operation returns the newly created repository
+        object including its UUID, full name, creation timestamp, and links to
+        related resources, making it essential for automated repository
+        provisioning and DevOps workflows that need to dynamically set up
+        version control repositories without manual intervention through the
+        Bitbucket web interface.
       summary: Create Repository
       responses:
         '200':
@@ -301,28 +304,27 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: createRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
         - Update
         - Repositories
-      description: |-
-        Since this endpoint can be used to both update and to create a
-        repository, the request body depends on the intent.
-
-        #### Creation
-
-        See the POST documentation for the repository endpoint for an example
-        of the request body.
-
-        #### Update
-
-        Note: Changing the `name` of the repository will cause the location to
-        be changed. This is because the URL of the repo is derived from the
-        name (a process called slugification). In such a scenario, it is
-        possible for the request to fail if the newly created slug conflicts
-        with an existing repository's slug. But if there is no conflict,
-        the new location will be returned in the `Location` header of the
-        response.
+      description: >-
+        This API operation allows you to update the configuration and settings
+        of an existing repository within a specified workspace in Bitbucket. By
+        sending a PUT request to the endpoint with the workspace ID and
+        repository slug as path parameters, you can modify various repository
+        attributes such as the description, language, visibility (public or
+        private), fork policy, and other metadata. The request body should
+        contain a JSON payload with the fields you wish to update, and
+        authentication is required to ensure the user has appropriate
+        permissions to modify the repository. Upon successful execution, the API
+        returns the updated repository object with all current settings, while
+        failed requests will return appropriate error codes and messages
+        indicating issues such as authentication failures, insufficient
+        permissions, or invalid parameter values.
       summary: Update Repository
       responses:
         '200':
@@ -384,6 +386,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: updateRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -407,9 +412,17 @@ paths:
         - Lists
         - Branches
         - Restrictions
-      description: |-
-        Returns a paginated list of all branch restrictions on the
-        repository.
+      description: >-
+        This operation retrieves all branch restrictions configured for a
+        specific repository within a Bitbucket workspace. Branch restrictions
+        are rules that control who can push to branches, require pull requests,
+        enforce merge checks, or limit branch deletions. By sending a GET
+        request to this endpoint with the workspace ID and repository slug, you
+        receive a paginated list of all active restrictions including their
+        types, patterns (which branches they apply to), and associated users or
+        groups. This is useful for auditing repository security policies,
+        understanding workflow requirements, or programmatically managing branch
+        protection rules across multiple repositories.
       summary: List Branch Restrictions
       responses:
         '200':
@@ -462,6 +475,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: listBranchRestrictions
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
         - Create
@@ -469,21 +485,21 @@ paths:
         - Restriction
         - Rules
       description: >-
-        The POST operation on the
-        /repositories/{workspace}/{repo_slug}/branch-restrictions endpoint in
-        the Atlassian Bitbucket Repositories API allows repository
-        administrators to create branch restriction rules that enforce specific
-        workflows and access controls on branches within a repository. By
-        specifying the workspace and repository slug in the path parameters,
-        users can define restrictions such as preventing force pushes, requiring
-        a minimum number of approvals before merging, restricting who can push
-        to specific branches, or enforcing merge strategies. These restrictions
-        help teams maintain code quality, implement secure development
-        practices, and ensure that critical branches like main or production are
-        protected from unauthorized or accidental modifications. The request
-        body typically includes parameters defining the restriction type, the
-        branch pattern to which the rule applies, and any additional
-        configuration options specific to the chosen restriction type.
+        This API operation creates a new branch restriction rule for a specific
+        repository in Bitbucket Cloud, allowing workspace administrators to
+        enforce policies on branches within a given repository. By sending a
+        POST request to the endpoint with the workspace ID and repository slug
+        as path parameters, users can define restrictions such as preventing
+        force pushes, requiring pull request approvals, limiting who can merge
+        or push to specific branches, or enforcing other branch protection
+        policies. The request body typically includes details like the
+        restriction type, the branch pattern to which the rule applies (using
+        glob patterns or specific branch names), and the users or groups
+        affected by the restriction. This functionality is essential for
+        maintaining code quality and implementing workflow controls in
+        collaborative development environments, ensuring that critical branches
+        like main or production are protected from unauthorized or potentially
+        harmful changes.
       summary: Create Branch Restriction Rule
       responses:
         '201':
@@ -530,6 +546,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: createBranchRestrictionRule
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -555,18 +574,21 @@ paths:
         - Restriction
         - Rules
       description: >-
-        This API operation removes a specific branch restriction rule from a
-        Bitbucket repository by making a DELETE request to the endpoint with the
-        workspace identifier, repository slug, and the unique ID of the branch
-        restriction rule to be deleted. Branch restrictions are used to enforce
-        policies on repository branches, such as preventing force pushes,
-        requiring pull request approvals, or limiting who can push to specific
-        branches. By deleting a restriction rule, administrators can remove
-        previously enforced constraints, allowing more flexible access to the
-        affected branches. This operation requires appropriate permissions
-        within the workspace and repository, and once executed, the specified
-        restriction rule is permanently removed from the repository's
-        configuration.
+        The Delete Branch Restriction Rule operation in the Atlassian Bitbucket
+        Repositories API allows you to remove a specific branch restriction rule
+        from a repository by making a DELETE request to the endpoint
+        /repositories/{workspace}/{repo_slug}/branch-restrictions/{id}. This
+        operation requires you to specify the workspace name, repository slug,
+        and the unique identifier of the branch restriction rule you want to
+        delete. Branch restrictions are used to enforce policies on branches,
+        such as preventing direct pushes, requiring pull requests, or limiting
+        who can merge changes. By deleting a branch restriction rule, you
+        effectively remove those constraints from the specified branches in your
+        repository. This operation is useful when you need to modify your
+        repository's branch protection strategy, remove outdated restrictions,
+        or adjust team workflows. Authentication and appropriate permissions are
+        required to execute this operation successfully, as it affects
+        repository security and collaboration policies.
       summary: Delete Branch Restriction Rule
       responses:
         '204':
@@ -602,6 +624,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: deleteBranchRestrictionRule
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
         - Get
@@ -609,17 +634,20 @@ paths:
         - Restriction
         - Rules
       description: >-
-        This GET operation retrieves a specific branch restriction rule from a
-        Bitbucket repository by its unique identifier. By providing the
-        workspace name, repository slug, and the restriction rule ID in the
-        endpoint path, users can fetch detailed information about a particular
-        branch protection configuration. The response returns the complete rule
-        definition including the restriction type, branch patterns, users or
-        groups affected, and any specific permissions or merge requirements that
-        have been configured. This endpoint is useful for auditing existing
-        branch protection policies, validating security configurations, or
-        retrieving rule details before making updates to repository access
-        controls.
+        The GET operation on the
+        /repositories/{workspace}/{repo_slug}/branch-restrictions/{id} endpoint
+        in the Atlassian Bitbucket Repositories API retrieves detailed
+        information about a specific branch restriction rule within a
+        repository. By providing the workspace identifier, repository slug, and
+        the unique ID of the branch restriction, this operation returns the
+        complete configuration of that particular rule, including its type (such
+        as requiring pull request approvals, restricting pushes, or enforcing
+        merge checks), the branch pattern it applies to, the users or groups it
+        affects, and any associated permissions or conditions. This endpoint is
+        useful for administrators and developers who need to audit existing
+        branch protection settings, verify security policies, or
+        programmatically inspect repository governance rules before making
+        modifications.
       summary: Get Branch Restriction Rule
       responses:
         '200':
@@ -659,6 +687,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: getBranchRestrictionRule
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
         - Update
@@ -666,20 +697,19 @@ paths:
         - Restriction
         - Rules
       description: >-
-        This PUT operation updates an existing branch restriction rule in a
-        Bitbucket repository by specifying the workspace, repository slug, and
-        the unique identifier of the restriction rule. Branch restrictions are
-        used to control who can push, merge, or delete branches based on
-        patterns and user permissions, helping teams enforce workflows and
-        protect critical branches like main or production. The request requires
-        authentication and appropriate repository permissions, and the body
-        should contain the updated rule configuration including the restriction
-        kind (such as push, delete, or require approvals), branch pattern
-        matching criteria, and the users or groups affected by the rule. Upon
-        successful execution, the API returns the updated branch restriction
-        object with all its properties, allowing administrators to
-        programmatically manage and modify repository access controls and merge
-        strategies.
+        This API operation allows you to modify an existing branch restriction
+        rule in a Bitbucket repository by specifying the workspace, repository
+        slug, and the unique identifier of the restriction rule you want to
+        update. The PUT request enables you to change the configuration of
+        access controls and permissions that govern who can push, merge, or
+        perform other operations on specific branches within the repository. You
+        can adjust parameters such as the branch pattern the rule applies to,
+        the type of restriction (like requiring pull requests or limiting direct
+        pushes), and which users or groups are affected by or exempt from the
+        rule. This is particularly useful for maintaining code quality and
+        enforcing workflow policies as your team's requirements evolve, allowing
+        administrators to refine branch protection rules without having to
+        delete and recreate them from scratch.
       summary: Update Branch Restriction Rule
       responses:
         '200':
@@ -726,6 +756,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: updateBranchRestrictionRule
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: id
         in: path
@@ -757,28 +790,17 @@ paths:
         - Model
         - Repositories
       description: >-
-        Return the branching model as applied to the repository. This view is
-
-        read-only. The branching model settings can be changed using the
-
-        [settings](#api-repositories-workspace-repo-slug-branching-model-settings-get)
-        API.
-
-
-        The returned object:
-
-
-        1. Always has a `development` property. `development.branch` contains
-           the actual repository branch object that is considered to be the
-           `development` branch. `development.branch` will not be present
-           if it does not exist.
-        2. Might have a `production` property. `production` will not
-           be present when `production` is disabled.
-           `production.branch` contains the actual branch object that is
-           considered to be the `production` branch. `production.branch` will
-           not be present if it does not exist.
-        3. Always has a `branch_types` array which contains all enabled branch
-           types.
+        This API operation retrieves the branching model configuration for a
+        specific Bitbucket repository within a given workspace. By making a GET
+        request to the endpoint with the appropriate workspace identifier and
+        repository slug, it returns details about the repository's branching
+        strategy, including information about production, development, and
+        feature branch configurations, as well as any custom branch prefixes and
+        patterns that have been defined. This is particularly useful for
+        understanding how a team has structured their Git workflow, whether
+        they're using Git Flow, trunk-based development, or a custom branching
+        strategy, and helps developers and automation tools align with the
+        repository's established branching conventions.
       summary: Get The Branching Model For Repository
       responses:
         '200':
@@ -850,6 +872,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getTheBranchingModelForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -875,25 +900,16 @@ paths:
         - Model
         - Repositories
       description: >-
-        Return the branching model configuration for a repository. The returned
-
-        object:
-
-
-        1. Always has a `development` property for the development branch.
-
-        2. Always a `production` property for the production branch. The
-           production branch can be disabled.
-        3. The `branch_types` contains all the branch types.
-
-
-        This is the raw configuration for the branching model. A client
-
-        wishing to see the branching model with its actual current branches may
-
-        find the [active model
-        API](/cloud/bitbucket/rest/api-group-branching-model/#api-repositories-workspace-repo-slug-branching-model-get)
-        more useful.
+        This API operation retrieves the branching model configuration settings
+        for a specific repository within an Atlassian Bitbucket workspace. By
+        making a GET request to the endpoint with the workspace identifier and
+        repository slug as path parameters, users can access the repository's
+        configured branching strategy, which may include settings for
+        development branches, production branches, branch prefixes, and other
+        workflow-related configurations that govern how branches are created and
+        managed within that repository. This information is useful for
+        understanding the repository's branching conventions and automating
+        branch creation processes according to the established model.
       summary: Get The Branching Model Config For Repository
       responses:
         '200':
@@ -962,6 +978,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: getTheBranchingModelConfigForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
         - Update
@@ -969,15 +988,18 @@ paths:
         - Model
         - Repositories
       description: >-
-        This PUT endpoint allows you to update the branching model configuration
-        settings for a specific repository in Bitbucket. By providing the
-        workspace and repository slug in the path, you can customize how
-        branches are structured and managed within that repository, including
-        settings for branch types, naming conventions, and workflow patterns.
-        This operation modifies the existing branching model configuration and
-        returns the updated settings, enabling teams to enforce consistent
-        branching strategies such as Git Flow or custom branch models across
-        their development workflow.
+        This PUT operation updates the branching model configuration settings
+        for a specific Bitbucket repository within a workspace. By sending a
+        request to this endpoint with the workspace identifier and repository
+        slug, administrators can modify how the repository handles branch types,
+        naming conventions, and workflow patterns such as Git Flow or
+        trunk-based development. The operation allows teams to enforce
+        consistent branching strategies across their codebase by configuring
+        settings for development branches, production branches, branch prefixes,
+        and automated merge behaviors. This is particularly useful for
+        organizations that want to standardize their Git workflow and ensure all
+        team members follow the same branching conventions when creating feature
+        branches, release branches, or hotfix branches within the repository.
       summary: Update The Branching Model Config For Repository
       responses:
         '200':
@@ -1043,6 +1065,9 @@ paths:
           scopes:
             - admin:repository:bitbucket
       operationId: updateTheBranchingModelConfigForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: repo_slug
         in: path
@@ -1066,17 +1091,15 @@ paths:
         - Get
         - Commits
       description: >-
-        The Get Commit operation in the Atlassian Bitbucket Repositories API
-        retrieves detailed information about a specific commit within a
-        repository by using the GET method on the endpoint
-        /repositories/{workspace}/{repo_slug}/commit/{commit}. This operation
-        requires three path parameters: the workspace identifier, the repository
-        slug, and the commit hash or reference, and returns comprehensive commit
-        data including the commit message, author information, timestamp, parent
-        commits, and the changes introduced in that commit. This is useful for
-        examining the details of individual code changes, tracking project
-        history, or integrating commit information into external tools and
-        workflows.
+        This API operation retrieves detailed information about a specific
+        commit in a Bitbucket repository by making a GET request to the endpoint
+        with the workspace identifier, repository slug, and commit hash as path
+        parameters. It returns comprehensive commit data including the commit
+        message, author information, timestamp, changed files, diff statistics,
+        parent commits, and any associated metadata. This endpoint is useful for
+        examining the details of individual commits, auditing code changes,
+        building commit history visualizations, or integrating commit
+        information into external tools and workflows.
       summary: Get Commit
       responses:
         '200':
@@ -1186,6 +1209,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -1215,15 +1241,16 @@ paths:
         - Unapprove
         - Commits
       description: >-
-        This API operation removes the authenticated user's approval from a
-        specific commit in a Bitbucket repository. By sending a DELETE request
-        to the endpoint with the workspace identifier, repository slug, and
-        commit hash, users can revoke their previously given approval for that
-        commit. This is useful in code review workflows where approvals may need
-        to be withdrawn if issues are discovered after initial review or if
-        changes need to be reconsidered. The operation requires proper
-        authentication and the user must have previously approved the commit in
-        order to successfully unapprove it.
+        This API operation removes an approval from a specific commit in a
+        Bitbucket repository by sending a DELETE request to the endpoint. When a
+        user has previously approved a commit, this operation revokes that
+        approval, effectively indicating that the commit no longer has their
+        endorsement. The operation requires three path parameters: the workspace
+        identifier, the repository slug, and the commit hash or reference. This
+        is particularly useful in code review workflows where approvals may need
+        to be withdrawn due to newly discovered issues, changes in requirements,
+        or mistakes in the initial review, allowing teams to maintain accurate
+        approval states throughout their development process.
       summary: Unapprove Commit
       responses:
         '204':
@@ -1247,21 +1274,26 @@ paths:
           scopes:
             - write:repository:bitbucket
       operationId: unapproveCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
         - Approve
         - Commits
       description: >-
-        This API operation allows a user to approve a specific commit in a
-        Bitbucket repository by sending a POST request to the designated
-        endpoint. The request requires three path parameters: the workspace
-        identifier, the repository slug, and the commit hash that needs
-        approval. When executed, it records the authenticated user's approval of
-        the specified commit, which can be used in code review workflows and to
-        track which team members have reviewed and endorsed particular changes.
-        This approval mechanism helps teams maintain code quality standards and
-        implement peer review processes before merging code into protected
-        branches.
+        This API operation allows authenticated users to approve a specific
+        commit in a Bitbucket repository by sending a POST request to the
+        endpoint with the workspace identifier, repository slug, and commit hash
+        as path parameters. When executed, it records the user's approval of the
+        changes introduced in that particular commit, which is useful for code
+        review workflows and tracking which team members have endorsed specific
+        changes. The approval is associated with the authenticated user making
+        the request and can be used as part of merge requirements or quality
+        gates in the development process. This operation is idempotent, meaning
+        multiple calls with the same parameters will have the same effect as a
+        single call, and it returns information about the approval that was
+        created or already exists.
       summary: Approve Commit
       responses:
         '200':
@@ -1290,6 +1322,9 @@ paths:
             - read:repository:bitbucket
             - write:repository:bitbucket
       operationId: approveCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -1316,14 +1351,20 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}/comments:
     get:
       tags:
-        - - - - Commits
-      description: |-
-        Returns the Commits comments.
-
-        This includes both global and inline comments.
-
-        The default sorting is oldest to newest and can be overridden with
-        the `sort` query parameter.
+        - Lists
+        - Commits
+        - Comments
+      description: >-
+        This API operation retrieves all comments associated with a specific
+        commit in a Bitbucket repository. By providing the workspace identifier,
+        repository slug, and commit hash in the endpoint path, users can fetch a
+        paginated list of comments that have been made on that particular
+        commit. The response includes comment details such as the comment text,
+        author information, creation timestamp, and any associated metadata.
+        This is useful for reviewing feedback, discussions, or code review notes
+        that team members have left on specific commits, enabling better
+        collaboration and tracking of conversations around code changes within
+        the repository's version history.
       summary: List Commits Comments
       responses:
         '200':
@@ -1360,26 +1401,24 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: listCommitsComments
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     post:
       tags:
-        - - - - Commits
+        - Create
+        - Comments
+        - Commits
       description: >-
-        Creates new comment on the specified commit.
-
-
-        To post a reply to an existing comment, include the `parent.id` field:
-
-
-        ```
-
-        $ curl
-        https://api.bitbucket.org/2.0/repositories/atlassian/prlinks/commit/db9ba1e031d07a02603eae0e559a7adc010257fc/comments/
-        \
-          -X POST -u evzijst \
-          -H 'Content-Type: application/json' \
-          -d '{"content": {"raw": "One more thing!"},
-               "parent": {"id": 5728901}}'
-        ```
+        This API operation allows you to create a new comment on a specific
+        commit within a Bitbucket repository. By sending a POST request to the
+        endpoint with the workspace ID, repository slug, and commit hash, along
+        with the comment content in the request body, you can add feedback,
+        notes, or discussion points directly associated with that particular
+        commit. This is useful for code review processes, documenting changes,
+        or collaborating with team members on specific code modifications. The
+        operation requires appropriate authentication and permissions to comment
+        on commits within the specified repository.
       summary: Create Comment For Commit
       responses:
         '201':
@@ -1413,6 +1452,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: createCommentForCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: commit
         in: path
@@ -1439,21 +1481,19 @@ paths:
   /repositories/{workspace}/{repo_slug}/commit/{commit}/comments/{comment_id}:
     delete:
       tags:
-        - - - - Commits
+        - Delete
+        - Commits
+        - Comments
       description: >-
-        Deletes the specified commit comment.
-
-
-        Note that deleting comments that have visible replies that point to
-
-        them will not really delete the resource. This is to retain the
-        integrity
-
-        of the original comment tree. Instead, the `deleted` element is set to
-
-        `true` and the content is blanked out. The comment will continue to be
-
-        returned by the collections and self endpoints.
+        This API operation allows you to delete a specific comment from a commit
+        in a Bitbucket repository. By making a DELETE request to the endpoint
+        with the appropriate workspace identifier, repository slug, commit hash,
+        and comment ID, you can permanently remove a comment that was previously
+        added to a commit. This is useful for managing discussions around code
+        changes, removing outdated feedback, or cleaning up inappropriate
+        comments. The operation requires proper authentication and
+        authorization, ensuring that only users with sufficient permissions can
+        delete comments from commits in the specified repository.
       summary: Delete Commit Comment
       responses:
         '204':
@@ -1473,10 +1513,24 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: deleteCommitComment
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
-        - - - - Commits
-      description: Returns the specified commit comment.
+        - Get
+        - Commits
+        - Comments
+      description: >-
+        This API endpoint retrieves a specific comment on a commit within a
+        Bitbucket repository. By providing the workspace identifier, repository
+        slug, commit hash, and comment ID in the request path, users can fetch
+        detailed information about a particular comment that was made on a
+        commit, including the comment content, author information, timestamps,
+        and any associated metadata. This is useful for applications that need
+        to display, process, or analyze individual commit comments, such as code
+        review tools, notification systems, or audit logs that track discussion
+        and feedback on specific code changes.
       summary: Get Commit Comment
       responses:
         '200':
@@ -1496,23 +1550,25 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: getCommitComment
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     put:
       tags:
-        - - - - Commits
+        - Update
+        - Commits
+        - Comments
       description: >-
-        Used to update the contents of a comment. Only the content of the
-        comment can be updated.
-
-
-        ```
-
-        $ curl
-        https://api.bitbucket.org/2.0/repositories/atlassian/prlinks/commit/7f71b5/comments/5728901
-        \
-          -X PUT -u evzijst \
-          -H 'Content-Type: application/json' \
-          -d '{"content": {"raw": "One more thing!"}'
-        ```
+        Updates an existing comment on a commit in a Bitbucket repository. This
+        operation allows users to modify the content of a previously posted
+        comment associated with a specific commit. The endpoint requires the
+        workspace identifier, repository slug, commit hash, and the unique
+        comment ID to locate and update the target comment. Users must have
+        appropriate permissions to edit the comment, typically being the
+        original author or having administrative privileges on the repository.
+        The request body should contain the updated comment content, and the
+        operation returns the modified comment object with its new content and
+        updated metadata including the modification timestamp.
       summary: Update Commit Comment
       responses:
         '201':
@@ -1542,6 +1598,9 @@ paths:
           scopes:
             - read:repository:bitbucket
       operationId: updateCommitComment
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     parameters:
       - name: comment_id
         in: path
@@ -1579,9 +1638,17 @@ paths:
       operationId: updateCommitApplicationProperty
       summary: Update Commit Application Property
       description: >-
-        Update an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a commit.
+        This API operation allows you to update or set an application-specific
+        property for a particular commit within a Bitbucket repository. By
+        making a PUT request to this endpoint, you specify the workspace,
+        repository slug, commit hash, application key, and property name to
+        target a specific property associated with that commit. This is useful
+        for storing custom metadata or application-specific information linked
+        to a commit, such as build status, deployment information, or any other
+        contextual data your application needs to maintain. The operation will
+        create the property if it doesn't exist or update it if it already does,
+        providing a way to persist and manage commit-level data that extends
+        beyond Bitbucket's standard commit attributes.
       parameters:
         - required: true
           in: path
@@ -1618,11 +1685,17 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/application_property'
       tags:
-        - - - - properties
+        - Update
+        - Commits
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     delete:
       responses:
         '204':
@@ -1630,9 +1703,15 @@ paths:
       operationId: deleteCommitApplicationProperty
       summary: Delete Commit Application Property
       description: >-
-        Delete an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a commit.
+        Removes a specific application property associated with a commit in a
+        Bitbucket repository. This operation allows applications to delete
+        custom metadata they previously stored against a particular commit,
+        identified by the workspace, repository slug, commit hash, application
+        key, and property name. Once deleted, the property and its associated
+        value are permanently removed from the commit's application properties
+        collection. This is useful for cleaning up outdated or no longer needed
+        custom data that applications have attached to commits for tracking,
+        automation, or integration purposes.
       parameters:
         - required: true
           in: path
@@ -1667,11 +1746,17 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Delete
+        - Commits
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       responses:
         '200':
@@ -1683,9 +1768,15 @@ paths:
       operationId: getCommitApplicationProperty
       summary: Get Commit Application Property
       description: >-
-        Retrieve an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a commit.
+        This GET operation retrieves a specific application property associated
+        with a commit in a Bitbucket repository. By providing the workspace
+        identifier, repository slug, commit hash, application key, and property
+        name in the URL path, the API returns the value of the custom property
+        that was previously set on that commit by a specific application. This
+        allows applications to store and retrieve metadata or custom attributes
+        tied to individual commits, enabling features like tracking deployment
+        status, code review approvals, or other application-specific information
+        linked to particular commits in the repository's history.
       parameters:
         - required: true
           in: path
@@ -1720,22 +1811,38 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Get
+        - Commits
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/commit/{commit}/pullrequests:
     get:
       tags:
-        - - - - Pullrequests
+        - Lists
+        - Pull
+        - Requests
+        - Contain
+        - Commits
       summary: List Pull Requests That Contain Commit
       description: >-
-        Returns a paginated list of all pull requests as part of which this
-        commit was reviewed. Pull Request Commit Links app must be installed
-        first before using this API; installation automatically occurs when 'Go
-        to pull request' is clicked from the web interface for a Commits
-        details.
+        This API operation retrieves a list of pull requests that contain a
+        specific commit within a Bitbucket repository. By making a GET request
+        to the endpoint with the workspace identifier, repository slug, and
+        commit hash, developers can discover which pull requests include the
+        specified commit in their change history. This is particularly useful
+        for tracking how code changes have propagated through the development
+        workflow, understanding the context in which a commit was merged,
+        performing impact analysis, or auditing which features or fixes include
+        specific changes. The response returns pull request metadata including
+        titles, authors, status, and related information for all pull requests
+        containing the referenced commit.
       operationId: listPullRequestsThatContainCommit
       parameters:
         - name: workspace
@@ -1805,12 +1912,24 @@ paths:
             - pullrequest
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/commit/{commit}/reports:
     get:
       tags:
-        - - - - Reports
-              - Commits
-      description: Returns a paginated list of Reports linked to this commit.
+        - Lists
+        - Reports
+      description: >-
+        This API operation retrieves a paginated list of all reports associated
+        with a specific commit in a Bitbucket repository. By making a GET
+        request to this endpoint with the workspace identifier, repository slug,
+        and commit hash, you can view all reports that have been created for
+        that particular commit, such as code quality analysis results, security
+        scan findings, test coverage reports, or custom build reports. The
+        response includes metadata about each report, allowing developers and
+        CI/CD systems to track and review various automated checks and analyses
+        that have been run against the code changes in that commit.
       summary: List Reports
       operationId: listReports
       parameters:
@@ -1851,12 +1970,31 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
   /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}:
     put:
       tags:
-        - - - - Reports
-              - Commits
-      description: "Creates or updates a report for the specified commit.\nTo upload a report, make sure to generate an ID that is unique across all reports for that commit. If you want to use an existing id from your own system, we recommend prefixing it with your system's name to avoid collisions, for example, mySystem-001.\n\n### Sample cURL request:\n```\ncurl --request PUT 'https://api.bitbucket.org/2.0/repositories/<username>/<reposity-name>/commit/<commit-hash>/reports/mysystem-001' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    \"title\": \"Security scan report\",\n    \"details\": \"This pull request introduces 10 new dependency vulnerabilities.\",\n    \"report_type\": \"SECURITY\",\n    \"reporter\": \"mySystem\",\n    \"link\": \"http://www.mysystem.com/reports/001\",\n    \"result\": \"FAILED\",\n    \"data\": [\n        {\n            \"title\": \"Duration (seconds)\",\n            \"type\": \"DURATION\",\n            \"value\": 14\n        },\n        {\n            \"title\": \"Safe to merge?\",\n            \"type\": \"BOOLEAN\",\n            \"value\": false\n        }\n    ]\n}'\n```\n\n### Possible field values:\nreport_type: SECURITY, COVERAGE, TEST, BUG\nresult: PASSED, FAILED, PENDING\ndata.type: BOOLEAN, DATE, DURATION, LINK, NUMBER, PERCENTAGE, TEXT\n\n#### Data field formats\n| Type  Field   | Value Field Type  | Value Field Display |\n|:--|:|:--|\n| None/ Omitted | Number, String or Boolean (not an array or object) | Plain text |\n| BOOLEAN\t| Boolean | The value will be read as a JSON boolean and displayed as 'Yes' or 'No'. |\n| DATE  | Number | The value will be read as a JSON number in the form of a Unix timestamp (milliseconds) and will be displayed as a relative date if the date is less than one week ago, otherwise  it will be displayed as an absolute date. |\n| DURATION | Number | The value will be read as a JSON number in milliseconds and will be displayed in a human readable duration format. |\n| LINK | Object: `{\"text\": \"Link text here\", \"href\": \"https://link.to.annotation/in/external/tool\"}` | The value will be read as a JSON object containing the fields \"text\" and \"href\" and will be displayed as a clickable link on the report. |\n| NUMBER | Number | The value will be read as a JSON number and large numbers will be  displayed in a human readable format (e.g. 14.3k). |\n| PERCENTAGE | Number (between 0 and 100) | The value will be read as a JSON number between 0 and 100 and will be displayed with a percentage sign. |\n| TEXT | String | The value will be read as a JSON string and will be displayed as-is |\n\nPlease refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.\n"
+        - Create
+        - Update
+        - Reports
+      description: >-
+        This PUT operation creates or updates a report for a specific commit in
+        a Bitbucket repository, identified by the workspace, repository slug,
+        commit SHA, and report ID. Reports are typically used to provide
+        additional build, test, or code quality information about a commit, such
+        as code coverage, security scans, or custom analysis results. The
+        operation requires authentication and appropriate permissions to the
+        repository, and accepts a JSON payload containing the report details
+        including its title, reporter, result status (PASSED, FAILED, or
+        PENDING), and optional metadata like links and data fields. If a report
+        with the specified ID already exists for the commit, it will be updated;
+        otherwise, a new report will be created. This endpoint is commonly used
+        by CI/CD tools and third-party integrations to display supplementary
+        commit status information directly within the Bitbucket interface,
+        allowing teams to view comprehensive build and quality metrics alongside
+        their code changes.
       operationId: createOrUpdateReport
       summary: Create Or Update Report
       parameters:
@@ -1911,6 +2049,9 @@ paths:
             - repository
         - basic: []
         - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
     get:
       tags:
         - - - - Reports
