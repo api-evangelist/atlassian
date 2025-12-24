@@ -21551,3 +21551,603 @@ components:
           minItems: 0
           uniqueItems: true
       additionalProperties: false
+    export_options:
+      type: object
+      title: Export Options
+      description: Options for issue export.
+      properties:
+        type:
+          type: string
+        project_key:
+          type: string
+        project_name:
+          type: string
+        send_email:
+          type: boolean
+        include_attachments:
+          type: boolean
+      required:
+        - type
+      additionalProperties: true
+    pipeline_schedule_post_request_body:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - additionalProperties: true
+          type: object
+          title: Request body for Pipeline Schedule POST request
+          properties:
+            target:
+              type: object
+              description: The target on which the schedule will be executed.
+              properties:
+                selector:
+                  $ref: '#/components/schemas/pipeline_selector'
+                ref_name:
+                  type: string
+                  description: The name of the reference.
+                ref_type:
+                  type: string
+                  description: The type of reference (branch only).
+                  enum:
+                    - branch
+              required:
+                - selector
+                - ref_name
+                - ref_type
+            enabled:
+              type: boolean
+              description: Whether the schedule is enabled.
+            cron_pattern:
+              type: string
+              description: >-
+                The cron expression with second precision (7 fields) that the
+                schedule applies. For example, for expression: 0 0 12 * * ? *,
+                will execute at 12pm UTC every day.
+          required:
+            - target
+            - cron_pattern
+    pipeline_schedule_put_request_body:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - additionalProperties: true
+          type: object
+          title: Request body for Pipeline Schedule PUT request
+          properties:
+            enabled:
+              type: boolean
+              description: Whether the schedule is enabled.
+    pullrequest_merge_parameters:
+      type: object
+      title: Pull Request Merge Parameters
+      description: The metadata that describes a pull request merge.
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+          description: The commit message that will be used on the resulting commit.
+        close_source_branch:
+          type: boolean
+          description: >-
+            Whether the source branch should be deleted. If this is not
+            provided, we fallback to the value used when the pull request was
+            created, which defaults to False
+        merge_strategy:
+          type: string
+          description: The merge strategy that will be used to merge the pull request.
+          enum:
+            - merge_commit
+            - squash
+            - fast_forward
+          default: merge_commit
+      required:
+        - type
+      additionalProperties: true
+    A_pullrequest_task_create:
+      type: object
+      title: Pull Request Task Create
+      description: A pullrequest task create
+      properties:
+        content:
+          type: object
+          title: Task Raw Content
+          description: task raw content
+          properties:
+            raw:
+              type: string
+              description: The task contents
+          required:
+            - raw
+          additionalProperties: false
+        comment:
+          $ref: '#/components/schemas/comment'
+        pending:
+          type: boolean
+      required:
+        - content
+      additionalProperties: false
+    A_pullrequest_task_update:
+      type: object
+      title: Pull Request Task Update
+      description: A pullrequest task update
+      properties:
+        content:
+          type: object
+          title: Task Raw Content
+          description: task raw content
+          properties:
+            raw:
+              type: string
+              description: The task contents
+          required:
+            - raw
+          additionalProperties: false
+        state:
+          type: string
+          enum:
+            - RESOLVED
+            - UNRESOLVED
+      additionalProperties: false
+    base_commit:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Base Commit
+          description: The common base type for both repository and snippet commits.
+          properties:
+            hash:
+              type: string
+              pattern: '[0-9a-f]{7,}?'
+            date:
+              type: string
+              format: date-time
+            author:
+              $ref: '#/components/schemas/author'
+            message:
+              type: string
+            summary:
+              type: object
+              properties:
+                raw:
+                  type: string
+                  description: The text as it was typed by a user.
+                markup:
+                  type: string
+                  description: >-
+                    The type of markup language the raw content is to be
+                    interpreted in.
+                  enum:
+                    - markdown
+                    - creole
+                    - plaintext
+                html:
+                  type: string
+                  description: The user's content rendered as HTML.
+              additionalProperties: false
+            parents:
+              type: array
+              items:
+                $ref: '#/components/schemas/base_commit'
+              minItems: 0
+          additionalProperties: true
+    diffstat:
+      type: object
+      title: Diff Stat
+      description: >-
+        A diffstat object that includes a summary of changes made to a file
+        between two commits.
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+          enum:
+            - added
+            - removed
+            - modified
+            - renamed
+        lines_added:
+          type: integer
+        lines_removed:
+          type: integer
+        old:
+          $ref: '#/components/schemas/commit_file'
+        new:
+          $ref: '#/components/schemas/commit_file'
+      required:
+        - type
+      additionalProperties: true
+    default_reviewer_and_type:
+      type: object
+      title: Default Reviewer and Type
+      description: >-
+        Object containing a user that is a default reviewer and the type of
+        reviewer
+      properties:
+        type:
+          type: string
+        reviewer_type:
+          type: string
+        user:
+          $ref: '#/components/schemas/user'
+      required:
+        - type
+      additionalProperties: true
+    commit_file:
+      type: object
+      title: Commit File
+      description: A file object, representing a file at a commit in a repository
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+          description: The path in the repository
+        commit:
+          $ref: '#/components/schemas/commit'
+        attributes:
+          type: string
+          enum:
+            - link
+            - executable
+            - subrepository
+            - binary
+            - lfs
+        escaped_path:
+          type: string
+          description: >-
+            The escaped version of the path as it appears in a diff. If the path
+            does not require escaping this will be the same as path.
+      required:
+        - type
+      additionalProperties: true
+    issue_attachment:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Issue Attachment
+          description: >-
+            An issue file attachment's meta data. Note this does not contain the
+            file's actual contents.
+          properties:
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+            name:
+              type: string
+          additionalProperties: true
+    group:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Group
+          description: A group object
+          properties:
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                html:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+            owner:
+              $ref: '#/components/schemas/account'
+            workspace:
+              $ref: '#/components/schemas/workspace'
+            name:
+              type: string
+            slug:
+              type: string
+              description: >-
+                The "sluggified" version of the group's name. This contains only
+                ASCII
+
+                characters and can therefore be slightly different than the name
+            full_slug:
+              type: string
+              description: |
+                The concatenation of the workspace's slug and the group's slug,
+                separated with a colon (e.g. `acme:developers`)
+          additionalProperties: true
+    user:
+      allOf:
+        - $ref: '#/components/schemas/account'
+        - type: object
+          title: User
+          description: A user object.
+          properties:
+            links:
+              $ref: '#/components/schemas/user_links'
+            account_id:
+              type: string
+              description: The user's Atlassian account ID.
+            account_status:
+              type: string
+              description: >-
+                The status of the account. Currently the only possible value is
+                "active", but more values may be added in the future.
+            has_2fa_enabled:
+              type: boolean
+            nickname:
+              type: string
+              description: >-
+                Account name defined by the owner. Should be used instead of the
+                "username" field. Note that "nickname" cannot be used in place
+                of "username" in URLs and queries, as "nickname" is not
+                guaranteed to be unique.
+            is_staff:
+              type: boolean
+            website:
+              type: string
+          additionalProperties: true
+    pipeline_cache:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - additionalProperties: true
+          type: object
+          title: Pipeline Cache
+          description: >-
+            A representation of metadata for a pipeline cache for given
+            repository.
+          properties:
+            uuid:
+              type: string
+              description: The UUID identifying the pipeline cache.
+            pipeline_uuid:
+              type: string
+              description: The UUID of the pipeline that created the cache.
+            step_uuid:
+              type: string
+              description: The uuid of the step that created the cache.
+            name:
+              type: string
+              description: The name of the cache.
+            key_hash:
+              type: string
+              description: The key hash of the cache version.
+            path:
+              type: string
+              description: The path where the cache contents were retrieved from.
+            file_size_bytes:
+              type: integer
+              description: The size of the file containing the archive of the cache.
+            created_on:
+              type: string
+              format: date-time
+              description: The timestamp when the cache was created.
+    pipeline_schedule_execution:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - additionalProperties: true
+          type: object
+          title: Pipeline Schedule Execution
+          description: A Pipelines schedule execution.
+          properties: {}
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+        name:
+          type: string
+          description: The name of the ref.
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+        - type
+      additionalProperties: true
+    treeentry:
+      type: object
+      title: Tree Entry
+      description: >-
+        Base type for most resource objects. It defines the common `type`
+        element that identifies an object's type. It also identifies the element
+        as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+          description: The path in the repository
+        commit:
+          $ref: '#/components/schemas/commit'
+      required:
+        - type
+      additionalProperties: true
+    repository_permission:
+      type: object
+      title: Repository Permission
+      description: A user's permission for a given repository.
+      properties:
+        type:
+          type: string
+        permission:
+          type: string
+          enum:
+            - read
+            - write
+            - admin
+            - none
+        user:
+          $ref: '#/components/schemas/user'
+        repository:
+          $ref: '#/components/schemas/repository'
+      required:
+        - type
+      additionalProperties: true
+    comment:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Comment
+          description: >-
+            The base type for all comments. This type should be considered
+            abstract. Each of the "commentable" resources defines its own
+            subtypes (e.g. `issue_comment`).
+          properties:
+            id:
+              type: integer
+            created_on:
+              type: string
+              format: date-time
+            updated_on:
+              type: string
+              format: date-time
+            content:
+              type: object
+              properties:
+                raw:
+                  type: string
+                  description: The text as it was typed by a user.
+                markup:
+                  type: string
+                  description: >-
+                    The type of markup language the raw content is to be
+                    interpreted in.
+                  enum:
+                    - markdown
+                    - creole
+                    - plaintext
+                html:
+                  type: string
+                  description: The user's content rendered as HTML.
+              additionalProperties: false
+            user:
+              $ref: '#/components/schemas/account'
+            deleted:
+              type: boolean
+            parent:
+              $ref: '#/components/schemas/comment'
+            inline:
+              type: object
+              properties:
+                from:
+                  type: integer
+                  description: The comment's anchor line in the old version of the file.
+                  minimum: 1
+                to:
+                  type: integer
+                  description: >-
+                    The comment's anchor line in the new version of the file. If
+                    the 'from' line is also provided, this value will be
+                    removed.
+                  minimum: 1
+                path:
+                  type: string
+                  description: The path of the file this comment is anchored to.
+              required:
+                - path
+              additionalProperties: false
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                html:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                code:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+          additionalProperties: true
+  examples: {}
+  reponses: {}
+  parameters: {}
+  responses: {}
+  headers: {}
