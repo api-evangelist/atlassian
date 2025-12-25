@@ -313,25 +313,22 @@ paths:
   /teams/{username}/search/code:
     get:
       tags:
-        - - - - Search
+        - Search
+        - Code
+        - Teams
+        - Repositories
       summary: Search For Code In A Teams Repositories
-      description: |
-        Search for code in the repositories of the specified team.
-
-        Note that searches can match in the file's text (`content_matches`),
-        the path (`path_matches`), or both.
-
-        You can use the same syntax for the search query as in the UI.
-        E.g. to search for "foo" only within the repository "demo",
-        use the query parameter `search_query=foo+repo:demo`.
-
-        Similar to other APIs, you can request more fields using a
-        `fields` query parameter. E.g. to get some more information about
-        the repository of matched files, use the query parameter
-        `search_query=foo&fields=%2Bvalues.file.commit.repository`
-        (the `%2B` is a URL-encoded `+`).
-
-        Try `fields=%2Bvalues.*.*.*.*` to get an idea what's possible.
+      description: >-
+        This API operation allows you to search for code across all repositories
+        belonging to a specific team in Bitbucket. By making a GET request to
+        the endpoint with the team's username as a path parameter, you can
+        perform code searches within the team's repository collection. The
+        operation returns matching code snippets and their locations across the
+        team's codebase, making it useful for finding specific code patterns,
+        function definitions, or text strings across multiple repositories owned
+        by the team. This is particularly valuable for organizations that need
+        to audit code, find usage examples, or track specific implementations
+        across their team's projects.
       operationId: searchForCodeInATeamsRepositories
       parameters:
         - name: username
@@ -372,42 +369,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/search_result_page'
               examples:
-                response:
-                  value:
-                    size: 1
-                    page: 1
-                    pagelen: 10
-                    query_substituted: false
-                    values:
-                      - type: code_search_result
-                        content_match_count: 2
-                        content_matches:
-                          - lines:
-                              - line: 2
-                                segments: []
-                              - line: 3
-                                segments:
-                                  - text: 'def '
-                                  - text: foo
-                                    match: true
-                                  - text: '():'
-                              - line: 4
-                                segments:
-                                  - text: '    print("snek")'
-                              - line: 5
-                                segments: []
-                        path_matches:
-                          - text: src/
-                          - text: foo
-                            match: true
-                          - text: .py
-                        file:
-                          path: src/foo.py
-                          type: commit_file
-                          links:
-                            self:
-                              href: >-
-                                https://api.bitbucket.org/2.0/repositories/my-workspace/demo/src/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b/src/foo.py
+                undefined:
+                  $ref: '#/components/examples/undefined'
         '400':
           description: |
             If the search request was invalid due to one of the
@@ -447,6 +410,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
 tags: []
 x-revision: 3c039d08312e
 x-atlassian-narrative:
@@ -2991,11 +2957,7 @@ components:
           type: string
           format: uri
           readOnly: true
-        values:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_code_search_result'
+        values: {}
   examples:
     paginated-pipeline-variables:
       page: 1
@@ -3020,3 +2982,11 @@ components:
       key: DATABASE_URL
       value: postgresql://localhost:5432/mydb
       secured: false
+    undefined:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
