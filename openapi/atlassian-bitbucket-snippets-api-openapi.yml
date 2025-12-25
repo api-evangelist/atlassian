@@ -4467,3 +4467,128 @@ components:
           minItems: 0
           uniqueItems: true
       additionalProperties: false
+    account:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Account
+          description: An account object.
+          properties:
+            links:
+              $ref: '#/components/schemas/account_links'
+            created_on:
+              type: string
+              format: date-time
+            display_name:
+              type: string
+            username:
+              type: string
+              pattern: ^[a-zA-Z0-9_\-]+$
+            uuid:
+              type: string
+          additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: >-
+        Base type for most resource objects. It defines the common `type`
+        element that identifies an object's type. It also identifies the element
+        as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+            - message
+          additionalProperties: false
+      required:
+        - type
+      additionalProperties: true
+    object:
+      type: object
+      description: >-
+        Base type for most resource objects. It defines the common `type`
+        element that identifies an object's type. It also identifies the element
+        as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+        - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    base_commit:
+      allOf:
+        - $ref: '#/components/schemas/object'
+        - type: object
+          title: Base Commit
+          description: The common base type for both repository and snippet commits.
+          properties:
+            hash:
+              type: string
+              pattern: '[0-9a-f]{7,}?'
+            date:
+              type: string
+              format: date-time
+            author:
+              $ref: '#/components/schemas/author'
+            message:
+              type: string
+            summary:
+              type: object
+              properties:
+                raw:
+                  type: string
+                  description: The text as it was typed by a user.
+                markup:
+                  type: string
+                  description: >-
+                    The type of markup language the raw content is to be
+                    interpreted in.
+                  enum:
+                    - markdown
+                    - creole
+                    - plaintext
+                html:
+                  type: string
+                  description: The user's content rendered as HTML.
+              additionalProperties: false
+            parents:
+              type: array
+              items:
+                $ref: '#/components/schemas/base_commit'
+              minItems: 0
+          additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+  examples: {}
+  reponses: {}
+  parameters: {}
+  headers: {}
+  requestBodies:
+    snippet:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/snippet'
+      description: The new snippet object.
+      required: true
+  responses: {}
