@@ -56,6 +56,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_pipeline_variables'
+              examples:
+                paginated-pipeline-variables:
+                  $ref: '#/components/examples/paginated-pipeline-variables'
       security:
         - oauth2:
             - pipeline
@@ -66,6 +69,7 @@ paths:
         CaselCaseOperationIds: true
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     post:
       tags:
         - Create
@@ -80,12 +84,12 @@ paths:
         used across pipeline configurations for the team, enabling centralized
         management of configuration values such as credentials, API keys, or
         environment-specific settings. The operation requires a POST request to
-        the endpoint with the team's username and the variable details in the
+        the endpoint with the Teams username and the variable details in the
         request body, which typically includes the variable name, value, and
         whether it should be secured or masked in pipeline logs. Upon successful
         creation, the API returns the newly created variable object with its
         configuration details, making it available for use in any pipeline
-        within that team's repositories.
+        within that Teams repositories.
       operationId: createAVariableForAUser
       parameters:
         - name: username
@@ -108,6 +112,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
+              examples:
+                pipeline-variable:
+                  $ref: '#/components/examples/pipeline-variable'
         '404':
           description: The account does not exist.
           content:
@@ -130,18 +137,26 @@ paths:
         CaselCaseOperationIds: true
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
   /teams/{username}/pipelines_config/variables/{variable_uuid}:
     get:
       tags:
-        - - - - Pipelines
+        - Get
+        - Variables
+        - Teams
       deprecated: true
       summary: Get A Variable For A Team
       description: >-
-        Retrieve a team level variable.
-
-        This endpoint has been deprecated, and you should use the new workspaces
-        endpoint. For more information, see [the
-        announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+        This API operation retrieves detailed information about a specific
+        pipeline variable configured at the team level in Bitbucket. By
+        providing the Teams username and the unique identifier (UUID) of the
+        variable, you can fetch the variable's configuration details including
+        its name, value, security settings, and other metadata. This is
+        particularly useful when you need to inspect or validate existing
+        pipeline variables that are shared across all repositories within a
+        team, allowing administrators to manage and audit environment variables,
+        credentials, or other configuration values used during the CI/CD
+        pipeline execution process.
       operationId: getAVariableForATeam
       parameters:
         - name: username
@@ -163,6 +178,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
+              examples:
+                pipeline-variable_2:
+                  $ref: '#/components/examples/pipeline-variable_2'
         '404':
           description: The account or variable with the given UUID was not found.
           content:
@@ -177,17 +195,28 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     put:
       tags:
-        - - - - Pipelines
+        - Update
+        - Variables
+        - Teams
       deprecated: true
       summary: Update A Variable For A Team
       description: >-
-        Update a team level variable.
-
-        This endpoint has been deprecated, and you should use the new workspaces
-        endpoint. For more information, see [the
-        announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+        This API operation allows you to update an existing pipeline variable
+        for a specific team in Atlassian Bitbucket. By making a PUT request to
+        the endpoint with the Teams username and the variable's unique
+        identifier (UUID), you can modify the variable's properties such as its
+        value, security settings, or other configuration parameters. This is
+        particularly useful for managing environment-specific settings,
+        credentials, or other configuration values used in your Teams CI/CD
+        pipelines without having to delete and recreate variables. The operation
+        requires appropriate authentication and permissions to modify team-level
+        pipeline configurations, and it will replace the existing variable
+        configuration with the new values provided in the request body.
       operationId: updateAVariableForATeam
       parameters:
         - name: username
@@ -211,6 +240,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
+              examples:
+                pipeline-variable_2:
+                  $ref: '#/components/examples/pipeline-variable_2'
         '404':
           description: The account or the variable was not found.
           content:
@@ -225,17 +257,26 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
     delete:
       tags:
-        - - - - Pipelines
+        - Delete
+        - Variables
+        - Teams
       deprecated: true
       summary: Delete A Variable For A Team
       description: >-
-        Delete a team level variable.
-
-        This endpoint has been deprecated, and you should use the new workspaces
-        endpoint. For more information, see [the
-        announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+        This API operation allows you to permanently remove a specific pipeline
+        configuration variable from a Teams settings in Bitbucket. By sending a
+        DELETE request to the endpoint with the Teams username and the unique
+        identifier (UUID) of the variable you want to remove, you can delete
+        variables that were previously configured for use in the Teams CI/CD
+        pipelines. This is useful when cleaning up obsolete configuration
+        values, removing sensitive information that's no longer needed, or
+        managing the Teams pipeline environment variables as part of regular
+        maintenance operations.
       operationId: deleteAVariableForATeam
       parameters:
         - name: username
@@ -267,11 +308,13 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
   /teams/{username}/search/code:
     get:
       tags:
         - - - - Search
-      summary: Search For Code In A Team's Repositories
+      summary: Search For Code In A Teams Repositories
       description: |
         Search for code in the repositories of the specified team.
 
@@ -289,7 +332,7 @@ paths:
         (the `%2B` is a URL-encoded `+`).
 
         Try `fields=%2Bvalues.*.*.*.*` to get an idea what's possible.
-      operationId: searchForCodeInATeam'SRepositories
+      operationId: searchForCodeInATeamsRepositories
       parameters:
         - name: username
           in: path
@@ -2848,11 +2891,27 @@ components:
             Page number of the current results. This is an optional element that
             is not provided in all responses.
         values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/pipeline_variable'
-          description: The values of the current page.
+          additionalProperties: true
+          type: object
+          title: Pipeline Variable
+          description: A Pipelines variable.
+          properties:
+            uuid:
+              type: string
+              description: The UUID identifying the variable.
+            key:
+              type: string
+              description: The unique name of the variable.
+            value:
+              type: string
+              description: >-
+                The value of the variable. If the variable is secured, this will
+                be empty.
+            secured:
+              type: boolean
+              description: >-
+                If true, this variable will be treated as secured. The value
+                will never be exposed in the logs or the REST API.
         size:
           type: integer
           description: >-
@@ -2937,3 +2996,27 @@ components:
           readOnly: true
           items:
             $ref: '#/components/schemas/search_code_search_result'
+  examples:
+    paginated-pipeline-variables:
+      page: 1
+      values:
+        uuid: 3c7a5c08-8b2e-4f9a-9d3e-1a2b3c4d5e6f
+        key: API_KEY
+        value: my-secret-value
+        secured: true
+      size: 42
+      pagelen: 10
+      next: >-
+        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/pipelines_config/variables?page=2
+      previous: >-
+        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/pipelines_config/variables?page=0
+    pipeline-variable:
+      uuid: 3c7c1a4e-8f2d-4b9a-a1c5-6d8e9f0a1b2c
+      key: DATABASE_URL
+      value: postgresql://localhost:5432/mydb
+      secured: false
+    pipeline-variable_2:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      key: DATABASE_URL
+      value: postgresql://localhost:5432/mydb
+      secured: false
