@@ -1128,23 +1128,24 @@ paths:
   /users/{selected_user}/search/code:
     get:
       tags:
-        - - - - Search
+        - Search
+        - Code
+        - Users
+        - Repositories
       summary: Search For Code In Users Repositories
-      description: |
-        Search for code in the repositories of the specified user.
-
-        Note that searches can match in the file's text (`content_matches`),
-        the path (`path_matches`), or both.
-
-        You can use the same syntax for the search query as in the UI.
-        E.g. to search for "foo" only within the repository "demo",
-        use the query parameter `search_query=foo+repo:demo`.
-
-        Similar to other APIs, you can request more fields using a
-        `fields` query parameter. E.g. to get some more information about
-        the repository of matched files, use the query parameter
-        `search_query=foo&fields=%2Bvalues.file.commit.repository`
-        (the `%2B` is a URL-encoded `+`).
+      description: >-
+        The Atlassian Bitbucket User API endpoint
+        `/users/{selected_user}/search/code` accessed via GET method enables
+        developers to perform code searches across all repositories belonging to
+        a specific user. By providing a username in the `{selected_user}` path
+        parameter along with search query parameters, this operation scans
+        through the code content within that user's repositories and returns
+        matching results. This is particularly useful for finding specific code
+        snippets, function names, variables, or any text patterns across a
+        user's entire codebase without needing to search individual repositories
+        separately. The endpoint helps developers quickly locate where certain
+        code elements are used, identify duplicated code, or conduct code audits
+        across a user's portfolio of repositories.
       operationId: searchForCodeInUsersRepositories
       parameters:
         - name: selected_user
@@ -1185,42 +1186,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/search_result_page'
               examples:
-                response:
-                  value:
-                    size: 1
-                    page: 1
-                    pagelen: 10
-                    query_substituted: false
-                    values:
-                      - type: code_search_result
-                        content_match_count: 2
-                        content_matches:
-                          - lines:
-                              - line: 2
-                                segments: []
-                              - line: 3
-                                segments:
-                                  - text: 'def '
-                                  - text: foo
-                                    match: true
-                                  - text: '():'
-                              - line: 4
-                                segments:
-                                  - text: '    print("snek")'
-                              - line: 5
-                                segments: []
-                        path_matches:
-                          - text: src/
-                          - text: foo
-                            match: true
-                          - text: .py
-                        file:
-                          path: src/foo.py
-                          type: commit_file
-                          links:
-                            self:
-                              href: >-
-                                https://api.bitbucket.org/2.0/repositories/my-workspace/demo/src/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b/src/foo.py
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
         '400':
           description: |
             If the search request was invalid due to one of the
@@ -1260,11 +1227,24 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
   /users/{selected_user}/ssh-keys:
     get:
       tags:
-        - - - - Ssh
-      description: Returns a paginated list of the Users SSH public keys.
+        - Lists
+        - Ssh
+        - Keys
+      description: >-
+        Returns a paginated list of the user's SSH keys for the selected user
+        account in Bitbucket. This endpoint retrieves all public SSH keys that
+        have been added to the specified user's profile, which are used for
+        secure Git operations over SSH protocol. The response includes key
+        details such as the key ID, label, public key content, and creation
+        date. Authentication is required to access this endpoint, and users can
+        only view SSH keys for their own account unless they have appropriate
+        administrative permissions.
       summary: List Ssh Keys
       responses:
         '200':
@@ -1324,27 +1304,26 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: listSshKeys
     post:
       tags:
-        - - - - Ssh
+        - Add
+        - Ssh
+        - Keys
       description: >-
-        Adds a new SSH public key to the specified user account and returns the
-        resulting key.
-
-
-        Example:
-
-
-        ```
-
-        $ curl -X POST -H "Content-Type: application/json" -d '{"key":
-        "ssh-ed25519
-        AAAAC3NzaC1lZDI1NTE5AAAAIKqP3Cr632C2dNhhgKVcon4ldUSAeKiku2yP9O9/bDtY
-        user@myhost"}'
-        https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}/ssh-keys
-
-        ```
+        This API operation allows you to add a new SSH key to a specific
+        Bitbucket user's account by making a POST request to the
+        /users/{selected_user}/ssh-keys endpoint, where {selected_user}
+        represents the username of the target account. The operation requires
+        you to provide SSH key details in the request body, typically including
+        the key content and an optional label for identification purposes. Once
+        successfully added, the SSH key enables secure authentication for Git
+        operations and other SSH-based interactions with Bitbucket repositories
+        associated with that user account. This is commonly used for setting up
+        automated deployments, CI/CD pipelines, or allowing developers to
+        securely push and pull code without password authentication.
       summary: Add New Ssh Key
       responses:
         '201':
@@ -1354,36 +1333,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ssh_account_key'
               examples:
-                response:
-                  value:
-                    comment: user@myhost
-                    created_on: '2018-03-14T13:17:05.196003+00:00'
-                    key: >-
-                      ssh-ed25519
-                      AAAAC3NzaC1lZDI1NTE5AAAAIKqP3Cr632C2dNhhgKVcon4ldUSAeKiku2yP9O9/bDtY
-                    label: ''
-                    last_used: '2018-03-20T13:18:05.196003+00:00'
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}/ssh-keys/b15b6026-9c02-4626-b4ad-b905f99f763a
-                    owner:
-                      display_name: Mark Adams
-                      links:
-                        avatar:
-                          href: >-
-                            https://bitbucket.org/account/markadams-atl/avatar/32/
-                        html:
-                          href: https://bitbucket.org/markadams-atl/
-                        self:
-                          href: >-
-                            https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}
-                      type: user
-                      username: markadams-atl
-                      nickname: markadams-atl
-                      uuid: '{d7dd0e2d-3994-4a50-a9ee-d260b6cefdab}'
-                    type: ssh_key
-                    uuid: '{b15b6026-9c02-4626-b4ad-b905f99f763a}'
+                ssh-account-key:
+                  $ref: '#/components/examples/ssh-account-key'
         '400':
           description: If the submitted key or related value is invalid
           content:
@@ -1405,6 +1356,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ssh_account_key'
+            examples:
+              ssh-account-key_2:
+                $ref: '#/components/examples/ssh-account-key_2'
         description: >-
           The new SSH key object. Note that the username property has been
           deprecated due to [privacy
@@ -1417,6 +1371,10 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+        GenerateExampleFromOperationRequestSchema: true
       operationId: addNewSshKey
     parameters:
       - name: selected_user
@@ -1430,8 +1388,20 @@ paths:
   /users/{selected_user}/ssh-keys/{key_id}:
     delete:
       tags:
-        - - - - Ssh
-      description: Deletes a specific SSH public key from a Users account.
+        - Delete
+        - Ssh
+        - Keys
+      description: >-
+        This API operation allows you to delete a specific SSH key associated
+        with a Bitbucket user account by providing the username and the unique
+        key identifier in the endpoint path. When executed via a DELETE request
+        to `/users/{selected_user}/ssh-keys/{key_id}`, it permanently removes
+        the specified SSH key from the user's account, revoking that key's
+        access to Bitbucket repositories. This is commonly used when rotating
+        security credentials, removing access for compromised keys, or cleaning
+        up unused SSH keys from user accounts. The operation requires
+        appropriate authentication and authorization to ensure only authorized
+        parties can remove SSH keys from user accounts.
       summary: Delete Ssh Key
       responses:
         '204':
@@ -1460,11 +1430,23 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: deleteSshKey
     get:
       tags:
-        - - - - Ssh
-      description: Returns a specific SSH public key belonging to a user.
+        - Get
+        - Ssh
+        - Keys
+      description: >-
+        This API operation retrieves a specific SSH key associated with a
+        particular Bitbucket user by providing both the username and the unique
+        key identifier in the request path. When executed, it returns detailed
+        information about the specified SSH key, including its public key value,
+        label, and other metadata. This endpoint is useful for administrators or
+        applications that need to verify or audit SSH keys configured for user
+        accounts, enabling secure authentication and repository access
+        management within Bitbucket.
       summary: Get Ssh Key
       responses:
         '200':
@@ -1474,36 +1456,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ssh_account_key'
               examples:
-                response:
-                  value:
-                    comment: user@myhost
-                    created_on: '2018-03-14T13:17:05.196003+00:00'
-                    key: >-
-                      ssh-ed25519
-                      AAAAC3NzaC1lZDI1NTE5AAAAIKqP3Cr632C2dNhhgKVcon4ldUSAeKiku2yP9O9/bDtY
-                    label: ''
-                    last_used: '2018-03-20T13:18:05.196003+00:00'
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}/ssh-keys/b15b6026-9c02-4626-b4ad-b905f99f763a
-                    owner:
-                      display_name: Mark Adams
-                      links:
-                        avatar:
-                          href: >-
-                            https://bitbucket.org/account/markadams-atl/avatar/32/
-                        html:
-                          href: https://bitbucket.org/markadams-atl/
-                        self:
-                          href: >-
-                            https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}
-                      type: user
-                      username: markadams-atl
-                      nickname: markadams-atl
-                      uuid: '{d7dd0e2d-3994-4a50-a9ee-d260b6cefdab}'
-                    type: ssh_key
-                    uuid: '{b15b6026-9c02-4626-b4ad-b905f99f763a}'
+                ssh-account-key_2:
+                  $ref: '#/components/examples/ssh-account-key_2'
         '403':
           description: If the specified user or key is not accessible to the current user
         '404':
@@ -1520,28 +1474,29 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getSshKey
     put:
       tags:
-        - - - - Ssh
+        - Update
+        - Ssh
+        - Keys
       description: >-
-        Updates a specific SSH public key on a Users account
-
-
-        Note: Only the 'comment' field can be updated using this API. To modify
-        the key or comment values, you must delete and add the key again.
-
-
-        Example:
-
-
-        ```
-
-        $ curl -X PUT -H "Content-Type: application/json" -d '{"label": "Work
-        key"}'
-        https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}/ssh-keys/{b15b6026-9c02-4626-b4ad-b905f99f763a}
-
-        ```
+        The Update SSH Key operation is a PUT request to the Atlassian Bitbucket
+        User API endpoint /users/{selected_user}/ssh-keys/{key_id} that allows
+        authorized users to modify an existing SSH key associated with a
+        specific user account. This endpoint requires two path parameters:
+        {selected_user} which identifies the target user whose SSH key is being
+        updated, and {key_id} which specifies the unique identifier of the
+        particular SSH key to be modified. When invoked, this operation accepts
+        the updated SSH key data in the request body and replaces the existing
+        key configuration with the new values provided. This is typically used
+        to update key labels, permissions, or other metadata associated with the
+        SSH key while maintaining the same key identifier, enabling users or
+        administrators to manage SSH authentication credentials for secure
+        access to Bitbucket repositories without creating entirely new keys.
       summary: Update Ssh Key
       responses:
         '200':
@@ -1551,36 +1506,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ssh_account_key'
               examples:
-                response:
-                  value:
-                    comment: ''
-                    created_on: '2018-03-14T13:17:05.196003+00:00'
-                    key: >-
-                      ssh-ed25519
-                      AAAAC3NzaC1lZDI1NTE5AAAAIKqP3Cr632C2dNhhgKVcon4ldUSAeKiku2yP9O9/bDtY
-                    label: Work key
-                    last_used: '2018-03-20T13:18:05.196003+00:00'
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}/ssh-keys/b15b6026-9c02-4626-b4ad-b905f99f763a
-                    owner:
-                      display_name: Mark Adams
-                      links:
-                        avatar:
-                          href: >-
-                            https://bitbucket.org/account/markadams-atl/avatar/32/
-                        html:
-                          href: https://bitbucket.org/markadams-atl/
-                        self:
-                          href: >-
-                            https://api.bitbucket.org/2.0/users/{ed08f5e1-605b-4f4a-aee4-6c97628a673e}
-                      type: user
-                      username: markadams-atl
-                      nickname: markadams-atl
-                      uuid: '{d7dd0e2d-3994-4a50-a9ee-d260b6cefdab}'
-                    type: ssh_key
-                    uuid: '{b15b6026-9c02-4626-b4ad-b905f99f763a}'
+                ssh-account-key_2:
+                  $ref: '#/components/examples/ssh-account-key_2'
         '400':
           description: If the submitted key or related value is invalid
           content:
@@ -1602,6 +1529,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ssh_account_key'
+            examples:
+              ssh-account-key_2:
+                $ref: '#/components/examples/ssh-account-key_2'
         description: The updated SSH key object
       security:
         - oauth2:
@@ -1611,6 +1541,10 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+        GenerateExampleFromOperationRequestSchema: true
       operationId: updateSshKey
     parameters:
       - name: key_id
@@ -1630,12 +1564,21 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/users:
     get:
       tags:
-        - - - - Projects
+        - Lists
+        - Explicit
+        - Users
+        - Permissions
+        - Projects
       description: >-
-        Returns a paginated list of explicit user permissions for the given
-        project.
-
-        This endpoint does not support BBQL features.
+        This API operation retrieves a list of explicit user permissions that
+        have been granted for a specific project within a Bitbucket workspace.
+        By providing the workspace identifier and project key as path
+        parameters, the endpoint returns details about individual users who have
+        been explicitly assigned permissions to the project, including their
+        access levels and roles. This allows administrators to audit and review
+        which users have direct access to a particular project, separate from
+        any permissions they might inherit through group memberships or
+        workspace-level settings.
       summary: List Explicit User Permissions For Project
       responses:
         '200':
@@ -1645,34 +1588,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_project_user_permissions'
               examples:
-                response:
-                  value:
-                    pagelen: 10
-                    values:
-                      - type: project_user_permission
-                        user:
-                          type: user
-                          display_name: Colin Cameron
-                          uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
-                          account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
-                        permission: admin
-                        links:
-                          self:
-                            href: >-
-                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
-                      - type: project_user_permission
-                        user:
-                          type: user
-                          display_name: Sean Conaty
-                          uuid: '{504c3b62-8120-4f0c-a7bc-87800b9d6f70}'
-                          account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324c
-                        permission: write
-                        links:
-                          self:
-                            href: >-
-                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324c
-                    page: 1
-                    size: 2
+                paginated-project-user-permissions:
+                  $ref: '#/components/examples/paginated-project-user-permissions'
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -1707,6 +1624,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: listExplicitUserPermissionsForProject
     parameters:
       - name: project_key
@@ -1728,21 +1648,23 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/users/{selected_user_id}:
     delete:
       tags:
-        - - - - Projects
+        - Delete
+        - Explicit
+        - Users
+        - Permissions
+        - Projects
       description: >-
-        Deletes the project user permission between the requested project and
-        user, if one exists.
-
-
-        Only users with admin permission for the project may access this
-        resource.
-
-
-        Due to security concerns, the JWT and OAuth authentication methods are
-        unsupported.
-
-        This is to ensure integrations and add-ons are not allowed to change
-        permissions.
+        This API operation removes an explicitly assigned permission for a
+        specific user within a Bitbucket project by making a DELETE request to
+        the specified endpoint. It requires the workspace slug, project key, and
+        the selected user's ID as path parameters to identify and revoke the
+        user's direct access rights to the project. This operation is useful for
+        project administrators who need to manage team access by removing
+        individual user permissions, though it only affects explicit permissions
+        and does not impact permissions inherited through group memberships or
+        workspace-level access. Upon successful deletion, the user will lose
+        their direct permission assignment for the specified project unless they
+        retain access through other means.
       summary: Delete An Explicit User Permission For Project
       responses:
         '204':
@@ -1778,30 +1700,28 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: deleteAnExplicitUserPermissionForProject
     get:
       tags:
-        - - - - Projects
+        - Get
+        - Explicit
+        - Users
+        - Permissions
+        - Projects
       description: >-
-        Returns the explicit user permission for a given user and project.
-
-
-        Only users with admin permission for the project may access this
-        resource.
-
-
-        Permissions can be:
-
-
-        * `admin`
-
-        * `create-repo`
-
-        * `write`
-
-        * `read`
-
-        * `none`
+        Retrieves the explicit permission details for a specific user within a
+        designated project in a Bitbucket workspace. This endpoint requires
+        three path parameters: the workspace slug identifying the Bitbucket
+        workspace, the project key for the specific project, and the selected
+        user ID representing the user whose permissions are being queried. When
+        called, it returns the permission level that has been directly assigned
+        to the specified user for that project, excluding any inherited
+        permissions from groups or workspace-level access. This is useful for
+        auditing individual user access rights, verifying specific permission
+        assignments, or displaying user-level access information in
+        administrative interfaces.
       summary: Get An Explicit User Permission For Project
       responses:
         '200':
@@ -1811,19 +1731,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_user_permission'
               examples:
-                response:
-                  value:
-                    type: project_user_permission
-                    user:
-                      type: user
-                      display_name: Colin Cameron
-                      uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
-                      account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
-                    permission: admin
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                project-user-permission:
+                  $ref: '#/components/examples/project-user-permission'
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -1859,39 +1768,28 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getAnExplicitUserPermissionForProject
     put:
       tags:
-        - - - - Projects
+        - Update
+        - Explicit
+        - Users
+        - Permissions
+        - Projects
       description: >-
-        Updates the explicit user permission for a given user and project. The
-        selected
-
-        user must be a member of the workspace, and cannot be the workspace
-        owner.
-
-
-        Only users with admin permission for the project may access this
-        resource.
-
-
-        Due to security concerns, the JWT and OAuth authentication methods are
-        unsupported.
-
-        This is to ensure integrations and add-ons are not allowed to change
-        permissions.
-
-
-        Permissions can be:
-
-
-        * `admin`
-
-        * `create-repo`
-
-        * `write`
-
-        * `read`
+        Updates the explicit permission level for a specific user within a
+        Bitbucket project workspace. This PUT operation requires the workspace
+        slug, project key, and the selected user's ID as path parameters,
+        allowing administrators to modify individual user access rights at the
+        project level. The endpoint is used to grant, revoke, or change
+        permission levels (such as read, write, or admin) for a particular user,
+        overriding any inherited permissions from groups or workspace-level
+        settings. This provides fine-grained access control for project
+        resources and is typically used when a user needs different permissions
+        than what they would inherit from their group memberships.
       summary: Update An Explicit User Permission For Project
       responses:
         '200':
@@ -1901,19 +1799,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_user_permission'
               examples:
-                response:
-                  value:
-                    type: project_user_permission
-                    user:
-                      type: user
-                      display_name: Colin Cameron
-                      uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
-                      account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
-                    permission: write
-                    links:
-                      self:
-                        href: >-
-                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                project-user-permission_2:
+                  $ref: '#/components/examples/project-user-permission_2'
         '400':
           description: >-
             No permission value was provided or the value is invalid (not one of
@@ -1964,6 +1851,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: updateAnExplicitUserPermissionForProject
     parameters:
       - name: project_key
@@ -4768,11 +4658,7 @@ components:
           type: string
           format: uri
           readOnly: true
-        values:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_code_search_result'
+        values: {}
     paginated_ssh_user_keys:
       type: object
       title: Paginated SSH User Keys
@@ -4874,12 +4760,7 @@ components:
             that backwards navigation is not always available. Use this link to
             navigate the result set and refrain from constructing your own URLs.
           format: uri
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/project_user_permission'
-          minItems: 0
-          uniqueItems: true
+        values: {}
       additionalProperties: false
     project_user_permission:
       type: object
@@ -5030,3 +4911,70 @@ components:
       nestedObject:
         field1: value1
         field2: true
+    undefined_2:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
+    ssh-account-key:
+      owner:
+        id: '12345'
+        username: johndoe
+        email: johndoe@example.com
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...
+      fingerprint: SHA256:abc123def456ghi789
+      label: My Laptop Key
+      created: '2024-01-15T10:30:00Z'
+    ssh-account-key_2:
+      owner:
+        id: user123
+        username: john.doe
+        email: john.doe@example.com
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7...
+      fingerprint: SHA256:abcd1234efgh5678ijkl9012mnop3456
+      label: Work Laptop
+      created_at: '2024-01-15T10:30:00Z'
+    paginated-project-user-permissions:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/projects/permissions?page=2
+      previous: https://api.example.com/projects/permissions?page=0
+      values: []
+    project-user-permission:
+      type: project-user-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/456
+          name: Project Permission
+      permission: admin
+      user:
+        id: 123
+        name: john.doe
+        email: john.doe@example.com
+      project:
+        id: 456
+        key: PROJ
+        name: Example Project
+    project-user-permission_2:
+      type: project-user-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/456
+          name: Project Permission
+      permission: admin
+      user:
+        name: john.doe
+        emailAddress: john.doe@example.com
+        id: 456
+        displayName: John Doe
+        active: true
+      project:
+        key: PROJ
+        id: 123
+        name: Example Project
+        description: An example project
+        public: false
