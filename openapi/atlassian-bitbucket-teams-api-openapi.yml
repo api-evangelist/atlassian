@@ -2857,27 +2857,11 @@ components:
             Page number of the current results. This is an optional element that
             is not provided in all responses.
         values:
-          additionalProperties: true
-          type: object
-          title: Pipeline Variable
-          description: A Pipelines variable.
-          properties:
-            uuid:
-              type: string
-              description: The UUID identifying the variable.
-            key:
-              type: string
-              description: The unique name of the variable.
-            value:
-              type: string
-              description: >-
-                The value of the variable. If the variable is secured, this will
-                be empty.
-            secured:
-              type: boolean
-              description: >-
-                If true, this variable will be treated as secured. The value
-                will never be exposed in the logs or the REST API.
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_variable'
+          description: The values of the current page.
         size:
           type: integer
           description: >-
@@ -2957,7 +2941,120 @@ components:
           type: string
           format: uri
           readOnly: true
-        values: {}
+        values:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_code_search_result'
+    search_code_search_result:
+      type: object
+      properties:
+        type:
+          type: string
+          readOnly: true
+        content_match_count:
+          type: integer
+          format: int64
+          readOnly: true
+        content_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_content_match'
+        path_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+        file:
+          $ref: '#/components/schemas/commit_file'
+    error:
+      type: object
+      title: Error
+      description: >-
+        Base type for most resource objects. It defines the common `type`
+        element that identifies an object's type. It also identifies the element
+        as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+            - message
+          additionalProperties: false
+      required:
+        - type
+      additionalProperties: true
+    object:
+      type: object
+      description: >-
+        Base type for most resource objects. It defines the common `type`
+        element that identifies an object's type. It also identifies the element
+        as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+        - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    search_content_match:
+      type: object
+      properties:
+        lines:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_line'
+    search_segment:
+      type: object
+      properties:
+        text:
+          type: string
+          readOnly: true
+        match:
+          type: boolean
+          readOnly: true
+    commit_file:
+      type: object
+      title: Commit File
+      description: A file object, representing a file at a commit in a repository
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+          description: The path in the repository
+        commit:
+          $ref: '#/components/schemas/commit'
+        attributes:
+          type: string
+          enum:
+            - link
+            - executable
+            - subrepository
+            - binary
+            - lfs
+        escaped_path:
+          type: string
+          description: >-
+            The escaped version of the path as it appears in a diff. If the path
+            does not require escaping this will be the same as path.
+      required:
+        - type
+      additionalProperties: true
   examples:
     paginated-pipeline-variables:
       page: 1
@@ -2990,3 +3087,20 @@ components:
       next: https://api.example.com/resource?page=2
       previous: https://api.example.com/resource?page=0
       values: {}
+  parameters: {}
+  headers: {}
+  requestBodies:
+    pipeline_variable2:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/pipeline_variable'
+      description: The variable to create.
+    pipeline_variable:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/pipeline_variable'
+      description: The updated variable.
+      required: true
+  responses: {}
