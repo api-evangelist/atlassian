@@ -45,6 +45,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_snippets'
+              examples:
+                paginated-snippets:
+                  $ref: '#/components/examples/paginated-snippets'
         '404':
           description: If the user does not exist.
           content:
@@ -74,18 +77,23 @@ paths:
         CaselCaseOperationIds: true
         WriteDescription: true
         ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: listSnippetsInWorkspace
     post:
       tags:
-        - - - - Snippets
+        - Create
+        - Snippets
       description: >-
-        Identical to
-        [`/snippets`](/cloud/bitbucket/rest/api-group-snippets/#api-snippets-post),
-        except that the new snippet will be
-
-        created under the workspace specified in the path parameter
-
-        `{workspace}`.
+        This API operation creates a new code snippet within a specified
+        Atlassian Bitbucket workspace by sending a POST request to the
+        /snippets/{workspace} endpoint, where {workspace} is replaced with the
+        unique identifier or name of the target workspace. The operation allows
+        authenticated users to programmatically submit code snippets, which can
+        include multiple files, descriptions, and metadata, to be stored and
+        shared within the designated workspace, making it useful for developers
+        who want to save and organize reusable code fragments, documentation, or
+        configuration examples that can be accessed by team members with
+        appropriate permissions.
       summary: Create Snippet For Workspace
       responses:
         '201':
@@ -99,6 +107,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet'
+              examples:
+                snippet:
+                  $ref: '#/components/examples/snippet'
         '401':
           description: If the request was not authenticated
           content:
@@ -123,6 +134,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        ChooseTags: true
+        WriteDescription: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: createSnippetForWorkspace
     parameters:
       - name: workspace
@@ -136,8 +150,22 @@ paths:
   /snippets/{workspace}/{encoded_id}:
     delete:
       tags:
-        - - - - Snippets
-      description: Deletes a snippet and returns an empty response.
+        - Delete
+      description: >-
+        The Delete Snippet operation in the Atlassian Bitbucket Snippets API
+        allows users to permanently remove a specific snippet from a workspace
+        by sending a DELETE request to the endpoint
+        /snippets/{workspace}/{encoded_id}, where {workspace} represents the
+        workspace identifier and {encoded_id} is the unique encoded identifier
+        of the snippet to be deleted. This operation requires appropriate
+        authentication and permissions, as only the snippet owner or users with
+        sufficient workspace privileges can delete snippets. Once executed
+        successfully, the snippet and all its associated data, including files,
+        comments, and revision history, are permanently removed from the system
+        and cannot be recovered. The API typically returns a 204 No Content
+        status code upon successful deletion or appropriate error codes if the
+        snippet doesn't exist, the user lacks permissions, or other issues occur
+        during the deletion process.
       summary: Delete Snippet
       responses:
         '204':
@@ -170,197 +198,26 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: deleteSnippet
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Retrieves a single snippet.
-
-        Snippets support multiple content types:
-
-        * application/json
-        * multipart/related
-        * multipart/form-data
-
-
-        application/json
-        -
-
-        The default content type of the response is `application/json`.
-        Since JSON is always `utf-8`, it cannot reliably contain file contents
-        for files that are not text. Therefore, JSON snippet documents only
-        contain the filename and links to the file contents.
-
-        This means that in order to retrieve all parts of a snippet, N+1
-        requests need to be made (where N is the number of files in the
-        snippet).
-
-
-        multipart/related
-        --
-
-        To retrieve an entire snippet in a single response, use the
-        `Accept: multipart/related` HTTP request header.
-
-            $ curl -H "Accept: multipart/related" https://api.bitbucket.org/2.0/snippets/evzijst/1
-
-        Response:
-
-            HTTP/1.1 200 OK
-            Content-Length: 2214
-            Content-Type: multipart/related; start="snippet"; boundary="===============1438169132528273974=="
-            MIME-Version: 1.0
-
-            --===============1438169132528273974==
-            Content-Type: application/json; charset="utf-8"
-            MIME-Version: 1.0
-            Content-ID: snippet
-
-            {
-              "links": {
-                "self": {
-                  "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj"
-                },
-                "html": {
-                  "href": "https://bitbucket.org/snippets/evzijst/kypj"
-                },
-                "comments": {
-                  "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj/comments"
-                },
-                "watchers": {
-                  "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj/watchers"
-                },
-                "commits": {
-                  "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj/commits"
-                }
-              },
-              "id": kypj,
-              "title": "My snippet",
-              "created_on": "2014-12-29T22:22:04.790331+00:00",
-              "updated_on": "2014-12-29T22:22:04.790331+00:00",
-              "is_private": false,
-              "files": {
-                "foo.txt": {
-                  "links": {
-                    "self": {
-                      "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj/files/367ab19/foo.txt"
-                    },
-                    "html": {
-                      "href": "https://bitbucket.org/snippets/evzijst/kypj#file-foo.txt"
-                    }
-                  }
-                },
-                "image.png": {
-                  "links": {
-                    "self": {
-                      "href": "https://api.bitbucket.org/2.0/snippets/evzijst/kypj/files/367ab19/image.png"
-                    },
-                    "html": {
-                      "href": "https://bitbucket.org/snippets/evzijst/kypj#file-image.png"
-                    }
-                  }
-                }
-              ],
-              "owner": {
-                "username": "evzijst",
-                "nickname": "evzijst",
-                "display_name": "Erik van Zijst",
-                "uuid": "{d301aafa-d676-4ee0-88be-962be7417567}",
-                "links": {
-                  "self": {
-                    "href": "https://api.bitbucket.org/2.0/users/evzijst"
-                  },
-                  "html": {
-                    "href": "https://bitbucket.org/evzijst"
-                  },
-                  "avatar": {
-                    "href": "https://bitbucket-staging-assetroot.s3.amazonaws.com/c/photos/2013/Jul/31/erik-avatar-725122544-0_avatar.png"
-                  }
-                }
-              },
-              "creator": {
-                "username": "evzijst",
-                "nickname": "evzijst",
-                "display_name": "Erik van Zijst",
-                "uuid": "{d301aafa-d676-4ee0-88be-962be7417567}",
-                "links": {
-                  "self": {
-                    "href": "https://api.bitbucket.org/2.0/users/evzijst"
-                  },
-                  "html": {
-                    "href": "https://bitbucket.org/evzijst"
-                  },
-                  "avatar": {
-                    "href": "https://bitbucket-staging-assetroot.s3.amazonaws.com/c/photos/2013/Jul/31/erik-avatar-725122544-0_avatar.png"
-                  }
-                }
-              }
-            }
-
-            --===============1438169132528273974==
-            Content-Type: text/plain; charset="us-ascii"
-            MIME-Version: 1.0
-            Content-Transfer-Encoding: 7bit
-            Content-ID: "foo.txt"
-            Content-Disposition: attachment; filename="foo.txt"
-
-            foo
-
-            --===============1438169132528273974==
-            Content-Type: image/png
-            MIME-Version: 1.0
-            Content-Transfer-Encoding: base64
-            Content-ID: "image.png"
-            Content-Disposition: attachment; filename="image.png"
-
-            iVBORw0KGgoAAAANSUhEUgAAABQAAAAoCAYAAAD+MdrbAAABD0lEQVR4Ae3VMUoDQRTG8ccUaW2m
-            TKONFxArJYJamCvkCnZTaa+VnQdJSBFl2SMsLFrEWNjZBZs0JgiL/+KrhhVmJRbCLPx4O+/DT2TB
-            cbblJxf+UWFVVRNsEGAtgvJxnLm2H+A5RQ93uIl+3632PZyl/skjfOn9Gvdwmlcw5aPUwimG+NT5
-            EnNN036IaZePUuIcK533NVfal7/5yjWeot2z9ta1cAczHEf7I+3J0ws9Cgx0fsOFpmlfwKcWPuBQ
-            73Oc4FHzBaZ8llq4q1mr5B2mOUCt815qYR8eB1hG2VJ7j35q4RofaH7IG+Xrf/PfJhfmwtfFYoIN
-            AqxFUD6OMxcvkO+UfKfkOyXfKdsv/AYCHMLVkHAFWgAAAABJRU5ErkJggg==
-            --===============1438169132528273974==--
-
-        multipart/form-data
-        -
-
-        As with creating new snippets, `multipart/form-data` can be used as an
-        alternative to `multipart/related`. However, the inherently flat
-        structure of form-data means that only basic, root-level properties
-        can be returned, while nested elements like `links` are omitted:
-
-            $ curl -H "Accept: multipart/form-data" https://api.bitbucket.org/2.0/snippets/evzijst/kypj
-
-        Response:
-
-            HTTP/1.1 200 OK
-            Content-Length: 951
-            Content-Type: multipart/form-data; boundary=-63a4b224c59f
-
-            63a4b224c59f
-            Content-Disposition: form-data; name="title"
-            Content-Type: text/plain; charset="utf-8"
-
-            My snippet
-            63a4b224c59f--
-            Content-Disposition: attachment; name="file"; filename="foo.txt"
-            Content-Type: text/plain
-
-            foo
-
-            63a4b224c59f
-            Content-Disposition: attachment; name="file"; filename="image.png"
-            Content-Transfer-Encoding: base64
-            Content-Type: application/octet-stream
-
-            iVBORw0KGgoAAAANSUhEUgAAABQAAAAoCAYAAAD+MdrbAAABD0lEQVR4Ae3VMUoDQRTG8ccUaW2m
-            TKONFxArJYJamCvkCnZTaa+VnQdJSBFl2SMsLFrEWNjZBZs0JgiL/+KrhhVmJRbCLPx4O+/DT2TB
-            cbblJxf+UWFVVRNsEGAtgvJxnLm2H+A5RQ93uIl+3632PZyl/skjfOn9Gvdwmlcw5aPUwimG+NT5
-            EnNN036IaZePUuIcK533NVfal7/5yjWeot2z9ta1cAczHEf7I+3J0ws9Cgx0fsOFpmlfwKcWPuBQ
-            73Oc4FHzBaZ8llq4q1mr5B2mOUCt815qYR8eB1hG2VJ7j35q4RofaH7IG+Xrf/PfJhfmwtfFYoIN
-            AqxFUD6OMxcvkO+UfKfkOyXfKdsv/AYCHMLVkHAFWgAAAABJRU5ErkJggg==
-            5957323a6b76--
+        - Get
+        - Snippets
+      description: >-
+        The Get Snippet operation retrieves a specific snippet from Atlassian
+        Bitbucket by providing the workspace identifier and the encoded snippet
+        ID in the request path. This API endpoint returns detailed information
+        about a single code snippet, including its content, metadata, creation
+        date, author information, and any associated files or comments. Users
+        must have appropriate read permissions for the workspace to access the
+        snippet, and the operation supports various authentication methods
+        including OAuth 2.0 and HTTP basic authentication. The response includes
+        the Snippets title, description, programming language, visibility
+        settings (public or private), and the actual code content, making it
+        useful for integrating snippet management functionality into external
+        applications or automating snippet retrieval workflows.
       summary: Get Snippet
       responses:
         '200':
@@ -369,6 +226,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
             multipart/related:
               schema:
                 $ref: '#/components/schemas/snippet'
@@ -431,209 +291,25 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getSnippet
     put:
       tags:
-        - - - - Snippets
-      description: |-
-        Used to update a snippet. Use this to add and delete files and to
-        change a snippet's title.
-
-        To update a snippet, one can either PUT a full snapshot, or only the
-        parts that need to be changed.
-
-        The contract for PUT on this API is that properties missing from the
-        request remain untouched so that snippets can be efficiently
-        manipulated with differential payloads.
-
-        To delete a property (e.g. the title, or a file), include its name in
-        the request, but omit its value (use `null`).
-
-        As in Git, explicit renaming of files is not supported. Instead, to
-        rename a file, delete it and add it again under another name. This can
-        be done atomically in a single request. Rename detection is left to
-        the SCM.
-
-        PUT supports three different content types for both request and
-        response bodies:
-
-        * `application/json`
-        * `multipart/related`
-        * `multipart/form-data`
-
-        The content type used for the request body can be different than that
-        used for the response. Content types are specified using standard HTTP
-        headers.
-
-        Use the `Content-Type` and `Accept` headers to select the desired
-        request and response format.
-
-
-        application/json
-        -
-
-        As with creation and retrieval, the content type determines what
-        properties can be manipulated. `application/json` does not support
-        file contents and is therefore limited to a snippet's meta data.
-
-        To update the title, without changing any of its files:
-
-            $ curl -X POST -H "Content-Type: application/json" https://api.bitbucket.org/2.0/snippets/evzijst/kypj             -d '{"title": "Updated title"}'
-
-
-        To delete the title:
-
-            $ curl -X POST -H "Content-Type: application/json" https://api.bitbucket.org/2.0/snippets/evzijst/kypj             -d '{"title": null}'
-
-        Not all parts of a snippet can be manipulated. The owner and creator
-        for instance are immutable.
-
-
-        multipart/related
-        --
-
-        `multipart/related` can be used to manipulate all of a snippet's
-        properties. The body is identical to a POST. properties omitted from
-        the request are left unchanged. Since the `start` part contains JSON,
-        the mechanism for manipulating the snippet's meta data is identical
-        to `application/json` requests.
-
-        To update one of a snippet's file contents, while also changing its
-        title:
-
-            PUT /2.0/snippets/evzijst/kypj HTTP/1.1
-            Content-Length: 288
-            Content-Type: multipart/related; start="snippet"; boundary="===============1438169132528273974=="
-            MIME-Version: 1.0
-
-            --===============1438169132528273974==
-            Content-Type: application/json; charset="utf-8"
-            MIME-Version: 1.0
-            Content-ID: snippet
-
-            {
-              "title": "My updated snippet",
-              "files": {
-                  "foo.txt": {}
-                }
-            }
-
-            --===============1438169132528273974==
-            Content-Type: text/plain; charset="us-ascii"
-            MIME-Version: 1.0
-            Content-Transfer-Encoding: 7bit
-            Content-ID: "foo.txt"
-            Content-Disposition: attachment; filename="foo.txt"
-
-            Updated file contents.
-
-            --===============1438169132528273974==--
-
-        Here only the parts that are changed are included in the body. The
-        other files remain untouched.
-
-        Note the use of the `files` list in the JSON part. This list contains
-        the files that are being manipulated. This list should have
-        corresponding multiparts in the request that contain the new contents
-        of these files.
-
-        If a filename in the `files` list does not have a corresponding part,
-        it will be deleted from the snippet, as shown below:
-
-            PUT /2.0/snippets/evzijst/kypj HTTP/1.1
-            Content-Length: 188
-            Content-Type: multipart/related; start="snippet"; boundary="===============1438169132528273974=="
-            MIME-Version: 1.0
-
-            --===============1438169132528273974==
-            Content-Type: application/json; charset="utf-8"
-            MIME-Version: 1.0
-            Content-ID: snippet
-
-            {
-              "files": {
-                "image.png": {}
-              }
-            }
-
-            --===============1438169132528273974==--
-
-        To simulate a rename, delete a file and add the same file under
-        another name:
-
-            PUT /2.0/snippets/evzijst/kypj HTTP/1.1
-            Content-Length: 212
-            Content-Type: multipart/related; start="snippet"; boundary="===============1438169132528273974=="
-            MIME-Version: 1.0
-
-            --===============1438169132528273974==
-            Content-Type: application/json; charset="utf-8"
-            MIME-Version: 1.0
-            Content-ID: snippet
-
-            {
-                "files": {
-                  "foo.txt": {},
-                  "bar.txt": {}
-                }
-            }
-
-            --===============1438169132528273974==
-            Content-Type: text/plain; charset="us-ascii"
-            MIME-Version: 1.0
-            Content-Transfer-Encoding: 7bit
-            Content-ID: "bar.txt"
-            Content-Disposition: attachment; filename="bar.txt"
-
-            foo
-
-            --===============1438169132528273974==--
-
-
-        multipart/form-data
-        --
-
-        Again, one can also use `multipart/form-data` to manipulate file
-        contents and meta data atomically.
-
-            $ curl -X PUT http://localhost:12345/2.0/snippets/evzijst/kypj             -F title="My updated snippet" -F file=@foo.txt
-
-            PUT /2.0/snippets/evzijst/kypj HTTP/1.1
-            Content-Length: 351
-            Content-Type: multipart/form-data; boundary=-63a4b224c59f
-
-            63a4b224c59f
-            Content-Disposition: form-data; name="file"; filename="foo.txt"
-            Content-Type: text/plain
-
-            foo
-
-            63a4b224c59f
-            Content-Disposition: form-data; name="title"
-
-            My updated snippet
-            63a4b224c59f
-
-        To delete a file, omit its contents while including its name in the
-        `files` field:
-
-            $ curl -X PUT https://api.bitbucket.org/2.0/snippets/evzijst/kypj -F files=image.png
-
-            PUT /2.0/snippets/evzijst/kypj HTTP/1.1
-            Content-Length: 149
-            Content-Type: multipart/form-data; boundary=-ef8871065a86
-
-            ef8871065a86
-            Content-Disposition: form-data; name="files"
-
-            image.png
-            ef8871065a86--
-
-        The explicit use of the `files` element in `multipart/related` and
-        `multipart/form-data` is only required when deleting files.
-        The default mode of operation is for file parts to be processed,
-        regardless of whether or not they are listed in `files`, as a
-        convenience to the client.
+        - Update
+        - Snippets
+      description: >-
+        Updates an existing snippet in Bitbucket under a specified workspace.
+        This PUT operation requires both the workspace identifier and the
+        encoded snippet ID in the path parameters. The request allows
+        modification of snippet properties such as title, description, files,
+        and visibility settings. Authentication is required to perform this
+        operation, and the user must have appropriate permissions to edit the
+        snippet. The endpoint returns the updated snippet object with all its
+        properties, including metadata like creation date, last updated
+        timestamp, and ownership information. If the snippet doesn't exist or
+        the user lacks permission, appropriate error responses will be returned.
       summary: Update Snippet
       responses:
         '200':
@@ -642,6 +318,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
             multipart/related:
               schema:
                 $ref: '#/components/schemas/snippet'
@@ -694,6 +373,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: updateSnippet
     parameters:
       - name: encoded_id
@@ -713,15 +395,19 @@ paths:
   /snippets/{workspace}/{encoded_id}/comments:
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Used to retrieve a paginated list of all comments for a specific
-        snippet.
-
-        This resource works identical to commit and pull request comments.
-
-        The default sorting is oldest to newest and can be overridden with
-        the `sort` query parameter.
+        - Lists
+        - Comments
+        - Snippets
+      description: >-
+        The Get Comments endpoint retrieves all comments associated with a
+        specific snippet in Bitbucket by providing the workspace identifier and
+        the encoded snippet ID in the URL path. This operation returns a
+        paginated list of comments that users have added to the snippet,
+        allowing developers to display discussion threads, feedback, or
+        collaborative notes related to the code snippet. The response includes
+        comment metadata such as the author, timestamp, and comment content,
+        enabling applications to build interactive commenting features or
+        analyze snippet discussions within a workspace.
       summary: List Comments On Snippet
       responses:
         '200':
@@ -730,6 +416,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_snippet_comments'
+              examples:
+                paginated-snippet-comments:
+                  $ref: '#/components/examples/paginated-snippet-comments'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -750,16 +439,30 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: listCommentsOnSnippet
     post:
       tags:
-        - - - - Snippets
-      description: |-
-        Creates a new comment.
-
-        The only required field in the body is `content.raw`.
-
-        To create a threaded reply to an existing comment, include `parent.id`.
+        - Create
+        - Comments
+        - Snippets
+      description: >-
+        The Atlassian Bitbucket Snippets API POST operation to
+        /snippets/{workspace}/{encoded_id}/comments allows authenticated users
+        to create a new comment on a specific code snippet within a designated
+        workspace. This endpoint requires two path parameters: the workspace
+        identifier and the encoded snippet ID, enabling precise targeting of the
+        snippet to be commented on. When invoked, it accepts comment content in
+        the request body and creates a new comment thread or adds to an existing
+        discussion on the specified snippet. This functionality facilitates code
+        review, collaboration, and feedback mechanisms within Bitbucket's
+        snippet sharing feature, allowing team members to provide inline
+        commentary, suggestions, or questions about shared code fragments. The
+        operation returns the newly created comment object upon successful
+        execution, including metadata such as comment ID, author information,
+        timestamp, and the comment content itself.
       summary: Create Comment On Snippet
       responses:
         '201':
@@ -773,6 +476,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet_comment'
+              examples:
+                snippet-comment_2:
+                  $ref: '#/components/examples/snippet-comment_2'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -790,6 +496,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/snippet_comment'
+            examples:
+              snippet-comment:
+                $ref: '#/components/examples/snippet-comment'
         description: The contents of the new comment.
         required: true
       security:
@@ -800,6 +509,10 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: createCommentOnSnippet
     parameters:
       - name: encoded_id
@@ -819,13 +532,20 @@ paths:
   /snippets/{workspace}/{encoded_id}/comments/{comment_id}:
     delete:
       tags:
-        - - - - Snippets
+        - Delete
+        - Comments
+        - Snippets
       description: >-
-        Deletes a snippet comment.
-
-
-        Comments can only be removed by the comment author, snippet creator, or
-        workspace admin.
+        This API operation allows you to delete a specific comment from a
+        snippet in a Bitbucket workspace. The endpoint requires three path
+        parameters: the workspace identifier where the snippet resides, the
+        encoded ID of the snippet itself, and the unique comment ID that you
+        want to remove. When invoked with a DELETE HTTP method, it permanently
+        removes the specified comment from the snippet, requiring appropriate
+        authentication and permissions to execute successfully. This is useful
+        for moderating discussions, removing outdated information, or cleaning
+        up unwanted comments on code snippets shared within your Bitbucket
+        workspace.
       summary: Delete Comment On Snippet
       responses:
         '204':
@@ -850,11 +570,23 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: deleteCommentOnSnippet
     get:
       tags:
-        - - - - Snippets
-      description: Returns the specific snippet comment.
+        - Get
+        - Comments
+        - Snippets
+      description: >-
+        This API operation retrieves a specific comment from a snippet in
+        Atlassian Bitbucket by providing the workspace identifier, the encoded
+        snippet ID, and the comment ID as path parameters. It performs a GET
+        request to access the detailed information about an individual comment
+        that was previously posted on a snippet, allowing users to view the
+        comment's content, author details, timestamps, and other metadata
+        associated with that particular comment within the specified workspace
+        and snippet context.
       summary: Get Comment On Snippet
       responses:
         '200':
@@ -863,6 +595,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet_comment'
+              examples:
+                snippet-comment_2:
+                  $ref: '#/components/examples/snippet-comment_2'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -883,16 +618,24 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getCommentOnSnippet
     put:
       tags:
-        - - - - Snippets
-      description: |-
-        Updates a comment.
-
-        The only required field in the body is `content.raw`.
-
-        Comments can only be updated by their author.
+        - Update
+        - Comments
+        - Snippets
+      description: >-
+        This API operation allows you to update an existing comment on a
+        specific snippet within a Bitbucket workspace. By sending a PUT request
+        to the endpoint with the workspace identifier, encoded snippet ID, and
+        comment ID, you can modify the content of a previously posted comment.
+        This is useful for correcting mistakes, adding additional information,
+        or clarifying previous feedback on code snippets. The operation requires
+        appropriate authentication and permissions to modify comments, typically
+        limited to the original comment author or workspace administrators.
       summary: Update Comment On Snippet
       responses:
         '200':
@@ -901,6 +644,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet_comment'
+              examples:
+                snippet-comment_2:
+                  $ref: '#/components/examples/snippet-comment_2'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -918,6 +664,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/snippet_comment'
+            examples:
+              snippet-comment_2:
+                $ref: '#/components/examples/snippet-comment_2'
         description: The contents to update the comment to.
         required: true
       security:
@@ -928,6 +677,10 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+        GenerateExampleFromOperationRequestSchema: true
       operationId: updateCommentOnSnippet
     parameters:
       - name: comment_id
@@ -953,8 +706,20 @@ paths:
   /snippets/{workspace}/{encoded_id}/commits:
     get:
       tags:
-        - - - - Snippets
-      description: Returns the changes (commits) made on this snippet.
+        - Lists
+        - Snippets
+        - Changes
+      description: >-
+        This API operation retrieves a paginated list of commits that have been
+        made to a specific snippet within an Atlassian Bitbucket workspace. By
+        providing the workspace identifier and the encoded snippet ID in the
+        endpoint path, users can track the revision history and changes made to
+        the snippet over time. The GET request returns commit information
+        including details such as commit hashes, authors, timestamps, and commit
+        messages, allowing developers to audit modifications, understand the
+        evolution of code snippets, and potentially revert to previous versions
+        if needed. This is particularly useful for teams collaborating on shared
+        code snippets who need visibility into who changed what and when.
       summary: List Snippet Changes
       responses:
         '200':
@@ -963,6 +728,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_snippet_commit'
+              examples:
+                paginated-snippet-commits:
+                  $ref: '#/components/examples/paginated-snippet-commits'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -983,6 +751,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: listSnippetChanges
     parameters:
       - name: encoded_id
@@ -1002,8 +773,21 @@ paths:
   /snippets/{workspace}/{encoded_id}/commits/{revision}:
     get:
       tags:
-        - - - - Snippets
-      description: Returns the changes made on this snippet in this commit.
+        - Get
+        - Previous
+        - Snippets
+        - Change
+      description: >-
+        This API endpoint retrieves a specific previous version of a snippet by
+        accessing its commit history in Atlassian Bitbucket. By providing the
+        workspace identifier, the Snippets encoded ID, and a specific revision
+        hash, users can fetch the exact state of a snippet as it existed at that
+        particular commit. This is useful for tracking changes over time,
+        reviewing historical versions of code snippets, auditing modifications,
+        or restoring previous content. The endpoint returns detailed information
+        about the Snippets content and metadata at the specified revision,
+        enabling version control functionality for snippets stored within a
+        Bitbucket workspace.
       summary: Get Previous Snippet Change
       responses:
         '200':
@@ -1012,6 +796,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet_commit'
+              examples:
+                snippet-commit:
+                  $ref: '#/components/examples/snippet-commit'
         '403':
           description: If the authenticated user does not have access to the snippet.
           content:
@@ -1032,6 +819,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getPreviousSnippetChange
     parameters:
       - name: encoded_id
@@ -1059,10 +849,10 @@ paths:
       tags:
         - - - - Snippets
       description: |-
-        Convenience resource for getting to a snippet's raw files without the
+        Convenience resource for getting to a Snippets raw files without the
         need for first having to retrieve the snippet itself and having to pull
         out the versioned file links.
-      summary: Get Snippet's Raw File At Head
+      summary: Get Snippets Raw File At Head
       responses:
         '302':
           description: A redirect to the most recent revision of the specified file.
@@ -1091,7 +881,7 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
-      operationId: getSnippet'SRawFileAtHead
+      operationId: getSnippetsRawFileAtHead
     parameters:
       - name: encoded_id
         in: path
@@ -1323,9 +1113,9 @@ paths:
         Identical to `GET /snippets/encoded_id`, except that this endpoint
         can be used to retrieve the contents of the snippet as it was at an
         older revision, while `/snippets/encoded_id` always returns the
-        snippet's current revision.
+        Snippets current revision.
 
-        Note that only the snippet's file contents are versioned, not its
+        Note that only the Snippets file contents are versioned, not its
         meta data properties like the title.
 
         Other than that, the two endpoints are identical in behavior.
@@ -1393,7 +1183,7 @@ paths:
         - - - - Snippets
       description: |-
         Identical to `UPDATE /snippets/encoded_id`, except that this endpoint
-        takes an explicit commit revision. Only the snippet's "HEAD"/"tip"
+        takes an explicit commit revision. Only the Snippets "HEAD"/"tip"
         (most recent) version can be updated and requests on all other,
         older revisions fail by returning a 405 status.
 
@@ -1514,7 +1304,7 @@ paths:
 
         Note that for text files, no character encoding is included as part of
         the content type.
-      summary: Get Snippet's Raw File
+      summary: Get Snippets Raw File
       responses:
         '200':
           description: Returns the contents of the specified file.
@@ -1547,7 +1337,7 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
-      operationId: getSnippet'SRawFile
+      operationId: getSnippetsRawFile
     parameters:
       - name: encoded_id
         in: path
@@ -4202,11 +3992,33 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/snippet'
-          minItems: 0
-          uniqueItems: true
+          type: object
+          title: Snippet
+          description: A snippet object.
+          properties:
+            id:
+              type: integer
+              minimum: 0
+            title:
+              type: string
+            scm:
+              type: string
+              description: The DVCS used to store the snippet.
+              enum:
+                - git
+            created_on:
+              type: string
+              format: date-time
+            updated_on:
+              type: string
+              format: date-time
+            owner:
+              $ref: '#/components/schemas/account'
+            creator:
+              $ref: '#/components/schemas/account'
+            is_private:
+              type: boolean
+          additionalProperties: true
       additionalProperties: false
     snippet:
       allOf:
@@ -4281,11 +4093,39 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/snippet_comment'
-          minItems: 0
-          uniqueItems: true
+          type: object
+          title: Snippet Comment
+          description: A comment on a snippet.
+          properties:
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                html:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+            snippet:
+              $ref: '#/components/schemas/snippet'
+          additionalProperties: true
       additionalProperties: false
     snippet_comment:
       allOf:
@@ -4366,10 +4206,50 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/snippet_commit'
-          minItems: 0
+          type: object
+          title: Snippet Commit
+          description: ''
+          properties:
+            links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                html:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+                diff:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              additionalProperties: false
+            snippet:
+              $ref: '#/components/schemas/snippet'
+          additionalProperties: true
       additionalProperties: false
     snippet_commit:
       allOf:
@@ -4579,7 +4459,115 @@ components:
         avatar:
           $ref: '#/components/schemas/link'
       additionalProperties: true
-  examples: {}
+  examples:
+    paginated-snippets:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/snippets?page=2
+      previous: https://api.bitbucket.org/2.0/snippets?page=0
+      values:
+        id: 12345
+        title: Example Code Snippet
+        scm: git
+        created_on: '2023-11-15T10:30:00Z'
+        updated_on: '2023-11-16T14:45:30Z'
+        owner: {}
+        creator: {}
+        is_private: true
+    snippet:
+      id: 12345
+      title: Example Code Snippet
+      scm: git
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-20T14:45:00Z'
+      owner:
+        username: johndoe
+        display_name: John Doe
+      creator:
+        username: johndoe
+        display_name: John Doe
+      is_private: true
+    snippet_2:
+      id: 12345
+      title: Example Code Snippet
+      scm: git
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T14:45:30Z'
+      owner: {}
+      creator: {}
+      is_private: true
+    paginated-snippet-comments:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/snippets/comments?page=2
+      previous: https://api.bitbucket.org/2.0/snippets/comments?page=0
+      values:
+        links:
+          self:
+            href: >-
+              https://api.bitbucket.org/2.0/snippets/workspace/snippet-id/comments/1
+            name: Self Link
+          html:
+            href: https://bitbucket.org/workspace/snippet-id#comment-1
+            name: HTML Link
+        snippet: {}
+    snippet-comment:
+      links:
+        self:
+          href: https://api.example.com/snippets/123/comments/456
+          name: self
+        html:
+          href: https://example.com/snippets/123/comments/456
+          name: html
+      snippet: {}
+    snippet-comment_2:
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/snippets/example/comments/1
+          name: Self Link
+        html:
+          href: https://bitbucket.org/snippets/example/comments/1
+          name: HTML Link
+      snippet: {}
+    paginated-snippet-commits:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/snippets/commits?page=2
+      previous: https://api.bitbucket.org/2.0/snippets/commits?page=0
+      values:
+        links:
+          self:
+            href: >-
+              https://api.bitbucket.org/2.0/snippets/workspace/snippet_id/commits/commit_hash
+            name: Snippet Commit
+          html:
+            href: https://bitbucket.org/workspace/snippet_id/commits/commit_hash
+            name: HTML View
+          diff:
+            href: >-
+              https://api.bitbucket.org/2.0/snippets/workspace/snippet_id/commits/commit_hash/diff
+            name: Diff
+        snippet: {}
+    snippet-commit:
+      links:
+        self:
+          href: >-
+            https://api.bitbucket.org/2.0/snippets/myworkspace/abc123/commits/def456
+          name: self
+        html:
+          href: https://bitbucket.org/snippets/myworkspace/abc123/commits/def456
+          name: html
+        diff:
+          href: >-
+            https://api.bitbucket.org/2.0/snippets/myworkspace/abc123/commits/def456/diff
+          name: diff
+      snippet:
+        id: abc123
+        title: Example Snippet
+        created_on: '2023-01-15T10:30:00Z'
   reponses: {}
   parameters: {}
   headers: {}
