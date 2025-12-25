@@ -847,11 +847,22 @@ paths:
   /snippets/{workspace}/{encoded_id}/files/{path}:
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Convenience resource for getting to a Snippets raw files without the
-        need for first having to retrieve the snippet itself and having to pull
-        out the versioned file links.
+        - Get
+        - Snippets
+        - Raw
+        - Files
+        - Head
+      description: >-
+        Retrieves the raw, unrendered content of a specific file from a snippet
+        at its latest HEAD revision in Atlassian Bitbucket. This endpoint
+        requires specifying the workspace identifier, the encoded snippet ID,
+        and the full path to the file within the snippet's file structure. The
+        operation returns the file's content in its original format without any
+        Bitbucket rendering or formatting applied, making it useful for
+        programmatically accessing snippet files for download, processing, or
+        display in external applications. Authentication is typically required
+        based on the snippet's visibility settings, with private snippets
+        requiring appropriate permissions to access the raw file content.
       summary: Get Snippets Raw File At Head
       responses:
         '302':
@@ -881,6 +892,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: getSnippetsRawFileAtHead
     parameters:
       - name: encoded_id
@@ -906,10 +919,19 @@ paths:
   /snippets/{workspace}/{encoded_id}/watch:
     delete:
       tags:
-        - - - - Snippets
-      description: |-
-        Used to stop watching a specific snippet. Returns 204 (No Content)
-        to indicate success.
+        - Stop
+        - Watching
+        - Snippets
+      description: >-
+        Removes the authenticated user's watch status from a specific code
+        snippet in Bitbucket. This DELETE operation requires the workspace
+        identifier and the encoded snippet ID as path parameters. Once executed,
+        the user will no longer receive notifications or updates related to
+        changes made to the snippet. Authentication is required to perform this
+        action, and the user must have previously been watching the snippet for
+        this operation to have any effect. This is useful when users want to
+        unsubscribe from notifications about snippets they are no longer
+        interested in following.
       summary: Stop Watching Snippet
       responses:
         '204':
@@ -934,17 +956,25 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: stopWatchingSnippet
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Used to check if the current user is watching a specific snippet.
-
-        Returns 204 (No Content) if the user is watching the snippet and 404 if
-        not.
-
-        Hitting this endpoint anonymously always returns a 404.
+        - Checks
+        - Current
+        - Users
+        - Watching
+        - Snippets
+      description: >-
+        Used to check whether the authenticated user is watching a specific code
+        snippet in a Bitbucket workspace. This endpoint accepts the workspace
+        identifier and the encoded snippet ID as path parameters, returning the
+        watch status for the current user. When called, it indicates if the user
+        has subscribed to notifications for changes or updates to that
+        particular snippet, helping users manage their snippet subscriptions and
+        stay informed about modifications to code snippets they're interested in
+        tracking.
       summary: Check If The Current User Is Watching Snippet
       responses:
         '204':
@@ -965,11 +995,21 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: checkIfTheCurrentUserIsWatchingSnippet
     put:
       tags:
-        - - - - Snippets
-      description: Used to start watching a specific snippet. Returns 204 (No Content).
+        - Watch
+        - Snippets
+      description: >-
+        Used to start watching a specific snippet in a Bitbucket workspace,
+        enabling the authenticated user to receive notifications about changes
+        or updates to that snippet. The operation requires the workspace
+        identifier and the encoded snippet ID as path parameters, and when
+        executed successfully, the user will be subscribed to notifications for
+        activities related to that particular snippet, such as comments,
+        modifications, or other relevant events.
       summary: Watch Snippet
       responses:
         '204':
@@ -994,6 +1034,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: watchSnippet
     parameters:
       - name: encoded_id
@@ -1013,8 +1055,20 @@ paths:
   /snippets/{workspace}/{encoded_id}/watchers:
     get:
       tags:
-        - - - - Snippets
-      description: Returns a paginated list of all users watching a specific snippet.
+        - Lists
+        - Users
+        - Watching
+        - Snippets
+      description: >-
+        This API endpoint retrieves a paginated list of all users who are
+        currently watching a specific snippet in Bitbucket. By making a GET
+        request to /snippets/{workspace}/{encoded_id}/watchers, you can access
+        information about the watchers of a snippet identified by its encoded ID
+        within a particular workspace. The endpoint returns user details for
+        each watcher, allowing snippet owners and authorized users to see who is
+        monitoring the snippet for updates or changes. This is useful for
+        understanding the audience and engagement level of shared code snippets
+        within a team or organization.
       summary: List Users Watching Snippet
       responses:
         '200':
@@ -1023,6 +1077,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_accounts'
+              examples:
+                paginated-accounts:
+                  $ref: '#/components/examples/paginated-accounts'
         '404':
           description: If the snippet does not exist.
           content:
@@ -1038,6 +1095,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: listUsersWatchingSnippet
     parameters:
       - name: encoded_id
@@ -1057,16 +1117,21 @@ paths:
   /snippets/{workspace}/{encoded_id}/{node_id}:
     delete:
       tags:
-        - - - - Snippets
-      description: |-
-        Deletes the snippet.
-
-        Note that this only works for versioned URLs that point to the latest
-        commit of the snippet. Pointing to an older commit results in a 405
-        status code.
-
-        To delete a snippet, regardless of whether or not concurrent changes
-        are being made to it, use `DELETE /snippets/{encoded_id}` instead.
+        - Delete
+        - Previous
+        - Revisions
+        - Snippets
+      description: >-
+        This API operation allows you to delete a specific previous revision of
+        a snippet in Atlassian Bitbucket by providing the workspace identifier,
+        the encoded snippet ID, and the node ID of the particular revision you
+        want to remove. The deletion is permanent and removes only the specified
+        historical version while preserving other revisions and the current
+        state of the snippet. This is useful for managing snippet history,
+        removing outdated or incorrect versions, or cleaning up revision clutter
+        within a workspace. Authentication is required to perform this
+        operation, and the user must have appropriate permissions to modify
+        snippets within the specified workspace.
       summary: Delete Previous Revision Of Snippet
       responses:
         '204':
@@ -1105,20 +1170,24 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: deletePreviousRevisionOfSnippet
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Identical to `GET /snippets/encoded_id`, except that this endpoint
-        can be used to retrieve the contents of the snippet as it was at an
-        older revision, while `/snippets/encoded_id` always returns the
-        Snippets current revision.
-
-        Note that only the Snippets file contents are versioned, not its
-        meta data properties like the title.
-
-        Other than that, the two endpoints are identical in behavior.
+        - Get
+        - Previous
+        - Revisions
+        - Snippets
+      description: >-
+        This API operation retrieves a specific previous revision of a snippet
+        in Atlassian Bitbucket by providing the workspace identifier, the
+        encoded snippet ID, and the node ID representing the particular revision
+        you want to access. It allows users to view historical versions of code
+        snippets, enabling them to track changes, compare different iterations,
+        or restore earlier versions of their snippet content. The endpoint
+        requires three path parameters to uniquely identify both the snippet and
+        its specific revision within the workspace's collection of snippets.
       summary: Get Previous Revision Of Snippet
       responses:
         '200':
@@ -1127,6 +1196,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
             multipart/related:
               schema:
                 $ref: '#/components/schemas/snippet'
@@ -1177,25 +1249,27 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: getPreviousRevisionOfSnippet
     put:
       tags:
-        - - - - Snippets
-      description: |-
-        Identical to `UPDATE /snippets/encoded_id`, except that this endpoint
-        takes an explicit commit revision. Only the Snippets "HEAD"/"tip"
-        (most recent) version can be updated and requests on all other,
-        older revisions fail by returning a 405 status.
-
-        Usage of this endpoint over the unrestricted `/snippets/encoded_id`
-        could be desired if the caller wants to be sure no concurrent
-        modifications have taken place between the moment of the UPDATE
-        request and the original GET.
-
-        This can be considered a so-called "Compare And Swap", or CAS
-        operation.
-
-        Other than that, the two endpoints are identical in behavior.
+        - Update
+        - Previous
+        - Revisions
+        - Snippets
+      description: >-
+        Updates the content and metadata of a specific previous revision of a
+        snippet in Bitbucket by targeting a particular node ID within the
+        snippet's version history. This PUT operation allows users to modify an
+        existing historical version of a snippet within a specified workspace,
+        identified by the workspace slug, the snippet's encoded ID, and the
+        specific node ID representing that revision. The operation enables
+        retroactive changes to snippet content, properties, or metadata while
+        maintaining the snippet's version chain, useful for correcting errors or
+        updating information in past revisions without affecting the current
+        version.
       summary: Update Previous Revision Of Snippet
       responses:
         '200':
@@ -1204,6 +1278,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
             multipart/related:
               schema:
                 $ref: '#/components/schemas/snippet'
@@ -1268,6 +1345,9 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
       operationId: updatePreviousRevisionOfSnippet
     parameters:
       - name: encoded_id
@@ -1293,17 +1373,19 @@ paths:
   /snippets/{workspace}/{encoded_id}/{node_id}/files/{path}:
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Retrieves the raw contents of a specific file in the snippet. The
-        `Content-Disposition` header will be "attachment" to avoid issues with
-        malevolent executable files.
-
-        The file's mime type is derived from its filename and returned in the
-        `Content-Type` header.
-
-        Note that for text files, no character encoding is included as part of
-        the content type.
+        - Get
+        - Snippets
+        - Raw
+        - Files
+      description: >-
+        This API operation retrieves the raw content of a specific file within a
+        particular revision of a Bitbucket snippet. By providing the workspace
+        identifier, the encoded snippet ID, a specific node ID (representing a
+        commit or revision), and the file path, you can access the unprocessed
+        file content directly. This is particularly useful when you need to
+        programmatically fetch the exact contents of a snippet file at a
+        specific point in its version history, whether for display purposes,
+        downloading, or further processing in your application.
       summary: Get Snippets Raw File
       responses:
         '200':
@@ -1337,6 +1419,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: getSnippetsRawFile
     parameters:
       - name: encoded_id
@@ -1368,27 +1452,22 @@ paths:
   /snippets/{workspace}/{encoded_id}/{revision}/diff:
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Returns the diff of the specified commit against its first parent.
-
-        Note that this resource is different in functionality from the `patch`
-        resource.
-
-        The differences between a diff and a patch are:
-
-        * patches have a commit header with the username, message, etc
-        * diffs support the optional `path=foo/bar.py` query param to filter the
-          diff to just that one file diff (not supported for patches)
-        * for a merge, the diff will show the diff between the merge commit and
-          its first parent (identical to how PRs work), while patch returns a
-          response containing separate patches for each commit on the second
-          parent's ancestry, up to the oldest common ancestor (identical to
-          its reachability).
-
-        Note that the character encoding of the contents of the diff is
-        unspecified as Git does not track this, making it hard for
-        Bitbucket to reliably determine this.
+        - Get
+        - Snippets
+        - Changes
+        - Between
+        - Versions
+      description: >-
+        This API endpoint retrieves the differences between two versions of a
+        snippet in Atlassian Bitbucket by comparing a specified revision against
+        its parent or another revision. It accepts the workspace identifier, the
+        encoded snippet ID, and a revision hash as path parameters, allowing
+        users to view what content has changed between versions of a code
+        snippet. The response typically returns a unified diff format showing
+        the additions, deletions, and modifications made to the snippet's
+        content, which is useful for tracking changes, reviewing edits, or
+        understanding the evolution of a code snippet over time within a
+        Bitbucket workspace.
       summary: Get Snippet Changes Between Versions
       responses:
         '200':
@@ -1419,6 +1498,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: getSnippetChangesBetweenVersions
     parameters:
       - name: encoded_id
@@ -1446,28 +1527,21 @@ paths:
   /snippets/{workspace}/{encoded_id}/{revision}/patch:
     get:
       tags:
-        - - - - Snippets
-      description: |-
-        Returns the patch of the specified commit against its first
-        parent.
-
-        Note that this resource is different in functionality from the `diff`
-        resource.
-
-        The differences between a diff and a patch are:
-
-        * patches have a commit header with the username, message, etc
-        * diffs support the optional `path=foo/bar.py` query param to filter the
-          diff to just that one file diff (not supported for patches)
-        * for a merge, the diff will show the diff between the merge commit and
-          its first parent (identical to how PRs work), while patch returns a
-          response containing separate patches for each commit on the second
-          parent's ancestry, up to the oldest common ancestor (identical to
-          its reachability).
-
-        Note that the character encoding of the contents of the patch is
-        unspecified as Git does not track this, making it hard for
-        Bitbucket to reliably determine this.
+        - Get
+        - Snippets
+        - Patch
+        - Between
+        - Versions
+      description: >-
+        This API endpoint retrieves a unified diff or patch representation of
+        changes made to a specific snippet between different revisions in
+        Atlassian Bitbucket. By providing the workspace identifier, encoded
+        snippet ID, and a revision specifier, users can obtain a detailed
+        comparison showing the line-by-line differences between the specified
+        revision and its predecessor, formatted as a standard patch file that
+        can be applied using tools like git or diff utilities, making it useful
+        for tracking changes, code reviews, or understanding the evolution of
+        code snippets over time.
       summary: Get Snippet Patch Between Versions
       responses:
         '200':
@@ -1492,6 +1566,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
       operationId: getSnippetPatchBetweenVersions
     parameters:
       - name: encoded_id
@@ -4341,11 +4417,23 @@ components:
             navigate the result set and refrain from constructing your own URLs.
           format: uri
         values:
-          type: array
-          items:
-            $ref: '#/components/schemas/account'
-          minItems: 0
-          uniqueItems: true
+          type: object
+          title: Account
+          description: An account object.
+          properties:
+            links:
+              $ref: '#/components/schemas/account_links'
+            created_on:
+              type: string
+              format: date-time
+            display_name:
+              type: string
+            username:
+              type: string
+              pattern: ^[a-zA-Z0-9_\-]+$
+            uuid:
+              type: string
+          additionalProperties: true
       additionalProperties: false
     account:
       allOf:
@@ -4493,9 +4581,13 @@ components:
       title: Example Code Snippet
       scm: git
       created_on: '2024-01-15T10:30:00Z'
-      updated_on: '2024-01-15T14:45:30Z'
-      owner: {}
-      creator: {}
+      updated_on: '2024-01-15T14:45:00Z'
+      owner:
+        username: john_doe
+        display_name: John Doe
+      creator:
+        username: jane_smith
+        display_name: Jane Smith
       is_private: true
     paginated-snippet-comments:
       size: 42
@@ -4568,6 +4660,17 @@ components:
         id: abc123
         title: Example Snippet
         created_on: '2023-01-15T10:30:00Z'
+    paginated-accounts:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/accounts?page=2
+      previous: https://api.example.com/accounts?page=0
+      values:
+        created_on: '2023-11-15T10:30:00Z'
+        display_name: John Doe
+        username: john_doe-123
+        uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
   reponses: {}
   parameters: {}
   headers: {}
