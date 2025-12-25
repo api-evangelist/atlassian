@@ -113,11 +113,11 @@ paths:
         Deletes an explicit user permission for a specific repository in
         Bitbucket, removing direct access rights that were previously granted to
         an individual user. This operation requires the workspace name,
-        repository slug, and the selected user's ID as path parameters. When
-        executed, it revokes the user's explicitly assigned permissions while
+        repository slug, and the selected Users ID as path parameters. When
+        executed, it revokes the Users explicitly assigned permissions while
         preserving any inherited permissions from groups or workspace-level
         access. This is typically used when cleaning up repository access
-        control lists or when a user's role changes and their direct repository
+        control lists or when a Users role changes and their direct repository
         access is no longer needed. The operation requires administrative
         privileges on the repository to successfully remove user permissions.
       summary: Delete An Explicit User Permission For Repository
@@ -167,10 +167,10 @@ paths:
       description: >-
         This API operation retrieves the explicit permission settings for a
         specific user on a particular Bitbucket repository. By providing the
-        workspace identifier, repository slug, and the target user's ID in the
+        workspace identifier, repository slug, and the target Users ID in the
         endpoint path, you can query what direct access level has been granted
         to that user for the repository. The operation returns detailed
-        information about the user's permission configuration, including their
+        information about the Users permission configuration, including their
         permission level (such as read, write, or admin access) that has been
         explicitly assigned to them, separate from any group-based or inherited
         permissions. This is useful for auditing repository access, verifying
@@ -346,14 +346,14 @@ paths:
         The Atlassian Bitbucket User API's GET /user endpoint retrieves detailed
         information about the currently authenticated user making the request.
         This operation returns a user object containing profile data such as the
-        user's display name, username, account ID, avatar URL, and other
+        Users display name, username, account ID, avatar URL, and other
         associated account details. Authentication is required to access this
         endpoint, typically using OAuth 2.0, Basic Authentication with app
         passwords, or personal access tokens. The response provides
-        comprehensive information about the authenticated user's account, making
+        comprehensive information about the authenticated Users account, making
         it useful for applications that need to display user profile
         information, verify user identity, or customize the user experience
-        based on the current user's account details.
+        based on the current Users account details.
       summary: Get Current User
       responses:
         '200':
@@ -395,12 +395,12 @@ paths:
         - Users
       description: >-
         This API operation retrieves all email addresses associated with the
-        currently authenticated Bitbucket user's account. When invoked with a
-        GET request to the /user/emails endpoint, it returns a collection of
-        email addresses linked to the user, typically including details such as
-        the email address itself, whether it's the primary email, and its
+        currently authenticated Bitbucket Users account. When invoked with a GET
+        request to the /user/emails endpoint, it returns a collection of email
+        addresses linked to the user, typically including details such as the
+        email address itself, whether it's the primary email, and its
         verification status. This endpoint is useful for applications that need
-        to access or display the user's registered email addresses, manage email
+        to access or display the Users registered email addresses, manage email
         preferences, or verify communication channels for the authenticated user
         within the Bitbucket platform.
       summary: List Email Addresses For Current User
@@ -440,7 +440,7 @@ paths:
         parameter, users can verify whether that email belongs to their account
         and obtain related metadata such as confirmation status and whether it's
         set as the primary email. This is useful for applications that need to
-        validate or manage email addresses linked to a user's Bitbucket account,
+        validate or manage email addresses linked to a Users Bitbucket account,
         allowing developers to programmatically check email ownership and
         configuration details without requiring manual inspection of account
         settings.
@@ -486,7 +486,7 @@ paths:
         through team or group membership, focusing only on direct permission
         assignments. This operation requires authentication and uses a GET
         request method, making it useful for applications that need to audit or
-        display a user's directly assigned repository access rights across their
+        display a Users directly assigned repository access rights across their
         Bitbucket workspace.
       summary: List Repository Permissions For User
       responses:
@@ -618,9 +618,9 @@ paths:
         the GET method retrieves detailed information about a specific user
         account within Bitbucket. By providing a username as the path parameter
         {selected_user}, this operation returns comprehensive user profile data
-        including the user's display name, account ID, avatar URL, account
+        including the Users display name, account ID, avatar URL, account
         status, and other publicly available information associated with that
-        user's Bitbucket account. This endpoint is commonly used to fetch user
+        Users Bitbucket account. This endpoint is commonly used to fetch user
         details for display purposes, validate user existence, or integrate user
         information into external applications and workflows that interact with
         Bitbucket repositories and teams.
@@ -723,9 +723,9 @@ paths:
       description: >-
         This API operation creates a new pipeline configuration variable for a
         specified Bitbucket user account. By sending a POST request to the
-        endpoint with the target user's identifier, administrators can define
+        endpoint with the target Users identifier, administrators can define
         custom variables that will be available across all pipelines associated
-        with that user's repositories. The variables typically include key-value
+        with that Users repositories. The variables typically include key-value
         pairs used for storing configuration settings, credentials, or other
         data needed during pipeline execution, and can be marked as secured to
         protect sensitive information. This allows for centralized management of
@@ -798,7 +798,7 @@ paths:
         as the variable's key, value, secured status, and other metadata. This
         is useful when you need to inspect or verify the configuration of a
         specific variable without retrieving all variables associated with the
-        user's pipeline configuration.
+        Users pipeline configuration.
       operationId: getVariableForUser
       parameters:
         - name: selected_user
@@ -906,15 +906,22 @@ paths:
         GenerateExampleFromOperationResponseSchema: true
     delete:
       tags:
-        - - - - Pipelines
+        - Delete
+        - Variables
+        - Users
       deprecated: true
       summary: Delete Variable For User
       description: >-
-        Delete an account level variable.
-
-        This endpoint has been deprecated, and you should use the new workspaces
-        endpoint. For more information, see [the
-        announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+        This API operation removes a specific pipeline configuration variable
+        associated with a Bitbucket user account by referencing the variable's
+        unique identifier (UUID) and the target user. When executed, it
+        permanently deletes the specified variable from the Users pipelines
+        configuration, which means the variable will no longer be available for
+        use in any pipeline executions related to that user. This DELETE
+        operation requires both the selected_user parameter to identify the
+        Bitbucket user account and the variable_uuid parameter to specify which
+        exact variable should be removed from the Users pipeline configuration
+        settings.
       operationId: deleteVariableForUser
       parameters:
         - name: selected_user
@@ -948,6 +955,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
   /users/{selected_user}/properties/{app_key}/{property_name}:
     put:
       responses:
@@ -956,9 +965,16 @@ paths:
       operationId: updateUserApplicationProperty
       summary: Update User Application Property
       description: >-
-        Update an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a user.
+        This API operation allows you to update a specific application property
+        for a selected user in Atlassian Bitbucket by sending a PUT request to
+        the endpoint with the target username, application key, and property
+        name as path parameters. The operation modifies an existing property
+        value associated with a particular application for the specified user,
+        enabling applications to store and manage user-specific configuration
+        data or settings within Bitbucket's property storage system. This is
+        useful for persisting application-specific user preferences, metadata,
+        or state information that needs to be maintained across sessions and
+        retrieved later for customized user experiences.
       parameters:
         - required: true
           in: path
@@ -983,7 +999,10 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/application_property'
       tags:
-        - - - - properties
+        - Update
+        - Users
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
@@ -991,6 +1010,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
     delete:
       responses:
         '204':
@@ -998,9 +1019,15 @@ paths:
       operationId: deleteUserApplicationProperty
       summary: Delete User Application Property
       description: >-
-        Delete an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a user.
+        This API operation allows you to delete a specific application property
+        associated with a Bitbucket user. By providing the selected Users
+        identifier, the application key, and the property name in the request
+        path, you can remove custom metadata or configuration data that was
+        previously stored for that user within a particular application context.
+        This is useful for cleaning up user-specific settings, removing outdated
+        configuration values, or managing application data lifecycle when
+        certain properties are no longer needed for a given user and application
+        combination.
       parameters:
         - required: true
           in: path
@@ -1023,7 +1050,10 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Delete
+        - Users
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
@@ -1031,6 +1061,8 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
     get:
       responses:
         '200':
@@ -1039,12 +1071,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/application_property'
+              examples:
+                application-property:
+                  $ref: '#/components/examples/application-property'
       operationId: getUserApplicationProperty
       summary: Get User Application Property
       description: >-
-        Retrieve an [application
-        property](/cloud/bitbucket/application-properties/) value stored against
-        a user.
+        The Get User Application Property operation retrieves a specific
+        application property associated with a particular Bitbucket user. This
+        endpoint requires three path parameters: the selected_user identifier,
+        an app_key that identifies the application storing the property, and the
+        property_name which specifies the exact property to retrieve.
+        Application properties are key-value pairs that applications can store
+        against user accounts for configuration, preferences, or other
+        application-specific data. When called, this GET operation returns the
+        value of the requested property if it exists, allowing applications to
+        read previously stored user-specific settings or metadata. This is
+        commonly used by Bitbucket apps and integrations to maintain user-level
+        configuration data without requiring separate database infrastructure.
       parameters:
         - required: true
           in: path
@@ -1067,7 +1111,10 @@ paths:
           schema:
             type: string
       tags:
-        - - - - properties
+        - Get
+        - Users
+        - Applications
+        - Properties
       security:
         - oauth2: []
         - basic: []
@@ -1075,11 +1122,14 @@ paths:
       x-api-evangelist-processing:
         PascalCaseOperationSummaries: true
         CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
   /users/{selected_user}/search/code:
     get:
       tags:
         - - - - Search
-      summary: Search For Code In User's Repositories
+      summary: Search For Code In Users Repositories
       description: |
         Search for code in the repositories of the specified user.
 
@@ -1095,7 +1145,7 @@ paths:
         the repository of matched files, use the query parameter
         `search_query=foo&fields=%2Bvalues.file.commit.repository`
         (the `%2B` is a URL-encoded `+`).
-      operationId: searchForCodeInUser'SRepositories
+      operationId: searchForCodeInUsersRepositories
       parameters:
         - name: selected_user
           in: path
@@ -1214,7 +1264,7 @@ paths:
     get:
       tags:
         - - - - Ssh
-      description: Returns a paginated list of the user's SSH public keys.
+      description: Returns a paginated list of the Users SSH public keys.
       summary: List Ssh Keys
       responses:
         '200':
@@ -1259,7 +1309,7 @@ paths:
                         type: ssh_key
                         uuid: '{b15b6026-9c02-4626-b4ad-b905f99f763a}'
         '403':
-          description: If the specified user's keys are not accessible to the current user
+          description: If the specified Users keys are not accessible to the current user
         '404':
           description: If the specified user does not exist
           content:
@@ -1381,7 +1431,7 @@ paths:
     delete:
       tags:
         - - - - Ssh
-      description: Deletes a specific SSH public key from a user's account.
+      description: Deletes a specific SSH public key from a Users account.
       summary: Delete Ssh Key
       responses:
         '204':
@@ -1475,7 +1525,7 @@ paths:
       tags:
         - - - - Ssh
       description: >-
-        Updates a specific SSH public key on a user's account
+        Updates a specific SSH public key on a Users account
 
 
         Note: Only the 'comment' field can be updated using this API. To modify
@@ -1927,10 +1977,10 @@ paths:
       - name: selected_user_id
         in: path
         description: >
-          This can either be the username, the user's UUID surrounded by
+          This can either be the username, the Users UUID surrounded by
           curly-braces,
 
-          for example: {account UUID}, or the user's Atlassian ID.
+          for example: {account UUID}, or the Users Atlassian ID.
         required: true
         schema:
           type: string
@@ -2786,7 +2836,7 @@ x-atlassian-narrative:
         #### email
 
 
-        Ability to see the user's primary email address. This should make it
+        Ability to see the Users primary email address. This should make it
         easier to use Bitbucket Cloud as a login provider for apps or external
         applications.
 
@@ -2796,11 +2846,11 @@ x-atlassian-narrative:
 
         When used for:
 
-        * **user-related APIs**  Gives read-only access to the user's account
+        * **user-related APIs**  Gives read-only access to the Users account
         information.
 
         Note that this doesn't include any ability to change any of the data.
-        This scope allows you to view the user's:
+        This scope allows you to view the Users:
           * email addresses
           * language
           * location
@@ -2816,14 +2866,14 @@ x-atlassian-narrative:
         #### account:write
 
 
-        Ability to change properties on the user's account.
+        Ability to change properties on the Users account.
 
 
-        * delete the authorizing user's account
+        * delete the authorizing Users account
 
-        * manage the user's groups
+        * manage the Users groups
 
-        * change a user's email addresses
+        * change a Users email addresses
 
         * change username, display name and avatar
 
@@ -4292,8 +4342,8 @@ x-atlassian-narrative:
         ```
 
         Links can be actual REST API resources or they can be informational. In
-        this example, informative resources include the user's avatar and the
-        HTML URL for the user's Bitbucket account. Your client should avoid
+        this example, informative resources include the Users avatar and the
+        HTML URL for the Users Bitbucket account. Your client should avoid
         hardcoding an API's URL and instead use the URLs returned in API
         responses.
 
@@ -4422,7 +4472,7 @@ components:
     repository_user_permission:
       type: object
       title: Repository User Permission
-      description: A user's direct permission for a given repository.
+      description: A Users direct permission for a given repository.
       properties:
         type:
           type: string
@@ -4691,13 +4741,7 @@ components:
 
         see [Application properties](/cloud/bitbucket/application-properties/).
       properties:
-        _attributes:
-          type: array
-          items:
-            type: string
-            enum:
-              - public
-              - read_only
+        _attributes: {}
     search_result_page:
       type: object
       properties:
@@ -4840,7 +4884,7 @@ components:
     project_user_permission:
       type: object
       title: Project User Permission
-      description: A user's direct permission for a given project.
+      description: A Users direct permission for a given project.
       properties:
         type:
           type: string
@@ -4977,3 +5021,12 @@ components:
       key: API_KEY
       value: my-secret-value
       secured: true
+    application-property:
+      _attributes:
+        public: true
+        readOnly: false
+      customKey: customValue
+      anotherProperty: 123
+      nestedObject:
+        field1: value1
+        field2: true
