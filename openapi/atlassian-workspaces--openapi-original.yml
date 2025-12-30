@@ -1,17 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Atlassian Bit Bucket Workspaces API
-  description: >-
-    The Atlassian BitBucket Workspaces API is a powerful tool that allows users
-    to manage and interact with multiple projects within their BitBucket
-    account. With this API, users can create, update, and delete workspaces, as
-    well as manage permissions and settings for each workspace. Additionally,
-    the API enables users to create and manage repositories within their
-    workspaces, facilitating collaboration and efficient project management. By
-    providing a comprehensive set of endpoints and functionalities, the
-    BitBucket Workspaces API streamlines the process of organizing and
-    coordinating projects, ultimately enhancing productivity and collaboration
-    within development teams.
+  title: ' workspaces/'
+  description: Needs description.
   version: '2.0'
   termsOfService: https://www.atlassian.com/legal/customer-agreement
   contact:
@@ -22,18 +12,9 @@ paths:
   /workspaces/{workspace}:
     get:
       tags:
-        - Get
-        - Workspaces
-      description: >-
-        This API operation retrieves detailed information about a specific
-        workspace by making a GET request to the endpoint
-        /workspaces/{workspace}, where {workspace} is a path parameter
-        representing the unique identifier of the workspace you want to access.
-        When executed, it returns the complete data and configuration settings
-        associated with that particular workspace, allowing users or
-        applications to view workspace properties, metadata, and current state
-        information without making any modifications to the workspace itself.
-      summary: Get Workspace
+        - - - - Workspaces
+      description: Returns the requested workspace.
+      summary: Get a workspace
       responses:
         '200':
           description: The workspace.
@@ -41,9 +22,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/workspace'
-              examples:
-                workspace:
-                  $ref: '#/components/examples/workspace'
         '404':
           description: If no workspace exists for the specified name or UUID.
           content:
@@ -54,12 +32,6 @@ paths:
         - oauth2: []
         - basic: []
         - api_key: []
-      operationId: getWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -72,21 +44,10 @@ paths:
   /workspaces/{workspace}/hooks:
     get:
       tags:
-        - Lists
-        - Webhooks
-        - Workspaces
-      description: >-
-        This API operation retrieves a paginated list of all webhooks that have
-        been configured for a specific Bitbucket workspace. By making a GET
-        request to the /workspaces/{workspace}/hooks endpoint with the workspace
-        identifier, users can view all webhook subscriptions associated with
-        that workspace, including details about the webhook URLs, events they're
-        subscribed to, and their current status. This is useful for auditing,
-        managing, or discovering existing webhook integrations that send HTTP
-        callbacks to external services when specific events occur within the
-        workspace, such as repository pushes, pull request updates, or other
-        Bitbucket activities.
-      summary: List Webhooks For Workspace
+        - - - - Workspaces
+              - Webhooks
+      description: Returns a paginated list of webhooks installed on this workspace.
+      summary: List webhooks for a workspace
       responses:
         '200':
           description: The paginated list of installed webhooks.
@@ -94,9 +55,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_webhook_subscriptions'
-              examples:
-                paginated-webhook-subscriptions:
-                  $ref: '#/components/examples/paginated-webhook-subscriptions'
         '403':
           description: >-
             If the authenticated user is not an owner on the specified
@@ -116,32 +74,69 @@ paths:
             - webhook
         - basic: []
         - api_key: []
-      operationId: listWebhooksForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     post:
       tags:
-        - Create
-        - Webhooks
-        - Workspaces
+        - - - - Workspaces
+              - Webhooks
       description: >-
-        This API operation creates a new webhook for a specified Bitbucket
-        workspace by sending a POST request to the /workspaces/{workspace}/hooks
-        endpoint. Webhooks allow workspaces to receive real-time HTTP callbacks
-        when specific events occur within the workspace, such as repository
-        pushes, pull requests, or issue updates. The workspace is identified by
-        the {workspace} path parameter, which represents the workspace ID or
-        slug. The request typically requires authentication and a JSON payload
-        containing webhook configuration details including the target URL where
-        events should be sent, a description, and the specific events to
-        subscribe to. Upon successful creation, the API returns the newly
-        created webhook object with its unique identifier and configuration
-        details, enabling automated integrations and event-driven workflows
-        between Bitbucket and external systems or services.
-      summary: Create Webhook For Workspace
+        Creates a new webhook on the specified workspace.
+
+
+        Workspace webhooks are fired for events from all repositories contained
+
+        by that workspace.
+
+
+        Example:
+
+
+        ```
+
+        $ curl -X POST -u credentials -H 'Content-Type: application/json'
+          https://api.bitbucket.org/2.0/workspaces/my-workspace/hooks
+          -d '
+            {
+              "description": "Webhook Description",
+              "url": "https://example.com/",
+              "active": true,
+              "secret": "this is a really bad secret",
+              "events": [
+                "repo:push",
+                "issue:created",
+                "issue:updated"
+              ]
+            }'
+        ```
+
+
+        When the `secret` is provided it will be used as the key to generate a
+        HMAC
+
+        digest value sent in the `X-Hub-Signature` header at delivery time.
+        Passing
+
+        a `null` or empty `secret` or not passing a `secret` will leave the
+        webhook's
+
+        secret unset. Bitbucket only generates the `X-Hub-Signature` when the
+        webhook's
+
+        secret is set.
+
+
+        This call requires the webhook scope, as well as any scope
+
+        that applies to the events that the webhook subscribes to. In the
+
+        example above that means: `webhook`, `repository` and `issue`.
+
+
+        The `url` must properly resolve and cannot be an internal, non-routed
+        address.
+
+
+        Only workspace owners can install webhooks on workspaces.
+      summary: Create a webhook for a workspace
       responses:
         '201':
           description: If the webhook was registered successfully.
@@ -154,9 +149,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
-              examples:
-                webhook-subscription:
-                  $ref: '#/components/examples/webhook-subscription'
         '403':
           description: >-
             If the authenticated user does not have permission to install
@@ -176,12 +168,6 @@ paths:
             - webhook
         - basic: []
         - api_key: []
-      operationId: createWebhookForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -194,23 +180,10 @@ paths:
   /workspaces/{workspace}/hooks/{uid}:
     delete:
       tags:
-        - Delete
-        - Webhooks
-        - Workspaces
-      description: >-
-        The DELETE operation on the /workspaces/{workspace}/hooks/{uid} endpoint
-        in the Atlassian Bitbucket Workspaces API removes a specific webhook
-        from a workspace. This endpoint requires two path parameters: the
-        workspace identifier and the unique identifier (uid) of the webhook to
-        be deleted. When executed successfully, it permanently removes the
-        webhook configuration, stopping all future webhook event notifications
-        from being sent to the previously configured URL for that workspace.
-        This operation is typically used when a webhook is no longer needed,
-        when cleaning up old integrations, or when reconfiguring webhook
-        settings by removing the old webhook before creating a new one.
-        Authentication and appropriate workspace permissions are required to
-        perform this delete operation.
-      summary: Delete Webhook For Workspace
+        - - - - Workspaces
+              - Webhooks
+      description: Deletes the specified webhook subscription from the given workspace.
+      summary: Delete a webhook for a workspace
       responses:
         '204':
           description: When the webhook was deleted successfully
@@ -233,25 +206,14 @@ paths:
             - webhook
         - basic: []
         - api_key: []
-      operationId: deleteWebhookForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Webhooks
-      description: >-
-        This API operation retrieves detailed information about a specific
-        webhook configured for an Atlassian Bitbucket workspace. By providing
-        the workspace identifier and the unique webhook ID (uid) in the endpoint
-        path, you can fetch the webhook's configuration details including its
-        URL, events it subscribes to, active status, and other metadata. This is
-        useful for verifying webhook settings, auditing workspace integrations,
-        or programmatically managing webhook configurations within your
-        Bitbucket workspace.
-      summary: Get Webhook For Workspace
+        - - - - Workspaces
+              - Webhooks
+      description: |-
+        Returns the webhook with the specified id installed on the given
+        workspace.
+      summary: Get a webhook for a workspace
       responses:
         '200':
           description: The webhook subscription object.
@@ -259,9 +221,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
-              examples:
-                webhook-subscription_2:
-                  $ref: '#/components/examples/webhook-subscription_2'
         '404':
           description: If the webhook or workspace does not exist.
           content:
@@ -273,30 +232,48 @@ paths:
             - webhook
         - basic: []
         - api_key: []
-      operationId: getWebhookForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Webhooks
-        - Workspaces
+        - - - - Workspaces
+              - Webhooks
       description: >-
-        This operation updates an existing webhook configuration for a specified
-        Bitbucket workspace by making a PUT request to the endpoint with the
-        workspace slug and webhook unique identifier (uid) in the path. It
-        allows you to modify webhook settings such as the URL that receives the
-        webhook payloads, the events that trigger the webhook, whether the
-        webhook is active or inactive, and other configuration options like
-        description and secret tokens for payload verification. The request
-        requires authentication with appropriate permissions to manage workspace
-        webhooks, and upon successful execution, it returns the updated webhook
-        object with all its current configuration details including the modified
-        properties.
-      summary: Update Webhook For Workspace
+        Updates the specified webhook subscription.
+
+
+        The following properties can be mutated:
+
+
+        * `description`
+
+        * `url`
+
+        * `secret`
+
+        * `active`
+
+        * `events`
+
+
+        The hook's secret is used as a key to generate the HMAC hex digest sent
+        in the
+
+        `X-Hub-Signature` header at delivery time. This signature is only
+        generated
+
+        when the hook has a secret.
+
+
+        Set the hook's secret by passing the new value in the `secret` field.
+        Passing a
+
+        `null` value in the `secret` field will remove the secret from the hook.
+        The
+
+        hook's secret can be left unchanged by not passing the `secret` field in
+        the
+
+        request.
+      summary: Update a webhook for a workspace
       responses:
         '200':
           description: The webhook subscription object.
@@ -304,9 +281,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook_subscription'
-              examples:
-                webhook-subscription_2:
-                  $ref: '#/components/examples/webhook-subscription_2'
         '403':
           description: >-
             If the authenticated user does not have permission to update the
@@ -326,12 +300,6 @@ paths:
             - webhook
         - basic: []
         - api_key: []
-      operationId: updateWebhookForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: uid
         in: path
@@ -350,21 +318,9 @@ paths:
   /workspaces/{workspace}/members:
     get:
       tags:
-        - Lists
-        - Users
-        - Workspaces
-      description: >-
-        This API endpoint retrieves a list of all members who belong to a
-        specified Atlassian Bitbucket workspace by making a GET request to
-        /workspaces/{workspace}/members, where {workspace} is replaced with the
-        unique identifier or slug of the target workspace. The operation returns
-        member details including user information, roles, and permissions for
-        each member associated with the workspace, allowing administrators and
-        authorized users to view and manage workspace membership. This is
-        particularly useful for auditing purposes, managing team access, or
-        integrating workspace member data with external systems for user
-        management and collaboration workflows.
-      summary: List Users In Workspace
+        - - - - Workspaces
+      description: Returns all members of the requested workspace.
+      summary: List users in a workspace
       responses:
         '200':
           description: The list of users that are part of a workspace.
@@ -372,9 +328,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_workspace_memberships'
-              examples:
-                paginated-workspace-memberships:
-                  $ref: '#/components/examples/paginated-workspace-memberships'
         '401':
           description: The request wasn't authenticated.
           content:
@@ -392,12 +345,6 @@ paths:
           scopes:
             - read:workspace:bitbucket
             - read:user:bitbucket
-      operationId: listUsersInWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -410,21 +357,12 @@ paths:
   /workspaces/{workspace}/members/{member}:
     get:
       tags:
-        - Get
-        - Users
-        - Memberships
-        - Workspaces
-      description: >-
-        This GET operation retrieves detailed information about a specific
-        user's membership within a designated Bitbucket workspace. By providing
-        the workspace identifier and member identifier in the URL path
-        parameters, the API returns the membership details for that particular
-        user, including their role, permissions, and associated account
-        information within the context of the specified workspace. This endpoint
-        is useful for administrators and applications that need to verify a
-        user's access level, check membership status, or retrieve specific
-        member details for workspace management purposes.
-      summary: Get User Membership For Workspace
+        - - - - Workspaces
+      description: |-
+        Returns the workspace membership, which includes
+        a `User` object for the member and a `Workspace` object
+        for the requested workspace.
+      summary: Get user membership for a workspace
       responses:
         '200':
           description: The user that is part of a workspace.
@@ -432,9 +370,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/workspace_membership'
-              examples:
-                workspace-membership:
-                  $ref: '#/components/examples/workspace-membership'
         '401':
           description: The request wasn't authenticated.
           content:
@@ -443,8 +378,8 @@ paths:
                 $ref: '#/components/schemas/error'
         '404':
           description: >-
-            workspace cannot be found, or a user cannot be found, or the user is
-            not a a member of the workspace.
+            A workspace cannot be found, or a user cannot be found, or the user
+            is not a a member of the workspace.
           content:
             application/json:
               schema:
@@ -460,12 +395,6 @@ paths:
           scopes:
             - read:workspace:bitbucket
             - read:user:bitbucket
-      operationId: getUserMembershipForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: member
         in: path
@@ -484,24 +413,46 @@ paths:
   /workspaces/{workspace}/permissions:
     get:
       tags:
-        - Lists
-        - Users
-        - Permissions
-        - Workspaces
+        - - - - Workspaces
       description: >-
-        This API operation retrieves a list of user permissions configured
-        within a specific Bitbucket workspace by making a GET request to the
-        /workspaces/{workspace}/permissions endpoint, where {workspace} is the
-        unique identifier or slug of the target workspace. It returns detailed
-        information about which users have been granted access to the workspace
-        and their corresponding permission levels, such as member, admin, or
-        collaborator roles. This endpoint is useful for workspace administrators
-        who need to audit user access, manage team permissions, or integrate
-        workspace permission data into external systems for security and
-        compliance purposes. The response typically includes user details like
-        usernames, display names, and their associated permission grants within
-        the specified workspace context.
-      summary: List User Permissions In Workspace
+        Returns the list of members in a workspace
+
+        and their permission levels.
+
+        Permission can be:
+
+        * `owner`
+
+        * `collaborator`
+
+        * `member`
+
+
+        **The `collaborator` role is being removed from the Bitbucket Cloud API.
+        For more information,
+
+        see the [deprecation
+        announcement](/cloud/bitbucket/deprecation-notice-collaborator-role/).**
+
+
+        **When you move your administration from Bitbucket Cloud to
+        admin.atlassian.com, the following fields on
+
+        `workspace_membership` will no longer be present: `last_accessed` and
+        `added_on`. See the
+
+        [deprecation
+        announcement](/cloud/bitbucket/announcement-breaking-change-workspace-membership/).**
+
+
+        Results may be further
+        [filtered](/cloud/bitbucket/rest/intro/#filtering) by
+
+        permission by adding the following query string parameters:
+
+
+        * `q=permission="owner"`
+      summary: List user permissions in a workspace
       responses:
         '200':
           description: >-
@@ -512,8 +463,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_workspace_memberships'
               examples:
-                paginated-workspace-memberships_2:
-                  $ref: '#/components/examples/paginated-workspace-memberships_2'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - permission: owner
+                        type: workspace_membership
+                        user:
+                          type: user
+                          uuid: '{470c176d-3574-44ea-bb41-89e8638bcca4}'
+                          display_name: Erik van Zijst
+                        workspace:
+                          type: workspace
+                          uuid: '{a15fb181-db1f-48f7-b41f-e1eff06929d6}'
+                          slug: bbworkspace1
+                          name: Atlassian Bitbucket
+                      - permission: member
+                        type: workspace_membership
+                        user:
+                          type: user
+                          nickname: seanaty
+                          display_name: Sean Conaty
+                          uuid: '{504c3b62-8120-4f0c-a7bc-87800b9d6f70}'
+                        workspace:
+                          type: workspace
+                          uuid: '{a15fb181-db1f-48f7-b41f-e1eff06929d6}'
+                          slug: bbworkspace1
+                          name: Atlassian Bitbucket
+                    page: 1
+                    size: 2
         '401':
           description: The request wasn't authenticated.
           content:
@@ -541,12 +519,6 @@ paths:
           scopes:
             - read:workspace:bitbucket
             - read:user:bitbucket
-      operationId: listUserPermissionsInWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -559,23 +531,50 @@ paths:
   /workspaces/{workspace}/permissions/repositories:
     get:
       tags:
-        - Lists
-        - All
-        - Repositories
-        - Permissions
-        - Workspaces
+        - - - - Workspaces
       description: >-
-        This GET operation retrieves a comprehensive list of all repository
-        permissions configured within a specific Bitbucket workspace. By
-        targeting the /workspaces/{workspace}/permissions/repositories endpoint,
-        it returns permission details for repositories in the specified
-        workspace, allowing administrators and authorized users to audit access
-        controls and understand who has what level of access (read, write,
-        admin) to repositories. The {workspace} path parameter identifies the
-        target workspace, and the response typically includes information about
-        users, groups, and their associated permission levels across all
-        repositories within that workspace scope.
-      summary: List All Repository Permissions For Workspace
+        Returns an object for each repository permission for all of a
+
+        workspace's repositories.
+
+
+        Permissions returned are effective permissions: the highest level of
+
+        permission the user has. This does not distinguish between direct and
+
+        indirect (group) privileges.
+
+
+        Only users with admin permission for the team may access this resource.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `write`
+
+        * `read`
+
+
+        Results may be further [filtered or
+        sorted](/cloud/bitbucket/rest/intro/#filtering)
+
+        by repository, user, or permission by adding the following query string
+
+        parameters:
+
+
+        * `q=repository.name="geordi"` or `q=permission>"read"`
+
+        * `sort=user.display_name`
+
+
+        Note that the query parameter values need to be URL escaped so that `=`
+
+        would become `%3D`.
+      summary: List all repository permissions for a workspace
       responses:
         '200':
           description: List of workspace's repository permissions.
@@ -584,8 +583,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_repository_permissions'
               examples:
-                paginated-repository-permissions:
-                  $ref: '#/components/examples/paginated-repository-permissions'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - type: repository_permission
+                        user:
+                          type: user
+                          display_name: Erik van Zijst
+                          uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
+                        repository:
+                          type: repository
+                          name: geordi
+                          full_name: atlassian_tutorial/geordi
+                          uuid: '{85d08b4e-571d-44e9-a507-fa476535aa98}'
+                        permission: admin
+                      - type: repository_permission
+                        user:
+                          type: user
+                          display_name: Sean Conaty
+                          uuid: '{504c3b62-8120-4f0c-a7bc-87800b9d6f70}'
+                        repository:
+                          type: repository
+                          name: geordi
+                          full_name: atlassian_tutorial/geordi
+                          uuid: '{85d08b4e-571d-44e9-a507-fa476535aa98}'
+                        permission: write
+                      - type: repository_permission
+                        user:
+                          type: user
+                          display_name: Jeff Zeng
+                          uuid: '{47f92a9a-c3a3-4d0b-bc4e-782a969c5c72}'
+                        repository:
+                          type: repository
+                          name: whee
+                          full_name: atlassian_tutorial/whee
+                          uuid: '{30ba25e9-51ff-4555-8dd0-fc7ee2fa0895}'
+                        permission: admin
+                    page: 1
+                    size: 3
         '403':
           description: The requesting user isn't an admin of the workspace.
           content:
@@ -624,12 +660,6 @@ paths:
           scopes:
             - read:repository:bitbucket
             - read:user:bitbucket
-      operationId: listAllRepositoryPermissionsForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -642,22 +672,49 @@ paths:
   /workspaces/{workspace}/permissions/repositories/{repo_slug}:
     get:
       tags:
-        - Lists
-        - Repositories
-        - Permissions
-        - Workspaces
+        - - - - Workspaces
       description: >-
-        This API endpoint retrieves the permission settings for a specific
-        repository within an Atlassian Bitbucket workspace. By making a GET
-        request to this endpoint with the workspace identifier and repository
-        slug as path parameters, users can view all the permissions that have
-        been granted for that particular repository, including which users or
-        groups have access and their respective permission levels (such as read,
-        write, or admin). This is useful for workspace administrators who need
-        to audit repository access, verify security settings, or understand who
-        has what level of access to a given repository within their Bitbucket
-        workspace.
-      summary: List Repository Permissions For Workspace
+        Returns an object for the repository permission of each user in the
+
+        requested repository.
+
+
+        Permissions returned are effective permissions: the highest level of
+
+        permission the user has. This does not distinguish between direct and
+
+        indirect (group) privileges.
+
+
+        Only users with admin permission for the repository may access this
+        resource.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `write`
+
+        * `read`
+
+
+        Results may be further [filtered or
+        sorted](/cloud/bitbucket/rest/intro/#filtering)
+
+        by user, or permission by adding the following query string parameters:
+
+
+        * `q=permission>"read"`
+
+        * `sort=user.display_name`
+
+
+        Note that the query parameter values need to be URL escaped so that `=`
+
+        would become `%3D`.
+      summary: List a repository permissions for a workspace
       responses:
         '200':
           description: The repository permission for all users in this repository.
@@ -666,8 +723,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_repository_permissions'
               examples:
-                paginated-repository-permissions_2:
-                  $ref: '#/components/examples/paginated-repository-permissions_2'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - type: repository_permission
+                        user:
+                          type: user
+                          display_name: Erik van Zijst
+                          uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
+                        repository:
+                          type: repository
+                          name: geordi
+                          full_name: atlassian_tutorial/geordi
+                          uuid: '{85d08b4e-571d-44e9-a507-fa476535aa98}'
+                        permission: admin
+                      - type: repository_permission
+                        user:
+                          type: user
+                          display_name: Sean Conaty
+                          uuid: '{504c3b62-8120-4f0c-a7bc-87800b9d6f70}'
+                        repository:
+                          type: repository
+                          name: geordi
+                          full_name: atlassian_tutorial/geordi
+                          uuid: '{85d08b4e-571d-44e9-a507-fa476535aa98}'
+                        permission: write
+                    page: 1
+                    size: 2
         '403':
           description: The requesting user isn't an admin of the repository.
           content:
@@ -706,12 +789,6 @@ paths:
           scopes:
             - read:repository:bitbucket
             - read:user:bitbucket
-      operationId: listRepositoryPermissionsForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: repo_slug
         in: path
@@ -732,23 +809,12 @@ paths:
   /workspaces/{workspace}/pipelines-config/identity/oidc/.well-known/openid-configuration:
     get:
       tags:
-        - Get
-        - Configuration
-        - Openid Connect
-        - Pipelines
-      summary: Get Openid Configuration For Oidc In Pipelines
+        - - - - Pipelines
+      summary: Get OpenID configuration for OIDC in Pipelines
       description: >-
-        This API endpoint retrieves the OpenID Connect (OIDC) configuration for
-        Bitbucket Pipelines within a specified workspace. It returns the
-        well-known OpenID configuration document that contains metadata about
-        the OIDC identity provider used by Pipelines, including supported
-        endpoints, token signing algorithms, claims, and other OAuth 2.0 and
-        OIDC protocol details. This configuration is essential for external
-        services and cloud providers that need to establish trust and validate
-        identity tokens issued by Bitbucket Pipelines when using OIDC
-        authentication for secure, keyless deployments without storing
-        long-lived credentials.
-      operationId: getOpenidConfigurationForOidcInPipelines
+        This is part of OpenID Connect for Pipelines, see
+        https://support.atlassian.com/bitbucket-cloud/docs/integrate-pipelines-with-resource-servers-using-oidc/
+      operationId: getOIDCConfiguration
       parameters:
         - name: workspace
           description: >-
@@ -771,29 +837,15 @@ paths:
         - oauth2: []
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
   /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json:
     get:
       tags:
-        - Get
-        - Keys
-        - Openid Connect
-        - Pipelines
-      summary: Get Keys For Oidc In Pipelines
+        - - - - Pipelines
+      summary: Get keys for OIDC in Pipelines
       description: >-
-        This API endpoint retrieves the JSON Web Key Set (JWKS) containing the
-        public keys used for OpenID Connect (OIDC) authentication in Bitbucket
-        Pipelines for a specific workspace. It accepts a GET request to the path
-        /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json, where
-        {workspace} is replaced with the workspace ID or slug. The endpoint
-        returns a keys.json file that contains cryptographic keys used to verify
-        JWT tokens issued by Bitbucket Pipelines' OIDC provider, enabling secure
-        identity federation between Pipelines and external services that support
-        OIDC authentication.
-      operationId: getKeysForOidcInPipelines
+        This is part of OpenID Connect for Pipelines, see
+        https://support.atlassian.com/bitbucket-cloud/docs/integrate-pipelines-with-resource-servers-using-oidc/
+      operationId: getOIDCKeys
       parameters:
         - name: workspace
           description: >-
@@ -816,30 +868,13 @@ paths:
         - oauth2: []
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
   /workspaces/{workspace}/pipelines-config/variables:
     get:
       tags:
-        - Lists
-        - Variables
-        - Workspaces
-      summary: List Variables For Workspace
-      description: >-
-        This API operation retrieves all pipeline variables configured at the
-        workspace level in Bitbucket. By making a GET request to the specified
-        endpoint with a workspace identifier, developers can access a list of
-        environment variables that are available to all pipelines within that
-        workspace, including both secured and non-secured variables along with
-        their keys, values (for non-secured variables), and associated metadata.
-        This is useful for managing and auditing centralized configuration
-        settings that apply across multiple repositories within a workspace,
-        enabling administrators to review what variables are defined and
-        available for pipeline executions without needing to check individual
-        repository settings.
-      operationId: listVariablesForWorkspace
+        - - - - Pipelines
+      summary: List variables for a workspace
+      description: Find workspace level variables.
+      operationId: getPipelineVariablesForWorkspace
       parameters:
         - name: workspace
           description: >-
@@ -856,9 +891,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_pipeline_variables'
-              examples:
-                paginated-pipeline-variables:
-                  $ref: '#/components/examples/paginated-pipeline-variables'
       x-atlassian-oauth2-scopes:
         - state: Current
           scheme: oauth2
@@ -869,34 +901,12 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     post:
       tags:
-        - Create
-        - Variables
-        - Workspaces
-      summary: Create Variable For Workspace
-      description: >-
-        The POST operation on the
-        /workspaces/{workspace}/pipelines-config/variables endpoint allows you
-        to create a new pipeline variable within a specific Bitbucket workspace,
-        enabling you to define configuration values that can be used across
-        multiple pipelines in that workspace. This endpoint requires you to
-        specify the workspace slug in the path parameter and provide the
-        variable details in the request body, typically including the variable's
-        key (name), value, and whether it should be secured/encrypted.
-        Workspace-level pipeline variables are useful for storing shared
-        configuration data, credentials, or environment-specific values that
-        need to be accessible to all repositories within the workspace without
-        having to duplicate the variable definitions in each individual
-        repository. The API returns the created variable object upon successful
-        execution, and requires appropriate authentication and workspace admin
-        permissions to perform this operation.
-      operationId: createVariableForWorkspace
+        - - - - Pipelines
+      summary: Create a variable for a workspace
+      description: Create a workspace level variable.
+      operationId: createPipelineVariableForWorkspace
       parameters:
         - name: workspace
           description: >-
@@ -920,9 +930,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
-              examples:
-                pipeline-variable:
-                  $ref: '#/components/examples/pipeline-variable'
         '404':
           description: The workspace does not exist.
           content:
@@ -930,7 +937,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '409':
-          description: variable with the provided key already exists.
+          description: A variable with the provided key already exists.
           content:
             application/json:
               schema:
@@ -945,31 +952,13 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
   /workspaces/{workspace}/pipelines-config/variables/{variable_uuid}:
     get:
       tags:
-        - Get
-        - Variables
-        - Workspaces
-      summary: Get Variable For Workspace
-      description: >-
-        This API operation retrieves detailed information about a specific
-        pipeline variable configured for a Bitbucket workspace by providing the
-        workspace identifier and the unique UUID of the variable. It allows
-        developers to programmatically access the configuration details of
-        environment variables, secrets, or other pipeline variables that have
-        been set up at the workspace level, which can be used across multiple
-        repositories within that workspace. The endpoint returns the variable's
-        metadata including its key, value (if not secured), type, and whether
-        it's secured or not, making it useful for auditing pipeline
-        configurations or integrating workspace-level pipeline settings into
-        automated workflows and deployment processes.
-      operationId: getVariableForWorkspace
+        - - - - Pipelines
+      summary: Get variable for a workspace
+      description: Retrieve a workspace level variable.
+      operationId: getPipelineVariableForWorkspace
       parameters:
         - name: workspace
           description: >-
@@ -992,9 +981,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
-              examples:
-                pipeline-variable_2:
-                  $ref: '#/components/examples/pipeline-variable_2'
         '404':
           description: The workspace or variable with the given UUID was not found.
           content:
@@ -1011,29 +997,12 @@ paths:
             - pipeline
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Variables
-        - Workspaces
-      summary: Update Variable For Workspace
-      description: >-
-        Updates an existing pipeline variable in a Bitbucket workspace by
-        providing the variable's UUID. This operation allows you to modify the
-        value, security settings, or other properties of a workspace-level
-        pipeline variable that can be used across all repositories within the
-        workspace. The variable UUID must be provided in the path, and the
-        updated variable configuration is sent in the request body. Workspace
-        pipeline variables are commonly used to store shared configuration
-        values, credentials, or environment-specific settings that multiple
-        pipelines need to access, with support for secured variables that hide
-        sensitive information in logs.
-      operationId: updateVariableForWorkspace
+        - - - - Pipelines
+      summary: Update variable for a workspace
+      description: Update a workspace level variable.
+      operationId: updatePipelineVariableForWorkspace
       parameters:
         - name: workspace
           description: >-
@@ -1058,9 +1027,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/pipeline_variable'
-              examples:
-                pipeline-variable_2:
-                  $ref: '#/components/examples/pipeline-variable_2'
         '404':
           description: The workspace or the variable was not found.
           content:
@@ -1077,28 +1043,12 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     delete:
       tags:
-        - Delete
-        - Variables
-        - Workspaces
-      summary: Delete Variable For Workspace
-      description: >-
-        This API operation allows you to delete a specific pipeline variable
-        from an Atlassian Bitbucket workspace by making a DELETE request to the
-        endpoint with the workspace identifier and the unique UUID of the
-        variable you wish to remove. Pipeline variables are typically used to
-        store configuration values, secrets, or environment-specific settings
-        that are used during the execution of Bitbucket Pipelines, and removing
-        a variable through this endpoint will permanently delete it from the
-        workspace's pipeline configuration, making it unavailable for any future
-        pipeline runs that previously referenced it.
-      operationId: deleteVariableForWorkspace
+        - - - - Pipelines
+      summary: Delete a variable for a workspace
+      description: Delete a workspace level variable.
+      operationId: deletePipelineVariableForWorkspace
       parameters:
         - name: workspace
           description: >-
@@ -1133,28 +1083,12 @@ paths:
             - pipeline:variable
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
   /workspaces/{workspace}/projects:
     get:
       tags:
-        - Lists
-        - Projects
-        - Workspaces
-      description: >-
-        This API operation retrieves a paginated list of all projects within a
-        specified Bitbucket workspace, where the workspace is identified by its
-        slug in the URL path. It returns project information including project
-        keys, names, descriptions, and other metadata associated with each
-        project that the authenticated user has permission to view. The response
-        follows Bitbucket's standard pagination format, allowing clients to
-        navigate through large result sets using page parameters, making it
-        useful for applications that need to display or process all projects
-        belonging to a particular workspace.
-      summary: List Projects In Workspace
+        - - - - Workspaces
+      description: Returns the list of projects in this workspace.
+      summary: List projects in a workspace
       responses:
         '200':
           description: The list of projects in this workspace.
@@ -1162,11 +1096,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/paginated_projects'
-              examples:
-                paginated-projects:
-                  $ref: '#/components/examples/paginated-projects'
         '404':
-          description: workspace doesn't exist at this location.
+          description: A workspace doesn't exist at this location.
           content:
             application/json:
               schema:
@@ -1181,37 +1112,68 @@ paths:
           scheme: oauth2
           scopes:
             - read:project:bitbucket
-      operationId: listProjectsInWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     post:
       tags:
-        - Create
-        - Projects
-        - Workspaces
-      description: >-
-        This API operation creates a new project within a specified Bitbucket
-        workspace by sending a POST request to the
-        /workspaces/{workspace}/projects endpoint, where {workspace} is replaced
-        with the unique identifier or slug of the target workspace. The
-        operation allows workspace administrators to programmatically establish
-        new projects that serve as containers for organizing related
-        repositories, enabling better code management and team collaboration.
-        When invoked, the endpoint accepts project details in the request body
-        such as project name, key, description, and access permissions, then
-        returns the newly created project object with its assigned metadata
-        including a unique project identifier, timestamps, and configuration
-        settings. This operation requires appropriate authentication credentials
-        and workspace-level permissions, typically administrator or write
-        access, to successfully create projects within the organizational
-        structure of the Bitbucket workspace.
-      summary: Create Project In Workspace
+        - - - - Projects
+      description: |-
+        Creates a new project.
+
+        Note that the avatar has to be embedded as either a data-url
+        or a URL to an external image as shown in the examples below:
+
+        ```
+        $ body=$(cat << EOF
+        {
+            "name": "Mars Project",
+            "key": "MARS",
+            "description": "Software for colonizing mars.",
+            "links": {
+                "avatar": {
+                    "href": "data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/..."
+                }
+            },
+            "is_private": false
+        }
+        EOF
+        )
+        $ curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$body" \
+               https://api.bitbucket.org/2.0/workspaces/teams-in-space/projects/ | jq .
+        {
+          // Serialized project document
+        }
+        ```
+
+        or even:
+
+        ```
+        $ body=$(cat << EOF
+        {
+            "name": "Mars Project",
+            "key": "MARS",
+            "description": "Software for colonizing mars.",
+            "links": {
+                "avatar": {
+                    "href": "http://i.imgur.com/72tRx4w.gif"
+                }
+            },
+            "is_private": false
+        }
+        EOF
+        )
+        $ curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$body" \
+               https://api.bitbucket.org/2.0/workspaces/teams-in-space/projects/ | jq .
+        {
+          // Serialized project document
+        }
+        ```
+      summary: Create a project in a workspace
       responses:
         '201':
-          description: new project has been created.
+          description: A new project has been created.
           headers:
             Location:
               description: The location of the newly created project
@@ -1221,9 +1183,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/project'
-              examples:
-                project:
-                  $ref: '#/components/examples/project'
         '403':
           description: The requesting user isn't authorized to create the project.
           content:
@@ -1231,7 +1190,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '404':
-          description: workspace doesn't exist at this location.
+          description: A workspace doesn't exist at this location.
           content:
             application/json:
               schema:
@@ -1248,12 +1207,6 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: createProjectInWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: workspace
         in: path
@@ -1266,23 +1219,28 @@ paths:
   /workspaces/{workspace}/projects/{project_key}:
     delete:
       tags:
-        - Delete
-        - Projects
-        - Workspaces
+        - - - - Projects
       description: >-
-        The delete operation on the
-        `/workspaces/{workspace}/projects/{project_key}` endpoint in the
-        Atlassian Bitbucket Workspaces API permanently removes a specified
-        project from a workspace. This operation requires authentication and
-        appropriate permissions to delete projects within the designated
-        workspace. When executed, it takes two path parameters: the workspace
-        identifier and the project key that uniquely identifies the project to
-        be deleted. Upon successful deletion, the project and its associated
-        metadata are removed from the workspace, though this typically does not
-        affect the repositories contained within the project unless specifically
-        configured to do so. This is a destructive operation that cannot be
-        undone, so it should be used with caution in production environments.
-      summary: Delete Project For Workspace
+        Deletes this project. This is an irreversible operation.
+
+
+        You cannot delete a project that still contains repositories.
+
+        To delete the project,
+        [delete](/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-delete)
+
+        or transfer the repositories first.
+
+
+        Example:
+
+        ```
+
+        $ curl -X DELETE
+        https://api.bitbucket.org/2.0/workspaces/bbworkspace1/projects/PROJ
+
+        ```
+      summary: Delete a project for a workspace
       responses:
         '204':
           description: Successful deletion.
@@ -1295,7 +1253,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '404':
-          description: project isn't hosted at this location.
+          description: A project isn't hosted at this location.
           content:
             application/json:
               schema:
@@ -1310,31 +1268,12 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: deleteProjectForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Projects
-        - Workspaces
-      description: >-
-        The Get Project For Workspace operation in the Atlassian Bitbucket
-        Workspaces API retrieves detailed information about a specific project
-        within a designated workspace by making a GET request to the endpoint
-        /workspaces/{workspace}/projects/{project_key}. This operation requires
-        two path parameters: the workspace identifier (which can be the
-        workspace's UUID, ID, or slug) and the project_key (a unique identifier
-        for the project within that workspace). When successfully invoked, it
-        returns comprehensive project details including the project's name,
-        description, key, creation date, visibility settings, owner information,
-        associated links, and other metadata. This endpoint is commonly used by
-        developers and integrations to fetch project-level configuration data,
-        validate project existence, or retrieve project attributes before
-        performing additional operations within that project's scope.
-      summary: Get Project For Workspace
+        - - - - Projects
+              - Workspaces
+      description: Returns the requested project.
+      summary: Get a project for a workspace
       responses:
         '200':
           description: The project that is part of a workspace.
@@ -1342,9 +1281,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/project'
-              examples:
-                project_2:
-                  $ref: '#/components/examples/project_2'
         '401':
           description: The request wasn't authenticated.
           content:
@@ -1358,7 +1294,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '404':
-          description: project isn't hosted at this location.
+          description: A project isn't hosted at this location.
           content:
             application/json:
               schema:
@@ -1373,31 +1309,33 @@ paths:
           scheme: oauth2
           scopes:
             - read:project:bitbucket
-      operationId: getProjectForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Projects
-        - Workspaces
-      description: >-
-        This API operation allows you to update an existing project within a
-        specified Bitbucket workspace by making a PUT request to the endpoint
-        with the workspace slug and project key as path parameters. You can
-        modify various project properties such as the project name, description,
-        avatar, and other configurable settings. The request requires
-        appropriate authentication and permissions to modify projects within the
-        workspace, typically requiring admin or write access. Upon successful
-        execution, the API returns the updated project object with all its
-        current properties, reflecting the changes made in the request body.
-        This operation follows RESTful conventions where PUT is used to update
-        the complete resource, and any fields not included in the request may be
-        reset to default values depending on the API's implementation.
-      summary: Update Project For Workspace
+        - - - - Projects
+      description: |-
+        Since this endpoint can be used to both update and to create a
+        project, the request body depends on the intent.
+
+        #### Creation
+
+        See the POST documentation for the project collection for an
+        example of the request body.
+
+        Note: The `key` should not be specified in the body of request
+        (since it is already present in the URL). The `name` is required,
+        everything else is optional.
+
+        #### Update
+
+        See the POST documentation for the project collection for an
+        example of the request body.
+
+        Note: The key is not required in the body (since it is already in
+        the URL). The key may be specified in the body, if the intent is
+        to change the key itself. In such a scenario, the location of the
+        project is changed and is returned in the `Location` header of the
+        response.
+      summary: Update a project for a workspace
       responses:
         '200':
           description: The existing project is has been updated.
@@ -1412,11 +1350,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/project'
-              examples:
-                project_2:
-                  $ref: '#/components/examples/project_2'
         '201':
-          description: new project has been created.
+          description: A new project has been created.
           headers:
             Location:
               description: The location of the newly created project
@@ -1426,9 +1361,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/project'
-              examples:
-                project_2:
-                  $ref: '#/components/examples/project_2'
         '403':
           description: >-
             The requesting user isn't authorized to update or create the
@@ -1439,7 +1371,7 @@ paths:
                 $ref: '#/components/schemas/error'
         '404':
           description: >-
-            workspace doesn't exist at the location. Note that the project's
+            A workspace doesn't exist at the location. Note that the project's
             absence from this location doesn't raise a 404, since a PUT at a
             non-existent location can be used to create a new project.
           content:
@@ -1458,12 +1390,6 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: updateProjectForWorkspace
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -1484,25 +1410,30 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/branching-model:
     get:
       tags:
-        - Get
-        - Branching
-        - Models
-        - Projects
+        - - - - Branching model
       description: >-
-        This API operation retrieves the branching model configuration for a
-        specific project within a Bitbucket workspace, allowing you to
-        understand how branches are organized and managed within that project.
-        By providing the workspace identifier and project key as path
-        parameters, the GET request returns details about the project's
-        branching strategy, which may include information about development
-        branches, production branches, branch prefixes, and the overall workflow
-        structure that defines how code changes flow from development to
-        production. This is particularly useful for teams that want to
-        programmatically access or audit their project's Git workflow
-        configuration, integrate branching model information into CI/CD
-        pipelines, or build custom tooling that needs to understand the
-        project's branch organization scheme.
-      summary: Get The Branching Model For Project
+        Return the branching model set at the project level. This view is
+
+        read-only. The branching model settings can be changed using the
+
+        [settings](#api-workspaces-workspace-projects-project-key-branching-model-settings-get)
+
+        API.
+
+
+        The returned object:
+
+
+        1. Always has a `development` property. `development.name` is
+           the user-specified branch that can be inherited by an individual repository's
+           branching model.
+        2. Might have a `production` property. `production` will not
+           be present when `production` is disabled.
+           `production.name` is the user-specified branch that can be
+           inherited by an individual repository's branching model.
+        3. Always has a `branch_types` array which contains all enabled branch
+           types.
+      summary: Get the branching model for a project
       responses:
         '200':
           description: The branching model object
@@ -1511,8 +1442,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_branching_model'
               examples:
-                project-branching-model:
-                  $ref: '#/components/examples/project-branching-model'
+                response:
+                  value:
+                    development:
+                      name: master
+                      use_mainbranch: true
+                    production:
+                      name: production
+                      use_mainbranch: false
+                    branch_types:
+                      - kind: release
+                        prefix: release/
+                      - kind: hotfix
+                        prefix: hotfix/
+                      - kind: feature
+                        prefix: feature/
+                      - kind: bugfix
+                        prefix: bugfix/
+                    type: project_branching_model
+                    links:
+                      self:
+                        href: https://api.bitbucket.org/.../branching-model
         '401':
           description: If the request was not authenticated
           content:
@@ -1541,12 +1491,6 @@ paths:
           scheme: oauth2
           scopes:
             - read:repository:bitbucket
-      operationId: getTheBranchingModelForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -1567,22 +1511,31 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/branching-model/settings:
     get:
       tags:
-        - Get
-        - Branching
-        - Models
-        - Projects
+        - - - - Branching model
       description: >-
-        This API endpoint retrieves the branching model configuration settings
-        for a specific project within a designated workspace in Atlassian
-        Bitbucket. By making a GET request to this endpoint with the appropriate
-        workspace identifier and project key, users can access the project's
-        branching strategy configuration, which typically includes details about
-        branch types, naming conventions, and workflow patterns such as Git Flow
-        or similar branching models. This information helps teams understand and
-        maintain consistent branching practices across their repositories within
-        the project, ensuring standardized development workflows and version
-        control strategies.
-      summary: Get The Branching Model Config For Project
+        Return the branching model configuration for a project. The returned
+
+        object:
+
+
+        1. Always has a `development` property for the development branch.
+
+        2. Always a `production` property for the production branch. The
+           production branch can be disabled.
+        3. The `branch_types` contains all the branch types.
+
+
+
+        This is the raw configuration for the branching model. A client
+
+        wishing to see the branching model with its actual current branches may
+        find the
+
+        [active model
+        API](#api-workspaces-workspace-projects-project-key-branching-model-get)
+
+        more useful.
+      summary: Get the branching model config for a project
       responses:
         '200':
           description: The branching model configuration
@@ -1591,8 +1544,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/branching_model_settings'
               examples:
-                branching-model-settings:
-                  $ref: '#/components/examples/branching-model-settings'
+                response:
+                  value:
+                    development:
+                      name: 'null'
+                      use_mainbranch: true
+                    production:
+                      name: production
+                      use_mainbranch: false
+                      enabled: false
+                    branch_types:
+                      - kind: release
+                        enabled: true
+                        prefix: release/
+                      - kind: hotfix
+                        enabled: true
+                        prefix: hotfix/
+                      - kind: feature
+                        enabled: true
+                        prefix: feature/
+                      - kind: bugfix
+                        enabled: false
+                        prefix: bugfix/
+                    type: branching_model_settings
+                    links:
+                      self:
+                        href: https://api.bitbucket.org/.../branching-model/settings
         '401':
           description: If the request was not authenticated
           content:
@@ -1621,33 +1598,66 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: getTheBranchingModelConfigForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Branching
-        - Models
-        - Projects
+        - - - - Branching model
       description: >-
-        This API operation updates the branching model configuration settings
-        for a specific project within a Bitbucket workspace. It uses a PUT
-        request to the endpoint
-        /workspaces/{workspace}/projects/{project_key}/branching-model/settings,
-        where you specify the workspace slug and project key as path parameters.
-        The branching model defines the workflow for how branches are organized
-        and managed in a project, including settings for development branches,
-        production branches, and branch prefixes for features, releases,
-        hotfixes, and bugfixes. By calling this endpoint, administrators can
-        modify these configuration rules to align with their team's Git workflow
-        strategy, such as Git Flow or a custom branching strategy, ensuring
-        consistent branch naming conventions and automated branch type
-        recognition across the project.
-      summary: Update The Branching Model Config For Project
+        Update the branching model configuration for a project.
+
+
+        The `development` branch can be configured to a specific branch or to
+
+        track the main branch. Any branch name can be supplied, but will only
+
+        successfully be applied to a repository via inheritance if that branch
+
+        exists for that repository. Only the passed properties will be updated.
+        The
+
+        properties not passed will be left unchanged. A request without a
+
+        `development` property will leave the development branch unchanged.
+
+
+        The `production` branch can be a specific branch, the main
+
+        branch or disabled. Any branch name can be supplied, but will only
+
+        successfully be applied to a repository via inheritance if that branch
+
+        exists for that repository. The `enabled` property can be used to enable
+        (`true`)
+
+        or disable (`false`) it. Only the passed properties will be updated. The
+
+        properties not passed will be left unchanged. A request without a
+
+        `production` property will leave the production branch unchanged.
+
+
+        The `branch_types` property contains the branch types to be updated.
+
+        Only the branch types passed will be updated. All updates will be
+
+        rejected if it would leave the branching model in an invalid state.
+
+        For branch types this means that:
+
+
+        1. The prefixes for all enabled branch types are valid. For example,
+           it is not possible to use '*' inside a Git prefix.
+        2. A prefix of an enabled branch type must not be a prefix of another
+           enabled branch type. This is to ensure that a branch can be easily
+           classified by its prefix unambiguously.
+
+        It is possible to store an invalid prefix if that branch type would be
+
+        left disabled. Only the passed properties will be updated. The
+
+        properties not passed will be left unchanged. Each branch type must
+
+        have a `kind` property to identify it.
+      summary: Update the branching model config for a project
       responses:
         '200':
           description: The updated branching model configuration
@@ -1656,8 +1666,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/branching_model_settings'
               examples:
-                branching-model-settings_2:
-                  $ref: '#/components/examples/branching-model-settings_2'
+                response:
+                  value:
+                    development:
+                      use_mainbranch: true
+                    production:
+                      enabled: true
+                      use_mainbranch: false
+                      name: production
+                    branch_types:
+                      - kind: bugfix
+                        enabled: true
+                        prefix: bugfix/
+                      - kind: feature
+                        enabled: true
+                        prefix: feature/
+                      - kind: hotfix
+                        prefix: hotfix/
+                      - kind: release
+                        enabled: false
         '400':
           description: If the request contains an invalid branching model configuration
           content:
@@ -1692,12 +1719,6 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: updateTheBranchingModelConfigForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -1718,23 +1739,13 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/default-reviewers:
     get:
       tags:
-        - Lists
-        - Default
-        - Reviewers
-        - Projects
+        - - - - Projects
       description: >-
-        This API endpoint retrieves the list of default reviewers configured for
-        a specific project within a Bitbucket workspace. When accessed via a GET
-        request to
-        `/workspaces/{workspace}/projects/{project_key}/default-reviewers`, it
-        returns information about users who are automatically added as reviewers
-        to new pull requests in the specified project. The endpoint requires
-        both the workspace slug and project key as path parameters to identify
-        the target project. Default reviewers help streamline the code review
-        process by ensuring that designated team members are automatically
-        notified and assigned to review pull requests, maintaining consistency
-        in code quality oversight across the project.
-      summary: List The Default Reviewers In Project
+        Return a list of all default reviewers for a project. This is a list of
+        users that will be added as default
+
+        reviewers to pull requests for any repository within the project.
+      summary: List the default reviewers in a project
       responses:
         '200':
           description: The list of project default reviewers
@@ -1743,8 +1754,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_default_reviewer_and_type'
               examples:
-                paginated-default-reviewer-and-type:
-                  $ref: '#/components/examples/paginated-default-reviewer-and-type'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - user:
+                          display_name: Davis Lee
+                          uuid: '{f0e0e8e9-66c1-4b85-a784-44a9eb9ef1a6}'
+                        reviewer_type: project
+                        type: default_reviewer
+                      - user:
+                          display_name: Jorge Rodriguez
+                          uuid: '{1aa43376-260d-4a0b-9660-f62672b9655d}'
+                        reviewer_type: project
+                        type: default_reviewer
+                    page: 1
+                    size: 2
         '403':
           description: If the authenticated user does not have admin access to the project
           content:
@@ -1767,12 +1792,6 @@ paths:
           scheme: oauth2
           scopes:
             - read:pullrequest:bitbucket
-      operationId: listTheDefaultReviewersInProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -1793,27 +1812,23 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user}:
     delete:
       tags:
-        - Remove
-        - Specific
-        - Users
-        - Projects
-        - Default
-        - Reviewers
+        - - - - Projects
       description: >-
-        This API operation removes a specific user from the default reviewers
-        list for a given project within a Bitbucket workspace. When invoked, it
-        performs a DELETE request to the endpoint
-        /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user},
-        where the workspace parameter identifies the workspace containing the
-        project, project_key specifies the particular project, and selected_user
-        indicates the user to be removed from the default reviewers. Once
-        executed, the specified user will no longer be automatically added as a
-        reviewer for new pull requests created in that project, though existing
-        pull request assignments remain unaffected. This operation requires
-        appropriate administrative permissions for the project and helps teams
-        manage their code review workflows by controlling who is automatically
-        involved in the review process.
-      summary: Remove The Specific User From The Project S Default Reviewers
+        Removes a default reviewer from the project.
+
+
+        Example:
+
+        ```
+
+        $ curl
+        https://api.bitbucket.org/2.0/.../default-reviewers/%7Bf0e0e8e9-66c1-4b85-a784-44a9eb9ef1a6%7D
+
+
+        HTTP/1.1 204
+
+        ```
+      summary: Remove the specific user from the project's default reviewers
       responses:
         '204':
           description: >-
@@ -1847,28 +1862,11 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: removeTheSpecificUserFromTheProjectSDefaultReviewers
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Default
-      description: >-
-        This GET operation retrieves information about a specific default
-        reviewer for a project within a Bitbucket workspace. By providing the
-        workspace identifier, project key, and the selected user's identifier in
-        the endpoint path, the API returns details about that user's default
-        reviewer configuration for the specified project. Default reviewers are
-        automatically added to pull requests created within the project,
-        streamlining the code review process by ensuring appropriate team
-        members are notified of new changes. This endpoint is useful for
-        auditing reviewer assignments, verifying default reviewer settings, or
-        building administrative interfaces that manage project-level review
-        workflows in Bitbucket.
-      summary: Get Default Reviewer
+        - - - - Projects
+      description: Returns the specified default reviewer.
+      summary: Get a default reviewer
       responses:
         '200':
           description: The specified user that is a default reviewer
@@ -1877,8 +1875,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/user'
               examples:
-                user:
-                  $ref: '#/components/examples/user'
+                response:
+                  value:
+                    display_name: Davis Lee
+                    type: user
+                    uuid: '{f0e0e8e9-66c1-4b85-a784-44a9eb9ef1a6}'
         '400':
           description: If the specified user is not a default reviewer for the project
           content:
@@ -1907,30 +1908,16 @@ paths:
           scheme: oauth2
           scopes:
             - read:pullrequest:bitbucket
-      operationId: getDefaultReviewer
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Add
-        - Specific
-        - Users
-        - Default
-        - Projects
+        - - - - Projects
       description: >-
-        This PUT operation adds a specified user as a default reviewer for a
-        particular project within a Bitbucket workspace. By targeting the
-        endpoint with the workspace slug, project key, and the selected user's
-        identifier, it configures that user to be automatically added as a
-        reviewer on all new pull requests created in the project. This helps
-        streamline the code review process by ensuring designated team members
-        are consistently included in pull request reviews without manual
-        assignment, making it useful for maintaining quality control and
-        ensuring appropriate oversight across a project's development workflow.
-      summary: Add The Specific User As Default Reviewer For The Project
+        Adds the specified user to the project's list of default reviewers. The
+        method is
+
+        idempotent. Accepts an optional body containing the `uuid` of the user
+        to be added.
+      summary: Add the specific user as a default reviewer for the project
       responses:
         '200':
           description: The specified user was added as a project default reviewer
@@ -1939,8 +1926,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/user'
               examples:
-                user_2:
-                  $ref: '#/components/examples/user_2'
+                response:
+                  value:
+                    display_name: Yaniv Sagy
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/users/%7Bdd5db7f2-6389-458d-a62a-716773910b7a%7D
+                      avatar:
+                        href: https://secure.gravatar.com/avatar/YS-2.png
+                      html:
+                        href: >-
+                          https://api.bitbucket.org/%7Bdd5db7f2-6389-458d-a62a-716773910b7a%7D/
+                    type: user
+                    uuid: '{dd5db7f2-6389-458d-a62a-716773910b7a}'
+                    account_id: 712020:4efe52fa-b4b4-475b-9eb0-c0a23b7eb194
+                    nickname: Yaniv Sagy
         '400':
           description: >-
             If the specified user cannot be added as a default reviewer for the
@@ -1971,12 +1972,6 @@ paths:
           scheme: oauth2
           scopes:
             - admin:project:bitbucket
-      operationId: addTheSpecificUserAsDefaultReviewerForTheProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -2005,23 +2000,9 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/deploy-keys:
     get:
       tags:
-        - Lists
-        - Projects
-        - Deploy
-        - Keys
-      description: >-
-        This GET operation retrieves a paginated list of all deploy keys
-        configured for a specific project within a Bitbucket workspace. Deploy
-        keys are SSH keys that grant read-only or read-write access to project
-        repositories, commonly used for automated deployments and CI/CD
-        pipelines. The endpoint requires both the workspace slug and project key
-        as path parameters to identify the target project, and returns an array
-        of deploy key objects containing details such as the key ID, label,
-        public key value, creation date, and associated permissions. This allows
-        administrators and developers to audit which deploy keys have access to
-        their project's repositories and manage authentication credentials
-        programmatically.
-      summary: List Project Deploy Keys
+        - - - - Deployments
+      description: Returns all deploy keys belonging to a project.
+      summary: List project deploy keys
       responses:
         '200':
           description: Deploy keys matching the project
@@ -2030,8 +2011,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_project_deploy_keys'
               examples:
-                paginated-project-deploy-keys:
-                  $ref: '#/components/examples/paginated-project-deploy-keys'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - comment: thakseth@C02W454JHTD8
+                        last_used: null
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT/deploy-keys/1234
+                        label: test
+                        project:
+                          links:
+                            self:
+                              href: >-
+                                https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT
+                          type: project
+                          name: cooperative standard
+                          key: TEST_PROJECT
+                          uuid: '{3b3e510b-7f2b-414d-a2b7-76c4e405c1c0}'
+                        created_on: '2021-07-28T21:20:19.491721+00:00'
+                        key: >-
+                          ssh-rsa
+                          AAAAB3NzaC1yc2EAAAADAQABAAABAQDX5yfMOEw6HG9jKTYTisbmDTJ4MCUTSVGr5e4OWvY3UuI2A6F8SdzQqa2f5BABA/4g5Sk5awJrYHlNu3EzV1V2I44tR3A4fnZAG71ZKyDPi1wvdO7UYmFgxV/Vd18H9QZFFjICGDM7W0PT2mI0kON/jN3qNWi+GiB/xgaeQKSqynysdysDp8lnnI/8Sh3ikURP9UP83ShRCpAXszOUNaa+UUlcYQYBDLIGowsg51c4PCkC3DNhAMxppkNRKoSOWwyl+oRVXHSDylkiJSBHW3HH4Q6WHieD54kGrjbhWBKdnnxKX7QAAZBDseY+t01N36m6/ljvXSUEcBWtHxBYye0r
+                        type: project_deploy_key
+                        id: 1234
+                    page: 1
+                    size: 1
         '403':
           description: >-
             If the specified workspace or project is not accessible to the
@@ -2052,33 +2059,33 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: listProjectDeployKeys
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     post:
       tags:
-        - Create
-        - Projects
-        - Deploy
-        - Keys
+        - - - - Deployments
       description: >-
-        This API operation creates a new deploy key for a specific project
-        within a Bitbucket workspace, allowing secure, read-only SSH access to
-        repositories within that project. By making a POST request to the
-        endpoint with the workspace slug and project key as path parameters,
-        users can generate an SSH key that can be used for automated deployments
-        or CI/CD pipelines without requiring personal credentials. The deploy
-        key is scoped to the project level, meaning it can access all
-        repositories within the specified project, and the request body
-        typically includes the SSH public key content and an optional label for
-        identification purposes. This is particularly useful for granting
-        automated systems or external services controlled access to project
-        repositories for deployment purposes while maintaining security best
-        practices by avoiding the use of user account credentials.
-      summary: Create Project Deploy Key
+        Create a new deploy key in a project.
+
+
+        Example:
+
+        ```
+
+        $ curl -X POST \
+
+        -H "Authorization <auth header>" \
+
+        -H "Content-type: application/json" \
+
+        https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT/deploy-keys/
+        -d \
+
+        '{
+            "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAK/b1cHHDr/TEV1JGQl+WjCwStKG6Bhrv0rFpEsYlyTBm1fzN0VOJJYn4ZOPCPJwqse6fGbXntEs+BbXiptR+++HycVgl65TMR0b5ul5AgwrVdZdT7qjCOCgaSV74/9xlHDK8oqgGnfA7ZoBBU+qpVyaloSjBdJfLtPY/xqj4yHnXKYzrtn/uFc4Kp9Tb7PUg9Io3qohSTGJGVHnsVblq/rToJG7L5xIo0OxK0SJSQ5vuId93ZuFZrCNMXj8JDHZeSEtjJzpRCBEXHxpOPhAcbm4MzULgkFHhAVgp4JbkrT99/wpvZ7r9AdkTg7HGqL3rlaDrEcWfL7Lu6TnhBdq5 mleu@C02W454JHTD8",
+            "label": "mydeploykey"
+        }'
+
+        ```
+      summary: Create a project deploy key
       responses:
         '200':
           description: The project deploy key that was created
@@ -2087,8 +2094,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_deploy_key'
               examples:
-                project-deploy-key:
-                  $ref: '#/components/examples/project-deploy-key'
+                response:
+                  value:
+                    comment: mleu@C02W454JHTD8
+                    last_used: null
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT/deploy-keys/5/
+                    label: myprojectkey
+                    project:
+                      links:
+                        self:
+                          href: >-
+                            https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT
+                      type: project
+                      name: cooperative standard
+                      key: TEST_PROJECT
+                      uuid: '{3b3e510b-7f2b-414d-a2b7-76c4e405c1c0}'
+                    created_on: '2021-08-10T05:28:00.570859+00:00'
+                    key: >-
+                      ssh-rsa
+                      AAAAB3NzaC1yc2EAAAADAQABAAABAQDAK/b1cHHDr/TEV1JGQl+WjCwStKG6Bhrv0rFpEsYlyTBm1fzN0VOJJYn4ZOPCPJwqse6fGbXntEs+BbXiptR+++HycVgl65TMR0b5ul5AgwrVdZdT7qjCOCgaSV74/9xlHDK8oqgGnfA7ZoBBU+qpVyaloSjBdJfLtPY/xqj4yHnXKYzrtn/uFc4Kp9Tb7PUg9Io3qohSTGJGVHnsVblq/rToJG7L5xIo0OxK0SJSQ5vuId93ZuFZrCNMXj8JDHZeSEtjJzpRCBEXHxpOPhAcbm4MzULgkFHhAVgp4JbkrT99/wpvZ7r9AdkTg7HGqL3rlaDrEcWfL7Lu6TnhBdq5
+                    type: project_deploy_key
+                    id: 5
         '400':
           description: Invalid deploy key inputs
           content:
@@ -2115,12 +2144,6 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: createProjectDeployKey
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -2141,21 +2164,9 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/deploy-keys/{key_id}:
     delete:
       tags:
-        - Deployments
-      description: >-
-        This API operation removes a specific deploy key from a project within a
-        Bitbucket workspace by sending a DELETE request to the endpoint with the
-        workspace identifier, project key, and deploy key ID as path parameters.
-        Deploy keys are SSH keys that provide read-only or read-write access to
-        repositories, and deleting one revokes that key's access to all
-        repositories within the specified project. This is typically used when
-        rotating keys for security purposes, removing access for discontinued
-        services or team members, or cleaning up unused authentication
-        credentials. The operation requires appropriate administrative
-        permissions on the project and will permanently remove the deploy key
-        association, though it won't affect deploy keys in other projects that
-        may use the same SSH key.
-      summary: Delete Deploy Key From Project
+        - - - - Deployments
+      description: This deletes a deploy key from a project.
+      summary: Delete a deploy key from a project
       responses:
         '204':
           description: The project deploy key has been deleted
@@ -2181,27 +2192,11 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: deleteDeployKeyFromProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Projects
-        - Deploy
-        - Keys
-      description: >-
-        This API operation retrieves detailed information about a specific
-        deploy key that has been added to a project within a Bitbucket
-        workspace. By providing the workspace identifier, project key, and the
-        unique key ID, you can fetch the deploy key's properties including its
-        public SSH key content, label, creation date, and associated
-        permissions. Deploy keys are SSH keys that grant read-only or read-write
-        access to repositories within a project, commonly used for automated
-        deployments and CI/CD pipelines to securely access repository code
-        without requiring user credentials.
-      summary: Get Project Deploy Key
+        - - - - Deployments
+      description: Returns the deploy key belonging to a specific key ID.
+      summary: Get a project deploy key
       responses:
         '200':
           description: Project deploy key matching the key ID
@@ -2210,8 +2205,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_deploy_key'
               examples:
-                project-deploy-key_2:
-                  $ref: '#/components/examples/project-deploy-key_2'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - comment: thakseth@C02W454JHTD8
+                        last_used: null
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT/deploy-keys/1234
+                        label: test
+                        project:
+                          links:
+                            self:
+                              href: >-
+                                https://api.bitbucket.org/2.0/workspaces/standard/projects/TEST_PROJECT
+                          type: project
+                          name: cooperative standard
+                          key: TEST_PROJECT
+                          uuid: '{3b3e510b-7f2b-414d-a2b7-76c4e405c1c0}'
+                        created_on: '2021-07-28T21:20:19.491721+00:00'
+                        key: >-
+                          ssh-rsa
+                          AAAAB3NzaC1yc2EAAAADAQABAAABAQDX5yfMOEw6HG9jKTYTisbmDTJ4MCUTSVGr5e4OWvY3UuI2A6F8SdzQqa2f5BABA/4g5Sk5awJrYHlNu3EzV1V2I44tR3A4fnZAG71ZKyDPi1wvdO7UYmFgxV/Vd18H9QZFFjICGDM7W0PT2mI0kON/jN3qNWi+GiB/xgaeQKSqynysdysDp8lnnI/8Sh3ikURP9UP83ShRCpAXszOUNaa+UUlcYQYBDLIGowsg51c4PCkC3DNhAMxppkNRKoSOWwyl+oRVXHSDylkiJSBHW3HH4Q6WHieD54kGrjbhWBKdnnxKX7QAAZBDseY+t01N36m6/ljvXSUEcBWtHxBYye0r
+                        type: project_deploy_key
+                        id: 1234
         '403':
           description: >-
             If the specified workspace or project is not accessible to the
@@ -2232,12 +2251,6 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: getProjectDeployKey
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: key_id
         in: path
@@ -2264,25 +2277,13 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/groups:
     get:
       tags:
-        - Lists
-        - Explicit
-        - Groups
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API endpoint retrieves a paginated list of explicit group
-        permissions that have been directly granted to groups for a specific
-        project within a Bitbucket workspace. By making a GET request to this
-        endpoint with the workspace identifier and project key as path
-        parameters, you can view all groups that have been explicitly assigned
-        permissions to the project, along with their corresponding permission
-        levels. This is useful for auditing access control, understanding who
-        has what level of access to a project, and managing team permissions.
-        The response excludes inherited permissions and only shows permissions
-        that have been directly configured at the project level for groups,
-        making it easier to track and manage explicit access grants without the
-        noise of inherited permissions from workspace-level settings.
-      summary: List Explicit Group Permissions For Project
+        Returns a paginated list of explicit group permissions for the given
+        project.
+
+        This endpoint does not support BBQL features.
+      summary: List explicit group permissions for a project
       responses:
         '200':
           description: Paginated list of project group permissions
@@ -2291,8 +2292,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_project_group_permissions'
               examples:
-                paginated-project-group-permissions:
-                  $ref: '#/components/examples/paginated-project-group-permissions'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - type: project_group_permission
+                        group:
+                          type: group
+                          name: Administrators
+                          slug: administrators
+                        permission: admin
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/groups/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                      - type: project_group_permission
+                        group:
+                          type: group
+                          name: Developers
+                          slug: developers
+                        permission: write
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/groups/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324c
+                    page: 1
+                    size: 2
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -2324,12 +2349,6 @@ paths:
           scopes:
             - read:project:bitbucket
             - read:user:bitbucket
-      operationId: listExplicitGroupPermissionsForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -2350,24 +2369,15 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/groups/{group_slug}:
     delete:
       tags:
-        - Delete
-        - Explicit
-        - Groups
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation removes an explicitly granted group permission from a
-        specific project within a Bitbucket workspace by sending a DELETE
-        request to the designated endpoint, which requires the workspace
-        identifier, project key, and group slug as path parameters to target the
-        exact permission configuration that needs to be revoked, effectively
-        revoking that group's direct access rights to the project while
-        potentially leaving inherited or other permission types intact, allowing
-        workspace administrators to maintain granular control over project-level
-        access by selectively removing group permissions without affecting
-        individual user permissions or other security settings associated with
-        the project.
-      summary: Delete An Explicit Group Permission For Project
+        Deletes the project group permission between the requested project and
+        group, if one exists.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+      summary: Delete an explicit group permission for a project
       responses:
         '204':
           description: The project group permission was deleted and no content returned.
@@ -2399,30 +2409,30 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: deleteAnExplicitGroupPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Explicit
-        - Groups
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation retrieves the explicit permission settings assigned
-        to a specific group for a particular project within a Bitbucket
-        workspace. By providing the workspace identifier, project key, and group
-        slug as path parameters, the endpoint returns detailed information about
-        what access level and permissions have been directly granted to that
-        group for the specified project. This is useful for auditing group-level
-        permissions, understanding access control configurations, and managing
-        team-based security policies within Bitbucket projects, as it shows only
-        the permissions explicitly set for the group rather than inherited or
-        default permissions.
-      summary: Get An Explicit Group Permission For Project
+        Returns the group permission for a given group and project.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `create-repo`
+
+        * `write`
+
+        * `read`
+
+        * `none`
+      summary: Get an explicit group permission for a project
       responses:
         '200':
           description: Project group permission
@@ -2431,8 +2441,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_group_permission'
               examples:
-                project-group-permission:
-                  $ref: '#/components/examples/project-group-permission'
+                response:
+                  value:
+                    type: project_group_permission
+                    group:
+                      type: group
+                      name: Administrators
+                      slug: administrators
+                    permission: admin
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/groups/administrators
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -2465,33 +2485,36 @@ paths:
           scopes:
             - read:project:bitbucket
             - read:user:bitbucket
-      operationId: getAnExplicitGroupPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Explicit
-        - Groups
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation updates the explicit permissions assigned to a
-        specific group within a Bitbucket project. By making a PUT request to
-        the endpoint with the workspace identifier, project key, and group slug,
-        administrators can modify the access level granted to that group for the
-        specified project. This allows for fine-grained control over project
-        permissions by adjusting what actions members of a particular group can
-        perform, such as read, write, or admin privileges. The operation
-        requires proper authentication and administrative rights within the
-        workspace, and it directly modifies the existing permission
-        configuration rather than creating a new one, making it useful for
-        maintaining and adjusting team access controls as project requirements
-        evolve.
-      summary: Update An Explicit Group Permission For Project
+        Updates the group permission, or grants a new permission if one does not
+        already exist.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+
+
+        Due to security concerns, the JWT and OAuth authentication methods are
+        unsupported.
+
+        This is to ensure integrations and add-ons are not allowed to change
+        permissions.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `create-repo`
+
+        * `write`
+
+        * `read`
+      summary: Update an explicit group permission for a project
       responses:
         '200':
           description: Project group permission updated.
@@ -2500,8 +2523,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_group_permission'
               examples:
-                project-group-permission_2:
-                  $ref: '#/components/examples/project-group-permission_2'
+                response:
+                  value:
+                    type: project_group_permission
+                    group:
+                      type: group
+                      name: Administrators
+                      slug: administrators
+                    permission: write
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/groups/administrators
         '400':
           description: >-
             No permission value was provided or the value is invalid(not one of
@@ -2549,12 +2582,6 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: updateAnExplicitGroupPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: group_slug
         in: path
@@ -2581,23 +2608,13 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/users:
     get:
       tags:
-        - Lists
-        - Explicit
-        - Users
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation retrieves a list of all users who have been
-        explicitly granted permissions for a specific project within a Bitbucket
-        workspace. By providing the workspace identifier and project key as path
-        parameters, the endpoint returns detailed information about individual
-        user permissions that have been directly assigned at the project level,
-        excluding any permissions inherited from group memberships or
-        workspace-level settings. This is useful for administrators who need to
-        audit project access, review security configurations, or understand the
-        granular permission structure for specific users within a particular
-        project in their Bitbucket Cloud instance.
-      summary: List Explicit User Permissions For Project
+        Returns a paginated list of explicit user permissions for the given
+        project.
+
+        This endpoint does not support BBQL features.
+      summary: List explicit user permissions for a project
       responses:
         '200':
           description: Paginated list of explicit user permissions.
@@ -2606,8 +2623,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/paginated_project_user_permissions'
               examples:
-                paginated-project-user-permissions:
-                  $ref: '#/components/examples/paginated-project-user-permissions'
+                response:
+                  value:
+                    pagelen: 10
+                    values:
+                      - type: project_user_permission
+                        user:
+                          type: user
+                          display_name: Colin Cameron
+                          uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
+                          account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                        permission: admin
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                      - type: project_user_permission
+                        user:
+                          type: user
+                          display_name: Sean Conaty
+                          uuid: '{504c3b62-8120-4f0c-a7bc-87800b9d6f70}'
+                          account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324c
+                        permission: write
+                        links:
+                          self:
+                            href: >-
+                              https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324c
+                    page: 1
+                    size: 2
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -2639,12 +2682,6 @@ paths:
           scopes:
             - read:project:bitbucket
             - read:user:bitbucket
-      operationId: listExplicitUserPermissionsForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -2665,22 +2702,22 @@ paths:
   /workspaces/{workspace}/projects/{project_key}/permissions-config/users/{selected_user_id}:
     delete:
       tags:
-        - Delete
-        - Explicit
-        - Users
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation removes an explicitly granted permission for a
-        specific user from a Bitbucket project within a workspace. By making a
-        DELETE request to the endpoint with the workspace identifier, project
-        key, and the target user's ID, administrators can revoke direct access
-        permissions that were previously assigned to that user for the specified
-        project. This is useful for managing user access control when team
-        members change roles, leave projects, or when permissions need to be
-        adjusted as part of security or organizational restructuring, ensuring
-        that only authorized users maintain access to project resources.
-      summary: Delete An Explicit User Permission For Project
+        Deletes the project user permission between the requested project and
+        user, if one exists.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+
+
+        Due to security concerns, the JWT and OAuth authentication methods are
+        unsupported.
+
+        This is to ensure integrations and add-ons are not allowed to change
+        permissions.
+      summary: Delete an explicit user permission for a project
       responses:
         '204':
           description: The project user permission was deleted and no content returned.
@@ -2712,31 +2749,30 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: deleteAnExplicitUserPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     get:
       tags:
-        - Get
-        - Explicit
-        - Users
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation retrieves the explicit permission settings for a
-        specific user within a designated project in a Bitbucket workspace. By
-        providing the workspace identifier, project key, and selected user ID in
-        the endpoint path, you can query the exact permission level that has
-        been directly assigned to that particular user for the project,
-        excluding any inherited permissions from groups or workspace-level
-        settings. The response returns details about the user's explicit project
-        access rights, which may include permissions such as read, write, or
-        admin capabilities that have been individually granted to them for that
-        specific project context.
-      summary: Get An Explicit User Permission For Project
+        Returns the explicit user permission for a given user and project.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `create-repo`
+
+        * `write`
+
+        * `read`
+
+        * `none`
+      summary: Get an explicit user permission for a project
       responses:
         '200':
           description: Explicit user permission for user and project
@@ -2745,8 +2781,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_user_permission'
               examples:
-                project-user-permission:
-                  $ref: '#/components/examples/project-user-permission'
+                response:
+                  value:
+                    type: project_user_permission
+                    user:
+                      type: user
+                      display_name: Colin Cameron
+                      uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
+                      account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                    permission: admin
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
         '401':
           description: The user couldn't be authenticated.
           content:
@@ -2779,31 +2826,39 @@ paths:
           scopes:
             - read:project:bitbucket
             - read:user:bitbucket
-      operationId: getAnExplicitUserPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     put:
       tags:
-        - Update
-        - Explicit
-        - Users
-        - Permissions
-        - Projects
+        - - - - Projects
       description: >-
-        This API operation updates an explicit user permission for a specific
-        project within a Bitbucket workspace by sending a PUT request to the
-        endpoint with the workspace slug, project key, and selected user ID as
-        path parameters. It allows administrators to modify the access level
-        granted to an individual user for a particular project, such as changing
-        their role from read-only to write access or adjusting other permission
-        settings. The operation replaces the existing permission configuration
-        for the specified user on that project with the new values provided in
-        the request body, enabling granular control over project-level access
-        rights for team members within the workspace.
-      summary: Update An Explicit User Permission For Project
+        Updates the explicit user permission for a given user and project. The
+        selected
+
+        user must be a member of the workspace, and cannot be the workspace
+        owner.
+
+
+        Only users with admin permission for the project may access this
+        resource.
+
+
+        Due to security concerns, the JWT and OAuth authentication methods are
+        unsupported.
+
+        This is to ensure integrations and add-ons are not allowed to change
+        permissions.
+
+
+        Permissions can be:
+
+
+        * `admin`
+
+        * `create-repo`
+
+        * `write`
+
+        * `read`
+      summary: Update an explicit user permission for a project
       responses:
         '200':
           description: Explicit user permission updated
@@ -2812,8 +2867,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/project_user_permission'
               examples:
-                project-user-permission_2:
-                  $ref: '#/components/examples/project-user-permission_2'
+                response:
+                  value:
+                    type: project_user_permission
+                    user:
+                      type: user
+                      display_name: Colin Cameron
+                      uuid: '{d301aafa-d676-4ee0-88be-962be7417567}'
+                      account_id: 557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
+                    permission: write
+                    links:
+                      self:
+                        href: >-
+                          https://api.bitbucket.org/2.0/workspaces/atlassian_tutorial/projects/PRJ/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a
         '400':
           description: >-
             No permission value was provided or the value is invalid (not one of
@@ -2861,12 +2927,6 @@ paths:
             - project:admin
         - basic: []
         - api_key: []
-      operationId: updateAnExplicitUserPermissionForProject
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
     parameters:
       - name: project_key
         in: path
@@ -2897,22 +2957,26 @@ paths:
   /workspaces/{workspace}/search/code:
     get:
       tags:
-        - Search
-        - Code
-        - Workspaces
-      summary: Search For Code In Workspace
-      description: >-
-        This GET endpoint allows you to search for code across repositories
-        within a specified Atlassian Bitbucket workspace. By providing the
-        workspace identifier in the path parameter, you can perform code
-        searches using query parameters to find specific strings, patterns, or
-        code snippets across all accessible repositories in that workspace. The
-        operation returns matching results that include file paths, repository
-        information, and code context where the search terms appear, making it
-        useful for developers who need to locate specific code implementations,
-        function definitions, or configuration settings across multiple
-        repositories within their workspace.
-      operationId: searchForCodeInWorkspace
+        - - - - Search
+      summary: Search for code in a workspace
+      description: |
+        Search for code in the repositories of the specified workspace.
+
+        Note that searches can match in the file's text (`content_matches`),
+        the path (`path_matches`), or both.
+
+        You can use the same syntax for the search query as in the UI.
+        E.g. to search for "foo" only within the repository "demo",
+        use the query parameter `search_query=foo+repo:demo`.
+
+        Similar to other APIs, you can request more fields using a
+        `fields` query parameter. E.g. to get some more information about
+        the repository of matched files, use the query parameter
+        `search_query=foo&fields=%2Bvalues.file.commit.repository`
+        (the `%2B` is a URL-encoded `+`).
+
+        Try `fields=%2Bvalues.*.*.*.*` to get an idea what's possible.
+      operationId: searchWorkspace
       parameters:
         - name: workspace
           in: path
@@ -2952,8 +3016,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/search_result_page'
               examples:
-                undefined_2:
-                  $ref: '#/components/examples/undefined_2'
+                response:
+                  value:
+                    size: 1
+                    page: 1
+                    pagelen: 10
+                    query_substituted: false
+                    values:
+                      - type: code_search_result
+                        content_match_count: 2
+                        content_matches:
+                          - lines:
+                              - line: 2
+                                segments: []
+                              - line: 3
+                                segments:
+                                  - text: 'def '
+                                  - text: foo
+                                    match: true
+                                  - text: '():'
+                              - line: 4
+                                segments:
+                                  - text: '    print("snek")'
+                              - line: 5
+                                segments: []
+                        path_matches:
+                          - text: src/
+                          - text: foo
+                            match: true
+                          - text: .py
+                        file:
+                          path: src/foo.py
+                          type: commit_file
+                          links:
+                            self:
+                              href: >-
+                                https://api.bitbucket.org/2.0/repositories/my-workspace/demo/src/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b/src/foo.py
         '400':
           description: |
             If the search request was invalid due to one of the
@@ -2995,13 +3093,7 @@ paths:
             - repository
         - basic: []
         - api_key: []
-      x-api-evangelist-processing:
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-        CaselCaseOperationIds: true
-tags:
-  - Workspaces
+tags: []
 x-revision: 3c039d08312e
 x-atlassian-narrative:
   documents:
@@ -3494,8 +3586,8 @@ x-atlassian-narrative:
         string being the name of a unique scope.
 
 
-        descriptor lacking the `scopes` element is implicitly assumed to require
-        all scopes and as a result, Bitbucket will require end users
+        A descriptor lacking the `scopes` element is implicitly assumed to
+        require all scopes and as a result, Bitbucket will require end users
         authorizing/installing the add-on
 
         to explicitly accept all scopes.
@@ -3789,7 +3881,7 @@ x-atlassian-narrative:
         For example:
 
 
-        - client can list all existing webhook subscriptions on a repository.
+        - A client can list all existing webhook subscriptions on a repository.
         The [`repository`](#repository) scope is not required.
 
         - Existing webhook subscriptions for the issue tracker on a repo can be
@@ -3855,7 +3947,7 @@ x-atlassian-narrative:
 
         When used for:
 
-        * **user-related APIs** — Gives read-only access to the user's account
+        * **user-related APIs**  Gives read-only access to the user's account
         information.
 
         Note that this doesn't include any ability to change any of the data.
@@ -3867,7 +3959,7 @@ x-atlassian-narrative:
           * full name
           * SSH keys
           * user groups
-        * **workspace-related APIs** — Grants access to view the workspace's:
+        * **workspace-related APIs**  Grants access to view the workspace's:
           * users
           * user permissions
           * projects
@@ -4143,7 +4235,7 @@ x-atlassian-narrative:
       description: Query the 2.0 API for specific objects
       icon: >-
         data:image/svg+xml;base64,b'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMTk0LjE5MTkgMTQ3LjYwOTIiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGlzb2xhdGlvbjogaXNvbGF0ZTsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjY2ZkNGRiOwogICAgICB9CgogICAgICAuY2xzLTMsIC5jbHMtNCB7CiAgICAgICAgZmlsbDogIzg3NzdkOTsKICAgICAgfQoKICAgICAgLmNscy00IHsKICAgICAgICBtaXgtYmxlbmQtbW9kZTogbXVsdGlwbHk7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogIzAwNjVmZjsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiAjY2NlMGZmOwogICAgICB9CgogICAgICAuY2xzLTcgewogICAgICAgIGZpbGw6IHVybCgjbGluZWFyLWdyYWRpZW50KTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGluZWFyLWdyYWRpZW50IiB4MT0iNDE2LjMwODIiIHkxPSI3NS4wNDc5IiB4Mj0iNTg0Ljg1NTYiIHkyPSI3NS4wNDc5IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKC00NDMuOTQ2NyAxMjMuMDY4Nikgcm90YXRlKC0xMy43OTc2KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIwLjY5MDgiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMC4xIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8dGl0bGU+TWFnbmlmeWluZyBHbGFzczwvdGl0bGU+CiAgPGcgY2xhc3M9ImNscy0xIj4KICAgIDxnIGlkPSJMYXllcl8yIiBkYXRhLW5hbWU9IkxheWVyIDIiPgogICAgICA8ZyBpZD0iT2JqZWN0cyI+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTMxLjExMjUsOTQuOTMwN2wtOS44ODc4LTUuOTg4OC04LjMyOTIsMTMuNzUxOSw5Ljg4NzgsNS45ODg4YTE1LjYwMywxNS42MDMsMCwwLDEsNS44OCw2LjM4MzVoMGExNS42MDMsMTUuNjAzLDAsMCwwLDUuODgsNi4zODM1bDQwLjExNDMsMjQuMjk2NGExMi44NjY0LDEyLjg2NjQsMCwwLDAsMTcuNjcwOS00LjM0aDBhMTIuODY2NCwxMi44NjY0LDAsMCwwLTQuMzQtMTcuNjcwOUwxNDcuODc0OSw5OS40MzkyYTE1LjYwMywxNS42MDMsMCwwLDAtOC4zODEyLTIuMjU0MmgwQTE1LjYwMywxNS42MDMsMCwwLDEsMTMxLjExMjUsOTQuOTMwN1oiLz4KICAgICAgICA8cGF0aCBpZD0iX1BhdGhfIiBkYXRhLW5hbWU9IiZsdDtQYXRoJmd0OyIgY2xhc3M9ImNscy0zIiBkPSJNMTMxLjExMjUsOTQuOTMwN2wtMy4wMTE4LTEuODI0MkE4LjAzODgsOC4wMzg4LDAsMCwwLDExNy4wNiw5NS44MTc4aDBhOC4wMzg4LDguMDM4OCwwLDAsMCwyLjcxMTMsMTEuMDQwNWwzLjAxMTgsMS44MjQyYTE1LjYwMywxNS42MDMsMCwwLDEsNS44OCw2LjM4MzVoMGExNS42MDMsMTUuNjAzLDAsMCwwLDUuODgsNi4zODM1bDQwLjExNDMsMjQuMjk2NGExMi44NjY0LDEyLjg2NjQsMCwwLDAsMTcuNjcwOS00LjM0aDBhMTIuODY2NCwxMi44NjY0LDAsMCwwLTQuMzQtMTcuNjcwOUwxNDcuODc0OSw5OS40MzkyYTE1LjYwMywxNS42MDMsMCwwLDAtOC4zODEyLTIuMjU0M2gwQTE1LjYwMywxNS42MDMsMCwwLDEsMTMxLjExMjUsOTQuOTMwN1oiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik0xMzkuMTQzNyw5Ny4xNzkyYTE1LjU5NzMsMTUuNTk3MywwLDAsMS04LjAzMTItMi4yNDg1bC0zLjAxMTgtMS44MjQyQTguMDM4OCw4LjAzODgsMCwwLDAsMTE3LjA2LDk1LjgxNzhoMGE4LjAzODgsOC4wMzg4LDAsMCwwLDIuNzExMywxMS4wNDA1bDMuMDExOCwxLjgyNDJhMTUuNTk3LDE1LjU5NywwLDAsMSw1LjcwNjksNi4wNjQ4LDY3Ljg0ODEsNjcuODQ4MSwwLDAsMCwxMC42NTM2LTE3LjU2ODFaIi8+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy01IiBkPSJNODMuMjUzNywxMzIuNTU2QTY3LjIzNDgsNjcuMjM0OCwwLDAsMSw5LjcxLDMyLjQyOTUsNjYuNzk3NCw2Ni43OTc0LDAsMCwxLDUxLjE4MzcsMS45NjY2bC4wMDA3LDBBNjYuNzk2Miw2Ni43OTYyLDAsMCwxLDEwMi4wNTEsOS43NTI1aDBBNjcuMjM0Niw2Ny4yMzQ2LDAsMCwxLDgzLjI1MzcsMTMyLjU1NloiLz4KICAgICAgICA8cGF0aCBpZD0iX1BhdGhfMiIgZGF0YS1uYW1lPSImbHQ7UGF0aCZndDsiIGNsYXNzPSJjbHMtNiIgZD0iTTIzLjQzOSw0MC43NDgyQTUxLjE5MDgsNTEuMTkwOCwwLDAsMCwxMTEuMDEsOTMuNzg4OSw1MS4xOTA4LDUxLjE5MDgsMCwwLDAsMjMuNDM5LDQwLjc0ODJaIi8+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy03IiBkPSJNNzkuNDMzLDExNi45ODJBNTEuMjE2Miw1MS4yMTYyLDAsMCwwLDExOC40MjQxLDY3LjAzN2E0OS4xMzkxLDQ5LjEzOTEsMCwwLDEtNS4wODY3LDIuMjc4OWMtMTUuNzAyOSw1Ljk2MDktMjkuNjg5NSwyLjExLTM2LjQ5ODcuMTMwOC0yMC40MzA3LTUuOTM5LTI0Ljc5LTE3LjM3ODUtMzkuMDQxNC0yNC41ODIzYTQ4LjMwOTIsNDguMzA5MiwwLDAsMC0xNC4wOTM5LTQuNTNjLS4wODYyLjEzOTUtLjE3OTMuMjczLS4yNjQ0LjQxMzVBNTEuMTkwNyw1MS4xOTA3LDAsMCwwLDc5LjQzMywxMTYuOTgyWiIvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4K'
-      body: "\nYou can query the 2.0 API for specific objects using a simple language which resembles SQL.\n\nNote that filtering and querying by username has been deprecated, due to privacy changes. \nSee the [announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-changes-gdpr/#changes-to-querying) \nfor details.\n\n\n\n* [Supported endpoints](#supported-endpoints)\n* [Operators](#operators)\n* [Data types](#data-types)\n* [Querying](#querying)\n* [Sorting query results](#sorting-query-results)\n\n-\n\n### Supported endpoints\n\nMost 2.0 API resources that return paginated collections of objects support a single, shared, generic querying language that is used to filter down a result set.\n\nThis includes, but is in no way limited to:\n\n    /2.0/repositories/{username}\n    /2.0/repositories/{username}/{slug}/refs\n    /2.0/repositories/{username}/{slug}/refs/branches\n    /2.0/repositories/{username}/{slug}/refs/tags\n    /2.0/repositories/{username}/{slug}/forks\n    /2.0/repositories/{username}/{slug}/src\n    /2.0/repositories/{username}/{slug}/issues\n    /2.0/repositories/{username}/{slug}/pullrequests\n\nFiltering and sorting supports several distinct operators and data types as well as basic features, like logical operators (AND, OR).\nAs examples, the following queries could be used on the issue tracker endpoint (`/2.0/repositories/{workspace}/{slug}/issues/`):\n\n\t(state = \"open\" OR state = \"new\") AND assignee = null\n\treporter.nickname != \"evzijst\" AND priority >= \"major\"\n\t(title ~ \"unicode\" OR content.raw ~ \"unicode\") AND created_on > 2015-10-04T14:00:00-07:00\n\nFilter queries can be added to the URL using the q=<query> query parameter. To sort the response, add sort=<field>. Note that the entire query string is put in the q parameter and hence needs to be URL-encoded as shown in the following example:\n\n\t/2.0/repositories/foo/bar/issues?q=state=\"new\"&sort=-updated_on\n\n\n### Operators\n\nFiltering and sorting supports the following operators:\n\n| Operator | Definition                     | Example                    |\n|-|--|-|\n| \"=\"      | test for equality              | `nickname = \"evzijst\"`     |\n| \"!=\"     | not equal                      | `is_private != true`       |\n| \"~\"      | case-insensitive text contains | `description ~ \"beef\"`     |\n| \"!~\"     | case-insensitive not contains  | `description !~ \"fubar\"`   |\n| \">\"      | greater than                   | `priority > \"major\"`       |\n| \">=\"     | greater than or equal          | `priority <= \"trivial\"`    |\n| \"<\"      | less than                      | `id < 1234`                |\n| \"<=\"     | less than or equal             | `updated_on <= 2015-03-04` |\n\n### Data types\n\nFiltering and sorting supports the following data types:\n\n| Type         | Description                             | Example       |\n|--|--||\n| **String**   | any text inside double quotes           | `\"foo\"`       |\n| **Number**   | arbitrary precision integers and floats | `1, -10.302`  |\n| **Null**     | to test for the absence of a value      | `null`        |\n| **boolean**  | the unquoted strings true or false      | `true, false` |\n| **datetime** | an unquoted [ISO-8601][iso-8601] date time string with the timezone offset, milliseconds and entire time component being optional | `2015-03-04T14:08:59.123+02:00`, `2015-03-04T14:08:59` Date time strings are assumed to be in UTC, unless an explicit timezone offset is provided |\n\n[https://en.wikipedia.org/wiki/ISO_8601]: /iso-8601\n\n### Querying\n\nObjects can be filtered based on their properties. In principle, every element in an object's JSON document schema can be used as a filter criterion.\n\nNote that while the array of objects in a paginated response is wrapped in an\nenvelope with a `values` element, this prefix should not be included in the\nquery fields (so use `/2.0/repositories/foo/bar/issues?q=state=\"new\"`, not\n`/2.0/repositories/foo/bar/issues?q=values.state=\"new\"`).\n\n\n### Examples\n\nFields that contain embedded instances of other object types (e.g. owner is an embedded user object, while parent is an embedded repository) can be traversed recursively. For instance:\n\n\tparent.owner.nickname = \"bitbucket\"\n\nTo find pull requests which merge into master, come from a fork of the repo rather than a branch inside the repo, and on which I am a reviewer:\n\n```\nsource.repository.full_name != \"main/repo\" AND state = \"OPEN\" AND reviewers.nickname = \"evzijst\" AND destination.branch.name = \"master\"\n```\n```\n/2.0/repositories/main/repo/pullrequests?q=source.repository.full_name+%21%3D+%22main%2Frepo%22+AND+state+%3D+%22OPEN%22+AND+reviewers.nickname+%3D+%22evzijst%22+AND+destination.branch.name+%3D+%22master%22\n```\n\nTo find new or on-hold issues related to the UI, created or updated in the last day (SF local time), that have not yet been assigned to anyone:\n\n```\n(state = \"new\" OR state = \"on hold\") AND assignee = null AND component = \"UI\" and updated_on > 2015-11-11T00:00:00-07:00\n```\n```\n/2.0/repositories/main/repo/issues?q=%28state+%3D+%22new%22+OR+state+%3D+%22on+hold%22%29+AND+assignee+%3D+null+AND+component+%3D+%22UI%22+and+updated_on+%3E+2015-11-11T00%3A00%3A00-07%3A00\n```\n\nTo find all tags with the string \"2015\" in the name:\n\n```\nname ~ \"2015\"\n```\n```\n/2.0/repositories/{username}/{slug}/refs/tags?q=name+%7E+%222015%22\n```\nOr all my branches:\n\n```\nname ~ \"erik/\"\n```\n```\n/2.0/repositories/{username}/{slug}/refs/?q=name+%7E+%22erik%2F%22\n```\n### Sorting query results\n\nYou can sort result sets using the ?sort=<field> query parameter, available on the same resources that support filtering:\n\n* In principle, every field that can be queried can also be used as a key for sorting.\n* By default the sort order is ascending. To reverse the order, prefix the field name with a hyphen (e.g. ?sort=-updated_on).\n* Only one field can be sorted on. Compound fields (e.g. sort on state first, followed by updated_on) are not supported.\n\n\n"
+      body: "\nYou can query the 2.0 API for specific objects using a simple language which resembles SQL.\n\nNote that filtering and querying by username has been deprecated, due to privacy changes. \nSee the [announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-changes-gdpr/#changes-to-querying) \nfor details.\n\n\n\n* [Supported endpoints](#supported-endpoints)\n* [Operators](#operators)\n* [Data types](#data-types)\n* [Querying](#querying)\n* [Sorting query results](#sorting-query-results)\n\n-\n\n### Supported endpoints\n\nMost 2.0 API resources that return paginated collections of objects support a single, shared, generic querying language that is used to filter down a result set.\n\nThis includes, but is in no way limited to:\n\n    /2.0/repositories/{username}\n    /2.0/repositories/{username}/{slug}/refs\n    /2.0/repositories/{username}/{slug}/refs/branches\n    /2.0/repositories/{username}/{slug}/refs/tags\n    /2.0/repositories/{username}/{slug}/forks\n    /2.0/repositories/{username}/{slug}/src\n    /2.0/repositories/{username}/{slug}/issues\n    /2.0/repositories/{username}/{slug}/pullrequests\n\nFiltering and sorting supports several distinct operators and data types as well as basic features, like logical operators (AND, OR).\nAs examples, the following queries could be used on the issue tracker endpoint (`/2.0/repositories/{workspace}/{slug}/issues/`):\n\n\t(state = \"open\" OR state = \"new\") AND assignee = null\n\treporter.nickname != \"evzijst\" AND priority >= \"major\"\n\t(title  \"unicode\" OR content.raw  \"unicode\") AND created_on > 2015-10-04T14:00:00-07:00\n\nFilter queries can be added to the URL using the q=<query> query parameter. To sort the response, add sort=<field>. Note that the entire query string is put in the q parameter and hence needs to be URL-encoded as shown in the following example:\n\n\t/2.0/repositories/foo/bar/issues?q=state=\"new\"&sort=-updated_on\n\n\n### Operators\n\nFiltering and sorting supports the following operators:\n\n| Operator | Definition                     | Example                    |\n|-|--|-|\n| \"=\"      | test for equality              | `nickname = \"evzijst\"`     |\n| \"!=\"     | not equal                      | `is_private != true`       |\n| \"\"      | case-insensitive text contains | `description  \"beef\"`     |\n| \"!\"     | case-insensitive not contains  | `description ! \"fubar\"`   |\n| \">\"      | greater than                   | `priority > \"major\"`       |\n| \">=\"     | greater than or equal          | `priority <= \"trivial\"`    |\n| \"<\"      | less than                      | `id < 1234`                |\n| \"<=\"     | less than or equal             | `updated_on <= 2015-03-04` |\n\n### Data types\n\nFiltering and sorting supports the following data types:\n\n| Type         | Description                             | Example       |\n|--|--||\n| **String**   | any text inside double quotes           | `\"foo\"`       |\n| **Number**   | arbitrary precision integers and floats | `1, -10.302`  |\n| **Null**     | to test for the absence of a value      | `null`        |\n| **boolean**  | the unquoted strings true or false      | `true, false` |\n| **datetime** | an unquoted [ISO-8601][iso-8601] date time string with the timezone offset, milliseconds and entire time component being optional | `2015-03-04T14:08:59.123+02:00`, `2015-03-04T14:08:59` Date time strings are assumed to be in UTC, unless an explicit timezone offset is provided |\n\n[https://en.wikipedia.org/wiki/ISO_8601]: /iso-8601\n\n### Querying\n\nObjects can be filtered based on their properties. In principle, every element in an object's JSON document schema can be used as a filter criterion.\n\nNote that while the array of objects in a paginated response is wrapped in an\nenvelope with a `values` element, this prefix should not be included in the\nquery fields (so use `/2.0/repositories/foo/bar/issues?q=state=\"new\"`, not\n`/2.0/repositories/foo/bar/issues?q=values.state=\"new\"`).\n\n\n### Examples\n\nFields that contain embedded instances of other object types (e.g. owner is an embedded user object, while parent is an embedded repository) can be traversed recursively. For instance:\n\n\tparent.owner.nickname = \"bitbucket\"\n\nTo find pull requests which merge into master, come from a fork of the repo rather than a branch inside the repo, and on which I am a reviewer:\n\n```\nsource.repository.full_name != \"main/repo\" AND state = \"OPEN\" AND reviewers.nickname = \"evzijst\" AND destination.branch.name = \"master\"\n```\n```\n/2.0/repositories/main/repo/pullrequests?q=source.repository.full_name+%21%3D+%22main%2Frepo%22+AND+state+%3D+%22OPEN%22+AND+reviewers.nickname+%3D+%22evzijst%22+AND+destination.branch.name+%3D+%22master%22\n```\n\nTo find new or on-hold issues related to the UI, created or updated in the last day (SF local time), that have not yet been assigned to anyone:\n\n```\n(state = \"new\" OR state = \"on hold\") AND assignee = null AND component = \"UI\" and updated_on > 2015-11-11T00:00:00-07:00\n```\n```\n/2.0/repositories/main/repo/issues?q=%28state+%3D+%22new%22+OR+state+%3D+%22on+hold%22%29+AND+assignee+%3D+null+AND+component+%3D+%22UI%22+and+updated_on+%3E+2015-11-11T00%3A00%3A00-07%3A00\n```\n\nTo find all tags with the string \"2015\" in the name:\n\n```\nname  \"2015\"\n```\n```\n/2.0/repositories/{username}/{slug}/refs/tags?q=name+%7E+%222015%22\n```\nOr all my branches:\n\n```\nname  \"erik/\"\n```\n```\n/2.0/repositories/{username}/{slug}/refs/?q=name+%7E+%22erik%2F%22\n```\n### Sorting query results\n\nYou can sort result sets using the ?sort=<field> query parameter, available on the same resources that support filtering:\n\n* In principle, every field that can be queried can also be used as a key for sorting.\n* By default the sort order is ascending. To reverse the order, prefix the field name with a hyphen (e.g. ?sort=-updated_on).\n* Only one field can be sorted on. Compound fields (e.g. sort on state first, followed by updated_on) are not supported.\n\n\n"
     - anchor: pagination
       title: Pagination
       description: Learn more about pagination
@@ -4220,7 +4312,7 @@ x-atlassian-narrative:
         collection does not have this value. Use this link to navigate the
         result set and refrain from constructing your own URLs. |
 
-        | `previous` | Link to previous page if it exists. collections first
+        | `previous` | Link to previous page if it exists. A collections first
         page does not have this value. This is an optional element that is not
         provided in all responses. Some result sets strictly support forward
         navigation and never provide previous links. Clients must anticipate
@@ -4247,7 +4339,7 @@ x-atlassian-narrative:
         like /foo/bar?page=4.
 
 
-        However, not all result sets can be treated as immutable and finite –
+        However, not all result sets can be treated as immutable and finite 
         much like how programming languages tend to distinguish between lists
         and arrays on one hand and iterators or stream on the other. Where an
         list-based pagination offers random access into any point in a
@@ -4715,7 +4807,7 @@ x-atlassian-narrative:
         #### HTTP methods
 
 
-        given endpoint or resource has a series of actions (or methods)
+        A given endpoint or resource has a series of actions (or methods)
         associated with it. The Bitbucket service supports these standard HTTP
         methods:
 
@@ -5146,7 +5238,7 @@ x-atlassian-narrative:
 
         ||-|
 
-        | message | short description of the problem. This element is always
+        | message | A short description of the problem. This element is always
         present. Its value may be localized. |
 
         | fields  | This optional element is used in response to POST or PUT
@@ -5357,7 +5449,7 @@ x-atlassian-narrative:
         responses.
 
 
-        link's key is its `rel` (relationship) attribute and it contains a
+        A link's key is its `rel` (relationship) attribute and it contains a
         mandatory href element. For example, the following link:
 
 
@@ -5371,7 +5463,7 @@ x-atlassian-narrative:
 
 
         The rel for this link is self and the href is
-        https://api.bitbucket.org/api/2.0/users/tutorials. single rel key can
+        https://api.bitbucket.org/api/2.0/users/tutorials. A single rel key can
         contain an list (array) of href objects. Your client should anticipate
         that any rel key can contain one or more href objects.
 
@@ -6573,1194 +6665,3 @@ components:
           readOnly: true
           items:
             $ref: '#/components/schemas/search_code_search_result'
-    repository_permission:
-      type: object
-      title: Repository Permission
-      description: A user's permission for a given repository.
-      properties:
-        type:
-          type: string
-        permission:
-          type: string
-          enum:
-            - read
-            - write
-            - admin
-            - none
-        user:
-          $ref: '#/components/schemas/user'
-        repository:
-          $ref: '#/components/schemas/repository'
-      required:
-        - type
-      additionalProperties: true
-    default_reviewer_and_type:
-      type: object
-      title: Default Reviewer and Type
-      description: >-
-        Object containing a user that is a default reviewer and the type of
-        reviewer
-      properties:
-        type:
-          type: string
-        reviewer_type:
-          type: string
-        user:
-          $ref: '#/components/schemas/user'
-      required:
-        - type
-      additionalProperties: true
-    group:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Group
-          description: A group object
-          properties:
-            links:
-              type: object
-              properties:
-                self:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                html:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-              additionalProperties: false
-            owner:
-              $ref: '#/components/schemas/account'
-            workspace:
-              $ref: '#/components/schemas/workspace'
-            name:
-              type: string
-            slug:
-              type: string
-              description: >-
-                The "sluggified" version of the group's name. This contains only
-                ASCII
-
-                characters and can therefore be slightly different than the name
-            full_slug:
-              type: string
-              description: |
-                The concatenation of the workspace's slug and the group's slug,
-                separated with a colon (e.g. `acme:developers`)
-          additionalProperties: true
-    search_code_search_result:
-      type: object
-      properties:
-        type:
-          type: string
-          readOnly: true
-        content_match_count:
-          type: integer
-          format: int64
-          readOnly: true
-        content_matches:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_content_match'
-        path_matches:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_segment'
-        file:
-          $ref: '#/components/schemas/commit_file'
-    error:
-      type: object
-      title: Error
-      description: >-
-        Base type for most resource objects. It defines the common `type`
-        element that identifies an object's type. It also identifies the element
-        as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            detail:
-              type: string
-            data:
-              type: object
-              description: Optional structured data that is endpoint-specific.
-              properties: {}
-              additionalProperties: true
-          required:
-            - message
-          additionalProperties: false
-      required:
-        - type
-      additionalProperties: true
-    object:
-      type: object
-      description: >-
-        Base type for most resource objects. It defines the common `type`
-        element that identifies an object's type. It also identifies the element
-        as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-      required:
-        - type
-      additionalProperties: true
-      discriminator:
-        propertyName: type
-    account:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Account
-          description: An account object.
-          properties:
-            links:
-              $ref: '#/components/schemas/account_links'
-            created_on:
-              type: string
-              format: date-time
-            display_name:
-              type: string
-            username:
-              type: string
-              pattern: ^[a-zA-Z0-9_\-]+$
-            uuid:
-              type: string
-          additionalProperties: true
-    team:
-      allOf:
-        - $ref: '#/components/schemas/account'
-        - type: object
-          title: Team
-          description: A team object.
-          properties:
-            links:
-              $ref: '#/components/schemas/team_links'
-          additionalProperties: true
-    user_links:
-      allOf:
-        - $ref: '#/components/schemas/account_links'
-        - type: object
-          title: User Links
-          description: Links related to a User.
-          properties:
-            self:
-              $ref: '#/components/schemas/link'
-            html:
-              $ref: '#/components/schemas/link'
-            repositories:
-              $ref: '#/components/schemas/link'
-          additionalProperties: true
-    repository:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Repository
-          description: A Bitbucket repository.
-          properties:
-            links:
-              type: object
-              properties:
-                self:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                html:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                avatar:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                pullrequests:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                commits:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                forks:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                watchers:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                downloads:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-                clone:
-                  type: array
-                  items:
-                    type: object
-                    title: Link
-                    description: A link to a resource related to this object.
-                    properties:
-                      href:
-                        type: string
-                        format: uri
-                      name:
-                        type: string
-                    additionalProperties: false
-                hooks:
-                  type: object
-                  title: Link
-                  description: A link to a resource related to this object.
-                  properties:
-                    href:
-                      type: string
-                      format: uri
-                    name:
-                      type: string
-                  additionalProperties: false
-              additionalProperties: false
-            uuid:
-              type: string
-              description: >-
-                The repository's immutable id. This can be used as a substitute
-                for the slug segment in URLs. Doing this guarantees your URLs
-                will survive renaming of the repository by its owner, or even
-                transfer of the repository to a different user.
-            full_name:
-              type: string
-              description: >-
-                The concatenation of the repository owner's username and the
-                slugified name, e.g. "evzijst/interruptingcow". This is the same
-                string used in Bitbucket URLs.
-            is_private:
-              type: boolean
-            parent:
-              $ref: '#/components/schemas/repository'
-            scm:
-              type: string
-              enum:
-                - git
-            owner:
-              $ref: '#/components/schemas/account'
-            name:
-              type: string
-            description:
-              type: string
-            created_on:
-              type: string
-              format: date-time
-            updated_on:
-              type: string
-              format: date-time
-            size:
-              type: integer
-            language:
-              type: string
-            has_issues:
-              type: boolean
-              description: |
-
-                The issue tracker for this repository is enabled. Issue Tracker
-                features are not supported for repositories in workspaces
-                administered through admin.atlassian.com.
-            has_wiki:
-              type: boolean
-              description: |
-
-                The wiki for this repository is enabled. Wiki
-                features are not supported for repositories in workspaces
-                administered through admin.atlassian.com.
-            fork_policy:
-              type: string
-              description: >
-
-                Controls the rules for forking this repository.
-
-
-                * **allow_forks**: unrestricted forking
-
-                * **no_public_forks**: restrict forking to private forks (forks
-                cannot
-                  be made public later)
-                * **no_forks**: deny all forking
-              enum:
-                - allow_forks
-                - no_public_forks
-                - no_forks
-            project:
-              $ref: '#/components/schemas/project'
-            mainbranch:
-              $ref: '#/components/schemas/branch'
-          additionalProperties: true
-    search_content_match:
-      type: object
-      properties:
-        lines:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_line'
-    search_segment:
-      type: object
-      properties:
-        text:
-          type: string
-          readOnly: true
-        match:
-          type: boolean
-          readOnly: true
-    commit_file:
-      type: object
-      title: Commit File
-      description: A file object, representing a file at a commit in a repository
-      properties:
-        type:
-          type: string
-        path:
-          type: string
-          description: The path in the repository
-        commit:
-          $ref: '#/components/schemas/commit'
-        attributes:
-          type: string
-          enum:
-            - link
-            - executable
-            - subrepository
-            - binary
-            - lfs
-        escaped_path:
-          type: string
-          description: >-
-            The escaped version of the path as it appears in a diff. If the path
-            does not require escaping this will be the same as path.
-      required:
-        - type
-      additionalProperties: true
-    search_line:
-      type: object
-      properties:
-        line:
-          type: integer
-          format: int32
-          readOnly: true
-        segments:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_segment'
-    commit:
-      allOf:
-        - $ref: '#/components/schemas/base_commit'
-        - type: object
-          title: Commit
-          description: A repository commit object.
-          properties:
-            repository:
-              $ref: '#/components/schemas/repository'
-            participants:
-              type: array
-              items:
-                $ref: '#/components/schemas/participant'
-              minItems: 0
-          additionalProperties: true
-    account_links:
-      type: object
-      title: Account Links
-      description: Links related to an Account.
-      properties:
-        avatar:
-          $ref: '#/components/schemas/link'
-      additionalProperties: true
-    team_links:
-      allOf:
-        - $ref: '#/components/schemas/account_links'
-        - type: object
-          title: Team Links
-          description: Links related to a Team.
-          properties:
-            self:
-              $ref: '#/components/schemas/link'
-            html:
-              $ref: '#/components/schemas/link'
-            members:
-              $ref: '#/components/schemas/link'
-            projects:
-              $ref: '#/components/schemas/link'
-            repositories:
-              $ref: '#/components/schemas/link'
-          additionalProperties: true
-    link:
-      type: object
-      title: Link
-      description: A link to a resource related to this object.
-      properties:
-        href:
-          type: string
-          format: uri
-        name:
-          type: string
-      additionalProperties: false
-    branch:
-      allOf:
-        - $ref: '#/components/schemas/ref'
-        - type: object
-          title: Branch
-          description: A branch object, representing a branch in a repository.
-          properties:
-            merge_strategies:
-              type: array
-              description: >-
-                Available merge strategies for pull requests targeting this
-                branch.
-              items:
-                type: string
-                enum:
-                  - merge_commit
-                  - squash
-                  - fast_forward
-            default_merge_strategy:
-              type: string
-              description: >-
-                The default merge strategy for pull requests targeting this
-                branch.
-          additionalProperties: true
-    base_commit:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Base Commit
-          description: The common base type for both repository and snippet commits.
-          properties:
-            hash:
-              type: string
-              pattern: '[0-9a-f]{7,}?'
-            date:
-              type: string
-              format: date-time
-            author:
-              $ref: '#/components/schemas/author'
-            message:
-              type: string
-            summary:
-              type: object
-              properties:
-                raw:
-                  type: string
-                  description: The text as it was typed by a user.
-                markup:
-                  type: string
-                  description: >-
-                    The type of markup language the raw content is to be
-                    interpreted in.
-                  enum:
-                    - markdown
-                    - creole
-                    - plaintext
-                html:
-                  type: string
-                  description: The user's content rendered as HTML.
-              additionalProperties: false
-            parents:
-              type: array
-              items:
-                $ref: '#/components/schemas/base_commit'
-              minItems: 0
-          additionalProperties: true
-    participant:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Participant
-          description: >-
-            Object describing a user's role on resources like commits or pull
-            requests.
-          properties:
-            user:
-              $ref: '#/components/schemas/account'
-            role:
-              type: string
-              enum:
-                - PARTICIPANT
-                - REVIEWER
-            approved:
-              type: boolean
-            state:
-              type: string
-              enum:
-                - approved
-                - changes_requested
-                - null
-            participated_on:
-              type: string
-              description: >-
-                The ISO8601 timestamp of the participant's action. For
-                approvers, this is the time of their approval. For commenters
-                and pull request reviewers who are not approvers, this is the
-                time they last commented, or null if they have not commented.
-              format: date-time
-          additionalProperties: true
-    ref:
-      type: object
-      title: Ref
-      description: A ref object, representing a branch or tag in a repository.
-      properties:
-        type:
-          type: string
-        links:
-          type: object
-          properties:
-            self:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-            commits:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-            html:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-          additionalProperties: false
-        name:
-          type: string
-          description: The name of the ref.
-        target:
-          $ref: '#/components/schemas/commit'
-      required:
-        - type
-      additionalProperties: true
-    author:
-      allOf:
-        - $ref: '#/components/schemas/object'
-        - type: object
-          title: Author
-          description: The author of a change in a repository
-          properties:
-            raw:
-              type: string
-              description: >-
-                The raw author value from the repository. This may be the only
-                value available if the author does not match a user in
-                Bitbucket.
-            user:
-              $ref: '#/components/schemas/account'
-          additionalProperties: true
-  examples:
-    workspace:
-      links:
-        avatar:
-          href: https://bitbucket.org/workspaces/example-workspace/avatar
-          name: Avatar
-        html:
-          href: https://bitbucket.org/example-workspace
-          name: HTML
-        members:
-          href: https://api.bitbucket.org/2.0/workspaces/example-workspace/members
-          name: Members
-        owners:
-          href: https://api.bitbucket.org/2.0/workspaces/example-workspace/owners
-          name: Owners
-        projects:
-          href: https://api.bitbucket.org/2.0/workspaces/example-workspace/projects
-          name: Projects
-        repositories:
-          href: https://api.bitbucket.org/2.0/repositories/example-workspace
-          name: Repositories
-        snippets:
-          href: https://api.bitbucket.org/2.0/snippets/example-workspace
-          name: Snippets
-        self:
-          href: https://api.bitbucket.org/2.0/workspaces/example-workspace
-          name: Self
-      uuid: '{1234abcd-12ab-34cd-56ef-1234567890ab}'
-      name: Example Workspace
-      slug: example-workspace
-      is_private: false
-      created_on: '2023-01-15T10:30:00Z'
-      updated_on: '2024-01-20T14:45:30Z'
-    paginated-webhook-subscriptions:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/webhooks?page=2
-      previous: https://api.example.com/webhooks?page=0
-      values:
-        uuid: 550e8400-e29b-41d4-a716-446655440000
-        url: https://example.com/webhook/endpoint
-        description: Webhook for monitoring pull request events
-        subject_type: repository
-        subject: {}
-        active: true
-        created_at: '2024-01-15T10:30:00Z'
-        events:
-          - pullrequest:created
-          - pullrequest:approved
-          - repo:push
-        secret_set: true
-        secret: my-webhook-secret-key
-    webhook-subscription:
-      uuid: '{d7bb1ebe-7e0c-4a2f-9b4a-1c8e9f0a2b3c}'
-      url: https://example.com/webhooks/bitbucket
-      description: Webhook for monitoring pull request activities
-      subject_type: repository
-      subject:
-        type: repository
-        name: my-repo
-      active: true
-      created_at: '2024-01-15T10:30:00Z'
-      events:
-        - pullrequest:created
-        - pullrequest:updated
-        - pullrequest:approved
-        - pullrequest:fulfilled
-        - repo:push
-      secret_set: true
-      secret: my-webhook-secret-key-123
-    webhook-subscription_2:
-      uuid: '{d6a8e1a7-8b5c-4f3e-9d2a-1b3c4d5e6f7a}'
-      url: https://example.com/webhook
-      description: Webhook for pull request events
-      subject_type: repository
-      subject: {}
-      active: true
-      created_at: '2024-01-15T10:30:00Z'
-      events:
-        - pullrequest:created
-        - pullrequest:updated
-        - pullrequest:approved
-        - repo:push
-      secret_set: true
-      secret: my-webhook-secret-key-123
-    paginated-workspace-memberships:
-      size: 50
-      page: 1
-      pagelen: 10
-      next: https://api.bitbucket.org/2.0/workspaces/my-workspace/members?page=2
-      previous: https://api.bitbucket.org/2.0/workspaces/my-workspace/members?page=0
-      values:
-        links:
-          self:
-            href: >-
-              https://api.bitbucket.org/2.0/workspaces/my-workspace/members/john-doe
-            name: workspace-membership
-        user:
-          type: user
-          uuid: '{12345678-1234-1234-1234-123456789abc}'
-          username: john-doe
-          display_name: John Doe
-        workspace:
-          type: workspace
-          uuid: '{87654321-4321-4321-4321-cba987654321}'
-          slug: my-workspace
-          name: My Workspace
-    workspace-membership:
-      links:
-        self:
-          href: >-
-            https://api.bitbucket.org/2.0/workspaces/my-workspace/members/john-doe
-          name: self
-      user:
-        type: user
-        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-        display_name: John Doe
-        username: john-doe
-      workspace:
-        type: workspace
-        uuid: '{b2c3d4e5-f6a7-8901-bcde-f12345678901}'
-        name: My Workspace
-        slug: my-workspace
-    paginated-workspace-memberships_2:
-      size: 50
-      page: 1
-      pagelen: 10
-      next: https://api.bitbucket.org/2.0/workspaces/my-workspace/members?page=2
-      previous: https://api.bitbucket.org/2.0/workspaces/my-workspace/members?page=0
-      values:
-        links:
-          self:
-            href: >-
-              https://api.bitbucket.org/2.0/workspaces/my-workspace/members/john-doe
-            name: John Doe Membership
-        user:
-          type: user
-          uuid: '{123e4567-e89b-12d3-a456-426614174000}'
-          username: john-doe
-          display_name: John Doe
-        workspace:
-          type: workspace
-          uuid: '{987fcdeb-51a2-43f7-b890-123456789abc}'
-          slug: my-workspace
-          name: My Workspace
-    paginated-repository-permissions:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/repositories/permissions?page=2
-      previous: https://api.example.com/repositories/permissions?page=0
-      values: {}
-    paginated-repository-permissions_2:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/repositories/permissions?page=2
-      previous: https://api.example.com/repositories/permissions?page=0
-      values: {}
-    paginated-pipeline-variables:
-      page: 1
-      values:
-        uuid: 550e8400-e29b-41d4-a716-446655440000
-        key: DATABASE_URL
-        value: postgresql://localhost:5432/mydb
-        secured: false
-      size: 50
-      pagelen: 10
-      next: >-
-        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/pipelines_config/variables?page=2
-      previous: >-
-        https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/pipelines_config/variables?page=0
-    pipeline-variable:
-      uuid: 123e4567-e89b-12d3-a456-426614174000
-      key: DATABASE_URL
-      value: postgresql://localhost:5432/mydb
-      secured: false
-    pipeline-variable_2:
-      uuid: 3c7f0a9e-5b2d-4e8f-9a1c-6d4e2f8b3a7e
-      key: DATABASE_URL
-      value: https://example.com/db
-      secured: false
-    undefined: {}
-    paginated-projects:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.bitbucket.org/2.0/workspaces/myworkspace/projects?page=2
-      previous: https://api.bitbucket.org/2.0/workspaces/myworkspace/projects?page=0
-      values:
-        links:
-          html:
-            href: https://bitbucket.org/myworkspace/myproject
-            name: Project Home
-          avatar:
-            href: https://bitbucket.org/account/myworkspace/projects/PROJ/avatar/32
-            name: Avatar
-        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-        key: PROJ
-        owner: {}
-        name: My Project
-        description: This is an example project for organizing repositories
-        is_private: true
-        created_on: '2023-01-15T10:30:00Z'
-        updated_on: '2024-01-10T14:45:00Z'
-        has_publicly_visible_repos: false
-    project:
-      links:
-        html:
-          href: https://bitbucket.org/projects/example-project
-          name: Example Project
-        avatar:
-          href: https://bitbucket.org/account/example-project/avatar/32
-          name: Avatar
-      uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-      key: PROJ
-      owner:
-        type: team
-        uuid: '{12345678-90ab-cdef-1234-567890abcdef}'
-        username: example-team
-        display_name: Example Team
-      name: Example Project
-      description: This is an example project for organizing repositories
-      is_private: true
-      created_on: '2023-01-15T10:30:00Z'
-      updated_on: '2024-01-20T14:45:00Z'
-      has_publicly_visible_repos: false
-    project_2:
-      links:
-        html:
-          href: https://bitbucket.org/projects/example-project
-          name: Example Project
-        avatar:
-          href: https://bitbucket.org/projects/example-project/avatar.png
-          name: Project Avatar
-      uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-      key: PROJ
-      owner:
-        type: team
-        uuid: '{b2c3d4e5-f6a7-8901-bcde-f12345678901}'
-        username: example-team
-        display_name: Example Team
-      name: Example Project
-      description: This is an example Bitbucket project for organizing repositories
-      is_private: true
-      created_on: '2024-01-15T10:30:00.000Z'
-      updated_on: '2024-01-20T14:45:00.000Z'
-      has_publicly_visible_repos: false
-    project-branching-model:
-      branch_types:
-        - kind: feature
-          prefix: feature/
-        - kind: bugfix
-          prefix: bugfix/
-        - kind: release
-          prefix: release/
-        - kind: hotfix
-          prefix: hotfix/
-      development:
-        name: develop
-        use_mainbranch: false
-      production:
-        name: main
-        use_mainbranch: true
-    branching-model-settings:
-      links:
-        self:
-          href: >-
-            https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/branching-model/settings
-          name: Branching Model Settings
-      branch_types:
-        - enabled: true
-          kind: feature
-          prefix: feature/
-        - enabled: true
-          kind: bugfix
-          prefix: bugfix/
-        - enabled: true
-          kind: release
-          prefix: release/
-        - enabled: false
-          kind: hotfix
-          prefix: hotfix/
-      development:
-        is_valid: true
-        name: develop
-        use_mainbranch: false
-      production:
-        is_valid: true
-        name: main
-        use_mainbranch: false
-        enabled: true
-    branching-model-settings_2:
-      links:
-        self:
-          href: >-
-            https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/branching-model/settings
-          name: Branching Model Settings
-      branch_types:
-        - enabled: true
-          kind: feature
-          prefix: feature/
-        - enabled: true
-          kind: bugfix
-          prefix: bugfix/
-        - enabled: true
-          kind: release
-          prefix: release/
-        - enabled: false
-          kind: hotfix
-          prefix: hotfix/
-      development:
-        is_valid: true
-        name: develop
-        use_mainbranch: false
-      production:
-        is_valid: true
-        name: main
-        use_mainbranch: true
-        enabled: true
-    paginated-default-reviewer-and-type:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/repositories/default-reviewers?page=2
-      previous: https://api.example.com/repositories/default-reviewers?page=0
-      values: {}
-    user:
-      links:
-        self:
-          href: https://api.bitbucket.org/2.0/users/example_user
-        html:
-          href: https://bitbucket.org/example_user
-        avatar:
-          href: https://avatar-management.services.atlassian.com/default/48
-      account_id: 5d2a8f5c9e8e4b0d8f6a3c1b
-      account_status: active
-      has_2fa_enabled: true
-      nickname: johndoe
-      is_staff: false
-      website: https://example.com
-    user_2:
-      links:
-        self:
-          href: https://api.bitbucket.org/2.0/users/example-user
-        html:
-          href: https://bitbucket.org/example-user
-        avatar:
-          href: https://avatar-management.example.com/avatar/123
-      account_id: 5d5355e8c6b9320d9ea5b28d
-      account_status: active
-      has_2fa_enabled: true
-      nickname: john_doe
-      is_staff: false
-      website: https://johndoe.example.com
-    paginated-project-deploy-keys:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys?page=2
-      previous: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys?page=0
-      values:
-        key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDak...
-        comment: Deploy key for production server
-        label: Production Deploy Key
-        added_on: '2023-11-15T10:30:00Z'
-        last_used: '2024-01-20T14:45:30Z'
-        links:
-          self:
-            href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
-            name: Production Deploy Key
-    project-deploy-key:
-      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
-      project:
-        key: PROJ
-        name: My Project
-      comment: deploy@server
-      label: Production Server Deploy Key
-      added_on: '2024-01-15T10:30:00Z'
-      last_used: '2024-01-20T14:45:30Z'
-      links:
-        self:
-          href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
-          name: Production Deploy Key
-      created_by:
-        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-        username: john_doe
-        display_name: John Doe
-    project-deploy-key_2:
-      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
-      project:
-        key: PROJ
-        name: My Project
-      comment: deploy@example.com
-      label: Production Deploy Key
-      added_on: '2023-11-15T10:30:00Z'
-      last_used: '2024-01-20T14:45:30Z'
-      links:
-        self:
-          href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
-          name: Production Deploy Key
-      created_by:
-        username: johndoe
-        display_name: John Doe
-        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
-    paginated-project-group-permissions:
-      size: 42
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/project-groups/permissions?page=2
-      previous: https://api.example.com/project-groups/permissions?page=0
-      values: []
-    project-group-permission:
-      type: project-group-permission
-      links:
-        self:
-          href: https://api.example.com/projects/123/permissions/groups/456
-          name: Project Group Permission
-      permission: admin
-      group:
-        name: developers
-        id: 456
-      project:
-        key: PROJ
-        name: Example Project
-        id: 123
-    project-group-permission_2:
-      type: project-group-permission
-      links:
-        self:
-          href: https://api.example.com/projects/123/permissions/groups/456
-          name: Project Group Permission
-      permission: write
-      group:
-        name: developers
-        id: 456
-      project:
-        key: PROJ
-        id: 123
-        name: Example Project
-    paginated-project-user-permissions:
-      size: 50
-      page: 1
-      pagelen: 10
-      next: https://api.example.com/projects/permissions?page=2
-      previous: https://api.example.com/projects/permissions?page=0
-      values: []
-    undefined_2:
-      size: 100
-      page: 1
-      pagelen: 10
-      query_substituted: false
-      next: https://api.example.com/resource?page=2
-      previous: https://api.example.com/resource?page=0
-      values: {}
-    project-user-permission:
-      type: PROJECT_USER_PERMISSION
-      links:
-        self:
-          href: https://api.example.com/projects/123/permissions/456
-          name: project-permission
-      permission: admin
-      user:
-        name: john.doe
-        emailAddress: john.doe@example.com
-        id: 456
-        displayName: John Doe
-        active: true
-      project:
-        key: PROJ
-        id: 123
-        name: Example Project
-        description: An example project
-        public: false
-        type: NORMAL
-    project-user-permission_2:
-      type: project-user-permission
-      links:
-        self:
-          href: https://api.example.com/projects/123/permissions/456
-          name: Project Permission
-      permission: admin
-      user:
-        id: 456
-        name: john.doe
-        displayName: John Doe
-        emailAddress: john.doe@example.com
-      project:
-        id: 123
-        key: PROJ
-        name: Example Project
-        description: An example project
-  reponses: {}
-  parameters: {}
-  headers: {}
-  requestBodies:
-    pipeline_variable2:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/pipeline_variable'
-      description: The variable to create.
-    pipeline_variable:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/pipeline_variable'
-      description: The updated variable.
-      required: true
-    project:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/project'
-      required: true
-  responses: {}
-  securitySchemes:
-    bearerHttpAuthentication:
-      description: Bearer Token
-      type: http
-      scheme: Bearer
