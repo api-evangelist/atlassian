@@ -1,0 +1,2380 @@
+openapi: 3.0.1
+info:
+  title: Atlassian Confluence Space API
+  description: >-
+    The Atlassian Confluence Space API allows users to interact with and manage
+    their Confluence spaces programmatically. This API provides developers with
+    a set of tools to retrieve, create, update, and delete content within their
+    Confluence spaces. By using the Space API, users can automate tasks,
+    streamline workflows, and integrate Confluence with other tools and
+    applications. 
+  termsOfService: https://atlassian.com/terms/
+  version: 1.0.0
+externalDocs:
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+servers:
+  - url: //your-domain.atlassian.net
+tags: []
+paths:
+  /wiki/rest/api/space/_private:
+    post:
+      tags:
+        - Space
+      summary: Create Private Space
+      description: >-
+        Creates a new space that is only visible to the creator. This method
+        is<br>the same as the [Create space](#api-space-post) method with
+        permissions<br>set to the current user only. Note, currently you cannot
+        set space<br>labels when creating a
+        space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Create Space(s)' global permission.
+      operationId: atlassianCreateprivatespace
+      requestBody:
+        description: The space to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the space is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '400':
+          description: |-
+            Returned if any of the following is true:
+
+            - The request is invalid.
+            - The space already exists.
+          content: {}
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have permission to create a space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space-details:confluence
+            - write:space:confluence
+            - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: SpacePrivateCreate
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/space/{spaceKey}:
+    get:
+      tags:
+        - Space
+      summary: Get Space
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns
+        a space. This includes information like the name, description,<br>and
+        permissions, but not the content in the
+        space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'View' permission for the space.
+      operationId: atlassianGetspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be returned.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/spaceExpand'
+      responses:
+        '200':
+          description: Returned if the requested space is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+        - Space
+      summary: Update Space
+      description: >-
+        Updates the name, description, or homepage of a space.<br><br>-   For
+        security reasons, permissions cannot be updated via the API and<br>must
+        be changed via the user interface instead.<br>-   Currently you cannot
+        set space labels when updating a
+        space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianUpdatespace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The updated space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the space is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key
+            - The calling user does not have permission to update the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space-details:confluence
+            - write:space:confluence
+            - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+        - Space
+      summary: Delete Space
+      description: >-
+        Deletes a space. Note, the space will be deleted in a long running
+        task.<br>Therefore, the space may not be deleted yet when this method
+        has<br>returned. Clients should poll the status link that is returned in
+        the<br>response until the task
+        completes.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianDeletespace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to delete.
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Returns a pointer to the status of the space deletion task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTask'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to delete the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content.metadata:confluence
+            - delete:space:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: DELETE
+  /wiki/rest/api/space/{spaceKey}/content:
+    get:
+      tags:
+        - Space
+      summary: Get Content For Space
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns
+        all content in a space. The returned content is grouped by
+        type<br>(pages then blogposts), then ordered by content ID in ascending
+        order.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'View' permission for the space. Note, the returned list
+        will only<br>contain content that the current user has permission to
+        view.
+      operationId: atlassianGetcontentforspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content.
+          required: true
+          schema:
+            type: string
+        - name: depth
+          in: query
+          description: >-
+            Filter the results to content at the root level of the space or all
+            content.
+          schema:
+            type: string
+            default: all
+            enum:
+              - all
+              - root
+        - $ref: '#/components/parameters/contentExpand'
+        - name: start
+          in: query
+          description: The starting index of the returned content.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of content objects to return per page. Note, this
+            may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    $ref: '#/components/schemas/ContentArray'
+                  blogpost:
+                    $ref: '#/components/schemas/ContentArray'
+                  _links:
+                    $ref: '#/components/schemas/GenericLinks'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/permission:
+    post:
+      tags:
+        - Space permissions
+      summary: Add New Permission To Space
+      description: >-
+        Adds new permission to space.<br><br>If the permission to be added is a
+        group permission, the group can be identified<br>by its group name or
+        group id.<br><br>Note: Apps cannot access this REST resource - including
+        when utilizing user
+        impersonation.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianAddpermissiontospace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The permission to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePermissionRequest'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpacePermissionV2'
+        '400':
+          description: |-
+            Used for various errors. Such as:
+            - Permission already exists for the given user or group.
+            - 'read space' permission doesn't exist for the given user or group.
+            - No group found with the given groupName or groupId
+          content: {}
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      x-codegen-request-body-name: body
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:space.permission:confluence
+            - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:space.permission:confluence
+            - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+  /wiki/rest/api/space/{spaceKey}/permission/custom-content:
+    post:
+      tags:
+        - Space permissions
+      summary: Add New Custom Content Permission To Space
+      description: >-
+        Adds new custom content permission to space.<br><br>If the permission to
+        be added is a group permission, the group can be identified<br>by its
+        group name or group id.<br><br>Note: Only apps can access this REST
+        resource and only make changes to the respective app
+        permissions.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianAddcustomcontentpermissions
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The permissions to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePermissionCustomContent'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content: {}
+        '400':
+          description: |-
+            Used for various errors. Such as:
+            - Permission already exists for the given user or group.
+            - 'read space' permission doesn't exist for the given user or group.
+            - No group found with the given groupName or groupId
+          content: {}
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      x-codegen-request-body-name: body
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:space.permission:confluence
+            - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:space.permission:confluence
+            - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/space/{spaceKey}/permission/{id}:
+    delete:
+      tags:
+        - Space permissions
+      summary: Remove A Space Permission
+      description: >-
+        Removes a space permission. Note that removing Read Space permission for
+        a user or group will remove all<br>the space permissions for that user
+        or group.<br><br>Note: Apps cannot access this REST resource - including
+        when utilizing user
+        impersonation.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianRemovepermission
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: Id of the permission to be deleted.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Permission successfully removed.
+          content: {}
+        '400':
+          description: |-
+            Used for various errors. Such as:
+            - All of the admin permissions cannot be removed from a space.
+          content: {}
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+            - There is no permission with the given id.
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+  /wiki/rest/api/space/{spaceKey}/content/{type}:
+    get:
+      tags:
+        - Space
+      summary: Get Content By Type For Space
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns
+        all content of a given type, in a space. The returned content
+        is<br>ordered by content ID in ascending
+        order.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'View' permission for the space. Note, the returned list
+        will only<br>contain content that the current user has permission to
+        view.
+      operationId: atlassianGetcontentbytypeforspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content.
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: path
+          description: >-
+            The type of content to return. `page`, `blogpost`,
+            `<some_customContentType>`.
+          required: true
+          schema:
+            type: string
+        - name: depth
+          in: query
+          description: |-
+            Filter the results to content at the root level of the space or all
+            content.
+          schema:
+            type: string
+            default: all
+            enum:
+              - all
+              - root
+        - $ref: '#/components/parameters/contentExpand'
+        - name: start
+          in: query
+          description: The starting index of the returned content.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of content objects to return per page. Note, this
+            may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 25
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/property:
+    get:
+      tags:
+        - Space properties
+      summary: Get Space Properties
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns
+        all properties for the given space. Space properties are a key-value
+        storage associated with a space.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**: ‘View’
+        permission for the space.
+      operationId: atlassianGetspaceproperties
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its properties.
+          required: true
+          schema:
+            type: string
+        - name: expand
+          in: query
+          description: |-
+            A multi-value parameter indicating which properties of the space
+            property to expand. By default, the `version` object is expanded.
+
+            - `version` returns information about the version of the content.
+            - `space` returns the space that the properties are in.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - version
+                - space
+        - name: start
+          in: query
+          description: The starting index of the returned objects.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: >-
+            The maximum number of properties to return per page. Note, this may
+            be
+
+            restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        '200':
+          description: Returned if the requested space properties are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpacePropertyArray'
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+        - Space properties
+      summary: Create Space Property
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Creates
+        a new space property.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**:<br>‘Admin’
+        permission for the space.
+      operationId: atlassianCreatespaceproperty
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space that the property will be created in.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The space property to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePropertyCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the space property is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceProperty'
+        '400':
+          description: |-
+            Returned if any of the following is true:
+
+            - The space already has a value with the given key.
+            - No property value was provided.
+          content: {}
+        '403':
+          description: Returned if the user does not have 'Admin' permission for the space.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+        '409':
+          description: Returned if the key already exists within the space.
+          content: {}
+        '413':
+          description: Returned if the value for the property is too long.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.property:confluence
+            - write:space.property:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/space/{spaceKey}/property/{key}:
+    get:
+      tags:
+        - Space properties
+      summary: Get Space Property
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns
+        a space property.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**: ‘View’
+        permission for the space.
+      operationId: atlassianGetspaceproperty
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space that the property is in.
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: The key of the space property.
+          required: true
+          schema:
+            type: string
+        - name: expand
+          in: query
+          description: |-
+            A multi-value parameter indicating which properties of the space
+            property to expand. By default, the `version` object is expanded.
+
+            - `version` returns information about the version of the content.
+            - `space` returns the space that the properties are in.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - version
+                - space
+      responses:
+        '200':
+          description: Returned if the requested space property is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceProperty'
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - There is no property with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content-details:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+        - Space properties
+      summary: Update Space Property
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Updates
+        a space property. Note, you cannot update the key of a
+        space<br>property, only the value.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**:<br>‘Admin’
+        permission for the space.
+      operationId: atlassianUpdatespaceproperty
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space that the property is in.
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: The key of the property to be updated.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The space property being updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePropertyUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the space property is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceProperty'
+        '400':
+          description: >-
+            Returned if any of the following is true:
+
+
+            - The given property has a different spaceKey to the one in the
+            path.
+
+            - The property has a different key to the one in the path.
+          content: {}
+        '403':
+          description: |-
+            Returned if the user does not have permission to edit the space with
+            the given spaceKey
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given spaceKey
+            - There is no property with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+        '409':
+          description: |-
+            Returned if the given version is does not match the expected target
+            version of the updated property
+          content: {}
+        '413':
+          description: Returned if the value of the property is too long.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.property:confluence
+            - write:space.property:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+        - Space properties
+      summary: Create Space Property For Key
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Creates
+        a new space property. This is the same as
+        `POST<br>/wiki/rest/api/space/{spaceKey}/property` but the key for the
+        property is passed as a<br>path parameter, rather than in the request
+        body.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**:<br>‘Admin’
+        permission for the space.
+      operationId: atlassianCreatespacepropertyforkey
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space that the property will be created in.
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: The key of the property to be created.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The space property to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePropertyCreateNoKey'
+        required: true
+      responses:
+        '200':
+          description: Returned if the space property is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceProperty'
+        '400':
+          description: |-
+            Returned if any of the following is true:
+
+            - The space already has a value with the given key.
+            - No property value was provided.
+          content: {}
+        '403':
+          description: |-
+            Returned if the user does not have the 'Admin' permission for the
+            space.
+          content: {}
+        '413':
+          description: Returned if the value for the property is too long.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.property:confluence
+            - write:space.property:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+        - Space properties
+      summary: Delete Space Property
+      deprecated: true
+      description: >-
+        Deprecated, use [Confluence's v2
+        API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Deletes
+        a space property.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**:<br>‘Admin’
+        permission for the space.
+      operationId: atlassianDeletespaceproperty
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space that the property is in.
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: The key of the property to be deleted.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Returned if the space property is deleted.
+          content: {}
+        '403':
+          description: Returned if the user does not have 'Admin' permission for the space.
+          content: {}
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given spaceKey
+            - There is no property with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-props
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-props
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - write:space.property:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/space/{spaceKey}/settings:
+    get:
+      tags:
+        - Space settings
+      summary: Get Space Settings
+      description: >-
+        Returns the settings of a space. Currently only
+        the<br>`routeOverrideEnabled` setting can be
+        returned.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'View' permission for the space.
+      operationId: atlassianGetspacesettings
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its settings.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned if the space settings are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceSettings'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if;
+
+            - There is no space with the given key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+        - Space settings
+      summary: Update Space Settings
+      description: >-
+        Updates the settings for a space. Currently only
+        the<br>`routeOverrideEnabled` setting can be
+        updated.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianUpdatespacesettings
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space whose settings will be updated.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The space settings to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceSettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if space settings are updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceSettings'
+        '401':
+          description: |-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+          content: {}
+        '404':
+          description: |-
+            Returned if;
+
+            - There is no space with the given key.
+            - The calling user does not have permission to update the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+            - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: SpaceSettingsUpdate
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/space/{spaceKey}/state:
+    get:
+      tags:
+        - Content states
+      summary: Get Space Suggested Content States
+      description: >-
+        Get content states that are suggested in the
+        space.<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>Space view permission
+      operationId: atlassianGetspacecontentstates
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content state settings.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Returned if the requested space exists, and user has space view
+            permission.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentState'
+                description: Space suggested content states that users can choose from
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+        '403':
+          description: Returned if user does not have space admin permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/state/settings:
+    get:
+      tags:
+        - Content states
+      summary: Get Content State Settings For Space
+      description: >-
+        Get object describing whether content states are allowed at all, if
+        custom content states or space content states<br>are restricted, and a
+        list of space content states allowed for the space if they are not
+        restricted.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>Space admin permission
+      operationId: atlassianGetcontentstatesettings
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content state settings.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Returned if the requested space exists, and user has space admin
+            permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateSettings'
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+        '403':
+          description: Returned if user does not have space admin permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/state/content:
+    get:
+      tags:
+        - Content states
+      summary: Get Content In Space With Given Content State
+      description: >-
+        Finds paginated content with
+        <br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>Space View Permission
+      operationId: atlassianGetcontentswithstate
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its content state settings.
+          required: true
+          schema:
+            type: string
+        - name: state-id
+          in: query
+          description: The id of the content state to filter content by
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: expand
+          in: query
+          description: >-
+            A multi-value parameter indicating which properties of the content
+            to expand.
+
+            Options include: space, version, history, children, etc.
+
+
+            Ex: space,version
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 0
+            format: int32
+            default: 25
+        - name: start
+          in: query
+          description: Number of result to start returning. (0 indexed)
+          schema:
+            type: integer
+            minimum: 0
+            format: int32
+      responses:
+        '200':
+          description: Returned if search was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '400':
+          description: Returned if limit or start are out of range, stateId is omitted.
+        '401':
+          description: >-
+            Returned if the authentication credentials are incorrect or missing
+            from the request.
+        '403':
+          description: Returned if user does not have space view permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+        - oAuthDefinitions:
+            - read:confluence-content.all
+        - basicAuth: []
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-content.all
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:content:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/theme:
+    get:
+      tags:
+        - Themes
+      summary: Get Space Theme
+      description: >-
+        Returns the theme selected for a space, if one is set. If no
+        space<br>theme is set, this means that the space is inheriting the
+        global look<br>and feel settings.<br><br>**[Permissions
+        required](https://confluence.atlassian.com/x/_AozKw)**: ‘View’
+        permission for the space.
+      operationId: atlassianGetspacetheme
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to be queried for its theme.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned if the requested theme is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          description: |-
+            Returned if any of the following is true:
+
+            - There is no space with the given key.
+            - The space does not have a theme assigned to it.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+        - Themes
+      summary: Set Space Theme
+      description: >-
+        Sets the theme for a space. Note, if you want to reset the space theme
+        to<br>the default Confluence theme, use the 'Reset space theme' method
+        instead<br>of this
+        method.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianSetspacetheme
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to set the theme for.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThemeUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the theme was set for the space.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '403':
+          description: Returned if the theme key is invalid.
+          content: {}
+        '404':
+          description: Returned if there is no space with the given key.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:space.setting:confluence
+            - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+        - Themes
+      summary: Reset Space Theme
+      description: >-
+        Resets the space theme. This means that the space will inherit
+        the<br>global look and feel
+        settings<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>'Admin' permission for the space.
+      operationId: atlassianResetspacetheme
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to reset the theme for.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Returned if the theme was reset for the space.
+          content: {}
+        '404':
+          description: Returned if there is no space with the given key.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: DELETE
+  /wiki/rest/api/space/{spaceKey}/watch:
+    get:
+      tags:
+        - Content watches
+      summary: Get Space Watchers
+      description: Returns a list of watchers of a space
+      operationId: atlassianGetwatchersforspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to get watchers.
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          description: The start point of the collection to return.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            The limit of the number of items to return, this may be restricted
+            by fixed system limits.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned if watchers list is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceWatchArray'
+        '404':
+          description: Returned if there is no space with the given key
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:watcher:confluence
+            - read:user:confluence
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:watcher:confluence
+            - read:user:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/label:
+    get:
+      tags:
+        - Experimental
+      summary: Get Space Labels
+      description: >-
+        Returns a list of labels associated with a space. Can provide a prefix
+        as well as other filters to<br>select different types of labels.
+      operationId: atlassianGetlabelsforspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to get labels for.
+          required: true
+          schema:
+            type: string
+        - name: prefix
+          in: query
+          description: >-
+            Filters the results to labels with the specified prefix. If this
+            parameter
+
+            is not specified, then labels with any prefix will be returned.
+
+
+            - `global` prefix is used by labels that are on content within the
+            provided space.
+
+            - `my` prefix can be explicitly added by a user when adding a label
+
+            via the UI, e.g. 'my:example-label'.
+
+            - `team` prefix is used for labels applied to the space.
+          schema:
+            type: string
+            enum:
+              - global
+              - my
+              - team
+        - name: start
+          in: query
+          description: The starting index of the returned labels.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: |-
+            The maximum number of labels to return per page. Note,
+            this may be restricted by fixed system limits.
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+            default: 200
+      responses:
+        '200':
+          description: Returned if the list of labels is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '404':
+          description: |-
+            Returned if;
+            - There is no space with the given space key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - read:confluence-space.summary
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:label:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+        - Experimental
+      summary: Add Labels To A Space
+      description: >-
+        Adds labels to a piece of content. Does not modify the existing
+        labels.<br><br>Notes:<br><br>- Labels can also be added when creating
+        content ([Create content](#api-content-post)).<br>- Labels can be
+        updated when updating content ([Update
+        content](#api-content-id-put)).<br>This will delete the existing labels
+        and replace them with the labels in<br>the
+        request.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw)
+        required**:<br>Permission to update the content.
+      operationId: atlassianAddlabelstospace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to add labels to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The labels to add to the content.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the labels are added to the content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '400':
+          description: >-
+            Returned if;
+
+
+            - The body contains labels with invalid characters or too many
+            characters.
+
+            - The body contains too many labels.
+
+            - The target content would contain too many labels after the
+            operation.
+
+            - The calling user does not have permission to edit labels.
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: |-
+            Returned if;
+            - There is no space with the given space key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - read:label:confluence
+            - write:label:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+        - Experimental
+      summary: Remove Label From A Space
+      description: Needs a more full description created.
+      operationId: atlassianDeletelabelfromspace
+      parameters:
+        - name: spaceKey
+          in: path
+          description: The key of the space to remove a labels from.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: The name of the label to remove
+          required: true
+          schema:
+            type: string
+        - name: prefix
+          in: query
+          description: >-
+            The prefix of the label to remove. If not provided defaults to
+            global.
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Returned if the label was successfully deleted.
+          content: {}
+        '400':
+          description: |-
+            Returned if;
+            - The user does not provide a label name
+          content: {}
+        '404':
+          description: |-
+            Returned if;
+            - There is no space with the given space key.
+            - The calling user does not have permission to view the space.
+          content: {}
+      security:
+        - basicAuth: []
+        - oAuthDefinitions:
+            - write:confluence-space
+      x-atlassian-oauth2-scopes:
+        - scheme: oAuthDefinitions
+          state: Current
+          scopes:
+            - write:confluence-space
+        - scheme: oAuthDefinitions
+          state: Beta
+          scopes:
+            - write:label:confluence
+      x-atlassian-data-security-policy:
+        - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    Space:
+      required:
+        - _expandable
+        - _links
+        - key
+        - name
+        - status
+        - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content'
+        type:
+          type: string
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+            - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpacePermissionV2:
+      required:
+        - id
+        - subject
+        - operation
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subject:
+          $ref: '#/components/schemas/PermissionSubject'
+        operation:
+          required:
+            - key
+            - target
+          type: object
+          properties:
+            key:
+              type: string
+              enum:
+                - administer
+                - archive
+                - copy
+                - create
+                - delete
+                - export
+                - move
+                - purge
+                - purge_version
+                - read
+                - restore
+                - restrict_content
+                - update
+                - use
+            target:
+              type: string
+              description: The space or content type that the operation applies to.
+              enum:
+                - page
+                - blogpost
+                - comment
+                - attachment
+                - space
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: >-
+        This object represents a single space permission. Permissions consist of
+
+        at least one operation object with an accompanying subjects object.
+
+
+        The following combinations of `operation.key` and `operation.target`
+        values are
+
+        valid for the `operation` object:
+
+        ``` bash
+
+        'create': 'page', 'blogpost', 'comment', 'attachment'
+
+        'read': 'space'
+
+        'delete': 'page', 'blogpost', 'comment', 'attachment', 'space'
+
+        'export': 'space'
+
+        'administer': 'space'
+
+        'archive': 'page'
+
+        'restrict_content': 'space'
+
+        ```
+
+
+        For example, to enable Delete Own permission, set the `operation` object
+        to the following:
+
+        ```
+
+        "operation": {
+            "key": "delete",
+            "target": "space"
+        }
+
+        ```
+
+        To enable Add/Delete Restrictions permissions, set the `operation`
+        object to the following:
+
+        ```
+
+        "operation": {
+            "key": "restrict_content",
+            "target": "space"
+        }
+
+        ```
+    ContentArray:
+      required:
+        - _links
+        - results
+        - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpacePropertyArray:
+      required:
+        - _links
+        - limit
+        - results
+        - size
+        - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpaceProperty'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpaceProperty:
+      required:
+        - _expandable
+        - id
+        - key
+        - value
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        value:
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: boolean
+            - type: object
+              additionalProperties: true
+              properties: {}
+            - type: string
+        version:
+          $ref: '#/components/schemas/Version'
+        space:
+          $ref: '#/components/schemas/Space'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            version:
+              type: string
+            space:
+              type: string
+    SpaceSettings:
+      nullable: true
+      required:
+        - _links
+        - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: >-
+            Defines whether an override for the space home should be used. This
+            is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.
+        editor:
+          required:
+            - page
+            - blogpost
+            - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+        spaceKey:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentStateSettings:
+      required:
+        - contentStatesAllowed
+        - customContentStatesAllowed
+        - spaceContentStatesAllowed
+      type: object
+      properties:
+        contentStatesAllowed:
+          type: boolean
+          description: Whether users can place any content states on content
+        customContentStatesAllowed:
+          type: boolean
+          description: Whether users can place their custom states on content
+        spaceContentStatesAllowed:
+          type: boolean
+          description: Whether users can place space suggested states on content
+        spaceContentStates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentState'
+          description: space suggested content states that users can choose from
+    Theme:
+      required:
+        - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpaceWatchArray:
+      required:
+        - limit
+        - results
+        - size
+        - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpaceWatch'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    LabelArray:
+      required:
+        - results
+        - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+x-atlassian-narrative:
+  documents:
+    - title: About
+      anchor: about
+      body: >-
+        This is the reference for the Confluence Cloud REST API. This API is the
+        primary way to get and
+
+        modify data in Confluence Cloud, whether you are developing an app or
+        any other integration.
+
+        Use it to interact with Confluence entities, like pages and blog posts,
+        spaces, users, groups,
+
+        and more.
+    - title: Authentication and authorization
+      anchor: auth
+      body: >-
+        **Authentication:** If you are building a Cloud app, authentication is
+        implemented via JWT or OAuth 2.0, depending on what you are building
+        (see [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)).
+        Otherwise, if you are authenticating directly against the REST API, the
+        REST API supports basic auth (see [Basic auth for REST
+        APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+        **Authorization:** If you are building a Cloud app, authorization can be
+        implemented by
+        [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by
+        [OAuth 2.0 user
+        impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps).
+        Otherwise, if you are making calls directly against the REST API,
+        authorization is based on the user used in the authentication process.
+
+
+        See [Security
+        overview](https://developer.atlassian.com/cloud/confluence/security-overview/)
+        for more details on authentication and authorization.
+    - title: Status codes
+      anchor: status-code
+      body: >-
+        The Confluence REST API uses the [standard HTTP status
+        codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+
+
+        Responses that return an error status code will also return a response
+        body, similar to the following:
+
+        ```json
+
+        {
+          "statusCode": 404,
+          "data": {
+            "authorized": false,
+            "valid": false,
+            "errors": [
+              {
+                "message": {
+                  "translation": "This is an example error message.",
+                  "args": []
+                }
+              }
+            ],
+            "successful": false
+          },
+          "message": "This is an example error message."
+        }
+
+        ```
+    - title: Using the REST API
+      anchor: using
+      body: >-
+        **Expansion:** The Confluence REST API uses resource expansion: some
+        parts of a resource are not returned unless explicitly specified. This
+        simplifies responses and minimizes network traffic.
+
+
+        To expand part of a resource in a request, use the `expand` query
+        parameter and specify the entities to be expanded. If you need to expand
+        nested entities, use the `.` dot notation. For example, the following
+        request will expand information about the requested content's space and
+        labels:
+
+        ```
+
+        GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+        ```
+
+        **Pagination:** The Confluence REST API uses pagination: a method that
+        returns a response with multiple objects can only return a limited
+        number at one time. This limits the size of responses and conserves
+        server resources.
+
+
+        Use the 'limit' and 'start' query parameters to specify pagination:
+
+
+        - `limit` is the number of objects to return per page. This may be
+        restricted by system limits.
+
+        - `start` is the index of the first item returned in the page of
+        results. The base index is 0.
+
+
+        For example, the following request will return ten content objects,
+        starting from the fifth object.
+
+        ```
+
+        GET /wiki/rest/api/content?start=4&limit=10
+
+        ```
+
+        **Special headers:**
+
+
+        - `X-Atlassian-Token: no-check` request header must be specified for
+        methods
+
+        that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks.
+        This is
+
+        stated in the method description, if required. For more information, see
+        this
+
+        [KB
+        article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).
+    - title: Capabilities
+      anchor: capabilities
+      body: >-
+        **Webhooks:** A webhook is a user-defined callback over HTTP. You can
+        use Confluence webhooks to notify your app or web application when
+        certain events occur in Confluence. For example, when a page is created
+        or updated. To learn more, see
+        [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+        **Content properties:** Content properties are a key-value storage
+        associated with a piece of Confluence content. If you are building an
+        app, this is one form of persistence that you can use. You can use the
+        Confluence REST API to get, update, and delete content properties. To
+        learn more, see [Content properties in the REST
+        API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+        **CQL:** The Confluence Query Language (CQL) allows you to perform
+        complex searches for content using an SQL-like syntax in the `search`
+        resource. To learn more, see [Advanced searching using
+        CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).
