@@ -1,0 +1,1659 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin API
+  description: >-
+    The Atlassian Admin API provides programmatic access to manage Atlassian
+    organizations, users, domains, policies, and events. It enables
+    administrators to automate organization management tasks, integrate with
+    identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
+
+servers:
+  - url: https://api.atlassian.com
+    description: Atlassian Cloud API
+
+security:
+  - bearerAuth: []
+  - oauth2: []
+
+tags:
+  - name: Organizations
+    description: Manage Atlassian organizations.
+  - name: Users
+    description: Manage users within an organization.
+  - name: Domains
+    description: Manage verified domains for an organization.
+  - name: Policies
+    description: Manage organization-level policies.
+  - name: Events
+    description: Retrieve organization audit events.
+  - name: Groups
+    description: Manage groups within an organization.
+
+paths:
+  /v1/orgs:
+    get:
+      operationId: getOrganizations
+      summary: Get organizations
+      description: >-
+        Returns a list of organizations accessible to the caller based on the
+        API key used for authentication.
+      tags:
+        - Organizations
+      parameters:
+        - name: cursor
+          in: query
+          description: >-
+            Sets the starting point for paginated results. Use the value
+            returned in the previous response to retrieve the next page.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of organizations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationPage'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized. Authentication credentials are missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}:
+    get:
+      operationId: getOrganizationById
+      summary: Get organization by ID
+      description: Returns information about a single organization by its unique identifier.
+      tags:
+        - Organizations
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: Successful response containing the organization details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/users:
+    get:
+      operationId: getOrganizationUsers
+      summary: Get managed accounts
+      description: >-
+        Returns a list of managed user accounts in the organization. Results
+        are paginated using cursor-based pagination.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users:
+    get:
+      operationId: getDirectoryUsers
+      summary: Get users in directory
+      description: >-
+        Returns a paginated list of users in a specific directory within the
+        organization.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing directory users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization or directory not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users/{accountId}:
+    get:
+      operationId: getDirectoryUser
+      summary: Get user in directory
+      description: >-
+        Returns details of a specific user in a directory within the organization.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '200':
+          description: Successful response containing user details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: removeDirectoryUser
+      summary: Remove user from directory
+      description: >-
+        Removes a user from a specific directory within the organization.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '204':
+          description: User successfully removed from the directory.
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users/count:
+    get:
+      operationId: getDirectoryUserCount
+      summary: Get directory user count
+      description: Returns the count of users in a specific directory.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+      responses:
+        '200':
+          description: Successful response containing the user count.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: The number of users in the directory.
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization or directory not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/users/invite:
+    post:
+      operationId: inviteUsers
+      summary: Invite users to organization
+      description: >-
+        Invites one or more users to the organization, optionally assigning
+        them to directories, groups, and application roles.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUsersRequest'
+      responses:
+        '200':
+          description: Users successfully invited.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteUsersResponse'
+        '400':
+          description: Bad request. Invalid invitation parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users/{accountId}/suspend:
+    post:
+      operationId: suspendUser
+      summary: Suspend user access
+      description: >-
+        Suspends a user's access within a specific directory of the organization.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '204':
+          description: User access successfully suspended.
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users/{accountId}/restore:
+    post:
+      operationId: restoreUser
+      summary: Restore user access
+      description: >-
+        Restores a previously suspended user's access within a specific
+        directory of the organization.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '204':
+          description: User access successfully restored.
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/users/{userId}/roles/assign:
+    post:
+      operationId: grantUserAccess
+      summary: Grant user product access
+      description: Grants a user access to organization products by assigning roles.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleAssignmentRequest'
+      responses:
+        '200':
+          description: Role successfully assigned.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User or organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/users/{userId}/roles/revoke:
+    post:
+      operationId: revokeUserAccess
+      summary: Revoke user product access
+      description: Revokes a user's access to organization products by removing roles.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleAssignmentRequest'
+      responses:
+        '200':
+          description: Role successfully revoked.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User or organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/orgs/{orgId}/directories/{directoryId}/users/{accountId}/role-assignments:
+    get:
+      operationId: getUserRoleAssignments
+      summary: List user role assignments
+      description: >-
+        Returns a list of role assignments for a specific user in a directory.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/directoryId'
+        - $ref: '#/components/parameters/accountId'
+      responses:
+        '200':
+          description: Successful response containing role assignments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoleAssignment'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/users/{userId}/role-assignments/assign:
+    post:
+      operationId: assignOrganizationRole
+      summary: Assign organization-level role
+      description: Assigns an organization-level role to a user.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgRoleAssignmentRequest'
+      responses:
+        '204':
+          description: Organization role successfully assigned.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User or organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/users/{userId}/role-assignments/revoke:
+    post:
+      operationId: revokeOrganizationRole
+      summary: Remove organization-level role
+      description: Removes an organization-level role from a user.
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgRoleAssignmentRequest'
+      responses:
+        '204':
+          description: Organization role successfully removed.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User or organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/domains:
+    get:
+      operationId: getOrganizationDomains
+      summary: Get organization domains
+      description: >-
+        Returns a list of domains associated with the organization. Domains
+        are used to claim and verify ownership of email domains for the
+        organization.
+      tags:
+        - Domains
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of domains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainPage'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/domains/{domainId}:
+    get:
+      operationId: getDomainById
+      summary: Get domain by ID
+      description: Returns details of a specific domain associated with the organization.
+      tags:
+        - Domains
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: domainId
+          in: path
+          required: true
+          description: The unique identifier of the domain.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing domain details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Domain not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/policies:
+    get:
+      operationId: getOrganizationPolicies
+      summary: Get organization policies
+      description: >-
+        Returns a list of policies configured for the organization. Policies
+        define rules and controls for security, authentication, data
+        residency, and other organizational governance settings.
+      tags:
+        - Policies
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Filter policies by type.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ip-allowlist
+              - data-residency
+              - authentication
+              - external-user
+              - user-security
+      responses:
+        '200':
+          description: Successful response containing a paginated list of policies.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyPage'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/policies/{policyId}:
+    get:
+      operationId: getPolicyById
+      summary: Get policy by ID
+      description: Returns details of a specific policy by its unique identifier.
+      tags:
+        - Policies
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: policyId
+          in: path
+          required: true
+          description: The unique identifier of the policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing the policy details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Policy not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updatePolicy
+      summary: Update a policy
+      description: Updates an existing organization policy.
+      tags:
+        - Policies
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: policyId
+          in: path
+          required: true
+          description: The unique identifier of the policy.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyUpdateRequest'
+      responses:
+        '200':
+          description: Policy successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Policy not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/events:
+    get:
+      operationId: getOrganizationEvents
+      summary: Get organization events
+      description: >-
+        Returns a paginated list of events for the organization. Events
+        represent audit trail entries for actions performed within the
+        organization, such as user changes, policy updates, and access
+        modifications.
+      tags:
+        - Events
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: >-
+            Filter events from this date-time (ISO 8601 format). Returns events
+            that occurred on or after this time.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: >-
+            Filter events up to this date-time (ISO 8601 format). Returns events
+            that occurred on or before this time.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: action
+          in: query
+          description: Filter events by action type.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of events.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventPage'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/events/{eventId}:
+    get:
+      operationId: getEventById
+      summary: Get event by ID
+      description: Returns details of a specific organization event.
+      tags:
+        - Events
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: eventId
+          in: path
+          required: true
+          description: The unique identifier of the event.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing the event details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/orgs/{orgId}/groups:
+    get:
+      operationId: getOrganizationGroups
+      summary: Get organization groups
+      description: >-
+        Returns a list of groups within the organization. Groups are used to
+        organize users and assign collective permissions.
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - name: cursor
+          in: query
+          description: Cursor for paginated results.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of groups.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPage'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: >-
+        Use an Atlassian API key as a Bearer token. Create API keys at
+        https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      description: The unique identifier of the organization.
+      schema:
+        type: string
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: The unique identifier of the user.
+      schema:
+        type: string
+    accountId:
+      name: accountId
+      in: path
+      required: true
+      description: The Atlassian account identifier of the user.
+      schema:
+        type: string
+    directoryId:
+      name: directoryId
+      in: path
+      required: true
+      description: The unique identifier of the directory.
+      schema:
+        type: string
+
+  schemas:
+    Organization:
+      type: object
+      description: Represents an Atlassian organization.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the organization.
+        type:
+          type: string
+          description: The resource type.
+          enum:
+            - organization
+        attributes:
+          type: object
+          description: The attributes of the organization.
+          properties:
+            name:
+              type: string
+              description: The display name of the organization.
+
+    OrganizationPage:
+      type: object
+      description: A paginated list of organizations.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+          description: The list of organizations.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    User:
+      type: object
+      description: Represents a user account in an Atlassian organization.
+      properties:
+        account_id:
+          type: string
+          description: The unique Atlassian account identifier.
+        account_type:
+          type: string
+          description: The type of account.
+          enum:
+            - atlassian
+            - customer
+            - app
+        account_status:
+          type: string
+          description: The current status of the account.
+          enum:
+            - active
+            - inactive
+            - closed
+        name:
+          type: string
+          description: The display name of the user.
+        email:
+          type: string
+          format: email
+          description: The email address of the user.
+        picture:
+          type: string
+          format: uri
+          description: URL of the user's profile picture.
+        nickname:
+          type: string
+          description: The nickname of the user.
+        last_active:
+          type: string
+          format: date-time
+          description: The last time the user was active.
+        created:
+          type: string
+          format: date-time
+          description: When the user account was created.
+        product_access:
+          type: array
+          description: Products the user has access to.
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                description: The product key.
+              name:
+                type: string
+                description: The product name.
+              url:
+                type: string
+                format: uri
+                description: The URL of the product site.
+              last_active:
+                type: string
+                format: date-time
+                description: Last time the user accessed this product.
+
+    UserPage:
+      type: object
+      description: A paginated list of users.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          description: The list of users.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    Domain:
+      type: object
+      description: Represents a verified domain associated with an organization.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the domain.
+        type:
+          type: string
+          description: The resource type.
+          enum:
+            - domain
+        attributes:
+          type: object
+          description: The attributes of the domain.
+          properties:
+            name:
+              type: string
+              description: The domain name.
+            claim:
+              type: object
+              description: The claim details for the domain.
+              properties:
+                type:
+                  type: string
+                  description: The type of domain claim.
+                  enum:
+                    - http
+                    - dns
+                    - verified
+                status:
+                  type: string
+                  description: The verification status.
+                  enum:
+                    - verified
+                    - pending
+
+    DomainPage:
+      type: object
+      description: A paginated list of domains.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+          description: The list of domains.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    Policy:
+      type: object
+      description: >-
+        Represents an organization-level policy that defines rules and controls
+        for security, authentication, and governance.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the policy.
+        type:
+          type: string
+          description: The type of policy.
+          enum:
+            - ip-allowlist
+            - data-residency
+            - authentication
+            - external-user
+            - user-security
+        name:
+          type: string
+          description: The display name of the policy.
+        status:
+          type: string
+          description: The current status of the policy.
+          enum:
+            - enabled
+            - disabled
+        attributes:
+          type: object
+          description: Policy-specific configuration attributes.
+          additionalProperties: true
+        resources:
+          type: array
+          description: Resources this policy applies to.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The resource identifier.
+              type:
+                type: string
+                description: The resource type.
+        created:
+          type: string
+          format: date-time
+          description: When the policy was created.
+        updated:
+          type: string
+          format: date-time
+          description: When the policy was last updated.
+
+    PolicyPage:
+      type: object
+      description: A paginated list of policies.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+          description: The list of policies.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    PolicyUpdateRequest:
+      type: object
+      description: Request body for updating a policy.
+      properties:
+        name:
+          type: string
+          description: The updated display name for the policy.
+        status:
+          type: string
+          description: The updated status for the policy.
+          enum:
+            - enabled
+            - disabled
+        attributes:
+          type: object
+          description: Updated policy-specific configuration attributes.
+          additionalProperties: true
+
+    Event:
+      type: object
+      description: >-
+        Represents an audit event that occurred within the organization,
+        capturing actions such as user changes, policy updates, and access
+        modifications.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the event.
+        type:
+          type: string
+          description: The resource type.
+          enum:
+            - event
+        attributes:
+          type: object
+          description: The event attributes.
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: When the event occurred.
+            action:
+              type: string
+              description: The action that was performed.
+            actor:
+              type: object
+              description: The entity that performed the action.
+              properties:
+                id:
+                  type: string
+                  description: The identifier of the actor.
+                name:
+                  type: string
+                  description: The display name of the actor.
+                type:
+                  type: string
+                  description: The type of actor.
+                  enum:
+                    - user
+                    - system
+                    - app
+                links:
+                  type: object
+                  properties:
+                    self:
+                      type: string
+                      format: uri
+            context:
+              type: array
+              description: Contextual details about the event.
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+            container:
+              type: array
+              description: Containers related to the event.
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+            location:
+              type: object
+              description: Location information for the event.
+              properties:
+                ip:
+                  type: string
+                  description: IP address from which the event originated.
+                geo:
+                  type: string
+                  description: Geographic location.
+
+    EventPage:
+      type: object
+      description: A paginated list of events.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          description: The list of events.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    Group:
+      type: object
+      description: Represents a group within an organization.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the group.
+        type:
+          type: string
+          description: The resource type.
+          enum:
+            - group
+        attributes:
+          type: object
+          description: The attributes of the group.
+          properties:
+            name:
+              type: string
+              description: The display name of the group.
+            description:
+              type: string
+              description: A description of the group.
+            member_count:
+              type: integer
+              description: The number of members in the group.
+
+    GroupPage:
+      type: object
+      description: A paginated list of groups.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+          description: The list of groups.
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+
+    RoleAssignment:
+      type: object
+      description: Represents a role assignment for a user.
+      properties:
+        role:
+          type: string
+          description: The role identifier.
+        resource:
+          type: object
+          description: The resource the role is assigned to.
+          properties:
+            id:
+              type: string
+              description: The resource identifier.
+            type:
+              type: string
+              description: The resource type.
+
+    RoleAssignmentRequest:
+      type: object
+      description: Request body for assigning or revoking product roles.
+      properties:
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                description: The role to assign or revoke.
+              resource:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The resource identifier.
+                  type:
+                    type: string
+                    description: The resource type.
+
+    OrgRoleAssignmentRequest:
+      type: object
+      description: Request body for assigning or revoking organization-level roles.
+      properties:
+        role:
+          type: string
+          description: >-
+            The organization-level role to assign or revoke. Common roles
+            include org-admin, trusted-user, and user.
+          enum:
+            - org-admin
+            - trusted-user
+            - user
+
+    InviteUsersRequest:
+      type: object
+      description: Request body for inviting users to the organization.
+      properties:
+        emails:
+          type: array
+          description: Email addresses of users to invite.
+          items:
+            type: string
+            format: email
+        directoryId:
+          type: string
+          description: The directory to add the invited users to.
+        groupIds:
+          type: array
+          description: Groups to assign the invited users to.
+          items:
+            type: string
+        roleAssignments:
+          type: array
+          description: Application roles to assign to the invited users.
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              resource:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+
+    InviteUsersResponse:
+      type: object
+      description: Response for user invitation requests.
+      properties:
+        data:
+          type: object
+          properties:
+            invited:
+              type: array
+              description: Users that were successfully invited.
+              items:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  accountId:
+                    type: string
+            failed:
+              type: array
+              description: Users that failed to be invited.
+              items:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  reason:
+                    type: string
+
+    PaginationLinks:
+      type: object
+      description: Links for cursor-based pagination.
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link to the current page.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page of results.
+        prev:
+          type: string
+          format: uri
+          description: Link to the previous page of results.
+
+    ErrorResponse:
+      type: object
+      description: Standard error response.
+      properties:
+        code:
+          type: integer
+          description: The HTTP status code.
+        message:
+          type: string
+          description: A human-readable error message.
+        errors:
+          type: array
+          description: Detailed error information.
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: A machine-readable error code.
+              message:
+                type: string
+                description: A human-readable description of the error.
