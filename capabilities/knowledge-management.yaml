@@ -1,0 +1,119 @@
+naftiko: "1.0.0-alpha1"
+
+info:
+  label: "Atlassian Knowledge Management"
+  description: "Knowledge management workflow combining Confluence Content, Space, Search, Template, Label, and User APIs for technical writers and team leads to create, organize, and share documentation."
+  tags:
+    - Atlassian
+    - Confluence
+    - Knowledge Management
+  created: "2026-04-19"
+  modified: "2026-04-19"
+
+binds:
+  - namespace: env
+    keys:
+      ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
+      ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
+      ATLASSIAN_SITE: ATLASSIAN_SITE
+
+capability:
+  consumes:
+    - import: atlassian-admin
+      location: ./shared/admin.yaml
+
+  exposes:
+    - type: rest
+      port: 8082
+      namespace: atlassian-knowledge-api
+      description: "Unified REST API for Confluence knowledge management."
+      resources:
+        - path: /v1/content
+          name: content
+          description: "Content management"
+          operations:
+            - method: GET
+              name: list-content
+              description: "List Confluence content"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+        - path: /v1/spaces
+          name: spaces
+          description: "Space management"
+          operations:
+            - method: GET
+              name: list-spaces
+              description: "List Confluence spaces"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+        - path: /v1/search
+          name: search
+          description: "Content search"
+          operations:
+            - method: GET
+              name: search-content
+              description: "Search Confluence content"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+
+    - type: mcp
+      port: 9092
+      namespace: atlassian-knowledge-mcp
+      transport: http
+      description: "MCP server for AI-assisted Confluence knowledge management."
+      tools:
+        - name: list-content
+          description: "List Confluence pages and blog posts"
+          hints:
+            readOnly: true
+            openWorld: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: search-content
+          description: "Search Confluence content using CQL"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-spaces
+          description: "List Confluence spaces"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-templates
+          description: "List Confluence templates"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-groups
+          description: "List Confluence groups"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-users
+          description: "List Confluence users"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."

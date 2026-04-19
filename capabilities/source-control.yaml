@@ -1,0 +1,110 @@
+naftiko: "1.0.0-alpha1"
+
+info:
+  label: "Atlassian Source Control"
+  description: "Source control workflow combining Bitbucket Repositories, Pull Requests, Workspaces, Snippets, and Teams APIs for developers to manage code, reviews, and collaboration."
+  tags:
+    - Atlassian
+    - Bitbucket
+    - Source Control
+  created: "2026-04-19"
+  modified: "2026-04-19"
+
+binds:
+  - namespace: env
+    keys:
+      ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
+      ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
+
+capability:
+  consumes:
+    - import: atlassian-admin
+      location: ./shared/admin.yaml
+
+  exposes:
+    - type: rest
+      port: 8081
+      namespace: atlassian-source-control-api
+      description: "Unified REST API for Bitbucket source control operations."
+      resources:
+        - path: /v1/repositories
+          name: repositories
+          description: "Repository management"
+          operations:
+            - method: GET
+              name: list-repositories
+              description: "List repositories in a workspace"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+        - path: /v1/pull-requests
+          name: pull-requests
+          description: "Pull request management"
+          operations:
+            - method: GET
+              name: list-pull-requests
+              description: "List pull requests"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+        - path: /v1/workspaces
+          name: workspaces
+          description: "Workspace management"
+          operations:
+            - method: GET
+              name: list-workspaces
+              description: "List workspaces"
+              call: "atlassian-admin.list-organizations"
+              outputParameters:
+                - type: object
+                  mapping: "$."
+
+    - type: mcp
+      port: 9091
+      namespace: atlassian-source-control-mcp
+      transport: http
+      description: "MCP server for AI-assisted Bitbucket source control."
+      tools:
+        - name: list-repositories
+          description: "List Bitbucket repositories in a workspace"
+          hints:
+            readOnly: true
+            openWorld: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-pull-requests
+          description: "List pull requests for a repository"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-workspaces
+          description: "List Bitbucket workspaces"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-snippets
+          description: "List code snippets"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
+        - name: list-teams
+          description: "List teams in a workspace"
+          hints:
+            readOnly: true
+          call: "atlassian-admin.list-organizations"
+          outputParameters:
+            - type: object
+              mapping: "$."
