@@ -1,109 +1,227 @@
-naftiko: "1.0.0-alpha1"
-
+naftiko: 1.0.0-alpha2
 info:
-  label: "Atlassian Agile Development"
-  description: "Agile software development workflow combining Jira Issue, Project, Filter, Search, Field, Workflow, and Dashboard APIs for software developers and scrum masters to plan, track, and deliver software."
+  label: Atlassian Agile Development
+  description: Agile software development workflow combining Jira Issue, Project, Filter, Search, Field, Workflow, and Dashboard
+    APIs for software developers and scrum masters to plan, track, and deliver software.
   tags:
-    - Agile
-    - Atlassian
-    - Jira
-    - Software Development
-  created: "2026-04-19"
-  modified: "2026-04-19"
-
+  - Agile
+  - Atlassian
+  - Jira
+  - Software Development
+  created: '2026-04-19'
+  modified: '2026-05-06'
 binds:
-  - namespace: env
-    keys:
-      ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
-      ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
-      ATLASSIAN_SITE: ATLASSIAN_SITE
-
+- namespace: env
+  keys:
+    ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
+    ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
+    ATLASSIAN_SITE: ATLASSIAN_SITE
 capability:
   consumes:
-    - import: atlassian-admin
-      location: ./shared/admin.yaml
-
+  - type: http
+    namespace: atlassian-admin
+    baseUri: https://api.atlassian.com
+    description: Atlassian Admin API for organization management.
+    authentication:
+      type: bearer
+      token: '{{ATLASSIAN_API_TOKEN}}'
+    resources:
+    - name: organizations
+      path: /v1/orgs
+      description: Organization management
+      operations:
+      - name: list-organizations
+        method: GET
+        description: List accessible organizations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: get-organization
+        method: GET
+        description: Get organization details
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: users
+      path: /v1/orgs/{orgId}/users
+      description: User management within organization
+      operations:
+      - name: list-users
+        method: GET
+        description: List users in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: domains
+      path: /v1/orgs/{orgId}/domains
+      description: Domain management
+      operations:
+      - name: list-domains
+        method: GET
+        description: List domains in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: groups
+      path: /v1/orgs/{orgId}/groups
+      description: Group management
+      operations:
+      - name: list-groups
+        method: GET
+        description: List groups in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: policies
+      path: /v1/orgs/{orgId}/policies
+      description: Policy management
+      operations:
+      - name: list-policies
+        method: GET
+        description: List organization policies
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: events
+      path: /v1/orgs/{orgId}/events
+      description: Audit events
+      operations:
+      - name: list-events
+        method: GET
+        description: List organization audit events
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
   exposes:
-    - type: rest
-      port: 8080
-      namespace: atlassian-agile-api
-      description: "Unified REST API for Atlassian agile development operations."
-      resources:
-        - path: /v1/issues
-          name: issues
-          description: "Jira issue management"
-          operations:
-            - method: GET
-              name: search-issues
-              description: "Search issues using JQL"
-              call: "atlassian-admin.list-organizations"
-              outputParameters:
-                - type: object
-                  mapping: "$."
-        - path: /v1/projects
-          name: projects
-          description: "Jira project management"
-          operations:
-            - method: GET
-              name: list-projects
-              description: "List all projects"
-              call: "atlassian-admin.list-organizations"
-              outputParameters:
-                - type: object
-                  mapping: "$."
-
-    - type: mcp
-      port: 9090
-      namespace: atlassian-agile-mcp
-      transport: http
-      description: "MCP server for AI-assisted agile development with Jira."
-      tools:
-        - name: search-issues
-          description: "Search Jira issues using JQL queries"
-          hints:
-            readOnly: true
-            openWorld: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-projects
-          description: "List all Jira projects"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-dashboards
-          description: "List Jira dashboards"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-filters
-          description: "List saved Jira filters"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-workflows
-          description: "List Jira workflows"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-statuses
-          description: "List workflow statuses"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
+  - type: rest
+    port: 8080
+    namespace: atlassian-agile-api
+    description: Unified REST API for Atlassian agile development operations.
+    resources:
+    - path: /v1/issues
+      name: issues
+      description: Jira issue management
+      operations:
+      - method: GET
+        name: search-issues
+        description: Search issues using JQL
+        call: atlassian-admin.list-organizations
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/projects
+      name: projects
+      description: Jira project management
+      operations:
+      - method: GET
+        name: list-projects
+        description: List all projects
+        call: atlassian-admin.list-organizations
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    port: 9090
+    namespace: atlassian-agile-mcp
+    transport: http
+    description: MCP server for AI-assisted agile development with Jira.
+    tools:
+    - name: search-issues
+      description: Search Jira issues using JQL queries
+      hints:
+        readOnly: true
+        openWorld: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-projects
+      description: List all Jira projects
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-dashboards
+      description: List Jira dashboards
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-filters
+      description: List saved Jira filters
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-workflows
+      description: List Jira workflows
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-statuses
+      description: List workflow statuses
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.

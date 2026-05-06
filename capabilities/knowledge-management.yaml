@@ -1,119 +1,237 @@
-naftiko: "1.0.0-alpha1"
-
+naftiko: 1.0.0-alpha2
 info:
-  label: "Atlassian Knowledge Management"
-  description: "Knowledge management workflow combining Confluence Content, Space, Search, Template, Label, and User APIs for technical writers and team leads to create, organize, and share documentation."
+  label: Atlassian Knowledge Management
+  description: Knowledge management workflow combining Confluence Content, Space, Search, Template, Label, and User APIs for
+    technical writers and team leads to create, organize, and share documentation.
   tags:
-    - Atlassian
-    - Confluence
-    - Knowledge Management
-  created: "2026-04-19"
-  modified: "2026-04-19"
-
+  - Atlassian
+  - Confluence
+  - Knowledge Management
+  created: '2026-04-19'
+  modified: '2026-05-06'
 binds:
-  - namespace: env
-    keys:
-      ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
-      ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
-      ATLASSIAN_SITE: ATLASSIAN_SITE
-
+- namespace: env
+  keys:
+    ATLASSIAN_API_TOKEN: ATLASSIAN_API_TOKEN
+    ATLASSIAN_EMAIL: ATLASSIAN_EMAIL
+    ATLASSIAN_SITE: ATLASSIAN_SITE
 capability:
   consumes:
-    - import: atlassian-admin
-      location: ./shared/admin.yaml
-
+  - type: http
+    namespace: atlassian-admin
+    baseUri: https://api.atlassian.com
+    description: Atlassian Admin API for organization management.
+    authentication:
+      type: bearer
+      token: '{{ATLASSIAN_API_TOKEN}}'
+    resources:
+    - name: organizations
+      path: /v1/orgs
+      description: Organization management
+      operations:
+      - name: list-organizations
+        method: GET
+        description: List accessible organizations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: get-organization
+        method: GET
+        description: Get organization details
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: users
+      path: /v1/orgs/{orgId}/users
+      description: User management within organization
+      operations:
+      - name: list-users
+        method: GET
+        description: List users in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: domains
+      path: /v1/orgs/{orgId}/domains
+      description: Domain management
+      operations:
+      - name: list-domains
+        method: GET
+        description: List domains in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: groups
+      path: /v1/orgs/{orgId}/groups
+      description: Group management
+      operations:
+      - name: list-groups
+        method: GET
+        description: List groups in organization
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: policies
+      path: /v1/orgs/{orgId}/policies
+      description: Policy management
+      operations:
+      - name: list-policies
+        method: GET
+        description: List organization policies
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: events
+      path: /v1/orgs/{orgId}/events
+      description: Audit events
+      operations:
+      - name: list-events
+        method: GET
+        description: List organization audit events
+        inputParameters:
+        - name: orgId
+          in: path
+          type: string
+          required: true
+          description: Organization ID
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
   exposes:
-    - type: rest
-      port: 8082
-      namespace: atlassian-knowledge-api
-      description: "Unified REST API for Confluence knowledge management."
-      resources:
-        - path: /v1/content
-          name: content
-          description: "Content management"
-          operations:
-            - method: GET
-              name: list-content
-              description: "List Confluence content"
-              call: "atlassian-admin.list-organizations"
-              outputParameters:
-                - type: object
-                  mapping: "$."
-        - path: /v1/spaces
-          name: spaces
-          description: "Space management"
-          operations:
-            - method: GET
-              name: list-spaces
-              description: "List Confluence spaces"
-              call: "atlassian-admin.list-organizations"
-              outputParameters:
-                - type: object
-                  mapping: "$."
-        - path: /v1/search
-          name: search
-          description: "Content search"
-          operations:
-            - method: GET
-              name: search-content
-              description: "Search Confluence content"
-              call: "atlassian-admin.list-organizations"
-              outputParameters:
-                - type: object
-                  mapping: "$."
-
-    - type: mcp
-      port: 9092
-      namespace: atlassian-knowledge-mcp
-      transport: http
-      description: "MCP server for AI-assisted Confluence knowledge management."
-      tools:
-        - name: list-content
-          description: "List Confluence pages and blog posts"
-          hints:
-            readOnly: true
-            openWorld: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: search-content
-          description: "Search Confluence content using CQL"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-spaces
-          description: "List Confluence spaces"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-templates
-          description: "List Confluence templates"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-groups
-          description: "List Confluence groups"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
-        - name: list-users
-          description: "List Confluence users"
-          hints:
-            readOnly: true
-          call: "atlassian-admin.list-organizations"
-          outputParameters:
-            - type: object
-              mapping: "$."
+  - type: rest
+    port: 8082
+    namespace: atlassian-knowledge-api
+    description: Unified REST API for Confluence knowledge management.
+    resources:
+    - path: /v1/content
+      name: content
+      description: Content management
+      operations:
+      - method: GET
+        name: list-content
+        description: List Confluence content
+        call: atlassian-admin.list-organizations
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/spaces
+      name: spaces
+      description: Space management
+      operations:
+      - method: GET
+        name: list-spaces
+        description: List Confluence spaces
+        call: atlassian-admin.list-organizations
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/search
+      name: search
+      description: Content search
+      operations:
+      - method: GET
+        name: search-content
+        description: Search Confluence content
+        call: atlassian-admin.list-organizations
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    port: 9092
+    namespace: atlassian-knowledge-mcp
+    transport: http
+    description: MCP server for AI-assisted Confluence knowledge management.
+    tools:
+    - name: list-content
+      description: List Confluence pages and blog posts
+      hints:
+        readOnly: true
+        openWorld: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: search-content
+      description: Search Confluence content using CQL
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-spaces
+      description: List Confluence spaces
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-templates
+      description: List Confluence templates
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-groups
+      description: List Confluence groups
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-users
+      description: List Confluence users
+      hints:
+        readOnly: true
+      call: atlassian-admin.list-organizations
+      outputParameters:
+      - type: object
+        mapping: $.
