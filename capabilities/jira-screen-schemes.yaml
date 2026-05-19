@@ -1,0 +1,231 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Screen Schemes
+  description: 'Atlassian The Jira Cloud platform REST API — Screen Schemes. 4 operations. Lead operation: Atlassian Get Screen
+    Schemes. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Screen Schemes
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-screen-schemes
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Screen Schemes business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-api-3-screenscheme
+      path: /rest/api/3/screenscheme
+      operations:
+      - name: atlassiangetscreenschemes
+        method: GET
+        description: Atlassian Get Screen Schemes
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+        - name: id
+          in: query
+          type: array
+          description: The list of screen scheme IDs. To include multiple IDs, provide an ampersand-separated list. For example,
+            `id=10000&id=10001`.
+        - name: expand
+          in: query
+          type: string
+          description: 'Use [expand](#expansion) include additional information in the response. This parameter accepts `issueTypeScreenSchemes`
+            that, for each screen schemes, returns '
+        - name: queryString
+          in: query
+          type: string
+          description: String used to perform a case-insensitive partial match with screen scheme name.
+        - name: orderBy
+          in: query
+          type: string
+          description: '[Order](#ordering) the results by a field:'
+      - name: atlassiancreatescreenscheme
+        method: POST
+        description: Atlassian Create Screen Scheme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-screenscheme-screenSchemeId
+      path: /rest/api/3/screenscheme/{screenSchemeId}
+      operations:
+      - name: atlassiandeletescreenscheme
+        method: DELETE
+        description: Atlassian Delete Screen Scheme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: screenSchemeId
+          in: path
+          type: string
+          description: The ID of the screen scheme.
+          required: true
+      - name: atlassianupdatescreenscheme
+        method: PUT
+        description: Atlassian Update Screen Scheme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: screenSchemeId
+          in: path
+          type: string
+          description: The ID of the screen scheme.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-screen-schemes-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Screen Schemes. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/screenscheme
+      name: rest-api-3-screenscheme
+      description: REST surface for rest-api-3-screenscheme.
+      operations:
+      - method: GET
+        name: atlassiangetscreenschemes
+        description: Atlassian Get Screen Schemes
+        call: jira-screen-schemes.atlassiangetscreenschemes
+        with:
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+          id: rest.id
+          expand: rest.expand
+          queryString: rest.queryString
+          orderBy: rest.orderBy
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreatescreenscheme
+        description: Atlassian Create Screen Scheme
+        call: jira-screen-schemes.atlassiancreatescreenscheme
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/screenscheme/{screenschemeid}
+      name: rest-api-3-screenscheme-screenschemeid
+      description: REST surface for rest-api-3-screenscheme-screenSchemeId.
+      operations:
+      - method: DELETE
+        name: atlassiandeletescreenscheme
+        description: Atlassian Delete Screen Scheme
+        call: jira-screen-schemes.atlassiandeletescreenscheme
+        with:
+          screenSchemeId: rest.screenSchemeId
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatescreenscheme
+        description: Atlassian Update Screen Scheme
+        call: jira-screen-schemes.atlassianupdatescreenscheme
+        with:
+          screenSchemeId: rest.screenSchemeId
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-screen-schemes-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Screen Schemes. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-screen-schemes
+      description: Atlassian Get Screen Schemes
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-screen-schemes.atlassiangetscreenschemes
+      with:
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+        id: tools.id
+        expand: tools.expand
+        queryString: tools.queryString
+        orderBy: tools.orderBy
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-screen-scheme
+      description: Atlassian Create Screen Scheme
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-screen-schemes.atlassiancreatescreenscheme
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-screen-scheme
+      description: Atlassian Delete Screen Scheme
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-screen-schemes.atlassiandeletescreenscheme
+      with:
+        screenSchemeId: tools.screenSchemeId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-screen-scheme
+      description: Atlassian Update Screen Scheme
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-screen-schemes.atlassianupdatescreenscheme
+      with:
+        screenSchemeId: tools.screenSchemeId
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

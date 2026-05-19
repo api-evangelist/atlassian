@@ -1,0 +1,80 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket User API — Add
+  description: 'Atlassian Bit Bucket User API — Add. 1 operations. Lead operation: Atlassian Add New Ssh Key. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Add
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-user-add
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket User API — Add business capability. Self-contained, no shared references.
+    resources:
+    - name: users-selected_user-ssh-keys
+      path: /users/{selected_user}/ssh-keys
+      operations:
+      - name: addnewsshkey
+        method: POST
+        description: Atlassian Add New Ssh Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-user-add-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket User API — Add. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/users/{selected-user}/ssh-keys
+      name: users-selected-user-ssh-keys
+      description: REST surface for users-selected_user-ssh-keys.
+      operations:
+      - method: POST
+        name: addnewsshkey
+        description: Atlassian Add New Ssh Key
+        call: bitbucket-user-add.addnewsshkey
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-user-add-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket User API — Add. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-add-new-ssh-key
+      description: Atlassian Add New Ssh Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-user-add.addnewsshkey
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

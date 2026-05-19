@@ -1,0 +1,93 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Shared
+  description: 'Atlassian Confluence Content API — Shared. 1 operations. Lead operation: Atlassian Publish Shared Draft. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Shared
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-shared
+    baseUri: ''
+    description: Atlassian Confluence Content API — Shared business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-blueprint-instance-draftId
+      path: /wiki/rest/api/content/blueprint/instance/{draftId}
+      operations:
+      - name: publishshareddraft
+        method: PUT
+        description: Atlassian Publish Shared Draft
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: draftId
+          in: path
+          type: string
+          description: The ID of the draft page that was created from a blueprint.
+          required: true
+        - name: status
+          in: query
+          type: string
+          description: The status of the content to be updated, i.e. the draft. This is set
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-shared-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Shared. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/blueprint/instance/{draftid}
+      name: wiki-rest-api-content-blueprint-instance-draftid
+      description: REST surface for wiki-rest-api-content-blueprint-instance-draftId.
+      operations:
+      - method: PUT
+        name: publishshareddraft
+        description: Atlassian Publish Shared Draft
+        call: confluence-content-shared.publishshareddraft
+        with:
+          draftId: rest.draftId
+          status: rest.status
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-shared-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Shared. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-publish-shared-draft
+      description: Atlassian Publish Shared Draft
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-content-shared.publishshareddraft
+      with:
+        draftId: tools.draftId
+        status: tools.status
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

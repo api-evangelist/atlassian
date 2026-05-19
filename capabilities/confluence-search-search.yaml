@@ -1,0 +1,101 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Search API — Search
+  description: 'Atlassian Confluence Search API — Search. 1 operations. Lead operation: Atlassian Search Users. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Search
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-search-search
+    baseUri: ''
+    description: Atlassian Confluence Search API — Search business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-search-user
+      path: /wiki/rest/api/search/user
+      operations:
+      - name: atlassiansearchuser
+        method: GET
+        description: Atlassian Search Users
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: cql
+          in: query
+          type: string
+          description: The CQL query to be used for the search. See
+          required: true
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned users.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of user objects to return per page.
+        - name: expand
+          in: query
+          type: array
+          description: A multi-value parameter indicating which properties of the user to expand.
+        - name: sitePermissionTypeFilter
+          in: query
+          type: string
+          description: Filters users by permission type. Use `none` to default to licensed users, `externalCollaborator`
+  exposes:
+  - type: rest
+    namespace: confluence-search-search-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Search API — Search. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/search/user
+      name: wiki-rest-api-search-user
+      description: REST surface for wiki-rest-api-search-user.
+      operations:
+      - method: GET
+        name: atlassiansearchuser
+        description: Atlassian Search Users
+        call: confluence-search-search.atlassiansearchuser
+        with:
+          cql: rest.cql
+          start: rest.start
+          limit: rest.limit
+          expand: rest.expand
+          sitePermissionTypeFilter: rest.sitePermissionTypeFilter
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-search-search-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Search API — Search. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-search-users
+      description: Atlassian Search Users
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-search-search.atlassiansearchuser
+      with:
+        cql: tools.cql
+        start: tools.start
+        limit: tools.limit
+        expand: tools.expand
+        sitePermissionTypeFilter: tools.sitePermissionTypeFilter
+      outputParameters:
+      - type: object
+        mapping: $.

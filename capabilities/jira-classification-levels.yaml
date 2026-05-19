@@ -1,0 +1,86 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Classification Levels
+  description: 'Atlassian The Jira Cloud platform REST API — Classification Levels. 1 operations. Lead operation: Atlassian
+    Get All Classification Levels. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Classification Levels
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-classification-levels
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Classification Levels business capability. Self-contained, no
+      shared references.
+    resources:
+    - name: rest-api-3-classification-levels
+      path: /rest/api/3/classification-levels
+      operations:
+      - name: atlassiangetalluserdataclassificationlevels
+        method: GET
+        description: Atlassian Get All Classification Levels
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: status
+          in: query
+          type: array
+          description: Optional set of statuses to filter by.
+        - name: orderBy
+          in: query
+          type: string
+          description: Ordering of the results by a given field. If not provided, values will not be sorted.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-classification-levels-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Classification Levels. One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/classification-levels
+      name: rest-api-3-classification-levels
+      description: REST surface for rest-api-3-classification-levels.
+      operations:
+      - method: GET
+        name: atlassiangetalluserdataclassificationlevels
+        description: Atlassian Get All Classification Levels
+        call: jira-classification-levels.atlassiangetalluserdataclassificationlevels
+        with:
+          status: rest.status
+          orderBy: rest.orderBy
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-classification-levels-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Classification Levels. One tool per consumed
+      operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-all-classification-levels
+      description: Atlassian Get All Classification Levels
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-classification-levels.atlassiangetalluserdataclassificationlevels
+      with:
+        status: tools.status
+        orderBy: tools.orderBy
+      outputParameters:
+      - type: object
+        mapping: $.

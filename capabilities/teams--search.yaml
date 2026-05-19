@@ -1,0 +1,96 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian teams/ — Search
+  description: 'Atlassian teams/ — Search. 1 operations. Lead operation: Atlassian Search For Code In A Team S Repositories.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Search
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: teams--search
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian teams/ — Search business capability. Self-contained, no shared references.
+    resources:
+    - name: teams-username-search-code
+      path: /teams/{username}/search/code
+      operations:
+      - name: atlassiansearchteam
+        method: GET
+        description: Atlassian Search For Code In A Team S Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account to search in; either the username or the UUID in curly braces
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+  exposes:
+  - type: rest
+    namespace: teams--search-rest
+    port: 8080
+    description: REST adapter for Atlassian teams/ — Search. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/teams/{username}/search/code
+      name: teams-username-search-code
+      description: REST surface for teams-username-search-code.
+      operations:
+      - method: GET
+        name: atlassiansearchteam
+        description: Atlassian Search For Code In A Team S Repositories
+        call: teams--search.atlassiansearchteam
+        with:
+          username: rest.username
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: teams--search-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian teams/ — Search. One tool per consumed operation, routed inline through this capability's
+      consumes block.
+    tools:
+    - name: atlassian-search-code-team-s
+      description: Atlassian Search For Code In A Team S Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: teams--search.atlassiansearchteam
+      with:
+        username: tools.username
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,140 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Dynamic Modules
+  description: 'Atlassian The Jira Cloud platform REST API — Dynamic Modules. 3 operations. Lead operation: Atlassian Remove
+    Modules. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Dynamic Modules
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-dynamic-modules
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Dynamic Modules business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-atlassian-connect-1-app-module-dynamic
+      path: /rest/atlassian-connect/1/app/module/dynamic
+      operations:
+      - name: atlassiandynamicmodulesresourceremovemodulesdelete
+        method: DELETE
+        description: Atlassian Remove Modules
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: moduleKey
+          in: query
+          type: array
+          description: The key of the module to remove. To include multiple module keys, provide multiple copies of this parameter.
+      - name: atlassiandynamicmodulesresourcegetmodulesget
+        method: GET
+        description: Atlassian Get Modules
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiandynamicmodulesresourceregistermodulespost
+        method: POST
+        description: Atlassian Register Modules
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-dynamic-modules-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Dynamic Modules. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/atlassian-connect/1/app/module/dynamic
+      name: rest-atlassian-connect-1-app-module-dynamic
+      description: REST surface for rest-atlassian-connect-1-app-module-dynamic.
+      operations:
+      - method: DELETE
+        name: atlassiandynamicmodulesresourceremovemodulesdelete
+        description: Atlassian Remove Modules
+        call: jira-dynamic-modules.atlassiandynamicmodulesresourceremovemodulesdelete
+        with:
+          moduleKey: rest.moduleKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiandynamicmodulesresourcegetmodulesget
+        description: Atlassian Get Modules
+        call: jira-dynamic-modules.atlassiandynamicmodulesresourcegetmodulesget
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiandynamicmodulesresourceregistermodulespost
+        description: Atlassian Register Modules
+        call: jira-dynamic-modules.atlassiandynamicmodulesresourceregistermodulespost
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-dynamic-modules-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Dynamic Modules. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-remove-modules
+      description: Atlassian Remove Modules
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-dynamic-modules.atlassiandynamicmodulesresourceremovemodulesdelete
+      with:
+        moduleKey: tools.moduleKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-modules
+      description: Atlassian Get Modules
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-dynamic-modules.atlassiandynamicmodulesresourcegetmodulesget
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-register-modules
+      description: Atlassian Register Modules
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-dynamic-modules.atlassiandynamicmodulesresourceregistermodulespost
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

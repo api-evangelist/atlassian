@@ -1,0 +1,193 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — App Migration
+  description: 'Atlassian The Jira Cloud platform REST API — App Migration. 3 operations. Lead operation: Atlassian Bulk Update
+    Custom Field Value. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - App Migration
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-app-migration
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — App Migration business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-atlassian-connect-1-migration-field
+      path: /rest/atlassian-connect/1/migration/field
+      operations:
+      - name: atlassianappissuefieldvalueupdateresourceupdateissuefieldsput
+        method: PUT
+        description: Atlassian Bulk Update Custom Field Value
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: Atlassian-Transfer-Id
+          in: header
+          type: string
+          description: The ID of the transfer.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-atlassian-connect-1-migration-properties-entityType
+      path: /rest/atlassian-connect/1/migration/properties/{entityType}
+      operations:
+      - name: atlassianmigrationresourceupdateentitypropertiesvalueput
+        method: PUT
+        description: Atlassian Bulk Update Entity Properties
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: Atlassian-Transfer-Id
+          in: header
+          type: string
+          description: The app migration transfer ID.
+          required: true
+        - name: entityType
+          in: path
+          type: string
+          description: The type indicating the object that contains the entity properties.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-atlassian-connect-1-migration-workflow-rule-search
+      path: /rest/atlassian-connect/1/migration/workflow/rule/search
+      operations:
+      - name: atlassianmigrationresourceworkflowrulesearchpost
+        method: POST
+        description: Atlassian Get Workflow Transition Rule Configurations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: Atlassian-Transfer-Id
+          in: header
+          type: string
+          description: The app migration transfer ID.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-app-migration-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — App Migration. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/atlassian-connect/1/migration/field
+      name: rest-atlassian-connect-1-migration-field
+      description: REST surface for rest-atlassian-connect-1-migration-field.
+      operations:
+      - method: PUT
+        name: atlassianappissuefieldvalueupdateresourceupdateissuefieldsput
+        description: Atlassian Bulk Update Custom Field Value
+        call: jira-app-migration.atlassianappissuefieldvalueupdateresourceupdateissuefieldsput
+        with:
+          Atlassian-Transfer-Id: rest.Atlassian-Transfer-Id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/atlassian-connect/1/migration/properties/{entitytype}
+      name: rest-atlassian-connect-1-migration-properties-entitytype
+      description: REST surface for rest-atlassian-connect-1-migration-properties-entityType.
+      operations:
+      - method: PUT
+        name: atlassianmigrationresourceupdateentitypropertiesvalueput
+        description: Atlassian Bulk Update Entity Properties
+        call: jira-app-migration.atlassianmigrationresourceupdateentitypropertiesvalueput
+        with:
+          Atlassian-Transfer-Id: rest.Atlassian-Transfer-Id
+          entityType: rest.entityType
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/atlassian-connect/1/migration/workflow/rule/search
+      name: rest-atlassian-connect-1-migration-workflow-rule-search
+      description: REST surface for rest-atlassian-connect-1-migration-workflow-rule-search.
+      operations:
+      - method: POST
+        name: atlassianmigrationresourceworkflowrulesearchpost
+        description: Atlassian Get Workflow Transition Rule Configurations
+        call: jira-app-migration.atlassianmigrationresourceworkflowrulesearchpost
+        with:
+          Atlassian-Transfer-Id: rest.Atlassian-Transfer-Id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-app-migration-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — App Migration. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-bulk-update-custom-field
+      description: Atlassian Bulk Update Custom Field Value
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-app-migration.atlassianappissuefieldvalueupdateresourceupdateissuefieldsput
+      with:
+        Atlassian-Transfer-Id: tools.Atlassian-Transfer-Id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-bulk-update-entity-properties
+      description: Atlassian Bulk Update Entity Properties
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-app-migration.atlassianmigrationresourceupdateentitypropertiesvalueput
+      with:
+        Atlassian-Transfer-Id: tools.Atlassian-Transfer-Id
+        entityType: tools.entityType
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-workflow-transition-rule
+      description: Atlassian Get Workflow Transition Rule Configurations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: false
+      call: jira-app-migration.atlassianmigrationresourceworkflowrulesearchpost
+      with:
+        Atlassian-Transfer-Id: tools.Atlassian-Transfer-Id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

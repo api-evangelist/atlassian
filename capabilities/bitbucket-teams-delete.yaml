@@ -1,0 +1,87 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Teams API — Delete
+  description: 'Atlassian Bit Bucket Teams API — Delete. 1 operations. Lead operation: Atlassian Delete Variable for Team.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Delete
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-teams-delete
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Teams API — Delete business capability. Self-contained, no shared references.
+    resources:
+    - name: teams-username-pipelines_config-variables-variable_uuid
+      path: /teams/{username}/pipelines_config/variables/{variable_uuid}
+      operations:
+      - name: deletevariableforteam
+        method: DELETE
+        description: Atlassian Delete Variable for Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to delete.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-teams-delete-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Teams API — Delete. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/teams/{username}/pipelines-config/variables/{variable-uuid}
+      name: teams-username-pipelines-config-variables-variable-uuid
+      description: REST surface for teams-username-pipelines_config-variables-variable_uuid.
+      operations:
+      - method: DELETE
+        name: deletevariableforteam
+        description: Atlassian Delete Variable for Team
+        call: bitbucket-teams-delete.deletevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-teams-delete-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Teams API — Delete. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-delete-variable-team
+      description: Atlassian Delete Variable for Team
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-teams-delete.deletevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.

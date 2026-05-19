@@ -1,0 +1,91 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Modified
+  description: 'Atlassian Bit Bucket Repositories API — Modified. 1 operations. Lead operation: Atlassian List Commits That
+    Modified File. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Modified
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-modified
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Modified business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-filehistory-commit-path
+      path: /repositories/{workspace}/{repo_slug}/filehistory/{commit}/{path}
+      operations:
+      - name: listcommitsthatmodifiedfile
+        method: GET
+        description: Atlassian List Commits That Modified File
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: renames
+          in: query
+          type: string
+          description: When `true`, Bitbucket will follow the history of the file across
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Name of a response property sort the result by as per
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-modified-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Modified. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/filehistory/{commit}/{path}
+      name: repositories-workspace-repo-slug-filehistory-commit-path
+      description: REST surface for repositories-workspace-repo_slug-filehistory-commit-path.
+      operations:
+      - method: GET
+        name: listcommitsthatmodifiedfile
+        description: Atlassian List Commits That Modified File
+        call: bitbucket-repositories-modified.listcommitsthatmodifiedfile
+        with:
+          renames: rest.renames
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-modified-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Modified. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-list-commits-that-modified
+      description: Atlassian List Commits That Modified File
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-modified.listcommitsthatmodifiedfile
+      with:
+        renames: tools.renames
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.

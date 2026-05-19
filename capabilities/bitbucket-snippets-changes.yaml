@@ -1,0 +1,108 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Snippets API — Changes
+  description: 'Atlassian Bit Bucket Snippets API — Changes. 2 operations. Lead operation: Atlassian List Snippet Changes.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Changes
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-snippets-changes
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Snippets API — Changes business capability. Self-contained, no shared references.
+    resources:
+    - name: snippets-workspace-encoded_id-commits
+      path: /snippets/{workspace}/{encoded_id}/commits
+      operations:
+      - name: listsnippetchanges
+        method: GET
+        description: Atlassian List Snippet Changes
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: snippets-workspace-encoded_id-revision-diff
+      path: /snippets/{workspace}/{encoded_id}/{revision}/diff
+      operations:
+      - name: getsnippetchangesbetweenversions
+        method: GET
+        description: Atlassian Get Snippet Changes Between Versions
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: path
+          in: query
+          type: string
+          description: When used, only one the diff of the specified file will be returned.
+  exposes:
+  - type: rest
+    namespace: bitbucket-snippets-changes-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Snippets API — Changes. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/snippets/{workspace}/{encoded-id}/commits
+      name: snippets-workspace-encoded-id-commits
+      description: REST surface for snippets-workspace-encoded_id-commits.
+      operations:
+      - method: GET
+        name: listsnippetchanges
+        description: Atlassian List Snippet Changes
+        call: bitbucket-snippets-changes.listsnippetchanges
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/snippets/{workspace}/{encoded-id}/{revision}/diff
+      name: snippets-workspace-encoded-id-revision-diff
+      description: REST surface for snippets-workspace-encoded_id-revision-diff.
+      operations:
+      - method: GET
+        name: getsnippetchangesbetweenversions
+        description: Atlassian Get Snippet Changes Between Versions
+        call: bitbucket-snippets-changes.getsnippetchangesbetweenversions
+        with:
+          path: rest.path
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-snippets-changes-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Snippets API — Changes. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-snippet-changes
+      description: Atlassian List Snippet Changes
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-changes.listsnippetchanges
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-snippet-changes-between
+      description: Atlassian Get Snippet Changes Between Versions
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-changes.getsnippetchangesbetweenversions
+      with:
+        path: tools.path
+      outputParameters:
+      - type: object
+        mapping: $.

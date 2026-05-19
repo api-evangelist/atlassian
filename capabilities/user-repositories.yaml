@@ -1,0 +1,206 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian user — Repositories
+  description: 'Atlassian user — Repositories. 5 operations. Lead operation: Atlassian List Explicit User Permissions For
+    A Repository. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Repositories
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: user-repositories
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian user — Repositories business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-permissions-config-users
+      path: /repositories/{workspace}/{repo_slug}/permissions-config/users
+      operations:
+      - name: atlassianlistexplicituserpermissionsforarepository
+        method: GET
+        description: Atlassian List Explicit User Permissions For A Repository
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-permissions-config-users-selected_user_id
+      path: /repositories/{workspace}/{repo_slug}/permissions-config/users/{selected_user_id}
+      operations:
+      - name: atlassiandeleteanexplicituserpermissionforarepository
+        method: DELETE
+        description: Atlassian Delete An Explicit User Permission For A Repository
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiangetanexplicituserpermissionforarepository
+        method: GET
+        description: Atlassian Get An Explicit User Permission For A Repository
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassianupdateanexplicituserpermissionforarepository
+        method: PUT
+        description: Atlassian Update An Explicit User Permission For A Repository
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: user-permissions-repositories
+      path: /user/permissions/repositories
+      operations:
+      - name: atlassianlistrepositorypermissionsforauser
+        method: GET
+        description: Atlassian List Repository Permissions For A User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Name of a response property sort the result by as per
+  exposes:
+  - type: rest
+    namespace: user-repositories-rest
+    port: 8080
+    description: REST adapter for Atlassian user — Repositories. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/permissions-config/users
+      name: repositories-workspace-repo-slug-permissions-config-users
+      description: REST surface for repositories-workspace-repo_slug-permissions-config-users.
+      operations:
+      - method: GET
+        name: atlassianlistexplicituserpermissionsforarepository
+        description: Atlassian List Explicit User Permissions For A Repository
+        call: user-repositories.atlassianlistexplicituserpermissionsforarepository
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/permissions-config/users/{selected-user-id}
+      name: repositories-workspace-repo-slug-permissions-config-users-selected-user-id
+      description: REST surface for repositories-workspace-repo_slug-permissions-config-users-selected_user_id.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteanexplicituserpermissionforarepository
+        description: Atlassian Delete An Explicit User Permission For A Repository
+        call: user-repositories.atlassiandeleteanexplicituserpermissionforarepository
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetanexplicituserpermissionforarepository
+        description: Atlassian Get An Explicit User Permission For A Repository
+        call: user-repositories.atlassiangetanexplicituserpermissionforarepository
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateanexplicituserpermissionforarepository
+        description: Atlassian Update An Explicit User Permission For A Repository
+        call: user-repositories.atlassianupdateanexplicituserpermissionforarepository
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/user/permissions/repositories
+      name: user-permissions-repositories
+      description: REST surface for user-permissions-repositories.
+      operations:
+      - method: GET
+        name: atlassianlistrepositorypermissionsforauser
+        description: Atlassian List Repository Permissions For A User
+        call: user-repositories.atlassianlistrepositorypermissionsforauser
+        with:
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: user-repositories-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian user — Repositories. One tool per consumed operation, routed inline through this
+      capability's consumes block.
+    tools:
+    - name: atlassian-list-explicit-user-permissions
+      description: Atlassian List Explicit User Permissions For A Repository
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: user-repositories.atlassianlistexplicituserpermissionsforarepository
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-explicit-user-permission
+      description: Atlassian Delete An Explicit User Permission For A Repository
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: user-repositories.atlassiandeleteanexplicituserpermissionforarepository
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-explicit-user-permission
+      description: Atlassian Get An Explicit User Permission For A Repository
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: user-repositories.atlassiangetanexplicituserpermissionforarepository
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-explicit-user-permission
+      description: Atlassian Update An Explicit User Permission For A Repository
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: user-repositories.atlassianupdateanexplicituserpermissionforarepository
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-list-repository-permissions-user
+      description: Atlassian List Repository Permissions For A User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: user-repositories.atlassianlistrepositorypermissionsforauser
+      with:
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.

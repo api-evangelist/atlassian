@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Add
+  description: 'Atlassian Bit Bucket Repositories API — Add. 2 operations. Lead operation: Atlassian Add User to the Default
+    Reviewers. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Add
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-add
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Add business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-default-reviewers-target_username
+      path: /repositories/{workspace}/{repo_slug}/default-reviewers/{target_username}
+      operations:
+      - name: addusertothedefaultreviewers
+        method: PUT
+        description: Atlassian Add User to the Default Reviewers
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-deploy-keys
+      path: /repositories/{workspace}/{repo_slug}/deploy-keys
+      operations:
+      - name: addrepositorydeploykey
+        method: POST
+        description: Atlassian Add Repository Deploy Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-add-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Add. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/default-reviewers/{target-username}
+      name: repositories-workspace-repo-slug-default-reviewers-target-username
+      description: REST surface for repositories-workspace-repo_slug-default-reviewers-target_username.
+      operations:
+      - method: PUT
+        name: addusertothedefaultreviewers
+        description: Atlassian Add User to the Default Reviewers
+        call: bitbucket-repositories-add.addusertothedefaultreviewers
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/deploy-keys
+      name: repositories-workspace-repo-slug-deploy-keys
+      description: REST surface for repositories-workspace-repo_slug-deploy-keys.
+      operations:
+      - method: POST
+        name: addrepositorydeploykey
+        description: Atlassian Add Repository Deploy Key
+        call: bitbucket-repositories-add.addrepositorydeploykey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-add-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Add. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-add-user-default-reviewers
+      description: Atlassian Add User to the Default Reviewers
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-add.addusertothedefaultreviewers
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-add-repository-deploy-key
+      description: Atlassian Add Repository Deploy Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-add.addrepositorydeploykey
+      outputParameters:
+      - type: object
+        mapping: $.

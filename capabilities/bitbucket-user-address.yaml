@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket User API — Address
+  description: 'Atlassian Bit Bucket User API — Address. 1 operations. Lead operation: Atlassian Get an Email Address for
+    Current User. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Address
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-user-address
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket User API — Address business capability. Self-contained, no shared references.
+    resources:
+    - name: user-emails-email
+      path: /user/emails/{email}
+      operations:
+      - name: getanemailaddressforcurrentuser
+        method: GET
+        description: Atlassian Get an Email Address for Current User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-user-address-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket User API — Address. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/user/emails/{email}
+      name: user-emails-email
+      description: REST surface for user-emails-email.
+      operations:
+      - method: GET
+        name: getanemailaddressforcurrentuser
+        description: Atlassian Get an Email Address for Current User
+        call: bitbucket-user-address.getanemailaddressforcurrentuser
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-user-address-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket User API — Address. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-get-email-address-current
+      description: Atlassian Get an Email Address for Current User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-address.getanemailaddressforcurrentuser
+      outputParameters:
+      - type: object
+        mapping: $.

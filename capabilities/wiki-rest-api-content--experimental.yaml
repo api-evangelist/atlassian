@@ -1,0 +1,77 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/content/ — Experimental
+  description: 'Atlassian wiki/rest/api/content/ — Experimental. 1 operations. Lead operation: Atlassian Delete Page Tree.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Experimental
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-content--experimental
+    baseUri: ''
+    description: Atlassian wiki/rest/api/content/ — Experimental business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-pageTree
+      path: /wiki/rest/api/content/{id}/pageTree
+      operations:
+      - name: atlassiandeletepagetree
+        method: DELETE
+        description: Atlassian Delete Page Tree
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content which forms root of the page tree, to be deleted.
+          required: true
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-content--experimental-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/content/ — Experimental. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/pagetree
+      name: wiki-rest-api-content-id-pagetree
+      description: REST surface for wiki-rest-api-content-id-pageTree.
+      operations:
+      - method: DELETE
+        name: atlassiandeletepagetree
+        description: Atlassian Delete Page Tree
+        call: wiki-rest-api-content--experimental.atlassiandeletepagetree
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-content--experimental-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/content/ — Experimental. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-delete-page-tree
+      description: Atlassian Delete Page Tree
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: wiki-rest-api-content--experimental.atlassiandeletepagetree
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,169 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Task
+  description: 'Atlassian Bit Bucket Pull Requests API — Task. 4 operations. Lead operation: Atlassian Get the Merge Task
+    Status for Pull Request. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Task
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-task
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Task business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-merge-task-status-
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/merge/task-status/{task_id}
+      operations:
+      - name: getthemergetaskstatusforpullrequest
+        method: GET
+        description: Atlassian Get the Merge Task Status for Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks
+      operations:
+      - name: createtaskonpullrequest
+        method: POST
+        description: Atlassian Create Task on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks/{task_id}
+      operations:
+      - name: deletetaskonpullrequest
+        method: DELETE
+        description: Atlassian Delete Task on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: gettaskonpullrequest
+        method: GET
+        description: Atlassian Get Task on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-task-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Task. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/merge/task-status/{task-id}
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-merge-task-status
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-merge-task-status-.
+      operations:
+      - method: GET
+        name: getthemergetaskstatusforpullrequest
+        description: Atlassian Get the Merge Task Status for Pull Request
+        call: bitbucket-pull-requests-task.getthemergetaskstatusforpullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/tasks
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks.
+      operations:
+      - method: POST
+        name: createtaskonpullrequest
+        description: Atlassian Create Task on Pull Request
+        call: bitbucket-pull-requests-task.createtaskonpullrequest
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/tasks/{task-id}
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks-task-id
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id.
+      operations:
+      - method: DELETE
+        name: deletetaskonpullrequest
+        description: Atlassian Delete Task on Pull Request
+        call: bitbucket-pull-requests-task.deletetaskonpullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: gettaskonpullrequest
+        description: Atlassian Get Task on Pull Request
+        call: bitbucket-pull-requests-task.gettaskonpullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-task-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Task. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-merge-task-status
+      description: Atlassian Get the Merge Task Status for Pull Request
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-pull-requests-task.getthemergetaskstatusforpullrequest
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-task-pull-request
+      description: Atlassian Create Task on Pull Request
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-pull-requests-task.createtaskonpullrequest
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-task-pull-request
+      description: Atlassian Delete Task on Pull Request
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-task.deletetaskonpullrequest
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-task-pull-request
+      description: Atlassian Get Task on Pull Request
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-pull-requests-task.gettaskonpullrequest
+      outputParameters:
+      - type: object
+        mapping: $.

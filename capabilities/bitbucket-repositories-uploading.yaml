@@ -1,0 +1,103 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Uploading
+  description: 'Atlassian Bit Bucket Repositories API — Uploading. 1 operations. Lead operation: Atlassian Create Commit by
+    Uploading File. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Uploading
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-uploading
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Uploading business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-src
+      path: /repositories/{workspace}/{repo_slug}/src
+      operations:
+      - name: createcommitbyuploadingfile
+        method: POST
+        description: Atlassian Create Commit by Uploading File
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: message
+          in: query
+          type: string
+          description: The commit message. When omitted, Bitbucket uses a canned string.
+        - name: author
+          in: query
+          type: string
+          description: The raw string to be used as the new Commits author.
+        - name: parents
+          in: query
+          type: string
+          description: A comma-separated list of SHA1s of the commits that should
+        - name: files
+          in: query
+          type: string
+          description: Optional field that declares the files that the request is
+        - name: branch
+          in: query
+          type: string
+          description: The name of the branch that the new commit should be
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-uploading-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Uploading. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/src
+      name: repositories-workspace-repo-slug-src
+      description: REST surface for repositories-workspace-repo_slug-src.
+      operations:
+      - method: POST
+        name: createcommitbyuploadingfile
+        description: Atlassian Create Commit by Uploading File
+        call: bitbucket-repositories-uploading.createcommitbyuploadingfile
+        with:
+          message: rest.message
+          author: rest.author
+          parents: rest.parents
+          files: rest.files
+          branch: rest.branch
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-uploading-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Uploading. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-create-commit-uploading-file
+      description: Atlassian Create Commit by Uploading File
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-uploading.createcommitbyuploadingfile
+      with:
+        message: tools.message
+        author: tools.author
+        parents: tools.parents
+        files: tools.files
+        branch: tools.branch
+      outputParameters:
+      - type: object
+        mapping: $.

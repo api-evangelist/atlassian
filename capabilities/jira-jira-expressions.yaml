@@ -1,0 +1,136 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Jira Expressions
+  description: 'Atlassian The Jira Cloud platform REST API — Jira Expressions. 2 operations. Lead operation: Atlassian Analyse
+    Jira Expression. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Jira Expressions
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-jira-expressions
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Jira Expressions business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-api-3-expression-analyse
+      path: /rest/api/3/expression/analyse
+      operations:
+      - name: atlassiananalyseexpression
+        method: POST
+        description: Atlassian Analyse Jira Expression
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: check
+          in: query
+          type: string
+          description: 'The check to perform:'
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-expression-eval
+      path: /rest/api/3/expression/eval
+      operations:
+      - name: atlassianevaluatejiraexpression
+        method: POST
+        description: Atlassian Evaluate Jira Expression
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: Use [expand](#expansion) to include additional information in the response. This parameter accepts
+            `meta.complexity` that returns information about the expressi
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-jira-expressions-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Jira Expressions. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/expression/analyse
+      name: rest-api-3-expression-analyse
+      description: REST surface for rest-api-3-expression-analyse.
+      operations:
+      - method: POST
+        name: atlassiananalyseexpression
+        description: Atlassian Analyse Jira Expression
+        call: jira-jira-expressions.atlassiananalyseexpression
+        with:
+          check: rest.check
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/expression/eval
+      name: rest-api-3-expression-eval
+      description: REST surface for rest-api-3-expression-eval.
+      operations:
+      - method: POST
+        name: atlassianevaluatejiraexpression
+        description: Atlassian Evaluate Jira Expression
+        call: jira-jira-expressions.atlassianevaluatejiraexpression
+        with:
+          expand: rest.expand
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-jira-expressions-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Jira Expressions. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-analyse-jira-expression
+      description: Atlassian Analyse Jira Expression
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-jira-expressions.atlassiananalyseexpression
+      with:
+        check: tools.check
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-evaluate-jira-expression
+      description: Atlassian Evaluate Jira Expression
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-jira-expressions.atlassianevaluatejiraexpression
+      with:
+        expand: tools.expand
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,267 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket User API — Variables
+  description: 'Atlassian Bit Bucket User API — Variables. 5 operations. Lead operation: Atlassian List Variables for User.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Variables
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-user-variables
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket User API — Variables business capability. Self-contained, no shared references.
+    resources:
+    - name: users-selected_user-pipelines_config-variables
+      path: /users/{selected_user}/pipelines_config/variables
+      operations:
+      - name: listvariablesforuser
+        method: GET
+        description: Atlassian List Variables for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+      - name: createvariableforuser
+        method: POST
+        description: Atlassian Create Variable for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: users-selected_user-pipelines_config-variables-variable_uuid
+      path: /users/{selected_user}/pipelines_config/variables/{variable_uuid}
+      operations:
+      - name: getvariableforuser
+        method: GET
+        description: Atlassian Get Variable for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to retrieve.
+          required: true
+      - name: updatevariableforuser
+        method: PUT
+        description: Atlassian Update Variable for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+      - name: deletevariableforuser
+        method: DELETE
+        description: Atlassian Delete Variable for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to delete.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-user-variables-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket User API — Variables. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/users/{selected-user}/pipelines-config/variables
+      name: users-selected-user-pipelines-config-variables
+      description: REST surface for users-selected_user-pipelines_config-variables.
+      operations:
+      - method: GET
+        name: listvariablesforuser
+        description: Atlassian List Variables for User
+        call: bitbucket-user-variables.listvariablesforuser
+        with:
+          selected_user: rest.selected_user
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: createvariableforuser
+        description: Atlassian Create Variable for User
+        call: bitbucket-user-variables.createvariableforuser
+        with:
+          selected_user: rest.selected_user
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/users/{selected-user}/pipelines-config/variables/{variable-uuid}
+      name: users-selected-user-pipelines-config-variables-variable-uuid
+      description: REST surface for users-selected_user-pipelines_config-variables-variable_uuid.
+      operations:
+      - method: GET
+        name: getvariableforuser
+        description: Atlassian Get Variable for User
+        call: bitbucket-user-variables.getvariableforuser
+        with:
+          selected_user: rest.selected_user
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: updatevariableforuser
+        description: Atlassian Update Variable for User
+        call: bitbucket-user-variables.updatevariableforuser
+        with:
+          selected_user: rest.selected_user
+          variable_uuid: rest.variable_uuid
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: deletevariableforuser
+        description: Atlassian Delete Variable for User
+        call: bitbucket-user-variables.deletevariableforuser
+        with:
+          selected_user: rest.selected_user
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-user-variables-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket User API — Variables. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-variables-user
+      description: Atlassian List Variables for User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-variables.listvariablesforuser
+      with:
+        selected_user: tools.selected_user
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-variable-user
+      description: Atlassian Create Variable for User
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-user-variables.createvariableforuser
+      with:
+        selected_user: tools.selected_user
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-variable-user
+      description: Atlassian Get Variable for User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-variables.getvariableforuser
+      with:
+        selected_user: tools.selected_user
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-variable-user
+      description: Atlassian Update Variable for User
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-variables.updatevariableforuser
+      with:
+        selected_user: tools.selected_user
+        variable_uuid: tools.variable_uuid
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-variable-user
+      description: Atlassian Delete Variable for User
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-user-variables.deletevariableforuser
+      with:
+        selected_user: tools.selected_user
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.

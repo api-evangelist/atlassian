@@ -1,0 +1,246 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Create
+  description: 'Atlassian Confluence Content API — Create. 4 operations. Lead operation: Atlassian Create or Update Attachment.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Create
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-create
+    baseUri: ''
+    description: Atlassian Confluence Content API — Create business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-child-attachment
+      path: /wiki/rest/api/content/{id}/child/attachment
+      operations:
+      - name: createorupdateattachment
+        method: PUT
+        description: Atlassian Create or Update Attachment
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to add the attachment to.
+          required: true
+        - name: status
+          in: query
+          type: string
+          description: The status of the content that the attachment is being added to.
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+      - name: createattachment
+        method: POST
+        description: Atlassian Create Attachment
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to add the attachment to.
+          required: true
+        - name: status
+          in: query
+          type: string
+          description: The status of the content that the attachment is being added to.
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: wiki-rest-api-content-id-property
+      path: /wiki/rest/api/content/{id}/property
+      operations:
+      - name: createcontentproperty
+        method: POST
+        description: Atlassian Create Content Property
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to add the property to.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: wiki-rest-api-content-id-property-key
+      path: /wiki/rest/api/content/{id}/property/{key}
+      operations:
+      - name: createcontentpropertyforkey
+        method: POST
+        description: Atlassian Create Content Property for Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to add the property to.
+          required: true
+        - name: key
+          in: path
+          type: string
+          description: The key of the content property. Required.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-create-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Create. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/child/attachment
+      name: wiki-rest-api-content-id-child-attachment
+      description: REST surface for wiki-rest-api-content-id-child-attachment.
+      operations:
+      - method: PUT
+        name: createorupdateattachment
+        description: Atlassian Create or Update Attachment
+        call: confluence-content-create.createorupdateattachment
+        with:
+          id: rest.id
+          status: rest.status
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: createattachment
+        description: Atlassian Create Attachment
+        call: confluence-content-create.createattachment
+        with:
+          id: rest.id
+          status: rest.status
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/property
+      name: wiki-rest-api-content-id-property
+      description: REST surface for wiki-rest-api-content-id-property.
+      operations:
+      - method: POST
+        name: createcontentproperty
+        description: Atlassian Create Content Property
+        call: confluence-content-create.createcontentproperty
+        with:
+          id: rest.id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/property/{key}
+      name: wiki-rest-api-content-id-property-key
+      description: REST surface for wiki-rest-api-content-id-property-key.
+      operations:
+      - method: POST
+        name: createcontentpropertyforkey
+        description: Atlassian Create Content Property for Key
+        call: confluence-content-create.createcontentpropertyforkey
+        with:
+          id: rest.id
+          key: rest.key
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-create-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Create. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-create-update-attachment
+      description: Atlassian Create or Update Attachment
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-content-create.createorupdateattachment
+      with:
+        id: tools.id
+        status: tools.status
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-attachment
+      description: Atlassian Create Attachment
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: confluence-content-create.createattachment
+      with:
+        id: tools.id
+        status: tools.status
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-content-property
+      description: Atlassian Create Content Property
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: confluence-content-create.createcontentproperty
+      with:
+        id: tools.id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-content-property-key
+      description: Atlassian Create Content Property for Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: confluence-content-create.createcontentpropertyforkey
+      with:
+        id: tools.id
+        key: tools.key
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

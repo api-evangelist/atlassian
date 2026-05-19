@@ -1,0 +1,186 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/space/ — Content States
+  description: 'Atlassian wiki/rest/api/space/ — Content States. 3 operations. Lead operation: Atlassian Get Space Suggested
+    Content States. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Content States
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-space--content-states
+    baseUri: ''
+    description: Atlassian wiki/rest/api/space/ — Content States business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-space-spaceKey-state
+      path: /wiki/rest/api/space/{spaceKey}/state
+      operations:
+      - name: atlassiangetspacecontentstates
+        method: GET
+        description: Atlassian Get Space Suggested Content States
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content state settings.
+          required: true
+    - name: wiki-rest-api-space-spaceKey-state-content
+      path: /wiki/rest/api/space/{spaceKey}/state/content
+      operations:
+      - name: atlassiangetcontentswithstate
+        method: GET
+        description: Atlassian Get Content In Space With Given Content State
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content state settings.
+          required: true
+        - name: state-id
+          in: query
+          type: integer
+          description: The id of the content state to filter content by
+          required: true
+        - name: expand
+          in: query
+          type: array
+          description: A multi-value parameter indicating which properties of the content to expand.
+        - name: limit
+          in: query
+          type: integer
+          description: Maximum number of results to return
+        - name: start
+          in: query
+          type: integer
+          description: Number of result to start returning. (0 indexed)
+    - name: wiki-rest-api-space-spaceKey-state-settings
+      path: /wiki/rest/api/space/{spaceKey}/state/settings
+      operations:
+      - name: atlassiangetcontentstatesettings
+        method: GET
+        description: Atlassian Get Content State Settings For Space
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content state settings.
+          required: true
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-space--content-states-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/space/ — Content States. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/space/{spacekey}/state
+      name: wiki-rest-api-space-spacekey-state
+      description: REST surface for wiki-rest-api-space-spaceKey-state.
+      operations:
+      - method: GET
+        name: atlassiangetspacecontentstates
+        description: Atlassian Get Space Suggested Content States
+        call: wiki-rest-api-space--content-states.atlassiangetspacecontentstates
+        with:
+          spaceKey: rest.spaceKey
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/space/{spacekey}/state/content
+      name: wiki-rest-api-space-spacekey-state-content
+      description: REST surface for wiki-rest-api-space-spaceKey-state-content.
+      operations:
+      - method: GET
+        name: atlassiangetcontentswithstate
+        description: Atlassian Get Content In Space With Given Content State
+        call: wiki-rest-api-space--content-states.atlassiangetcontentswithstate
+        with:
+          spaceKey: rest.spaceKey
+          state-id: rest.state-id
+          expand: rest.expand
+          limit: rest.limit
+          start: rest.start
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/space/{spacekey}/state/settings
+      name: wiki-rest-api-space-spacekey-state-settings
+      description: REST surface for wiki-rest-api-space-spaceKey-state-settings.
+      operations:
+      - method: GET
+        name: atlassiangetcontentstatesettings
+        description: Atlassian Get Content State Settings For Space
+        call: wiki-rest-api-space--content-states.atlassiangetcontentstatesettings
+        with:
+          spaceKey: rest.spaceKey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-space--content-states-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/space/ — Content States. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-space-suggested-content
+      description: Atlassian Get Space Suggested Content States
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-space--content-states.atlassiangetspacecontentstates
+      with:
+        spaceKey: tools.spaceKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-content-space-given
+      description: Atlassian Get Content In Space With Given Content State
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-space--content-states.atlassiangetcontentswithstate
+      with:
+        spaceKey: tools.spaceKey
+        state-id: tools.state-id
+        expand: tools.expand
+        limit: tools.limit
+        start: tools.start
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-content-state-settings
+      description: Atlassian Get Content State Settings For Space
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-space--content-states.atlassiangetcontentstatesettings
+      with:
+        spaceKey: tools.spaceKey
+      outputParameters:
+      - type: object
+        mapping: $.

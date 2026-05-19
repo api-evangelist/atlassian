@@ -1,0 +1,84 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/issue/ — Issue Attachments
+  description: 'Atlassian rest/api/3/issue/ — Issue Attachments. 1 operations. Lead operation: Atlassian Add Attachment. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Attachments
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-issue--issue-attachments
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/issue/ — Issue Attachments business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-issue-issueIdOrKey-attachments
+      path: /rest/api/3/issue/{issueIdOrKey}/attachments
+      operations:
+      - name: atlassianaddattachment
+        method: POST
+        description: Atlassian Add Attachment
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: issueIdOrKey
+          in: path
+          type: string
+          description: The ID or key of the issue that attachments are added to.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+  exposes:
+  - type: rest
+    namespace: rest-api-3-issue--issue-attachments-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/issue/ — Issue Attachments. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/issue/{issueidorkey}/attachments
+      name: rest-api-3-issue-issueidorkey-attachments
+      description: REST surface for rest-api-3-issue-issueIdOrKey-attachments.
+      operations:
+      - method: POST
+        name: atlassianaddattachment
+        description: Atlassian Add Attachment
+        call: rest-api-3-issue--issue-attachments.atlassianaddattachment
+        with:
+          issueIdOrKey: rest.issueIdOrKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-issue--issue-attachments-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/issue/ — Issue Attachments. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-add-attachment
+      description: Atlassian Add Attachment
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: rest-api-3-issue--issue-attachments.atlassianaddattachment
+      with:
+        issueIdOrKey: tools.issueIdOrKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

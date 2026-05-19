@@ -1,0 +1,172 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Delete
+  description: 'Atlassian Bit Bucket Pull Requests API — Delete. 3 operations. Lead operation: Atlassian Delete Comment on
+    Pull Request. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Delete
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-delete
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Delete business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-comments-comment_i
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments/{comment_id}
+      operations:
+      - name: deletecommentonpullrequest
+        method: DELETE
+        description: Atlassian Delete Comment on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks/{task_id}
+      operations:
+      - name: deletetaskonpullrequest
+        method: DELETE
+        description: Atlassian Delete Task on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-pullrequests-pullrequest_id-properties-app_key-
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pullrequest_id}/properties/{app_key}/{property_name}
+      operations:
+      - name: deletepullrequestapplicationproperty
+        method: DELETE
+        description: Atlassian Delete Pull Request Application Property
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: The repository container; either the workspace slug or the UUID in curly braces.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+        - name: pullrequest_id
+          in: path
+          type: string
+          description: The pull request ID.
+          required: true
+        - name: app_key
+          in: path
+          type: string
+          description: The key of the Connect app.
+          required: true
+        - name: property_name
+          in: path
+          type: string
+          description: The name of the property.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-delete-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Delete. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/comments/{comment-id}
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-i
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-comments-comment_i.
+      operations:
+      - method: DELETE
+        name: deletecommentonpullrequest
+        description: Atlassian Delete Comment on Pull Request
+        call: bitbucket-pull-requests-delete.deletecommentonpullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/tasks/{task-id}
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks-task-id
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id.
+      operations:
+      - method: DELETE
+        name: deletetaskonpullrequest
+        description: Atlassian Delete Task on Pull Request
+        call: bitbucket-pull-requests-delete.deletetaskonpullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pullrequest-id}/properties/{app-key}/{property-name}
+      name: repositories-workspace-repo-slug-pullrequests-pullrequest-id-properties-app-key
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pullrequest_id-properties-app_key-.
+      operations:
+      - method: DELETE
+        name: deletepullrequestapplicationproperty
+        description: Atlassian Delete Pull Request Application Property
+        call: bitbucket-pull-requests-delete.deletepullrequestapplicationproperty
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+          pullrequest_id: rest.pullrequest_id
+          app_key: rest.app_key
+          property_name: rest.property_name
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-delete-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Delete. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-delete-comment-pull-request
+      description: Atlassian Delete Comment on Pull Request
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-delete.deletecommentonpullrequest
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-task-pull-request
+      description: Atlassian Delete Task on Pull Request
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-delete.deletetaskonpullrequest
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-pull-request-application
+      description: Atlassian Delete Pull Request Application Property
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-delete.deletepullrequestapplicationproperty
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+        pullrequest_id: tools.pullrequest_id
+        app_key: tools.app_key
+        property_name: tools.property_name
+      outputParameters:
+      - type: object
+        mapping: $.

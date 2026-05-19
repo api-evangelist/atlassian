@@ -1,0 +1,228 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/content/ — Content Labels
+  description: 'Atlassian wiki/rest/api/content/ — Content Labels. 4 operations. Lead operation: Atlassian Get Labels For
+    Content. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Content Labels
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-content--content-labels
+    baseUri: ''
+    description: Atlassian wiki/rest/api/content/ — Content Labels business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-label
+      path: /wiki/rest/api/content/{id}/label
+      operations:
+      - name: atlassiangetlabelsforcontent
+        method: GET
+        description: Atlassian Get Labels For Content
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its labels.
+          required: true
+        - name: prefix
+          in: query
+          type: string
+          description: Filters the results to labels with the specified prefix. If this parameter
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned labels.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of labels to return per page. Note,
+      - name: atlassianaddlabelstocontent
+        method: POST
+        description: Atlassian Add Labels To Content
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that will have labels added to it.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+      - name: atlassianremovelabelfromcontentusingqueryparameter
+        method: DELETE
+        description: Atlassian Remove Label From Content Using Query Parameter
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that the label will be removed from.
+          required: true
+        - name: name
+          in: query
+          type: string
+          description: The name of the label to be removed.
+          required: true
+    - name: wiki-rest-api-content-id-label-label
+      path: /wiki/rest/api/content/{id}/label/{label}
+      operations:
+      - name: atlassianremovelabelfromcontent
+        method: DELETE
+        description: Atlassian Remove Label From Content
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that the label will be removed from.
+          required: true
+        - name: label
+          in: path
+          type: string
+          description: The name of the label to be removed.
+          required: true
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-content--content-labels-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/content/ — Content Labels. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/label
+      name: wiki-rest-api-content-id-label
+      description: REST surface for wiki-rest-api-content-id-label.
+      operations:
+      - method: GET
+        name: atlassiangetlabelsforcontent
+        description: Atlassian Get Labels For Content
+        call: wiki-rest-api-content--content-labels.atlassiangetlabelsforcontent
+        with:
+          id: rest.id
+          prefix: rest.prefix
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassianaddlabelstocontent
+        description: Atlassian Add Labels To Content
+        call: wiki-rest-api-content--content-labels.atlassianaddlabelstocontent
+        with:
+          id: rest.id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: atlassianremovelabelfromcontentusingqueryparameter
+        description: Atlassian Remove Label From Content Using Query Parameter
+        call: wiki-rest-api-content--content-labels.atlassianremovelabelfromcontentusingqueryparameter
+        with:
+          id: rest.id
+          name: rest.name
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/label/{label}
+      name: wiki-rest-api-content-id-label-label
+      description: REST surface for wiki-rest-api-content-id-label-label.
+      operations:
+      - method: DELETE
+        name: atlassianremovelabelfromcontent
+        description: Atlassian Remove Label From Content
+        call: wiki-rest-api-content--content-labels.atlassianremovelabelfromcontent
+        with:
+          id: rest.id
+          label: rest.label
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-content--content-labels-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/content/ — Content Labels. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-labels-content
+      description: Atlassian Get Labels For Content
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-content--content-labels.atlassiangetlabelsforcontent
+      with:
+        id: tools.id
+        prefix: tools.prefix
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-add-labels-content
+      description: Atlassian Add Labels To Content
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: wiki-rest-api-content--content-labels.atlassianaddlabelstocontent
+      with:
+        id: tools.id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-remove-label-content-using
+      description: Atlassian Remove Label From Content Using Query Parameter
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: wiki-rest-api-content--content-labels.atlassianremovelabelfromcontentusingqueryparameter
+      with:
+        id: tools.id
+        name: tools.name
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-remove-label-content
+      description: Atlassian Remove Label From Content
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: wiki-rest-api-content--content-labels.atlassianremovelabelfromcontent
+      with:
+        id: tools.id
+        label: tools.label
+      outputParameters:
+      - type: object
+        mapping: $.

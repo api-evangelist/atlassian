@@ -1,0 +1,99 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Snippets API — Users
+  description: 'Atlassian Bit Bucket Snippets API — Users. 2 operations. Lead operation: Atlassian Check if the Current User
+    Is Watching Snippet. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Users
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-snippets-users
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Snippets API — Users business capability. Self-contained, no shared references.
+    resources:
+    - name: snippets-workspace-encoded_id-watch
+      path: /snippets/{workspace}/{encoded_id}/watch
+      operations:
+      - name: checkifthecurrentuseriswatchingsnippet
+        method: GET
+        description: Atlassian Check if the Current User Is Watching Snippet
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: snippets-workspace-encoded_id-watchers
+      path: /snippets/{workspace}/{encoded_id}/watchers
+      operations:
+      - name: listuserswatchingsnippet
+        method: GET
+        description: Atlassian List Users Watching Snippet
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-snippets-users-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Snippets API — Users. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/snippets/{workspace}/{encoded-id}/watch
+      name: snippets-workspace-encoded-id-watch
+      description: REST surface for snippets-workspace-encoded_id-watch.
+      operations:
+      - method: GET
+        name: checkifthecurrentuseriswatchingsnippet
+        description: Atlassian Check if the Current User Is Watching Snippet
+        call: bitbucket-snippets-users.checkifthecurrentuseriswatchingsnippet
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/snippets/{workspace}/{encoded-id}/watchers
+      name: snippets-workspace-encoded-id-watchers
+      description: REST surface for snippets-workspace-encoded_id-watchers.
+      operations:
+      - method: GET
+        name: listuserswatchingsnippet
+        description: Atlassian List Users Watching Snippet
+        call: bitbucket-snippets-users.listuserswatchingsnippet
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-snippets-users-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Snippets API — Users. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-check-if-current-user
+      description: Atlassian Check if the Current User Is Watching Snippet
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-users.checkifthecurrentuseriswatchingsnippet
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-list-users-watching-snippet
+      description: Atlassian List Users Watching Snippet
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-users.listuserswatchingsnippet
+      outputParameters:
+      - type: object
+        mapping: $.

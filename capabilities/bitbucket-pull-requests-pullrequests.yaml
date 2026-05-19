@@ -1,0 +1,80 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Pullrequests
+  description: 'Atlassian Bit Bucket Pull Requests API — Pullrequests. 1 operations. Lead operation: Atlassian Update Task
+    on Pull Request. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Pullrequests
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-pullrequests
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Pullrequests business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks/{task_id}
+      operations:
+      - name: updatetaskonpullrequest
+        method: PUT
+        description: Atlassian Update Task on Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-pullrequests-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Pullrequests. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/tasks/{task-id}
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks-task-id
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-tasks-task_id.
+      operations:
+      - method: PUT
+        name: updatetaskonpullrequest
+        description: Atlassian Update Task on Pull Request
+        call: bitbucket-pull-requests-pullrequests.updatetaskonpullrequest
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-pullrequests-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Pullrequests. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-update-task-pull-request
+      description: Atlassian Update Task on Pull Request
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-pull-requests-pullrequests.updatetaskonpullrequest
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,238 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Inline Tasks API — Inline Tasks
+  description: 'Atlassian Confluence Inline Tasks API — Inline Tasks. 3 operations. Lead operation: Atlassian Get Inline Tasks
+    Based on Search Parameters. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Inline Tasks
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-inline-tasks-inline-tasks
+    baseUri: ''
+    description: Atlassian Confluence Inline Tasks API — Inline Tasks business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-inlinetasks-search
+      path: /wiki/rest/api/inlinetasks/search
+      operations:
+      - name: atlassiansearchtasks
+        method: GET
+        description: Atlassian Get Inline Tasks Based on Search Parameters
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: start
+          in: query
+          type: integer
+          description: The starting offset for the results.
+        - name: limit
+          in: query
+          type: integer
+          description: The number of results to be returned.
+        - name: spaceKey
+          in: query
+          type: string
+          description: The space key of a space. Multiple space keys can be specified.
+        - name: pageId
+          in: query
+          type: string
+          description: The page id of a page. Multiple page ids can be specified.
+        - name: assignee
+          in: query
+          type: string
+          description: Account ID of a user to whom a task is assigned. Multiple users can be specified.
+        - name: creator
+          in: query
+          type: string
+          description: Account ID of a user to who created a task. Multiple users can be specified.
+        - name: completedUser
+          in: query
+          type: string
+          description: Account ID of a user who completed a task. Multiple users can be specified.
+        - name: duedateFrom
+          in: query
+          type: integer
+          description: Start of date range based on due dates (inclusive).
+        - name: duedateTo
+          in: query
+          type: integer
+          description: End of date range based on due dates (inclusive).
+        - name: createdateFrom
+          in: query
+          type: integer
+          description: Start of date range based on create dates (inclusive).
+        - name: createdateTo
+          in: query
+          type: integer
+          description: End of date range based on create dates (inclusive).
+        - name: completedateFrom
+          in: query
+          type: integer
+          description: Start of date range based on complete dates (inclusive).
+        - name: completedateTo
+          in: query
+          type: integer
+          description: End of date range based on complete dates (inclusive).
+        - name: status
+          in: query
+          type: string
+          description: The status of the task. (checked/unchecked)
+    - name: wiki-rest-api-inlinetasks-inlineTaskId
+      path: /wiki/rest/api/inlinetasks/{inlineTaskId}
+      operations:
+      - name: atlassiangettaskbyid
+        method: GET
+        description: Atlassian Get Inline Task Based on Global Id
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: inlineTaskId
+          in: path
+          type: string
+          description: Global ID of the inline task
+          required: true
+      - name: atlassianupdatetaskbyid
+        method: PUT
+        description: Atlassian Update Inline Task Given Global Id
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: inlineTaskId
+          in: path
+          type: string
+          description: Global ID of the inline task to update
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+  exposes:
+  - type: rest
+    namespace: confluence-inline-tasks-inline-tasks-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Inline Tasks API — Inline Tasks. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/inlinetasks/search
+      name: wiki-rest-api-inlinetasks-search
+      description: REST surface for wiki-rest-api-inlinetasks-search.
+      operations:
+      - method: GET
+        name: atlassiansearchtasks
+        description: Atlassian Get Inline Tasks Based on Search Parameters
+        call: confluence-inline-tasks-inline-tasks.atlassiansearchtasks
+        with:
+          start: rest.start
+          limit: rest.limit
+          spaceKey: rest.spaceKey
+          pageId: rest.pageId
+          assignee: rest.assignee
+          creator: rest.creator
+          completedUser: rest.completedUser
+          duedateFrom: rest.duedateFrom
+          duedateTo: rest.duedateTo
+          createdateFrom: rest.createdateFrom
+          createdateTo: rest.createdateTo
+          completedateFrom: rest.completedateFrom
+          completedateTo: rest.completedateTo
+          status: rest.status
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/inlinetasks/{inlinetaskid}
+      name: wiki-rest-api-inlinetasks-inlinetaskid
+      description: REST surface for wiki-rest-api-inlinetasks-inlineTaskId.
+      operations:
+      - method: GET
+        name: atlassiangettaskbyid
+        description: Atlassian Get Inline Task Based on Global Id
+        call: confluence-inline-tasks-inline-tasks.atlassiangettaskbyid
+        with:
+          inlineTaskId: rest.inlineTaskId
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatetaskbyid
+        description: Atlassian Update Inline Task Given Global Id
+        call: confluence-inline-tasks-inline-tasks.atlassianupdatetaskbyid
+        with:
+          inlineTaskId: rest.inlineTaskId
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-inline-tasks-inline-tasks-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Inline Tasks API — Inline Tasks. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-inline-tasks-based
+      description: Atlassian Get Inline Tasks Based on Search Parameters
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-inline-tasks-inline-tasks.atlassiansearchtasks
+      with:
+        start: tools.start
+        limit: tools.limit
+        spaceKey: tools.spaceKey
+        pageId: tools.pageId
+        assignee: tools.assignee
+        creator: tools.creator
+        completedUser: tools.completedUser
+        duedateFrom: tools.duedateFrom
+        duedateTo: tools.duedateTo
+        createdateFrom: tools.createdateFrom
+        createdateTo: tools.createdateTo
+        completedateFrom: tools.completedateFrom
+        completedateTo: tools.completedateTo
+        status: tools.status
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-inline-task-based
+      description: Atlassian Get Inline Task Based on Global Id
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-inline-tasks-inline-tasks.atlassiangettaskbyid
+      with:
+        inlineTaskId: tools.inlineTaskId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-inline-task-given
+      description: Atlassian Update Inline Task Given Global Id
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-inline-tasks-inline-tasks.atlassianupdatetaskbyid
+      with:
+        inlineTaskId: tools.inlineTaskId
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

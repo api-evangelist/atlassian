@@ -1,0 +1,85 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Statuses
+  description: 'Atlassian Bit Bucket Pull Requests API — Statuses. 1 operations. Lead operation: Atlassian List Commit Statuses
+    for Pull Request. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Statuses
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-statuses
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Statuses business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-statuses
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/statuses
+      operations:
+      - name: listcommitstatusesforpullrequest
+        method: GET
+        description: Atlassian List Commit Statuses for Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Field by which the results should be sorted as per
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-statuses-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Statuses. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/statuses
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-statuses
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-statuses.
+      operations:
+      - method: GET
+        name: listcommitstatusesforpullrequest
+        description: Atlassian List Commit Statuses for Pull Request
+        call: bitbucket-pull-requests-statuses.listcommitstatusesforpullrequest
+        with:
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-statuses-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Statuses. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-list-commit-statuses-pull
+      description: Atlassian List Commit Statuses for Pull Request
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-pull-requests-statuses.listcommitstatusesforpullrequest
+      with:
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.

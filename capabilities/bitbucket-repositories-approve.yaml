@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Approve
+  description: 'Atlassian Bit Bucket Repositories API — Approve. 2 operations. Lead operation: Atlassian Approve Commit. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Approve
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-approve
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Approve business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-commit-commit-approve
+      path: /repositories/{workspace}/{repo_slug}/commit/{commit}/approve
+      operations:
+      - name: approvecommit
+        method: POST
+        description: Atlassian Approve Commit
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-approve
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve
+      operations:
+      - name: approvepullrequest
+        method: POST
+        description: Atlassian Approve Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-approve-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Approve. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/commit/{commit}/approve
+      name: repositories-workspace-repo-slug-commit-commit-approve
+      description: REST surface for repositories-workspace-repo_slug-commit-commit-approve.
+      operations:
+      - method: POST
+        name: approvecommit
+        description: Atlassian Approve Commit
+        call: bitbucket-repositories-approve.approvecommit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/approve
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-approve
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-approve.
+      operations:
+      - method: POST
+        name: approvepullrequest
+        description: Atlassian Approve Pull Request
+        call: bitbucket-repositories-approve.approvepullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-approve-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Approve. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-approve-commit
+      description: Atlassian Approve Commit
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-approve.approvecommit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-approve-pull-request
+      description: Atlassian Approve Pull Request
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-approve.approvepullrequest
+      outputParameters:
+      - type: object
+        mapping: $.

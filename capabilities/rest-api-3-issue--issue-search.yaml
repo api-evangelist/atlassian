@@ -1,0 +1,109 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/issue/ — Issue Search
+  description: 'Atlassian rest/api/3/issue/ — Issue Search. 1 operations. Lead operation: Atlassian Get Issue Picker Suggestions.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Search
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-issue--issue-search
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/issue/ — Issue Search business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-issue-picker
+      path: /rest/api/3/issue/picker
+      operations:
+      - name: atlassiangetissuepickerresource
+        method: GET
+        description: Atlassian Get Issue Picker Suggestions
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: query
+          in: query
+          type: string
+          description: A string to match against text fields in the issue such as title, description, or comments.
+        - name: currentJQL
+          in: query
+          type: string
+          description: A JQL query defining a list of issues to search for the query term. Note that `username` and `userkey`
+            cannot be used as search terms for this parameter, due to
+        - name: currentIssueKey
+          in: query
+          type: string
+          description: The key of an issue to exclude from search results. For example, the issue the user is viewing when
+            they perform this query.
+        - name: currentProjectId
+          in: query
+          type: string
+          description: The ID of a project that suggested issues must belong to.
+        - name: showSubTasks
+          in: query
+          type: boolean
+          description: Indicate whether to include subtasks in the suggestions list.
+        - name: showSubTaskParent
+          in: query
+          type: boolean
+          description: When `currentIssueKey` is a subtask, whether to include the parent issue in the suggestions if it matches
+            the query.
+  exposes:
+  - type: rest
+    namespace: rest-api-3-issue--issue-search-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/issue/ — Issue Search. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/issue/picker
+      name: rest-api-3-issue-picker
+      description: REST surface for rest-api-3-issue-picker.
+      operations:
+      - method: GET
+        name: atlassiangetissuepickerresource
+        description: Atlassian Get Issue Picker Suggestions
+        call: rest-api-3-issue--issue-search.atlassiangetissuepickerresource
+        with:
+          query: rest.query
+          currentJQL: rest.currentJQL
+          currentIssueKey: rest.currentIssueKey
+          currentProjectId: rest.currentProjectId
+          showSubTasks: rest.showSubTasks
+          showSubTaskParent: rest.showSubTaskParent
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-issue--issue-search-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/issue/ — Issue Search. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-issue-picker-suggestions
+      description: Atlassian Get Issue Picker Suggestions
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-issue--issue-search.atlassiangetissuepickerresource
+      with:
+        query: tools.query
+        currentJQL: tools.currentJQL
+        currentIssueKey: tools.currentIssueKey
+        currentProjectId: tools.currentProjectId
+        showSubTasks: tools.showSubTasks
+        showSubTaskParent: tools.showSubTaskParent
+      outputParameters:
+      - type: object
+        mapping: $.

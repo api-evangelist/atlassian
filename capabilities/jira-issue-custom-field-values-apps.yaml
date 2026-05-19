@@ -1,0 +1,142 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Issue Custom Field Values (Apps)
+  description: 'Atlassian The Jira Cloud platform REST API — Issue Custom Field Values (Apps). 2 operations. Lead operation:
+    Atlassian Update Custom Fields. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Custom Field Values (Apps)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-issue-custom-field-values-apps
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Issue Custom Field Values (Apps) business capability. Self-contained,
+      no shared references.
+    resources:
+    - name: rest-api-3-app-field-value
+      path: /rest/api/3/app/field/value
+      operations:
+      - name: atlassianupdatemultiplecustomfieldvalues
+        method: POST
+        description: Atlassian Update Custom Fields
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: generateChangelog
+          in: query
+          type: boolean
+          description: Whether to generate a changelog for this update.
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-app-field-fieldIdOrKey-value
+      path: /rest/api/3/app/field/{fieldIdOrKey}/value
+      operations:
+      - name: atlassianupdatecustomfieldvalue
+        method: PUT
+        description: Atlassian Update Custom Field Value
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: fieldIdOrKey
+          in: path
+          type: string
+          description: The ID or key of the custom field. For example, `customfield_10010`.
+          required: true
+        - name: generateChangelog
+          in: query
+          type: boolean
+          description: Whether to generate a changelog for this update.
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-issue-custom-field-values-apps-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Issue Custom Field Values (Apps). One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/app/field/value
+      name: rest-api-3-app-field-value
+      description: REST surface for rest-api-3-app-field-value.
+      operations:
+      - method: POST
+        name: atlassianupdatemultiplecustomfieldvalues
+        description: Atlassian Update Custom Fields
+        call: jira-issue-custom-field-values-apps.atlassianupdatemultiplecustomfieldvalues
+        with:
+          generateChangelog: rest.generateChangelog
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/app/field/{fieldidorkey}/value
+      name: rest-api-3-app-field-fieldidorkey-value
+      description: REST surface for rest-api-3-app-field-fieldIdOrKey-value.
+      operations:
+      - method: PUT
+        name: atlassianupdatecustomfieldvalue
+        description: Atlassian Update Custom Field Value
+        call: jira-issue-custom-field-values-apps.atlassianupdatecustomfieldvalue
+        with:
+          fieldIdOrKey: rest.fieldIdOrKey
+          generateChangelog: rest.generateChangelog
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-issue-custom-field-values-apps-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Issue Custom Field Values (Apps). One tool per
+      consumed operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-update-custom-fields
+      description: Atlassian Update Custom Fields
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-issue-custom-field-values-apps.atlassianupdatemultiplecustomfieldvalues
+      with:
+        generateChangelog: tools.generateChangelog
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-custom-field-value
+      description: Atlassian Update Custom Field Value
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-issue-custom-field-values-apps.atlassianupdatecustomfieldvalue
+      with:
+        fieldIdOrKey: tools.fieldIdOrKey
+        generateChangelog: tools.generateChangelog
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

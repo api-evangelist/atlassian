@@ -1,0 +1,106 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Announcement Banner
+  description: 'Atlassian The Jira Cloud platform REST API — Announcement Banner. 2 operations. Lead operation: Atlassian
+    Get Announcement Banner Configuration. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Announcement Banner
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-announcement-banner
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Announcement Banner business capability. Self-contained, no
+      shared references.
+    resources:
+    - name: rest-api-3-announcementBanner
+      path: /rest/api/3/announcementBanner
+      operations:
+      - name: atlassiangetbanner
+        method: GET
+        description: Atlassian Get Announcement Banner Configuration
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiansetbanner
+        method: PUT
+        description: Atlassian Update Announcement Banner Configuration
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-announcement-banner-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Announcement Banner. One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/announcementbanner
+      name: rest-api-3-announcementbanner
+      description: REST surface for rest-api-3-announcementBanner.
+      operations:
+      - method: GET
+        name: atlassiangetbanner
+        description: Atlassian Get Announcement Banner Configuration
+        call: jira-announcement-banner.atlassiangetbanner
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetbanner
+        description: Atlassian Update Announcement Banner Configuration
+        call: jira-announcement-banner.atlassiansetbanner
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-announcement-banner-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Announcement Banner. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-announcement-banner-configuration
+      description: Atlassian Get Announcement Banner Configuration
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-announcement-banner.atlassiangetbanner
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-announcement-banner-configuration
+      description: Atlassian Update Announcement Banner Configuration
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-announcement-banner.atlassiansetbanner
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

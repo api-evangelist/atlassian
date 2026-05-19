@@ -1,0 +1,85 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Restrictions
+  description: 'Atlassian Bit Bucket Repositories API — Restrictions. 1 operations. Lead operation: Atlassian List Branch
+    Restrictions. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Restrictions
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-restrictions
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Restrictions business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-branch-restrictions
+      path: /repositories/{workspace}/{repo_slug}/branch-restrictions
+      operations:
+      - name: listbranchrestrictions
+        method: GET
+        description: Atlassian List Branch Restrictions
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: kind
+          in: query
+          type: string
+          description: Branch restrictions of this type
+        - name: pattern
+          in: query
+          type: string
+          description: Branch restrictions applied to branches of this pattern
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-restrictions-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Restrictions. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/branch-restrictions
+      name: repositories-workspace-repo-slug-branch-restrictions
+      description: REST surface for repositories-workspace-repo_slug-branch-restrictions.
+      operations:
+      - method: GET
+        name: listbranchrestrictions
+        description: Atlassian List Branch Restrictions
+        call: bitbucket-repositories-restrictions.listbranchrestrictions
+        with:
+          kind: rest.kind
+          pattern: rest.pattern
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-restrictions-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Restrictions. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-list-branch-restrictions
+      description: Atlassian List Branch Restrictions
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-restrictions.listbranchrestrictions
+      with:
+        kind: tools.kind
+        pattern: tools.pattern
+      outputParameters:
+      - type: object
+        mapping: $.

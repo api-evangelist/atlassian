@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Reopen
+  description: 'Atlassian Bit Bucket Pull Requests API — Reopen. 1 operations. Lead operation: Atlassian Reopen Comment Thread.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Reopen
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-reopen
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Reopen business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-comments-comment_i
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments/{comment_id}/resolve
+      operations:
+      - name: reopencommentthread
+        method: DELETE
+        description: Atlassian Reopen Comment Thread
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-reopen-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Reopen. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/comments/{comment-id}/resolve
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-i
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-comments-comment_i.
+      operations:
+      - method: DELETE
+        name: reopencommentthread
+        description: Atlassian Reopen Comment Thread
+        call: bitbucket-pull-requests-reopen.reopencommentthread
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-reopen-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Reopen. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-reopen-comment-thread
+      description: Atlassian Reopen Comment Thread
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-reopen.reopencommentthread
+      outputParameters:
+      - type: object
+        mapping: $.

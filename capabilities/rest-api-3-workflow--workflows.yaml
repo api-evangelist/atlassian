@@ -1,0 +1,156 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/workflow/ — Workflows
+  description: 'Atlassian rest/api/3/workflow/ — Workflows. 2 operations. Lead operation: Atlassian Get Workflows Paginated.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Workflows
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-workflow--workflows
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/workflow/ — Workflows business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-workflow-search
+      path: /rest/api/3/workflow/search
+      operations:
+      - name: atlassiangetworkflowspaginated
+        method: GET
+        description: Atlassian Get Workflows Paginated
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+        - name: workflowName
+          in: query
+          type: array
+          description: The name of a workflow to return. To include multiple workflows, provide an ampersand-separated list.
+            For example, `workflowName=name1&workflowName=name2`.
+        - name: expand
+          in: query
+          type: string
+          description: 'Use [expand](#expansion) to include additional information in the response. This parameter accepts
+            a comma-separated list. Expand options include:'
+        - name: queryString
+          in: query
+          type: string
+          description: String used to perform a case-insensitive partial match with workflow name.
+        - name: orderBy
+          in: query
+          type: string
+          description: '[Order](#ordering) the results by a field:'
+        - name: isActive
+          in: query
+          type: boolean
+          description: Filters active and inactive workflows.
+    - name: rest-api-3-workflow-entityId
+      path: /rest/api/3/workflow/{entityId}
+      operations:
+      - name: atlassiandeleteinactiveworkflow
+        method: DELETE
+        description: Atlassian Delete Inactive Workflow
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: entityId
+          in: path
+          type: string
+          description: The entity ID of the workflow.
+          required: true
+  exposes:
+  - type: rest
+    namespace: rest-api-3-workflow--workflows-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/workflow/ — Workflows. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/workflow/search
+      name: rest-api-3-workflow-search
+      description: REST surface for rest-api-3-workflow-search.
+      operations:
+      - method: GET
+        name: atlassiangetworkflowspaginated
+        description: Atlassian Get Workflows Paginated
+        call: rest-api-3-workflow--workflows.atlassiangetworkflowspaginated
+        with:
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+          workflowName: rest.workflowName
+          expand: rest.expand
+          queryString: rest.queryString
+          orderBy: rest.orderBy
+          isActive: rest.isActive
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/workflow/{entityid}
+      name: rest-api-3-workflow-entityid
+      description: REST surface for rest-api-3-workflow-entityId.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteinactiveworkflow
+        description: Atlassian Delete Inactive Workflow
+        call: rest-api-3-workflow--workflows.atlassiandeleteinactiveworkflow
+        with:
+          entityId: rest.entityId
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-workflow--workflows-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/workflow/ — Workflows. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-workflows-paginated
+      description: Atlassian Get Workflows Paginated
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-workflow--workflows.atlassiangetworkflowspaginated
+      with:
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+        workflowName: tools.workflowName
+        expand: tools.expand
+        queryString: tools.queryString
+        orderBy: tools.orderBy
+        isActive: tools.isActive
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-inactive-workflow
+      description: Atlassian Delete Inactive Workflow
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: rest-api-3-workflow--workflows.atlassiandeleteinactiveworkflow
+      with:
+        entityId: tools.entityId
+      outputParameters:
+      - type: object
+        mapping: $.

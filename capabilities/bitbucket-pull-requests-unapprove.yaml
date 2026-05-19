@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Pull Requests API — Unapprove
+  description: 'Atlassian Bit Bucket Pull Requests API — Unapprove. 1 operations. Lead operation: Atlassian Unapprove Pull
+    Request. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Unapprove
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-pull-requests-unapprove
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Pull Requests API — Unapprove business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-approve
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve
+      operations:
+      - name: unapprovepullrequest
+        method: DELETE
+        description: Atlassian Unapprove Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-pull-requests-unapprove-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Pull Requests API — Unapprove. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/approve
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-approve
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-approve.
+      operations:
+      - method: DELETE
+        name: unapprovepullrequest
+        description: Atlassian Unapprove Pull Request
+        call: bitbucket-pull-requests-unapprove.unapprovepullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-pull-requests-unapprove-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Pull Requests API — Unapprove. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-unapprove-pull-request
+      description: Atlassian Unapprove Pull Request
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-pull-requests-unapprove.unapprovepullrequest
+      outputParameters:
+      - type: object
+        mapping: $.

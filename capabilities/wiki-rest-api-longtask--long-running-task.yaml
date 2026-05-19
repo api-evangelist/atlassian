@@ -1,0 +1,77 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/longtask/ — Long-Running Task
+  description: 'Atlassian wiki/rest/api/longtask/ — Long-Running Task. 1 operations. Lead operation: Atlassian Get Long Running
+    Task. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Long-Running Task
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-longtask--long-running-task
+    baseUri: ''
+    description: Atlassian wiki/rest/api/longtask/ — Long-Running Task business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-longtask-id
+      path: /wiki/rest/api/longtask/{id}
+      operations:
+      - name: atlassiangettask
+        method: GET
+        description: Atlassian Get Long Running Task
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the task.
+          required: true
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-longtask--long-running-task-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/longtask/ — Long-Running Task. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/longtask/{id}
+      name: wiki-rest-api-longtask-id
+      description: REST surface for wiki-rest-api-longtask-id.
+      operations:
+      - method: GET
+        name: atlassiangettask
+        description: Atlassian Get Long Running Task
+        call: wiki-rest-api-longtask--long-running-task.atlassiangettask
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-longtask--long-running-task-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/longtask/ — Long-Running Task. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-long-running-task
+      description: Atlassian Get Long Running Task
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-longtask--long-running-task.atlassiangettask
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,259 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian teams/ — Pipelines
+  description: 'Atlassian teams/ — Pipelines. 5 operations. Lead operation: Atlassian List Variables For An Account. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Pipelines
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: teams--pipelines
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian teams/ — Pipelines business capability. Self-contained, no shared references.
+    resources:
+    - name: teams-username-pipelines_config-variables
+      path: /teams/{username}/pipelines_config/variables
+      operations:
+      - name: atlassiangetpipelinevariablesforteam
+        method: GET
+        description: Atlassian List Variables For An Account
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+      - name: atlassiancreatepipelinevariableforteam
+        method: POST
+        description: Atlassian Create A Variable For A User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: teams-username-pipelines_config-variables-variable_uuid
+      path: /teams/{username}/pipelines_config/variables/{variable_uuid}
+      operations:
+      - name: atlassiangetpipelinevariableforteam
+        method: GET
+        description: Atlassian Get A Variable For A Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to retrieve.
+          required: true
+      - name: atlassianupdatepipelinevariableforteam
+        method: PUT
+        description: Atlassian Update A Variable For A Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+      - name: atlassiandeletepipelinevariableforteam
+        method: DELETE
+        description: Atlassian Delete A Variable For A Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to delete.
+          required: true
+  exposes:
+  - type: rest
+    namespace: teams--pipelines-rest
+    port: 8080
+    description: REST adapter for Atlassian teams/ — Pipelines. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/teams/{username}/pipelines-config/variables
+      name: teams-username-pipelines-config-variables
+      description: REST surface for teams-username-pipelines_config-variables.
+      operations:
+      - method: GET
+        name: atlassiangetpipelinevariablesforteam
+        description: Atlassian List Variables For An Account
+        call: teams--pipelines.atlassiangetpipelinevariablesforteam
+        with:
+          username: rest.username
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreatepipelinevariableforteam
+        description: Atlassian Create A Variable For A User
+        call: teams--pipelines.atlassiancreatepipelinevariableforteam
+        with:
+          username: rest.username
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/teams/{username}/pipelines-config/variables/{variable-uuid}
+      name: teams-username-pipelines-config-variables-variable-uuid
+      description: REST surface for teams-username-pipelines_config-variables-variable_uuid.
+      operations:
+      - method: GET
+        name: atlassiangetpipelinevariableforteam
+        description: Atlassian Get A Variable For A Team
+        call: teams--pipelines.atlassiangetpipelinevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatepipelinevariableforteam
+        description: Atlassian Update A Variable For A Team
+        call: teams--pipelines.atlassianupdatepipelinevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: atlassiandeletepipelinevariableforteam
+        description: Atlassian Delete A Variable For A Team
+        call: teams--pipelines.atlassiandeletepipelinevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: teams--pipelines-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian teams/ — Pipelines. One tool per consumed operation, routed inline through this
+      capability's consumes block.
+    tools:
+    - name: atlassian-list-variables-account
+      description: Atlassian List Variables For An Account
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: teams--pipelines.atlassiangetpipelinevariablesforteam
+      with:
+        username: tools.username
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-variable-user
+      description: Atlassian Create A Variable For A User
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: teams--pipelines.atlassiancreatepipelinevariableforteam
+      with:
+        username: tools.username
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-variable-team
+      description: Atlassian Get A Variable For A Team
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: teams--pipelines.atlassiangetpipelinevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-variable-team
+      description: Atlassian Update A Variable For A Team
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: teams--pipelines.atlassianupdatepipelinevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-variable-team
+      description: Atlassian Delete A Variable For A Team
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: teams--pipelines.atlassiandeletepipelinevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.

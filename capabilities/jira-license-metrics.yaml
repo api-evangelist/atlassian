@@ -1,0 +1,145 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — License Metrics
+  description: 'Atlassian The Jira Cloud platform REST API — License Metrics. 3 operations. Lead operation: Atlassian Get
+    License. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - License Metrics
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-license-metrics
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — License Metrics business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-api-3-instance-license
+      path: /rest/api/3/instance/license
+      operations:
+      - name: atlassiangetlicense
+        method: GET
+        description: Atlassian Get License
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: rest-api-3-license-approximateLicenseCount
+      path: /rest/api/3/license/approximateLicenseCount
+      operations:
+      - name: atlassiangetapproximatelicensecount
+        method: GET
+        description: Atlassian Get Approximate License Count
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: rest-api-3-license-approximateLicenseCount-product-applicationKey
+      path: /rest/api/3/license/approximateLicenseCount/product/{applicationKey}
+      operations:
+      - name: atlassiangetapproximateapplicationlicensecount
+        method: GET
+        description: Atlassian Get Approximate Application License Count
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: applicationKey
+          in: path
+          type: string
+          description: The ID of the application, represents a specific version of Jira.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-license-metrics-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — License Metrics. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/instance/license
+      name: rest-api-3-instance-license
+      description: REST surface for rest-api-3-instance-license.
+      operations:
+      - method: GET
+        name: atlassiangetlicense
+        description: Atlassian Get License
+        call: jira-license-metrics.atlassiangetlicense
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/license/approximatelicensecount
+      name: rest-api-3-license-approximatelicensecount
+      description: REST surface for rest-api-3-license-approximateLicenseCount.
+      operations:
+      - method: GET
+        name: atlassiangetapproximatelicensecount
+        description: Atlassian Get Approximate License Count
+        call: jira-license-metrics.atlassiangetapproximatelicensecount
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/license/approximatelicensecount/product/{applicationkey}
+      name: rest-api-3-license-approximatelicensecount-product-applicationkey
+      description: REST surface for rest-api-3-license-approximateLicenseCount-product-applicationKey.
+      operations:
+      - method: GET
+        name: atlassiangetapproximateapplicationlicensecount
+        description: Atlassian Get Approximate Application License Count
+        call: jira-license-metrics.atlassiangetapproximateapplicationlicensecount
+        with:
+          applicationKey: rest.applicationKey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-license-metrics-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — License Metrics. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-license
+      description: Atlassian Get License
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-license-metrics.atlassiangetlicense
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-approximate-license-count
+      description: Atlassian Get Approximate License Count
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-license-metrics.atlassiangetapproximatelicensecount
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-approximate-application-license
+      description: Atlassian Get Approximate Application License Count
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-license-metrics.atlassiangetapproximateapplicationlicensecount
+      with:
+        applicationKey: tools.applicationKey
+      outputParameters:
+      - type: object
+        mapping: $.

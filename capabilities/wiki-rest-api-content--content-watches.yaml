@@ -1,0 +1,143 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/content/ — Content Watches
+  description: 'Atlassian wiki/rest/api/content/ — Content Watches. 2 operations. Lead operation: Atlassian Get Watches For
+    Page. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Content Watches
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-content--content-watches
+    baseUri: ''
+    description: Atlassian wiki/rest/api/content/ — Content Watches business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-notification-child-created
+      path: /wiki/rest/api/content/{id}/notification/child-created
+      operations:
+      - name: atlassiangetwatchesforpage
+        method: GET
+        description: Atlassian Get Watches For Page
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its watches.
+          required: true
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned watches.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of watches to return per page.
+    - name: wiki-rest-api-content-id-notification-created
+      path: /wiki/rest/api/content/{id}/notification/created
+      operations:
+      - name: atlassiangetwatchesforspace
+        method: GET
+        description: Atlassian Get Watches For Space
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its watches.
+          required: true
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned watches.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of watches to return per page.
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-content--content-watches-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/content/ — Content Watches. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/notification/child-created
+      name: wiki-rest-api-content-id-notification-child-created
+      description: REST surface for wiki-rest-api-content-id-notification-child-created.
+      operations:
+      - method: GET
+        name: atlassiangetwatchesforpage
+        description: Atlassian Get Watches For Page
+        call: wiki-rest-api-content--content-watches.atlassiangetwatchesforpage
+        with:
+          id: rest.id
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/notification/created
+      name: wiki-rest-api-content-id-notification-created
+      description: REST surface for wiki-rest-api-content-id-notification-created.
+      operations:
+      - method: GET
+        name: atlassiangetwatchesforspace
+        description: Atlassian Get Watches For Space
+        call: wiki-rest-api-content--content-watches.atlassiangetwatchesforspace
+        with:
+          id: rest.id
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-content--content-watches-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/content/ — Content Watches. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-watches-page
+      description: Atlassian Get Watches For Page
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-content--content-watches.atlassiangetwatchesforpage
+      with:
+        id: tools.id
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-watches-space
+      description: Atlassian Get Watches For Space
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-content--content-watches.atlassiangetwatchesforspace
+      with:
+        id: tools.id
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.

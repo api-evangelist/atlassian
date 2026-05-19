@@ -1,0 +1,291 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Myself
+  description: 'Atlassian The Jira Cloud platform REST API — Myself. 7 operations. Lead operation: Atlassian Delete Preference.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Myself
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-myself
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Myself business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-mypreferences
+      path: /rest/api/3/mypreferences
+      operations:
+      - name: atlassianremovepreference
+        method: DELETE
+        description: Atlassian Delete Preference
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: key
+          in: query
+          type: string
+          description: The key of the preference.
+          required: true
+      - name: atlassiangetpreference
+        method: GET
+        description: Atlassian Get Preference
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: key
+          in: query
+          type: string
+          description: The key of the preference.
+          required: true
+      - name: atlassiansetpreference
+        method: PUT
+        description: Atlassian Set Preference
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: key
+          in: query
+          type: string
+          description: The key of the preference. The maximum length is 255 characters.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-mypreferences-locale
+      path: /rest/api/3/mypreferences/locale
+      operations:
+      - name: atlassiandeletelocale
+        method: DELETE
+        description: Atlassian Delete Locale
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiangetlocale
+        method: GET
+        description: Atlassian Get Locale
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiansetlocale
+        method: PUT
+        description: Atlassian Set Locale
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-myself
+      path: /rest/api/3/myself
+      operations:
+      - name: atlassiangetcurrentuser
+        method: GET
+        description: Atlassian Get Current User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: 'Use [expand](#expansion) to include additional information about user in the response. This parameter
+            accepts a comma-separated list. Expand options include:'
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-myself-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Myself. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/mypreferences
+      name: rest-api-3-mypreferences
+      description: REST surface for rest-api-3-mypreferences.
+      operations:
+      - method: DELETE
+        name: atlassianremovepreference
+        description: Atlassian Delete Preference
+        call: jira-myself.atlassianremovepreference
+        with:
+          key: rest.key
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetpreference
+        description: Atlassian Get Preference
+        call: jira-myself.atlassiangetpreference
+        with:
+          key: rest.key
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetpreference
+        description: Atlassian Set Preference
+        call: jira-myself.atlassiansetpreference
+        with:
+          key: rest.key
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/mypreferences/locale
+      name: rest-api-3-mypreferences-locale
+      description: REST surface for rest-api-3-mypreferences-locale.
+      operations:
+      - method: DELETE
+        name: atlassiandeletelocale
+        description: Atlassian Delete Locale
+        call: jira-myself.atlassiandeletelocale
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetlocale
+        description: Atlassian Get Locale
+        call: jira-myself.atlassiangetlocale
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetlocale
+        description: Atlassian Set Locale
+        call: jira-myself.atlassiansetlocale
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/myself
+      name: rest-api-3-myself
+      description: REST surface for rest-api-3-myself.
+      operations:
+      - method: GET
+        name: atlassiangetcurrentuser
+        description: Atlassian Get Current User
+        call: jira-myself.atlassiangetcurrentuser
+        with:
+          expand: rest.expand
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-myself-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Myself. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-delete-preference
+      description: Atlassian Delete Preference
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-myself.atlassianremovepreference
+      with:
+        key: tools.key
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-preference
+      description: Atlassian Get Preference
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-myself.atlassiangetpreference
+      with:
+        key: tools.key
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-preference
+      description: Atlassian Set Preference
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-myself.atlassiansetpreference
+      with:
+        key: tools.key
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-locale
+      description: Atlassian Delete Locale
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-myself.atlassiandeletelocale
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-locale
+      description: Atlassian Get Locale
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-myself.atlassiangetlocale
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-locale
+      description: Atlassian Set Locale
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-myself.atlassiansetlocale
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-current-user
+      description: Atlassian Get Current User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-myself.atlassiangetcurrentuser
+      with:
+        expand: tools.expand
+      outputParameters:
+      - type: object
+        mapping: $.

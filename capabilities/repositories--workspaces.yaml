@@ -1,0 +1,82 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian repositories/ — Workspaces
+  description: 'Atlassian repositories/ — Workspaces. 1 operations. Lead operation: Atlassian List A Repository Permissions
+    For A Workspace. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Workspaces
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: repositories--workspaces
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian repositories/ — Workspaces business capability. Self-contained, no shared references.
+    resources:
+    - name: workspaces-workspace-permissions-repositories-repo_slug
+      path: /workspaces/{workspace}/permissions/repositories/{repo_slug}
+      operations:
+      - name: atlassianlistarepositorypermissionsforaworkspace
+        method: GET
+        description: Atlassian List A Repository Permissions For A Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Name of a response property sort the result by as per
+  exposes:
+  - type: rest
+    namespace: repositories--workspaces-rest
+    port: 8080
+    description: REST adapter for Atlassian repositories/ — Workspaces. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/workspaces/{workspace}/permissions/repositories/{repo-slug}
+      name: workspaces-workspace-permissions-repositories-repo-slug
+      description: REST surface for workspaces-workspace-permissions-repositories-repo_slug.
+      operations:
+      - method: GET
+        name: atlassianlistarepositorypermissionsforaworkspace
+        description: Atlassian List A Repository Permissions For A Workspace
+        call: repositories--workspaces.atlassianlistarepositorypermissionsforaworkspace
+        with:
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: repositories--workspaces-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian repositories/ — Workspaces. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-list-repository-permissions-workspace
+      description: Atlassian List A Repository Permissions For A Workspace
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: repositories--workspaces.atlassianlistarepositorypermissionsforaworkspace
+      with:
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.

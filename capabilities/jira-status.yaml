@@ -1,0 +1,266 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Status
+  description: 'Atlassian The Jira Cloud platform REST API — Status. 5 operations. Lead operation: Atlassian Bulk Delete Statuses.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Status
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-status
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Status business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-statuses
+      path: /rest/api/3/statuses
+      operations:
+      - name: atlassiandeletestatusesbyid
+        method: DELETE
+        description: Atlassian Bulk Delete Statuses
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: query
+          type: array
+          description: The list of status IDs. To include multiple IDs, provide an ampersand-separated list. For example,
+            id=10000&id=10001.
+          required: true
+      - name: atlassiangetstatusesbyid
+        method: GET
+        description: Atlassian Bulk Get Statuses
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: 'Use [expand](#expansion) to include additional information in the response. This parameter accepts
+            a comma-separated list. Expand options include:'
+        - name: id
+          in: query
+          type: array
+          description: The list of status IDs. To include multiple IDs, provide an ampersand-separated list. For example,
+            id=10000&id=10001.
+          required: true
+      - name: atlassiancreatestatuses
+        method: POST
+        description: Atlassian Bulk Create Statuses
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+      - name: atlassianupdatestatuses
+        method: PUT
+        description: Atlassian Bulk Update Statuses
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-statuses-search
+      path: /rest/api/3/statuses/search
+      operations:
+      - name: atlassiansearch
+        method: GET
+        description: Atlassian Search Statuses Paginated
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: 'Use [expand](#expansion) to include additional information in the response. This parameter accepts
+            a comma-separated list. Expand options include:'
+        - name: projectId
+          in: query
+          type: string
+          description: The project the status is part of or null for global statuses.
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+        - name: searchString
+          in: query
+          type: string
+          description: Term to match status names against or null to search for all statuses in the search scope.
+        - name: statusCategory
+          in: query
+          type: string
+          description: 'Category of the status to filter by. The supported values are: `TODO`, `IN_PROGRESS`, and `DONE`.'
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-status-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Status. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/statuses
+      name: rest-api-3-statuses
+      description: REST surface for rest-api-3-statuses.
+      operations:
+      - method: DELETE
+        name: atlassiandeletestatusesbyid
+        description: Atlassian Bulk Delete Statuses
+        call: jira-status.atlassiandeletestatusesbyid
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetstatusesbyid
+        description: Atlassian Bulk Get Statuses
+        call: jira-status.atlassiangetstatusesbyid
+        with:
+          expand: rest.expand
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreatestatuses
+        description: Atlassian Bulk Create Statuses
+        call: jira-status.atlassiancreatestatuses
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatestatuses
+        description: Atlassian Bulk Update Statuses
+        call: jira-status.atlassianupdatestatuses
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/statuses/search
+      name: rest-api-3-statuses-search
+      description: REST surface for rest-api-3-statuses-search.
+      operations:
+      - method: GET
+        name: atlassiansearch
+        description: Atlassian Search Statuses Paginated
+        call: jira-status.atlassiansearch
+        with:
+          expand: rest.expand
+          projectId: rest.projectId
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+          searchString: rest.searchString
+          statusCategory: rest.statusCategory
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-status-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Status. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-bulk-delete-statuses
+      description: Atlassian Bulk Delete Statuses
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-status.atlassiandeletestatusesbyid
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-bulk-get-statuses
+      description: Atlassian Bulk Get Statuses
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-status.atlassiangetstatusesbyid
+      with:
+        expand: tools.expand
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-bulk-create-statuses
+      description: Atlassian Bulk Create Statuses
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-status.atlassiancreatestatuses
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-bulk-update-statuses
+      description: Atlassian Bulk Update Statuses
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-status.atlassianupdatestatuses
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-search-statuses-paginated
+      description: Atlassian Search Statuses Paginated
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-status.atlassiansearch
+      with:
+        expand: tools.expand
+        projectId: tools.projectId
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+        searchString: tools.searchString
+        statusCategory: tools.statusCategory
+      outputParameters:
+      - type: object
+        mapping: $.

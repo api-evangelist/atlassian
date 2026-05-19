@@ -1,0 +1,128 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Confluence Cloud REST API — Long-Running Task
+  description: 'Atlassian The Confluence Cloud REST API — Long-Running Task. 2 operations. Lead operation: Atlassian Get Long
+    Running Tasks. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Long-Running Task
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-long-running-task
+    baseUri: ''
+    description: Atlassian The Confluence Cloud REST API — Long-Running Task business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: wiki-rest-api-longtask
+      path: /wiki/rest/api/longtask
+      operations:
+      - name: atlassiangettasks
+        method: GET
+        description: Atlassian Get Long Running Tasks
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned tasks.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of tasks to return per page. Note, this may be
+    - name: wiki-rest-api-longtask-id
+      path: /wiki/rest/api/longtask/{id}
+      operations:
+      - name: atlassiangettask
+        method: GET
+        description: Atlassian Get Long Running Task
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the task.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-long-running-task-rest
+    port: 8080
+    description: REST adapter for Atlassian The Confluence Cloud REST API — Long-Running Task. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/longtask
+      name: wiki-rest-api-longtask
+      description: REST surface for wiki-rest-api-longtask.
+      operations:
+      - method: GET
+        name: atlassiangettasks
+        description: Atlassian Get Long Running Tasks
+        call: confluence-long-running-task.atlassiangettasks
+        with:
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/longtask/{id}
+      name: wiki-rest-api-longtask-id
+      description: REST surface for wiki-rest-api-longtask-id.
+      operations:
+      - method: GET
+        name: atlassiangettask
+        description: Atlassian Get Long Running Task
+        call: confluence-long-running-task.atlassiangettask
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-long-running-task-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Confluence Cloud REST API — Long-Running Task. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-long-running-tasks
+      description: Atlassian Get Long Running Tasks
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-long-running-task.atlassiangettasks
+      with:
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-long-running-task
+      description: Atlassian Get Long Running Task
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-long-running-task.atlassiangettask
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.

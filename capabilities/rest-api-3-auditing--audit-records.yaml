@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/auditing/ — Audit Records
+  description: 'Atlassian rest/api/3/auditing/ — Audit Records. 1 operations. Lead operation: Atlassian Get Audit Records.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Audit Records
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-auditing--audit-records
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/auditing/ — Audit Records business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-auditing-record
+      path: /rest/api/3/auditing/record
+      operations:
+      - name: atlassiangetauditrecords
+        method: GET
+        description: Atlassian Get Audit Records
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: offset
+          in: query
+          type: integer
+          description: The number of records to skip before returning the first result.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of results to return.
+        - name: filter
+          in: query
+          type: string
+          description: The strings to match with audit field content, space separated.
+        - name: from
+          in: query
+          type: string
+          description: The date and time on or after which returned audit records must have been created. If `to` is provided
+            `from` must be before `to` or no audit records are return
+        - name: to
+          in: query
+          type: string
+          description: The date and time on or before which returned audit results must have been created. If `from` is provided
+            `to` must be after `from` or no audit records are retu
+  exposes:
+  - type: rest
+    namespace: rest-api-3-auditing--audit-records-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/auditing/ — Audit Records. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/auditing/record
+      name: rest-api-3-auditing-record
+      description: REST surface for rest-api-3-auditing-record.
+      operations:
+      - method: GET
+        name: atlassiangetauditrecords
+        description: Atlassian Get Audit Records
+        call: rest-api-3-auditing--audit-records.atlassiangetauditrecords
+        with:
+          offset: rest.offset
+          limit: rest.limit
+          filter: rest.filter
+          from: rest.from
+          to: rest.to
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-auditing--audit-records-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/auditing/ — Audit Records. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-audit-records
+      description: Atlassian Get Audit Records
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-auditing--audit-records.atlassiangetauditrecords
+      with:
+        offset: tools.offset
+        limit: tools.limit
+        filter: tools.filter
+        from: tools.from
+        to: tools.to
+      outputParameters:
+      - type: object
+        mapping: $.

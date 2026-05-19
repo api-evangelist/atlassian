@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Upload
+  description: 'Atlassian Bit Bucket Repositories API — Upload. 2 operations. Lead operation: Atlassian Upload Download Artifact.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Upload
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-upload
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Upload business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-downloads
+      path: /repositories/{workspace}/{repo_slug}/downloads
+      operations:
+      - name: uploaddownloadartifact
+        method: POST
+        description: Atlassian Upload Download Artifact
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-issues-issue_id-attachments
+      path: /repositories/{workspace}/{repo_slug}/issues/{issue_id}/attachments
+      operations:
+      - name: uploadanattachmenttoanissue
+        method: POST
+        description: Atlassian Upload an Attachment to an Issue
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-upload-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Upload. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/downloads
+      name: repositories-workspace-repo-slug-downloads
+      description: REST surface for repositories-workspace-repo_slug-downloads.
+      operations:
+      - method: POST
+        name: uploaddownloadartifact
+        description: Atlassian Upload Download Artifact
+        call: bitbucket-repositories-upload.uploaddownloadartifact
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/issues/{issue-id}/attachments
+      name: repositories-workspace-repo-slug-issues-issue-id-attachments
+      description: REST surface for repositories-workspace-repo_slug-issues-issue_id-attachments.
+      operations:
+      - method: POST
+        name: uploadanattachmenttoanissue
+        description: Atlassian Upload an Attachment to an Issue
+        call: bitbucket-repositories-upload.uploadanattachmenttoanissue
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-upload-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Upload. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-upload-download-artifact
+      description: Atlassian Upload Download Artifact
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-upload.uploaddownloadartifact
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-upload-attachment-issue
+      description: Atlassian Upload an Attachment to an Issue
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-upload.uploadanattachmenttoanissue
+      outputParameters:
+      - type: object
+        mapping: $.

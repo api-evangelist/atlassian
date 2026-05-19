@@ -1,0 +1,224 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Project Categories
+  description: 'Atlassian The Jira Cloud platform REST API — Project Categories. 5 operations. Lead operation: Atlassian Get
+    All Project Categories. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Project Categories
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-project-categories
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Project Categories business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-api-3-projectCategory
+      path: /rest/api/3/projectCategory
+      operations:
+      - name: atlassiangetallprojectcategories
+        method: GET
+        description: Atlassian Get All Project Categories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiancreateprojectcategory
+        method: POST
+        description: Atlassian Create Project Category
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-projectCategory-id
+      path: /rest/api/3/projectCategory/{id}
+      operations:
+      - name: atlassianremoveprojectcategory
+        method: DELETE
+        description: Atlassian Delete Project Category
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: integer
+          description: ID of the project category to delete.
+          required: true
+      - name: atlassiangetprojectcategorybyid
+        method: GET
+        description: Atlassian Get Project Category By Id
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: integer
+          description: The ID of the project category.
+          required: true
+      - name: atlassianupdateprojectcategory
+        method: PUT
+        description: Atlassian Update Project Category
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-project-categories-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Project Categories. One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/projectcategory
+      name: rest-api-3-projectcategory
+      description: REST surface for rest-api-3-projectCategory.
+      operations:
+      - method: GET
+        name: atlassiangetallprojectcategories
+        description: Atlassian Get All Project Categories
+        call: jira-project-categories.atlassiangetallprojectcategories
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreateprojectcategory
+        description: Atlassian Create Project Category
+        call: jira-project-categories.atlassiancreateprojectcategory
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/projectcategory/{id}
+      name: rest-api-3-projectcategory-id
+      description: REST surface for rest-api-3-projectCategory-id.
+      operations:
+      - method: DELETE
+        name: atlassianremoveprojectcategory
+        description: Atlassian Delete Project Category
+        call: jira-project-categories.atlassianremoveprojectcategory
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetprojectcategorybyid
+        description: Atlassian Get Project Category By Id
+        call: jira-project-categories.atlassiangetprojectcategorybyid
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateprojectcategory
+        description: Atlassian Update Project Category
+        call: jira-project-categories.atlassianupdateprojectcategory
+        with:
+          id: rest.id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-project-categories-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Project Categories. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-all-project-categories
+      description: Atlassian Get All Project Categories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-project-categories.atlassiangetallprojectcategories
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-project-category
+      description: Atlassian Create Project Category
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-project-categories.atlassiancreateprojectcategory
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-project-category
+      description: Atlassian Delete Project Category
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-project-categories.atlassianremoveprojectcategory
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-project-category-id
+      description: Atlassian Get Project Category By Id
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-project-categories.atlassiangetprojectcategorybyid
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-project-category
+      description: Atlassian Update Project Category
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-project-categories.atlassianupdateprojectcategory
+      with:
+        id: tools.id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

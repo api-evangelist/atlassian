@@ -1,0 +1,239 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Teams API — Teams
+  description: 'Atlassian Bit Bucket Teams API — Teams. 4 operations. Lead operation: Atlassian Get Variable for Team. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Teams
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-teams-teams
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Teams API — Teams business capability. Self-contained, no shared references.
+    resources:
+    - name: teams-username-pipelines_config-variables-variable_uuid
+      path: /teams/{username}/pipelines_config/variables/{variable_uuid}
+      operations:
+      - name: getvariableforteam
+        method: GET
+        description: Atlassian Get Variable for Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to retrieve.
+          required: true
+      - name: updatevariableforteam
+        method: PUT
+        description: Atlassian Update Variable for Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+      - name: deletevariableforteam
+        method: DELETE
+        description: Atlassian Delete Variable for Team
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: variable_uuid
+          in: path
+          type: string
+          description: The UUID of the variable to delete.
+          required: true
+    - name: teams-username-search-code
+      path: /teams/{username}/search/code
+      operations:
+      - name: searchforcodeinteamsrepositories
+        method: GET
+        description: Atlassian Search for Code in Teams Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account to search in; either the username or the UUID in curly braces
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-teams-teams-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Teams API — Teams. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/teams/{username}/pipelines-config/variables/{variable-uuid}
+      name: teams-username-pipelines-config-variables-variable-uuid
+      description: REST surface for teams-username-pipelines_config-variables-variable_uuid.
+      operations:
+      - method: GET
+        name: getvariableforteam
+        description: Atlassian Get Variable for Team
+        call: bitbucket-teams-teams.getvariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: updatevariableforteam
+        description: Atlassian Update Variable for Team
+        call: bitbucket-teams-teams.updatevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: deletevariableforteam
+        description: Atlassian Delete Variable for Team
+        call: bitbucket-teams-teams.deletevariableforteam
+        with:
+          username: rest.username
+          variable_uuid: rest.variable_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/teams/{username}/search/code
+      name: teams-username-search-code
+      description: REST surface for teams-username-search-code.
+      operations:
+      - method: GET
+        name: searchforcodeinteamsrepositories
+        description: Atlassian Search for Code in Teams Repositories
+        call: bitbucket-teams-teams.searchforcodeinteamsrepositories
+        with:
+          username: rest.username
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-teams-teams-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Teams API — Teams. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-get-variable-team
+      description: Atlassian Get Variable for Team
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-teams-teams.getvariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-variable-team
+      description: Atlassian Update Variable for Team
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-teams-teams.updatevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-variable-team
+      description: Atlassian Delete Variable for Team
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-teams-teams.deletevariableforteam
+      with:
+        username: tools.username
+        variable_uuid: tools.variable_uuid
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-search-code-teams-repositories
+      description: Atlassian Search for Code in Teams Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-teams-teams.searchforcodeinteamsrepositories
+      with:
+        username: tools.username
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.

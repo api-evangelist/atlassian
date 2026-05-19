@@ -1,0 +1,197 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bitbucket API — Ssh
+  description: 'Atlassian Bitbucket API — Ssh. 5 operations. Lead operation: Atlassian List Ssh Keys. Self-contained Naftiko
+    capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Ssh
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-ssh
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bitbucket API — Ssh business capability. Self-contained, no shared references.
+    resources:
+    - name: users-selected_user-ssh-keys
+      path: /users/{selected_user}/ssh-keys
+      operations:
+      - name: atlassianlistsshkeys
+        method: GET
+        description: Atlassian List Ssh Keys
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassianaddanewsshkey
+        method: POST
+        description: Atlassian Add A New Ssh Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: users-selected_user-ssh-keys-key_id
+      path: /users/{selected_user}/ssh-keys/{key_id}
+      operations:
+      - name: atlassiandeleteasshkey
+        method: DELETE
+        description: Atlassian Delete A Ssh Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiangetasshkey
+        method: GET
+        description: Atlassian Get A Ssh Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassianupdateasshkey
+        method: PUT
+        description: Atlassian Update A Ssh Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-ssh-rest
+    port: 8080
+    description: REST adapter for Atlassian Bitbucket API — Ssh. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/users/{selected-user}/ssh-keys
+      name: users-selected-user-ssh-keys
+      description: REST surface for users-selected_user-ssh-keys.
+      operations:
+      - method: GET
+        name: atlassianlistsshkeys
+        description: Atlassian List Ssh Keys
+        call: bitbucket-ssh.atlassianlistsshkeys
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassianaddanewsshkey
+        description: Atlassian Add A New Ssh Key
+        call: bitbucket-ssh.atlassianaddanewsshkey
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/users/{selected-user}/ssh-keys/{key-id}
+      name: users-selected-user-ssh-keys-key-id
+      description: REST surface for users-selected_user-ssh-keys-key_id.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteasshkey
+        description: Atlassian Delete A Ssh Key
+        call: bitbucket-ssh.atlassiandeleteasshkey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetasshkey
+        description: Atlassian Get A Ssh Key
+        call: bitbucket-ssh.atlassiangetasshkey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateasshkey
+        description: Atlassian Update A Ssh Key
+        call: bitbucket-ssh.atlassianupdateasshkey
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-ssh-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bitbucket API — Ssh. One tool per consumed operation, routed inline through this
+      capability's consumes block.
+    tools:
+    - name: atlassian-list-ssh-keys
+      description: Atlassian List Ssh Keys
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-ssh.atlassianlistsshkeys
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-add-new-ssh-key
+      description: Atlassian Add A New Ssh Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-ssh.atlassianaddanewsshkey
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-ssh-key
+      description: Atlassian Delete A Ssh Key
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-ssh.atlassiandeleteasshkey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-ssh-key
+      description: Atlassian Get A Ssh Key
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-ssh.atlassiangetasshkey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-ssh-key
+      description: Atlassian Update A Ssh Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-ssh.atlassianupdateasshkey
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

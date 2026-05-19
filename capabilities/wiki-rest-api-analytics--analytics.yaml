@@ -1,0 +1,131 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/analytics/ — Analytics
+  description: 'Atlassian wiki/rest/api/analytics/ — Analytics. 2 operations. Lead operation: Atlassian Get Viewers. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Analytics
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-analytics--analytics
+    baseUri: ''
+    description: Atlassian wiki/rest/api/analytics/ — Analytics business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-analytics-content-contentId-viewers
+      path: /wiki/rest/api/analytics/content/{contentId}/viewers
+      operations:
+      - name: atlassiangetviewers
+        method: GET
+        description: Atlassian Get Viewers
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: contentId
+          in: path
+          type: string
+          description: The ID of the content to get the viewers for.
+          required: true
+        - name: fromDate
+          in: query
+          type: string
+          description: The number of views for the content since the date.
+    - name: wiki-rest-api-analytics-content-contentId-views
+      path: /wiki/rest/api/analytics/content/{contentId}/views
+      operations:
+      - name: atlassiangetviews
+        method: GET
+        description: Atlassian Get Views
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: contentId
+          in: path
+          type: string
+          description: The ID of the content to get the views for.
+          required: true
+        - name: fromDate
+          in: query
+          type: string
+          description: The number of views for the content since the date.
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-analytics--analytics-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/analytics/ — Analytics. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/analytics/content/{contentid}/viewers
+      name: wiki-rest-api-analytics-content-contentid-viewers
+      description: REST surface for wiki-rest-api-analytics-content-contentId-viewers.
+      operations:
+      - method: GET
+        name: atlassiangetviewers
+        description: Atlassian Get Viewers
+        call: wiki-rest-api-analytics--analytics.atlassiangetviewers
+        with:
+          contentId: rest.contentId
+          fromDate: rest.fromDate
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/analytics/content/{contentid}/views
+      name: wiki-rest-api-analytics-content-contentid-views
+      description: REST surface for wiki-rest-api-analytics-content-contentId-views.
+      operations:
+      - method: GET
+        name: atlassiangetviews
+        description: Atlassian Get Views
+        call: wiki-rest-api-analytics--analytics.atlassiangetviews
+        with:
+          contentId: rest.contentId
+          fromDate: rest.fromDate
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-analytics--analytics-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/analytics/ — Analytics. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-viewers
+      description: Atlassian Get Viewers
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-analytics--analytics.atlassiangetviewers
+      with:
+        contentId: tools.contentId
+        fromDate: tools.fromDate
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-views
+      description: Atlassian Get Views
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-analytics--analytics.atlassiangetviews
+      with:
+        contentId: tools.contentId
+        fromDate: tools.fromDate
+      outputParameters:
+      - type: object
+        mapping: $.

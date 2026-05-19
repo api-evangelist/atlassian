@@ -1,0 +1,278 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Confluence Cloud REST API — Themes
+  description: 'Atlassian The Confluence Cloud REST API — Themes. 6 operations. Lead operation: Atlassian Get Themes. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Themes
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-themes
+    baseUri: ''
+    description: Atlassian The Confluence Cloud REST API — Themes business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-settings-theme
+      path: /wiki/rest/api/settings/theme
+      operations:
+      - name: atlassiangetthemes
+        method: GET
+        description: Atlassian Get Themes
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned themes.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of themes to return per page.
+    - name: wiki-rest-api-settings-theme-selected
+      path: /wiki/rest/api/settings/theme/selected
+      operations:
+      - name: atlassiangetglobaltheme
+        method: GET
+        description: Atlassian Get Global Theme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: wiki-rest-api-settings-theme-themeKey
+      path: /wiki/rest/api/settings/theme/{themeKey}
+      operations:
+      - name: atlassiangettheme
+        method: GET
+        description: Atlassian Get Theme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: themeKey
+          in: path
+          type: string
+          description: The key of the theme to be returned.
+          required: true
+    - name: wiki-rest-api-space-spaceKey-theme
+      path: /wiki/rest/api/space/{spaceKey}/theme
+      operations:
+      - name: atlassiangetspacetheme
+        method: GET
+        description: Atlassian Get Space Theme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its theme.
+          required: true
+      - name: atlassiansetspacetheme
+        method: PUT
+        description: Atlassian Set Space Theme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to set the theme for.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+      - name: atlassianresetspacetheme
+        method: DELETE
+        description: Atlassian Reset Space Theme
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to reset the theme for.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-themes-rest
+    port: 8080
+    description: REST adapter for Atlassian The Confluence Cloud REST API — Themes. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/settings/theme
+      name: wiki-rest-api-settings-theme
+      description: REST surface for wiki-rest-api-settings-theme.
+      operations:
+      - method: GET
+        name: atlassiangetthemes
+        description: Atlassian Get Themes
+        call: confluence-themes.atlassiangetthemes
+        with:
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/settings/theme/selected
+      name: wiki-rest-api-settings-theme-selected
+      description: REST surface for wiki-rest-api-settings-theme-selected.
+      operations:
+      - method: GET
+        name: atlassiangetglobaltheme
+        description: Atlassian Get Global Theme
+        call: confluence-themes.atlassiangetglobaltheme
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/settings/theme/{themekey}
+      name: wiki-rest-api-settings-theme-themekey
+      description: REST surface for wiki-rest-api-settings-theme-themeKey.
+      operations:
+      - method: GET
+        name: atlassiangettheme
+        description: Atlassian Get Theme
+        call: confluence-themes.atlassiangettheme
+        with:
+          themeKey: rest.themeKey
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/space/{spacekey}/theme
+      name: wiki-rest-api-space-spacekey-theme
+      description: REST surface for wiki-rest-api-space-spaceKey-theme.
+      operations:
+      - method: GET
+        name: atlassiangetspacetheme
+        description: Atlassian Get Space Theme
+        call: confluence-themes.atlassiangetspacetheme
+        with:
+          spaceKey: rest.spaceKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetspacetheme
+        description: Atlassian Set Space Theme
+        call: confluence-themes.atlassiansetspacetheme
+        with:
+          spaceKey: rest.spaceKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: atlassianresetspacetheme
+        description: Atlassian Reset Space Theme
+        call: confluence-themes.atlassianresetspacetheme
+        with:
+          spaceKey: rest.spaceKey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-themes-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Confluence Cloud REST API — Themes. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-themes
+      description: Atlassian Get Themes
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-themes.atlassiangetthemes
+      with:
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-global-theme
+      description: Atlassian Get Global Theme
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-themes.atlassiangetglobaltheme
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-theme
+      description: Atlassian Get Theme
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-themes.atlassiangettheme
+      with:
+        themeKey: tools.themeKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-space-theme
+      description: Atlassian Get Space Theme
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-themes.atlassiangetspacetheme
+      with:
+        spaceKey: tools.spaceKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-space-theme
+      description: Atlassian Set Space Theme
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-themes.atlassiansetspacetheme
+      with:
+        spaceKey: tools.spaceKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-reset-space-theme
+      description: Atlassian Reset Space Theme
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: confluence-themes.atlassianresetspacetheme
+      with:
+        spaceKey: tools.spaceKey
+      outputParameters:
+      - type: object
+        mapping: $.

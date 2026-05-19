@@ -1,0 +1,67 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Snippets API — Checks
+  description: 'Atlassian Bit Bucket Snippets API — Checks. 1 operations. Lead operation: Atlassian Check if the Current User
+    Is Watching Snippet. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Checks
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-snippets-checks
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Snippets API — Checks business capability. Self-contained, no shared references.
+    resources:
+    - name: snippets-workspace-encoded_id-watch
+      path: /snippets/{workspace}/{encoded_id}/watch
+      operations:
+      - name: checkifthecurrentuseriswatchingsnippet
+        method: GET
+        description: Atlassian Check if the Current User Is Watching Snippet
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-snippets-checks-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Snippets API — Checks. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/snippets/{workspace}/{encoded-id}/watch
+      name: snippets-workspace-encoded-id-watch
+      description: REST surface for snippets-workspace-encoded_id-watch.
+      operations:
+      - method: GET
+        name: checkifthecurrentuseriswatchingsnippet
+        description: Atlassian Check if the Current User Is Watching Snippet
+        call: bitbucket-snippets-checks.checkifthecurrentuseriswatchingsnippet
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-snippets-checks-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Snippets API — Checks. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-check-if-current-user
+      description: Atlassian Check if the Current User Is Watching Snippet
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-checks.checkifthecurrentuseriswatchingsnippet
+      outputParameters:
+      - type: object
+        mapping: $.

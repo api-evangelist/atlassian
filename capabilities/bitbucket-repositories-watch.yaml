@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Watch
+  description: 'Atlassian Bit Bucket Repositories API — Watch. 1 operations. Lead operation: Atlassian Watch an Issue. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Watch
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-watch
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Watch business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-issues-issue_id-watch
+      path: /repositories/{workspace}/{repo_slug}/issues/{issue_id}/watch
+      operations:
+      - name: watchanissue
+        method: PUT
+        description: Atlassian Watch an Issue
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-watch-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Watch. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/issues/{issue-id}/watch
+      name: repositories-workspace-repo-slug-issues-issue-id-watch
+      description: REST surface for repositories-workspace-repo_slug-issues-issue_id-watch.
+      operations:
+      - method: PUT
+        name: watchanissue
+        description: Atlassian Watch an Issue
+        call: bitbucket-repositories-watch.watchanissue
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-watch-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Watch. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-watch-issue
+      description: Atlassian Watch an Issue
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-watch.watchanissue
+      outputParameters:
+      - type: object
+        mapping: $.

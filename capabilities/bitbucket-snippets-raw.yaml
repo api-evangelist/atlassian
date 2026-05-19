@@ -1,0 +1,99 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Snippets API — Raw
+  description: 'Atlassian Bit Bucket Snippets API — Raw. 2 operations. Lead operation: Atlassian Get Snippets Raw File at
+    Head. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Raw
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-snippets-raw
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Snippets API — Raw business capability. Self-contained, no shared references.
+    resources:
+    - name: snippets-workspace-encoded_id-files-path
+      path: /snippets/{workspace}/{encoded_id}/files/{path}
+      operations:
+      - name: getsnippetsrawfileathead
+        method: GET
+        description: Atlassian Get Snippets Raw File at Head
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: snippets-workspace-encoded_id-node_id-files-path
+      path: /snippets/{workspace}/{encoded_id}/{node_id}/files/{path}
+      operations:
+      - name: getsnippetsrawfile
+        method: GET
+        description: Atlassian Get Snippets Raw File
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-snippets-raw-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Snippets API — Raw. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/snippets/{workspace}/{encoded-id}/files/{path}
+      name: snippets-workspace-encoded-id-files-path
+      description: REST surface for snippets-workspace-encoded_id-files-path.
+      operations:
+      - method: GET
+        name: getsnippetsrawfileathead
+        description: Atlassian Get Snippets Raw File at Head
+        call: bitbucket-snippets-raw.getsnippetsrawfileathead
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/snippets/{workspace}/{encoded-id}/{node-id}/files/{path}
+      name: snippets-workspace-encoded-id-node-id-files-path
+      description: REST surface for snippets-workspace-encoded_id-node_id-files-path.
+      operations:
+      - method: GET
+        name: getsnippetsrawfile
+        description: Atlassian Get Snippets Raw File
+        call: bitbucket-snippets-raw.getsnippetsrawfile
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-snippets-raw-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Snippets API — Raw. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-get-snippets-raw-file
+      description: Atlassian Get Snippets Raw File at Head
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-raw.getsnippetsrawfileathead
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-snippets-raw-file-2
+      description: Atlassian Get Snippets Raw File
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-raw.getsnippetsrawfile
+      outputParameters:
+      - type: object
+        mapping: $.

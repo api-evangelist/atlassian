@@ -1,0 +1,85 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Labels
+  description: 'Atlassian The Jira Cloud platform REST API — Labels. 1 operations. Lead operation: Atlassian Get All Labels.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Labels
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-labels
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Labels business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-label
+      path: /rest/api/3/label
+      operations:
+      - name: atlassiangetalllabels
+        method: GET
+        description: Atlassian Get All Labels
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-labels-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Labels. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/label
+      name: rest-api-3-label
+      description: REST surface for rest-api-3-label.
+      operations:
+      - method: GET
+        name: atlassiangetalllabels
+        description: Atlassian Get All Labels
+        call: jira-labels.atlassiangetalllabels
+        with:
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-labels-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Labels. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-all-labels
+      description: Atlassian Get All Labels
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-labels.atlassiangetalllabels
+      with:
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+      outputParameters:
+      - type: object
+        mapping: $.

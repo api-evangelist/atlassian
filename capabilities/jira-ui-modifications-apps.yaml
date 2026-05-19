@@ -1,0 +1,212 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — UI Modifications (Apps)
+  description: 'Atlassian The Jira Cloud platform REST API — UI Modifications (Apps). 4 operations. Lead operation: Atlassian
+    Get Ui Modifications. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - UI Modifications (Apps)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-ui-modifications-apps
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — UI Modifications (Apps) business capability. Self-contained,
+      no shared references.
+    resources:
+    - name: rest-api-3-uiModifications
+      path: /rest/api/3/uiModifications
+      operations:
+      - name: atlassiangetuimodifications
+        method: GET
+        description: Atlassian Get Ui Modifications
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+        - name: expand
+          in: query
+          type: string
+          description: 'Use expand to include additional information in the response. This parameter accepts a comma-separated
+            list. Expand options include:'
+      - name: atlassiancreateuimodification
+        method: POST
+        description: Atlassian Create Ui Modification
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-uiModifications-uiModificationId
+      path: /rest/api/3/uiModifications/{uiModificationId}
+      operations:
+      - name: atlassiandeleteuimodification
+        method: DELETE
+        description: Atlassian Delete Ui Modification
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: uiModificationId
+          in: path
+          type: string
+          description: The ID of the UI modification.
+          required: true
+      - name: atlassianupdateuimodification
+        method: PUT
+        description: Atlassian Update Ui Modification
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: uiModificationId
+          in: path
+          type: string
+          description: The ID of the UI modification.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-ui-modifications-apps-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — UI Modifications (Apps). One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/uimodifications
+      name: rest-api-3-uimodifications
+      description: REST surface for rest-api-3-uiModifications.
+      operations:
+      - method: GET
+        name: atlassiangetuimodifications
+        description: Atlassian Get Ui Modifications
+        call: jira-ui-modifications-apps.atlassiangetuimodifications
+        with:
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+          expand: rest.expand
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreateuimodification
+        description: Atlassian Create Ui Modification
+        call: jira-ui-modifications-apps.atlassiancreateuimodification
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/uimodifications/{uimodificationid}
+      name: rest-api-3-uimodifications-uimodificationid
+      description: REST surface for rest-api-3-uiModifications-uiModificationId.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteuimodification
+        description: Atlassian Delete Ui Modification
+        call: jira-ui-modifications-apps.atlassiandeleteuimodification
+        with:
+          uiModificationId: rest.uiModificationId
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateuimodification
+        description: Atlassian Update Ui Modification
+        call: jira-ui-modifications-apps.atlassianupdateuimodification
+        with:
+          uiModificationId: rest.uiModificationId
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-ui-modifications-apps-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — UI Modifications (Apps). One tool per consumed
+      operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-ui-modifications
+      description: Atlassian Get Ui Modifications
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-ui-modifications-apps.atlassiangetuimodifications
+      with:
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+        expand: tools.expand
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-ui-modification
+      description: Atlassian Create Ui Modification
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: jira-ui-modifications-apps.atlassiancreateuimodification
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-ui-modification
+      description: Atlassian Delete Ui Modification
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-ui-modifications-apps.atlassiandeleteuimodification
+      with:
+        uiModificationId: tools.uiModificationId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-ui-modification
+      description: Atlassian Update Ui Modification
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-ui-modifications-apps.atlassianupdateuimodification
+      with:
+        uiModificationId: tools.uiModificationId
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

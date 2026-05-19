@@ -1,0 +1,95 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Votes
+  description: 'Atlassian Bit Bucket Repositories API — Votes. 2 operations. Lead operation: Atlassian Remove Vote for an
+    Issue. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Votes
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-votes
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Votes business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-issues-issue_id-vote
+      path: /repositories/{workspace}/{repo_slug}/issues/{issue_id}/vote
+      operations:
+      - name: removevoteforanissue
+        method: DELETE
+        description: Atlassian Remove Vote for an Issue
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: voteforanissue
+        method: PUT
+        description: Atlassian Vote for an Issue
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-votes-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Votes. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/issues/{issue-id}/vote
+      name: repositories-workspace-repo-slug-issues-issue-id-vote
+      description: REST surface for repositories-workspace-repo_slug-issues-issue_id-vote.
+      operations:
+      - method: DELETE
+        name: removevoteforanissue
+        description: Atlassian Remove Vote for an Issue
+        call: bitbucket-repositories-votes.removevoteforanissue
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: voteforanissue
+        description: Atlassian Vote for an Issue
+        call: bitbucket-repositories-votes.voteforanissue
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-votes-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Votes. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-remove-vote-issue
+      description: Atlassian Remove Vote for an Issue
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-repositories-votes.removevoteforanissue
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-vote-issue
+      description: Atlassian Vote for an Issue
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-votes.voteforanissue
+      outputParameters:
+      - type: object
+        mapping: $.

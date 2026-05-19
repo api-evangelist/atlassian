@@ -1,0 +1,173 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/worklog/ — Issue Worklogs
+  description: 'Atlassian rest/api/3/worklog/ — Issue Worklogs. 3 operations. Lead operation: Atlassian Get Ids Of Deleted
+    Worklogs. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Worklogs
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-worklog--issue-worklogs
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/worklog/ — Issue Worklogs business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-worklog-deleted
+      path: /rest/api/3/worklog/deleted
+      operations:
+      - name: atlassiangetidsofworklogsdeletedsince
+        method: GET
+        description: Atlassian Get Ids Of Deleted Worklogs
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: since
+          in: query
+          type: integer
+          description: The date and time, as a UNIX timestamp in milliseconds, after which deleted worklogs are returned.
+    - name: rest-api-3-worklog-list
+      path: /rest/api/3/worklog/list
+      operations:
+      - name: atlassiangetworklogsforids
+        method: POST
+        description: Atlassian Get Worklogs
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter
+            accepts `properties` that returns the properties of ea
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: rest-api-3-worklog-updated
+      path: /rest/api/3/worklog/updated
+      operations:
+      - name: atlassiangetidsofworklogsmodifiedsince
+        method: GET
+        description: Atlassian Get Ids Of Updated Worklogs
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: since
+          in: query
+          type: integer
+          description: The date and time, as a UNIX timestamp in milliseconds, after which updated worklogs are returned.
+        - name: expand
+          in: query
+          type: string
+          description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter
+            accepts `properties` that returns the properties of ea
+  exposes:
+  - type: rest
+    namespace: rest-api-3-worklog--issue-worklogs-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/worklog/ — Issue Worklogs. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/worklog/deleted
+      name: rest-api-3-worklog-deleted
+      description: REST surface for rest-api-3-worklog-deleted.
+      operations:
+      - method: GET
+        name: atlassiangetidsofworklogsdeletedsince
+        description: Atlassian Get Ids Of Deleted Worklogs
+        call: rest-api-3-worklog--issue-worklogs.atlassiangetidsofworklogsdeletedsince
+        with:
+          since: rest.since
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/worklog/list
+      name: rest-api-3-worklog-list
+      description: REST surface for rest-api-3-worklog-list.
+      operations:
+      - method: POST
+        name: atlassiangetworklogsforids
+        description: Atlassian Get Worklogs
+        call: rest-api-3-worklog--issue-worklogs.atlassiangetworklogsforids
+        with:
+          expand: rest.expand
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/worklog/updated
+      name: rest-api-3-worklog-updated
+      description: REST surface for rest-api-3-worklog-updated.
+      operations:
+      - method: GET
+        name: atlassiangetidsofworklogsmodifiedsince
+        description: Atlassian Get Ids Of Updated Worklogs
+        call: rest-api-3-worklog--issue-worklogs.atlassiangetidsofworklogsmodifiedsince
+        with:
+          since: rest.since
+          expand: rest.expand
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-worklog--issue-worklogs-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/worklog/ — Issue Worklogs. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-ids-deleted-worklogs
+      description: Atlassian Get Ids Of Deleted Worklogs
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-worklog--issue-worklogs.atlassiangetidsofworklogsdeletedsince
+      with:
+        since: tools.since
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-worklogs
+      description: Atlassian Get Worklogs
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: false
+      call: rest-api-3-worklog--issue-worklogs.atlassiangetworklogsforids
+      with:
+        expand: tools.expand
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-ids-updated-worklogs
+      description: Atlassian Get Ids Of Updated Worklogs
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-worklog--issue-worklogs.atlassiangetidsofworklogsmodifiedsince
+      with:
+        since: tools.since
+        expand: tools.expand
+      outputParameters:
+      - type: object
+        mapping: $.

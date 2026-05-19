@@ -1,0 +1,71 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Currently
+  description: 'Atlassian Bit Bucket Repositories API — Currently. 1 operations. Lead operation: Atlassian Get the Effective,
+    or Currently Applied, Branching Model for Repository. Self-contained Naftiko capability covering one Atlassian business
+    surface.'
+  tags:
+  - Atlassian
+  - Currently
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-currently
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Currently business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-effective-branching-model
+      path: /repositories/{workspace}/{repo_slug}/effective-branching-model
+      operations:
+      - name: gettheeffectiveorcurrentlyappliedbranchingmodelforrepository
+        method: GET
+        description: Atlassian Get the Effective, or Currently Applied, Branching Model for Repository
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-currently-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Currently. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/effective-branching-model
+      name: repositories-workspace-repo-slug-effective-branching-model
+      description: REST surface for repositories-workspace-repo_slug-effective-branching-model.
+      operations:
+      - method: GET
+        name: gettheeffectiveorcurrentlyappliedbranchingmodelforrepository
+        description: Atlassian Get the Effective, or Currently Applied, Branching Model for Repository
+        call: bitbucket-repositories-currently.gettheeffectiveorcurrentlyappliedbranchingmodelforrepository
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-currently-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Currently. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-effective-currently-applied
+      description: Atlassian Get the Effective, or Currently Applied, Branching Model for Repository
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-currently.gettheeffectiveorcurrentlyappliedbranchingmodelforrepository
+      outputParameters:
+      - type: object
+        mapping: $.

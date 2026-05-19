@@ -1,0 +1,281 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Files
+  description: 'Atlassian Bit Bucket Repositories API — Files. 4 operations. Lead operation: Atlassian List Commits That Modified
+    File. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Files
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-files
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Files business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-filehistory-commit-path
+      path: /repositories/{workspace}/{repo_slug}/filehistory/{commit}/{path}
+      operations:
+      - name: listcommitsthatmodifiedfile
+        method: GET
+        description: Atlassian List Commits That Modified File
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: renames
+          in: query
+          type: string
+          description: When `true`, Bitbucket will follow the history of the file across
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Name of a response property sort the result by as per
+    - name: repositories-workspace-repo_slug-pipelines-pipeline_uuid-steps-step_uuid-log
+      path: /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/log
+      operations:
+      - name: getlogfileforstep
+        method: GET
+        description: Atlassian Get Log File for Step
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example
+            `{workspace UUID}`.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+        - name: pipeline_uuid
+          in: path
+          type: string
+          description: The UUID of the pipeline.
+          required: true
+        - name: step_uuid
+          in: path
+          type: string
+          description: The UUID of the step.
+          required: true
+    - name: repositories-workspace-repo_slug-src
+      path: /repositories/{workspace}/{repo_slug}/src
+      operations:
+      - name: createcommitbyuploadingfile
+        method: POST
+        description: Atlassian Create Commit by Uploading File
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: message
+          in: query
+          type: string
+          description: The commit message. When omitted, Bitbucket uses a canned string.
+        - name: author
+          in: query
+          type: string
+          description: The raw string to be used as the new Commits author.
+        - name: parents
+          in: query
+          type: string
+          description: A comma-separated list of SHA1s of the commits that should
+        - name: files
+          in: query
+          type: string
+          description: Optional field that declares the files that the request is
+        - name: branch
+          in: query
+          type: string
+          description: The name of the branch that the new commit should be
+    - name: repositories-workspace-repo_slug-src-commit-path
+      path: /repositories/{workspace}/{repo_slug}/src/{commit}/{path}
+      operations:
+      - name: getfileordirectorycontents
+        method: GET
+        description: Atlassian Get File or Directory Contents
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: format
+          in: query
+          type: string
+          description: If 'meta' is provided, returns the (json) meta data for the contents of the file.  If 'rendered' is
+            provided, returns the contents of a non-binary file in HTML-
+        - name: q
+          in: query
+          type: string
+          description: Optional filter expression as per [filtering and sorting](/cloud/bitbucket/rest/intro/#filtering).
+        - name: sort
+          in: query
+          type: string
+          description: Optional sorting parameter as per [filtering and sorting](/cloud/bitbucket/rest/intro/#sorting-query-results).
+        - name: max_depth
+          in: query
+          type: integer
+          description: If provided, returns the contents of the repository and its subdirectories recursively until the specified
+            max_depth of nested directories. When omitted, this d
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-files-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Files. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/filehistory/{commit}/{path}
+      name: repositories-workspace-repo-slug-filehistory-commit-path
+      description: REST surface for repositories-workspace-repo_slug-filehistory-commit-path.
+      operations:
+      - method: GET
+        name: listcommitsthatmodifiedfile
+        description: Atlassian List Commits That Modified File
+        call: bitbucket-repositories-files.listcommitsthatmodifiedfile
+        with:
+          renames: rest.renames
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/pipelines/{pipeline-uuid}/steps/{step-uuid}/log
+      name: repositories-workspace-repo-slug-pipelines-pipeline-uuid-steps-step-uuid-log
+      description: REST surface for repositories-workspace-repo_slug-pipelines-pipeline_uuid-steps-step_uuid-log.
+      operations:
+      - method: GET
+        name: getlogfileforstep
+        description: Atlassian Get Log File for Step
+        call: bitbucket-repositories-files.getlogfileforstep
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+          pipeline_uuid: rest.pipeline_uuid
+          step_uuid: rest.step_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/src
+      name: repositories-workspace-repo-slug-src
+      description: REST surface for repositories-workspace-repo_slug-src.
+      operations:
+      - method: POST
+        name: createcommitbyuploadingfile
+        description: Atlassian Create Commit by Uploading File
+        call: bitbucket-repositories-files.createcommitbyuploadingfile
+        with:
+          message: rest.message
+          author: rest.author
+          parents: rest.parents
+          files: rest.files
+          branch: rest.branch
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/src/{commit}/{path}
+      name: repositories-workspace-repo-slug-src-commit-path
+      description: REST surface for repositories-workspace-repo_slug-src-commit-path.
+      operations:
+      - method: GET
+        name: getfileordirectorycontents
+        description: Atlassian Get File or Directory Contents
+        call: bitbucket-repositories-files.getfileordirectorycontents
+        with:
+          format: rest.format
+          q: rest.q
+          sort: rest.sort
+          max_depth: rest.max_depth
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-files-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Files. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-commits-that-modified
+      description: Atlassian List Commits That Modified File
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-files.listcommitsthatmodifiedfile
+      with:
+        renames: tools.renames
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-log-file-step
+      description: Atlassian Get Log File for Step
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-files.getlogfileforstep
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+        pipeline_uuid: tools.pipeline_uuid
+        step_uuid: tools.step_uuid
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-commit-uploading-file
+      description: Atlassian Create Commit by Uploading File
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-files.createcommitbyuploadingfile
+      with:
+        message: tools.message
+        author: tools.author
+        parents: tools.parents
+        files: tools.files
+        branch: tools.branch
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-file-directory-contents
+      description: Atlassian Get File or Directory Contents
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-files.getfileordirectorycontents
+      with:
+        format: tools.format
+        q: tools.q
+        sort: tools.sort
+        max_depth: tools.max_depth
+      outputParameters:
+      - type: object
+        mapping: $.

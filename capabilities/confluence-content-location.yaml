@@ -1,0 +1,94 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Location
+  description: 'Atlassian Confluence Content API — Location. 1 operations. Lead operation: Atlassian Move Page to New Location
+    Relative to Target Page. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Location
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-location
+    baseUri: ''
+    description: Atlassian Confluence Content API — Location business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-pageId-move-position-targetId
+      path: /wiki/rest/api/content/{pageId}/move/{position}/{targetId}
+      operations:
+      - name: movepagetonewlocationrelativetotargetpage
+        method: PUT
+        description: Atlassian Move Page to New Location Relative to Target Page
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: pageId
+          in: path
+          type: string
+          description: The ID of the page to be moved
+          required: true
+        - name: position
+          in: path
+          type: string
+          description: 'The position to move the page to relative to the target page:'
+          required: true
+        - name: targetId
+          in: path
+          type: string
+          description: The ID of the target page for this operation
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-location-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Location. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{pageid}/move/{position}/{targetid}
+      name: wiki-rest-api-content-pageid-move-position-targetid
+      description: REST surface for wiki-rest-api-content-pageId-move-position-targetId.
+      operations:
+      - method: PUT
+        name: movepagetonewlocationrelativetotargetpage
+        description: Atlassian Move Page to New Location Relative to Target Page
+        call: confluence-content-location.movepagetonewlocationrelativetotargetpage
+        with:
+          pageId: rest.pageId
+          position: rest.position
+          targetId: rest.targetId
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-location-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Location. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-move-page-new-location
+      description: Atlassian Move Page to New Location Relative to Target Page
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-content-location.movepagetonewlocationrelativetotargetpage
+      with:
+        pageId: tools.pageId
+        position: tools.position
+        targetId: tools.targetId
+      outputParameters:
+      - type: object
+        mapping: $.

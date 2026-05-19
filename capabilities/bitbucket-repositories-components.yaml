@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Components
+  description: 'Atlassian Bit Bucket Repositories API — Components. 1 operations. Lead operation: Atlassian Get Component
+    for Issues. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Components
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-components
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Components business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-components-component_id
+      path: /repositories/{workspace}/{repo_slug}/components/{component_id}
+      operations:
+      - name: getcomponentforissues
+        method: GET
+        description: Atlassian Get Component for Issues
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-components-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Components. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/components/{component-id}
+      name: repositories-workspace-repo-slug-components-component-id
+      description: REST surface for repositories-workspace-repo_slug-components-component_id.
+      operations:
+      - method: GET
+        name: getcomponentforissues
+        description: Atlassian Get Component for Issues
+        call: bitbucket-repositories-components.getcomponentforissues
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-components-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Components. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-component-issues
+      description: Atlassian Get Component for Issues
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-components.getcomponentforissues
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,186 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Confluence Cloud REST API — Space Permissions
+  description: 'Atlassian The Confluence Cloud REST API — Space Permissions. 3 operations. Lead operation: Atlassian Add New
+    Permission To Space. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Space Permissions
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-space-permissions
+    baseUri: ''
+    description: Atlassian The Confluence Cloud REST API — Space Permissions business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: wiki-rest-api-space-spaceKey-permission
+      path: /wiki/rest/api/space/{spaceKey}/permission
+      operations:
+      - name: atlassianaddpermissiontospace
+        method: POST
+        description: Atlassian Add New Permission To Space
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: wiki-rest-api-space-spaceKey-permission-custom-content
+      path: /wiki/rest/api/space/{spaceKey}/permission/custom-content
+      operations:
+      - name: atlassianaddcustomcontentpermissions
+        method: POST
+        description: Atlassian Add New Custom Content Permission To Space
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: wiki-rest-api-space-spaceKey-permission-id
+      path: /wiki/rest/api/space/{spaceKey}/permission/{id}
+      operations:
+      - name: atlassianremovepermission
+        method: DELETE
+        description: Atlassian Remove A Space Permission
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: spaceKey
+          in: path
+          type: string
+          description: The key of the space to be queried for its content.
+          required: true
+        - name: id
+          in: path
+          type: integer
+          description: Id of the permission to be deleted.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-space-permissions-rest
+    port: 8080
+    description: REST adapter for Atlassian The Confluence Cloud REST API — Space Permissions. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/space/{spacekey}/permission
+      name: wiki-rest-api-space-spacekey-permission
+      description: REST surface for wiki-rest-api-space-spaceKey-permission.
+      operations:
+      - method: POST
+        name: atlassianaddpermissiontospace
+        description: Atlassian Add New Permission To Space
+        call: confluence-space-permissions.atlassianaddpermissiontospace
+        with:
+          spaceKey: rest.spaceKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/space/{spacekey}/permission/custom-content
+      name: wiki-rest-api-space-spacekey-permission-custom-content
+      description: REST surface for wiki-rest-api-space-spaceKey-permission-custom-content.
+      operations:
+      - method: POST
+        name: atlassianaddcustomcontentpermissions
+        description: Atlassian Add New Custom Content Permission To Space
+        call: confluence-space-permissions.atlassianaddcustomcontentpermissions
+        with:
+          spaceKey: rest.spaceKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/space/{spacekey}/permission/{id}
+      name: wiki-rest-api-space-spacekey-permission-id
+      description: REST surface for wiki-rest-api-space-spaceKey-permission-id.
+      operations:
+      - method: DELETE
+        name: atlassianremovepermission
+        description: Atlassian Remove A Space Permission
+        call: confluence-space-permissions.atlassianremovepermission
+        with:
+          spaceKey: rest.spaceKey
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-space-permissions-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Confluence Cloud REST API — Space Permissions. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-add-new-permission-space
+      description: Atlassian Add New Permission To Space
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: confluence-space-permissions.atlassianaddpermissiontospace
+      with:
+        spaceKey: tools.spaceKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-add-new-custom-content
+      description: Atlassian Add New Custom Content Permission To Space
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: confluence-space-permissions.atlassianaddcustomcontentpermissions
+      with:
+        spaceKey: tools.spaceKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-remove-space-permission
+      description: Atlassian Remove A Space Permission
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: confluence-space-permissions.atlassianremovepermission
+      with:
+        spaceKey: tools.spaceKey
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.

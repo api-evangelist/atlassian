@@ -1,0 +1,159 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Children
+  description: 'Atlassian Confluence Content API — Children. 2 operations. Lead operation: Atlassian Get Content Children.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Children
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-children
+    baseUri: ''
+    description: Atlassian Confluence Content API — Children business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-child
+      path: /wiki/rest/api/content/{id}/child
+      operations:
+      - name: getcontentchildren
+        method: GET
+        description: Atlassian Get Content Children
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its children.
+          required: true
+        - name: expand
+          in: query
+          type: array
+          description: 'A multi-value parameter indicating which properties of the children to expand, where:'
+        - name: parentVersion
+          in: query
+          type: integer
+          description: The version of the parent content to retrieve children for.
+    - name: wiki-rest-api-content-id-child-type
+      path: /wiki/rest/api/content/{id}/child/{type}
+      operations:
+      - name: getcontentchildrenbytype
+        method: GET
+        description: Atlassian Get Content Children by Type
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its children.
+          required: true
+        - name: type
+          in: path
+          type: string
+          description: The type of children to return.
+          required: true
+        - name: parentVersion
+          in: query
+          type: integer
+          description: The version of the parent content to retrieve children for.
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned content.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of content to return per page. Note,
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-children-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Children. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/child
+      name: wiki-rest-api-content-id-child
+      description: REST surface for wiki-rest-api-content-id-child.
+      operations:
+      - method: GET
+        name: getcontentchildren
+        description: Atlassian Get Content Children
+        call: confluence-content-children.getcontentchildren
+        with:
+          id: rest.id
+          expand: rest.expand
+          parentVersion: rest.parentVersion
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/child/{type}
+      name: wiki-rest-api-content-id-child-type
+      description: REST surface for wiki-rest-api-content-id-child-type.
+      operations:
+      - method: GET
+        name: getcontentchildrenbytype
+        description: Atlassian Get Content Children by Type
+        call: confluence-content-children.getcontentchildrenbytype
+        with:
+          id: rest.id
+          type: rest.type
+          parentVersion: rest.parentVersion
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-children-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Children. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-content-children
+      description: Atlassian Get Content Children
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-children.getcontentchildren
+      with:
+        id: tools.id
+        expand: tools.expand
+        parentVersion: tools.parentVersion
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-content-children-type
+      description: Atlassian Get Content Children by Type
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-children.getcontentchildrenbytype
+      with:
+        id: tools.id
+        type: tools.type
+        parentVersion: tools.parentVersion
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.

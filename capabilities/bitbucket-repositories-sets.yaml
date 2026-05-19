@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Sets
+  description: 'Atlassian Bit Bucket Repositories API — Sets. 1 operations. Lead operation: Atlassian Set the Inheritance
+    State for Repository Settings. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Sets
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-sets
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Sets business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-override-settings
+      path: /repositories/{workspace}/{repo_slug}/override-settings
+      operations:
+      - name: settheinheritancestateforrepositorysettings
+        method: PUT
+        description: Atlassian Set the Inheritance State for Repository Settings
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-sets-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Sets. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/override-settings
+      name: repositories-workspace-repo-slug-override-settings
+      description: REST surface for repositories-workspace-repo_slug-override-settings.
+      operations:
+      - method: PUT
+        name: settheinheritancestateforrepositorysettings
+        description: Atlassian Set the Inheritance State for Repository Settings
+        call: bitbucket-repositories-sets.settheinheritancestateforrepositorysettings
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-sets-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Sets. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-set-inheritance-state-repository
+      description: Atlassian Set the Inheritance State for Repository Settings
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-sets.settheinheritancestateforrepositorysettings
+      outputParameters:
+      - type: object
+        mapping: $.

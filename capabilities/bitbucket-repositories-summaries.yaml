@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Summaries
+  description: 'Atlassian Bit Bucket Repositories API — Summaries. 1 operations. Lead operation: Atlassian Get Summary of
+    Test Reports for Given Step of Pipeline.. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Summaries
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-summaries
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Summaries business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pipelines-pipeline_uuid-steps-step_uuid-test_re
+      path: /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports
+      operations:
+      - name: getsummaryoftestreportsforgivenstepofpipeline
+        method: GET
+        description: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example
+            `{workspace UUID}`.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+        - name: pipeline_uuid
+          in: path
+          type: string
+          description: The UUID of the pipeline.
+          required: true
+        - name: step_uuid
+          in: path
+          type: string
+          description: The UUID of the step.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-summaries-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Summaries. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pipelines/{pipeline-uuid}/steps/{step-uuid}/test-reports
+      name: repositories-workspace-repo-slug-pipelines-pipeline-uuid-steps-step-uuid-test-re
+      description: REST surface for repositories-workspace-repo_slug-pipelines-pipeline_uuid-steps-step_uuid-test_re.
+      operations:
+      - method: GET
+        name: getsummaryoftestreportsforgivenstepofpipeline
+        description: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+        call: bitbucket-repositories-summaries.getsummaryoftestreportsforgivenstepofpipeline
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+          pipeline_uuid: rest.pipeline_uuid
+          step_uuid: rest.step_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-summaries-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Summaries. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-summary-test-reports
+      description: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-summaries.getsummaryoftestreportsforgivenstepofpipeline
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+        pipeline_uuid: tools.pipeline_uuid
+        step_uuid: tools.step_uuid
+      outputParameters:
+      - type: object
+        mapping: $.

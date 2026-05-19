@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Decline
+  description: 'Atlassian Bit Bucket Repositories API — Decline. 1 operations. Lead operation: Atlassian Decline Pull Request.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Decline
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-decline
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Decline business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pullrequests-pull_request_id-decline
+      path: /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/decline
+      operations:
+      - name: declinepullrequest
+        method: POST
+        description: Atlassian Decline Pull Request
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-decline-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Decline. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pullrequests/{pull-request-id}/decline
+      name: repositories-workspace-repo-slug-pullrequests-pull-request-id-decline
+      description: REST surface for repositories-workspace-repo_slug-pullrequests-pull_request_id-decline.
+      operations:
+      - method: POST
+        name: declinepullrequest
+        description: Atlassian Decline Pull Request
+        call: bitbucket-repositories-decline.declinepullrequest
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-decline-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Decline. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-decline-pull-request
+      description: Atlassian Decline Pull Request
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-decline.declinepullrequest
+      outputParameters:
+      - type: object
+        mapping: $.

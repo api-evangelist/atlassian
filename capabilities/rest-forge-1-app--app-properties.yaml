@@ -1,0 +1,119 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/forge/1/app/ — App Properties
+  description: 'Atlassian rest/forge/1/app/ — App Properties. 2 operations. Lead operation: Atlassian Delete App Property
+    Forge. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - App Properties
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-forge-1-app--app-properties
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/forge/1/app/ — App Properties business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-forge-1-app-properties-propertyKey
+      path: /rest/forge/1/app/properties/{propertyKey}
+      operations:
+      - name: atlassianaddonpropertiesresourcedeleteapppropertydelete
+        method: DELETE
+        description: Atlassian Delete App Property Forge
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: propertyKey
+          in: path
+          type: string
+          description: The key of the property.
+          required: true
+      - name: atlassianaddonpropertiesresourceputapppropertyput
+        method: PUT
+        description: Atlassian Set App Property Forge
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: propertyKey
+          in: path
+          type: string
+          description: The key of the property.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+  exposes:
+  - type: rest
+    namespace: rest-forge-1-app--app-properties-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/forge/1/app/ — App Properties. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/forge/1/app/properties/{propertykey}
+      name: rest-forge-1-app-properties-propertykey
+      description: REST surface for rest-forge-1-app-properties-propertyKey.
+      operations:
+      - method: DELETE
+        name: atlassianaddonpropertiesresourcedeleteapppropertydelete
+        description: Atlassian Delete App Property Forge
+        call: rest-forge-1-app--app-properties.atlassianaddonpropertiesresourcedeleteapppropertydelete
+        with:
+          propertyKey: rest.propertyKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianaddonpropertiesresourceputapppropertyput
+        description: Atlassian Set App Property Forge
+        call: rest-forge-1-app--app-properties.atlassianaddonpropertiesresourceputapppropertyput
+        with:
+          propertyKey: rest.propertyKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-forge-1-app--app-properties-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/forge/1/app/ — App Properties. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-delete-app-property-forge
+      description: Atlassian Delete App Property Forge
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: rest-forge-1-app--app-properties.atlassianaddonpropertiesresourcedeleteapppropertydelete
+      with:
+        propertyKey: tools.propertyKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-app-property-forge
+      description: Atlassian Set App Property Forge
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: rest-forge-1-app--app-properties.atlassianaddonpropertiesresourceputapppropertyput
+      with:
+        propertyKey: tools.propertyKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

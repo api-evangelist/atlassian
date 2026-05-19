@@ -1,0 +1,152 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Download
+  description: 'Atlassian Bit Bucket Repositories API — Download. 4 operations. Lead operation: Atlassian List Download Artifacts.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Download
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-download
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Download business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-downloads
+      path: /repositories/{workspace}/{repo_slug}/downloads
+      operations:
+      - name: listdownloadartifacts
+        method: GET
+        description: Atlassian List Download Artifacts
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: uploaddownloadartifact
+        method: POST
+        description: Atlassian Upload Download Artifact
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: repositories-workspace-repo_slug-downloads-filename
+      path: /repositories/{workspace}/{repo_slug}/downloads/{filename}
+      operations:
+      - name: deletedownloadartifact
+        method: DELETE
+        description: Atlassian Delete Download Artifact
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: getdownloadartifactlink
+        method: GET
+        description: Atlassian Get Download Artifact Link
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-download-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Download. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/downloads
+      name: repositories-workspace-repo-slug-downloads
+      description: REST surface for repositories-workspace-repo_slug-downloads.
+      operations:
+      - method: GET
+        name: listdownloadartifacts
+        description: Atlassian List Download Artifacts
+        call: bitbucket-repositories-download.listdownloadartifacts
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: uploaddownloadartifact
+        description: Atlassian Upload Download Artifact
+        call: bitbucket-repositories-download.uploaddownloadartifact
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/downloads/{filename}
+      name: repositories-workspace-repo-slug-downloads-filename
+      description: REST surface for repositories-workspace-repo_slug-downloads-filename.
+      operations:
+      - method: DELETE
+        name: deletedownloadartifact
+        description: Atlassian Delete Download Artifact
+        call: bitbucket-repositories-download.deletedownloadartifact
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: getdownloadartifactlink
+        description: Atlassian Get Download Artifact Link
+        call: bitbucket-repositories-download.getdownloadartifactlink
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-download-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Download. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-list-download-artifacts
+      description: Atlassian List Download Artifacts
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-download.listdownloadartifacts
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-upload-download-artifact
+      description: Atlassian Upload Download Artifact
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-download.uploaddownloadartifact
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-download-artifact
+      description: Atlassian Delete Download Artifact
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-repositories-download.deletedownloadartifact
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-download-artifact-link
+      description: Atlassian Get Download Artifact Link
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-download.getdownloadartifactlink
+      outputParameters:
+      - type: object
+        mapping: $.

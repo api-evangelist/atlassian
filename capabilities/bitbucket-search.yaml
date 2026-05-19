@@ -1,0 +1,222 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bitbucket API — Search
+  description: 'Atlassian Bitbucket API — Search. 3 operations. Lead operation: Atlassian Search For Code In A Team S Repositories.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Search
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-search
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bitbucket API — Search business capability. Self-contained, no shared references.
+    resources:
+    - name: teams-username-search-code
+      path: /teams/{username}/search/code
+      operations:
+      - name: atlassiansearchteam
+        method: GET
+        description: Atlassian Search For Code In A Team S Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: username
+          in: path
+          type: string
+          description: The account to search in; either the username or the UUID in curly braces
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+    - name: users-selected_user-search-code
+      path: /users/{selected_user}/search/code
+      operations:
+      - name: atlassiansearchaccount
+        method: GET
+        description: Atlassian Search For Code In A User S Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+    - name: workspaces-workspace-search-code
+      path: /workspaces/{workspace}/search/code
+      operations:
+      - name: atlassiansearchworkspace
+        method: GET
+        description: Atlassian Search For Code In A Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: The workspace to search in; either the slug or the UUID in curly braces
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-search-rest
+    port: 8080
+    description: REST adapter for Atlassian Bitbucket API — Search. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/teams/{username}/search/code
+      name: teams-username-search-code
+      description: REST surface for teams-username-search-code.
+      operations:
+      - method: GET
+        name: atlassiansearchteam
+        description: Atlassian Search For Code In A Team S Repositories
+        call: bitbucket-search.atlassiansearchteam
+        with:
+          username: rest.username
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/users/{selected-user}/search/code
+      name: users-selected-user-search-code
+      description: REST surface for users-selected_user-search-code.
+      operations:
+      - method: GET
+        name: atlassiansearchaccount
+        description: Atlassian Search For Code In A User S Repositories
+        call: bitbucket-search.atlassiansearchaccount
+        with:
+          selected_user: rest.selected_user
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/workspaces/{workspace}/search/code
+      name: workspaces-workspace-search-code
+      description: REST surface for workspaces-workspace-search-code.
+      operations:
+      - method: GET
+        name: atlassiansearchworkspace
+        description: Atlassian Search For Code In A Workspace
+        call: bitbucket-search.atlassiansearchworkspace
+        with:
+          workspace: rest.workspace
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-search-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bitbucket API — Search. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-search-code-team-s
+      description: Atlassian Search For Code In A Team S Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-search.atlassiansearchteam
+      with:
+        username: tools.username
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-search-code-user-s
+      description: Atlassian Search For Code In A User S Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-search.atlassiansearchaccount
+      with:
+        selected_user: tools.selected_user
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-search-code-workspace
+      description: Atlassian Search For Code In A Workspace
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-search.atlassiansearchworkspace
+      with:
+        workspace: tools.workspace
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.

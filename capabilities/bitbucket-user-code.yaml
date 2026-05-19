@@ -1,0 +1,100 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket User API — Code
+  description: 'Atlassian Bit Bucket User API — Code. 1 operations. Lead operation: Atlassian Search for Code in Users Repositories.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Code
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-user-code
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket User API — Code business capability. Self-contained, no shared references.
+    resources:
+    - name: users-selected_user-search-code
+      path: /users/{selected_user}/search/code
+      operations:
+      - name: searchforcodeinusersrepositories
+        method: GET
+        description: Atlassian Search for Code in Users Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-user-code-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket User API — Code. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/users/{selected-user}/search/code
+      name: users-selected-user-search-code
+      description: REST surface for users-selected_user-search-code.
+      operations:
+      - method: GET
+        name: searchforcodeinusersrepositories
+        description: Atlassian Search for Code in Users Repositories
+        call: bitbucket-user-code.searchforcodeinusersrepositories
+        with:
+          selected_user: rest.selected_user
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-user-code-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket User API — Code. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-search-code-users-repositories
+      description: Atlassian Search for Code in Users Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-code.searchforcodeinusersrepositories
+      with:
+        selected_user: tools.selected_user
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.

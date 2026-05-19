@@ -1,0 +1,82 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/users/ — Users
+  description: 'Atlassian rest/api/3/users/ — Users. 1 operations. Lead operation: Atlassian Get All Users. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Users
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-users--users
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/users/ — Users business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-users-search
+      path: /rest/api/3/users/search
+      operations:
+      - name: atlassiangetallusers
+        method: GET
+        description: Atlassian Get All Users
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return.
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return.
+  exposes:
+  - type: rest
+    namespace: rest-api-3-users--users-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/users/ — Users. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/3/users/search
+      name: rest-api-3-users-search
+      description: REST surface for rest-api-3-users-search.
+      operations:
+      - method: GET
+        name: atlassiangetallusers
+        description: Atlassian Get All Users
+        call: rest-api-3-users--users.atlassiangetallusers
+        with:
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-users--users-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/users/ — Users. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-get-all-users
+      description: Atlassian Get All Users
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-users--users.atlassiangetallusers
+      with:
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+      outputParameters:
+      - type: object
+        mapping: $.

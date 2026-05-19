@@ -1,0 +1,171 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Users
+  description: 'Atlassian Confluence Content API — Users. 3 operations. Lead operation: Atlassian Get Content Restriction
+    Status for User. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Users
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-users
+    baseUri: ''
+    description: Atlassian Confluence Content API — Users business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-restriction-byOperation-operationKey-user
+      path: /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/user
+      operations:
+      - name: getcontentrestrictionstatusforuser
+        method: GET
+        description: Atlassian Get Content Restriction Status for User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that the restriction applies to.
+          required: true
+        - name: operationKey
+          in: path
+          type: string
+          description: The operation that is restricted.
+          required: true
+      - name: addusertocontentrestriction
+        method: PUT
+        description: Atlassian Add User to Content Restriction
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that the restriction applies to.
+          required: true
+        - name: operationKey
+          in: path
+          type: string
+          description: The operation that the restriction applies to.
+          required: true
+      - name: removeuserfromcontentrestriction
+        method: DELETE
+        description: Atlassian Remove User From Content Restriction
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content that the restriction applies to.
+          required: true
+        - name: operationKey
+          in: path
+          type: string
+          description: The operation that the restriction applies to.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-users-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Users. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/restriction/byoperation/{operationkey}/user
+      name: wiki-rest-api-content-id-restriction-byoperation-operationkey-user
+      description: REST surface for wiki-rest-api-content-id-restriction-byOperation-operationKey-user.
+      operations:
+      - method: GET
+        name: getcontentrestrictionstatusforuser
+        description: Atlassian Get Content Restriction Status for User
+        call: confluence-content-users.getcontentrestrictionstatusforuser
+        with:
+          id: rest.id
+          operationKey: rest.operationKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: addusertocontentrestriction
+        description: Atlassian Add User to Content Restriction
+        call: confluence-content-users.addusertocontentrestriction
+        with:
+          id: rest.id
+          operationKey: rest.operationKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: removeuserfromcontentrestriction
+        description: Atlassian Remove User From Content Restriction
+        call: confluence-content-users.removeuserfromcontentrestriction
+        with:
+          id: rest.id
+          operationKey: rest.operationKey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-users-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Users. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-content-restriction-status
+      description: Atlassian Get Content Restriction Status for User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-users.getcontentrestrictionstatusforuser
+      with:
+        id: tools.id
+        operationKey: tools.operationKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-add-user-content-restriction
+      description: Atlassian Add User to Content Restriction
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: confluence-content-users.addusertocontentrestriction
+      with:
+        id: tools.id
+        operationKey: tools.operationKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-remove-user-content-restriction
+      description: Atlassian Remove User From Content Restriction
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: confluence-content-users.removeuserfromcontentrestriction
+      with:
+        id: tools.id
+        operationKey: tools.operationKey
+      outputParameters:
+      - type: object
+        mapping: $.

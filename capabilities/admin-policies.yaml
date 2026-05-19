@@ -1,0 +1,169 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Admin API — Policies
+  description: 'Atlassian Admin API — Policies. 3 operations. Lead operation: Atlassian Get Organization Policies. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Policies
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: admin-policies
+    baseUri: https://api.atlassian.com
+    description: Atlassian Admin API — Policies business capability. Self-contained, no shared references.
+    resources:
+    - name: v1-orgs-orgId-policies
+      path: /v1/orgs/{orgId}/policies
+      operations:
+      - name: getorganizationpolicies
+        method: GET
+        description: Atlassian Get Organization Policies
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: cursor
+          in: query
+          type: string
+          description: Cursor for paginated results.
+        - name: type
+          in: query
+          type: string
+          description: Filter policies by type.
+    - name: v1-orgs-orgId-policies-policyId
+      path: /v1/orgs/{orgId}/policies/{policyId}
+      operations:
+      - name: getpolicybyid
+        method: GET
+        description: Atlassian Get Policy by Id
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: policyId
+          in: path
+          type: string
+          description: The unique identifier of the policy.
+          required: true
+      - name: updatepolicy
+        method: PUT
+        description: Atlassian Update a Policy
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: policyId
+          in: path
+          type: string
+          description: The unique identifier of the policy.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: admin-policies-rest
+    port: 8080
+    description: REST adapter for Atlassian Admin API — Policies. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/v1/orgs/{orgid}/policies
+      name: v1-orgs-orgid-policies
+      description: REST surface for v1-orgs-orgId-policies.
+      operations:
+      - method: GET
+        name: getorganizationpolicies
+        description: Atlassian Get Organization Policies
+        call: admin-policies.getorganizationpolicies
+        with:
+          cursor: rest.cursor
+          type: rest.type
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v1/orgs/{orgid}/policies/{policyid}
+      name: v1-orgs-orgid-policies-policyid
+      description: REST surface for v1-orgs-orgId-policies-policyId.
+      operations:
+      - method: GET
+        name: getpolicybyid
+        description: Atlassian Get Policy by Id
+        call: admin-policies.getpolicybyid
+        with:
+          policyId: rest.policyId
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: updatepolicy
+        description: Atlassian Update a Policy
+        call: admin-policies.updatepolicy
+        with:
+          policyId: rest.policyId
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: admin-policies-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Admin API — Policies. One tool per consumed operation, routed inline through this
+      capability's consumes block.
+    tools:
+    - name: atlassian-get-organization-policies
+      description: Atlassian Get Organization Policies
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: admin-policies.getorganizationpolicies
+      with:
+        cursor: tools.cursor
+        type: tools.type
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-policy-id
+      description: Atlassian Get Policy by Id
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: admin-policies.getpolicybyid
+      with:
+        policyId: tools.policyId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-policy
+      description: Atlassian Update a Policy
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: admin-policies.updatepolicy
+      with:
+        policyId: tools.policyId
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

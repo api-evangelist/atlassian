@@ -1,0 +1,86 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Descendants
+  description: 'Atlassian Confluence Content API — Descendants. 1 operations. Lead operation: Atlassian Get Content Descendants.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Descendants
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-descendants
+    baseUri: ''
+    description: Atlassian Confluence Content API — Descendants business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-descendant
+      path: /wiki/rest/api/content/{id}/descendant
+      operations:
+      - name: getcontentdescendants
+        method: GET
+        description: Atlassian Get Content Descendants
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID of the content to be queried for its descendants.
+          required: true
+        - name: expand
+          in: query
+          type: array
+          description: A multi-value parameter indicating which properties of the children to
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-descendants-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Descendants. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/descendant
+      name: wiki-rest-api-content-id-descendant
+      description: REST surface for wiki-rest-api-content-id-descendant.
+      operations:
+      - method: GET
+        name: getcontentdescendants
+        description: Atlassian Get Content Descendants
+        call: confluence-content-descendants.getcontentdescendants
+        with:
+          id: rest.id
+          expand: rest.expand
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-descendants-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Descendants. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-content-descendants
+      description: Atlassian Get Content Descendants
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-descendants.getcontentdescendants
+      with:
+        id: tools.id
+        expand: tools.expand
+      outputParameters:
+      - type: object
+        mapping: $.

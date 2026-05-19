@@ -1,0 +1,194 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bitbucket API — Commit Statuses
+  description: 'Atlassian Bitbucket API — Commit Statuses. 4 operations. Lead operation: Atlassian List Commit Statuses For
+    A Commit. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Commit Statuses
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-commit-statuses
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bitbucket API — Commit Statuses business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-commit-commit-statuses
+      path: /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses
+      operations:
+      - name: atlassianlistcommitstatusesforacommit
+        method: GET
+        description: Atlassian List Commit Statuses For A Commit
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Field by which the results should be sorted as per
+    - name: repositories-workspace-repo_slug-commit-commit-statuses-build
+      path: /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses/build
+      operations:
+      - name: atlassiancreateabuildstatusforacommit
+        method: POST
+        description: Atlassian Create A Build Status For A Commit
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: repositories-workspace-repo_slug-commit-commit-statuses-build-key
+      path: /repositories/{workspace}/{repo_slug}/commit/{commit}/statuses/build/{key}
+      operations:
+      - name: atlassiangetabuildstatusforacommit
+        method: GET
+        description: Atlassian Get A Build Status For A Commit
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassianupdateabuildstatusforacommit
+        method: PUT
+        description: Atlassian Update A Build Status For A Commit
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-commit-statuses-rest
+    port: 8080
+    description: REST adapter for Atlassian Bitbucket API — Commit Statuses. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/commit/{commit}/statuses
+      name: repositories-workspace-repo-slug-commit-commit-statuses
+      description: REST surface for repositories-workspace-repo_slug-commit-commit-statuses.
+      operations:
+      - method: GET
+        name: atlassianlistcommitstatusesforacommit
+        description: Atlassian List Commit Statuses For A Commit
+        call: bitbucket-commit-statuses.atlassianlistcommitstatusesforacommit
+        with:
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/commit/{commit}/statuses/build
+      name: repositories-workspace-repo-slug-commit-commit-statuses-build
+      description: REST surface for repositories-workspace-repo_slug-commit-commit-statuses-build.
+      operations:
+      - method: POST
+        name: atlassiancreateabuildstatusforacommit
+        description: Atlassian Create A Build Status For A Commit
+        call: bitbucket-commit-statuses.atlassiancreateabuildstatusforacommit
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/repositories/{workspace}/{repo-slug}/commit/{commit}/statuses/build/{key}
+      name: repositories-workspace-repo-slug-commit-commit-statuses-build-key
+      description: REST surface for repositories-workspace-repo_slug-commit-commit-statuses-build-key.
+      operations:
+      - method: GET
+        name: atlassiangetabuildstatusforacommit
+        description: Atlassian Get A Build Status For A Commit
+        call: bitbucket-commit-statuses.atlassiangetabuildstatusforacommit
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateabuildstatusforacommit
+        description: Atlassian Update A Build Status For A Commit
+        call: bitbucket-commit-statuses.atlassianupdateabuildstatusforacommit
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-commit-statuses-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bitbucket API — Commit Statuses. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-commit-statuses-commit
+      description: Atlassian List Commit Statuses For A Commit
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-commit-statuses.atlassianlistcommitstatusesforacommit
+      with:
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-build-status-commit
+      description: Atlassian Create A Build Status For A Commit
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-commit-statuses.atlassiancreateabuildstatusforacommit
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-build-status-commit
+      description: Atlassian Get A Build Status For A Commit
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-commit-statuses.atlassiangetabuildstatusforacommit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-build-status-commit
+      description: Atlassian Update A Build Status For A Commit
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: bitbucket-commit-statuses.atlassianupdateabuildstatusforacommit
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

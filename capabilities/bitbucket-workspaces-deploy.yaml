@@ -1,0 +1,124 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Workspaces API — Deploy
+  description: 'Atlassian Bit Bucket Workspaces API — Deploy. 3 operations. Lead operation: Atlassian List Project Deploy
+    Keys. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Deploy
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-workspaces-deploy
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Workspaces API — Deploy business capability. Self-contained, no shared references.
+    resources:
+    - name: workspaces-workspace-projects-project_key-deploy-keys
+      path: /workspaces/{workspace}/projects/{project_key}/deploy-keys
+      operations:
+      - name: atlassianlistprojectdeploykeys
+        method: GET
+        description: Atlassian List Project Deploy Keys
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiancreateaprojectdeploykey
+        method: POST
+        description: Atlassian Create a Project Deploy Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: workspaces-workspace-projects-project_key-deploy-keys-key_id
+      path: /workspaces/{workspace}/projects/{project_key}/deploy-keys/{key_id}
+      operations:
+      - name: atlassiangetaprojectdeploykey
+        method: GET
+        description: Atlassian Get a Project Deploy Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-workspaces-deploy-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Workspaces API — Deploy. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/workspaces/{workspace}/projects/{project-key}/deploy-keys
+      name: workspaces-workspace-projects-project-key-deploy-keys
+      description: REST surface for workspaces-workspace-projects-project_key-deploy-keys.
+      operations:
+      - method: GET
+        name: atlassianlistprojectdeploykeys
+        description: Atlassian List Project Deploy Keys
+        call: bitbucket-workspaces-deploy.atlassianlistprojectdeploykeys
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: atlassiancreateaprojectdeploykey
+        description: Atlassian Create a Project Deploy Key
+        call: bitbucket-workspaces-deploy.atlassiancreateaprojectdeploykey
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/workspaces/{workspace}/projects/{project-key}/deploy-keys/{key-id}
+      name: workspaces-workspace-projects-project-key-deploy-keys-key-id
+      description: REST surface for workspaces-workspace-projects-project_key-deploy-keys-key_id.
+      operations:
+      - method: GET
+        name: atlassiangetaprojectdeploykey
+        description: Atlassian Get a Project Deploy Key
+        call: bitbucket-workspaces-deploy.atlassiangetaprojectdeploykey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-workspaces-deploy-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Workspaces API — Deploy. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-project-deploy-keys
+      description: Atlassian List Project Deploy Keys
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-workspaces-deploy.atlassianlistprojectdeploykeys
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-project-deploy-key
+      description: Atlassian Create a Project Deploy Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-workspaces-deploy.atlassiancreateaprojectdeploykey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-project-deploy-key
+      description: Atlassian Get a Project Deploy Key
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-workspaces-deploy.atlassiangetaprojectdeploykey
+      outputParameters:
+      - type: object
+        mapping: $.

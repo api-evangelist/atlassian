@@ -1,0 +1,67 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Workspaces API — Memberships
+  description: 'Atlassian Bit Bucket Workspaces API — Memberships. 1 operations. Lead operation: Atlassian Get User Membership
+    for a Workspace. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Memberships
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-workspaces-memberships
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Workspaces API — Memberships business capability. Self-contained, no shared references.
+    resources:
+    - name: workspaces-workspace-members-member
+      path: /workspaces/{workspace}/members/{member}
+      operations:
+      - name: atlassiangetusermembershipforaworkspace
+        method: GET
+        description: Atlassian Get User Membership for a Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-workspaces-memberships-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Workspaces API — Memberships. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/workspaces/{workspace}/members/{member}
+      name: workspaces-workspace-members-member
+      description: REST surface for workspaces-workspace-members-member.
+      operations:
+      - method: GET
+        name: atlassiangetusermembershipforaworkspace
+        description: Atlassian Get User Membership for a Workspace
+        call: bitbucket-workspaces-memberships.atlassiangetusermembershipforaworkspace
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-workspaces-memberships-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Workspaces API — Memberships. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-user-membership-workspace
+      description: Atlassian Get User Membership for a Workspace
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-workspaces-memberships.atlassiangetusermembershipforaworkspace
+      outputParameters:
+      - type: object
+        mapping: $.

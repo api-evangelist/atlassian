@@ -1,0 +1,94 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Content
+  description: 'Atlassian Bit Bucket Repositories API — Content. 1 operations. Lead operation: Atlassian Get Cache Content
+    Uri. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Content
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-content
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Content business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pipelines-config-caches-cache_uuid-content-uri
+      path: /repositories/{workspace}/{repo_slug}/pipelines-config/caches/{cache_uuid}/content-uri
+      operations:
+      - name: getcachecontenturi
+        method: GET
+        description: Atlassian Get Cache Content Uri
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+        - name: cache_uuid
+          in: path
+          type: string
+          description: The UUID of the cache.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-content-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Content. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pipelines-config/caches/{cache-uuid}/content-uri
+      name: repositories-workspace-repo-slug-pipelines-config-caches-cache-uuid-content-uri
+      description: REST surface for repositories-workspace-repo_slug-pipelines-config-caches-cache_uuid-content-uri.
+      operations:
+      - method: GET
+        name: getcachecontenturi
+        description: Atlassian Get Cache Content Uri
+        call: bitbucket-repositories-content.getcachecontenturi
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+          cache_uuid: rest.cache_uuid
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-content-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Content. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-cache-content-uri
+      description: Atlassian Get Cache Content Uri
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-content.getcachecontenturi
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+        cache_uuid: tools.cache_uuid
+      outputParameters:
+      - type: object
+        mapping: $.

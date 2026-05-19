@@ -1,0 +1,136 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Caches
+  description: 'Atlassian Bit Bucket Repositories API — Caches. 2 operations. Lead operation: Atlassian List Caches. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Caches
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-caches
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Caches business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-pipelines-config-caches
+      path: /repositories/{workspace}/{repo_slug}/pipelines-config/caches
+      operations:
+      - name: listcaches
+        method: GET
+        description: Atlassian List Caches
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+      - name: deletecaches
+        method: DELETE
+        description: Atlassian Delete Caches
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: The account.
+          required: true
+        - name: repo_slug
+          in: path
+          type: string
+          description: The repository.
+          required: true
+        - name: name
+          in: query
+          type: string
+          description: The cache name.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-caches-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Caches. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/pipelines-config/caches
+      name: repositories-workspace-repo-slug-pipelines-config-caches
+      description: REST surface for repositories-workspace-repo_slug-pipelines-config-caches.
+      operations:
+      - method: GET
+        name: listcaches
+        description: Atlassian List Caches
+        call: bitbucket-repositories-caches.listcaches
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: deletecaches
+        description: Atlassian Delete Caches
+        call: bitbucket-repositories-caches.deletecaches
+        with:
+          workspace: rest.workspace
+          repo_slug: rest.repo_slug
+          name: rest.name
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-caches-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Caches. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-caches
+      description: Atlassian List Caches
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-caches.listcaches
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-caches
+      description: Atlassian Delete Caches
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: bitbucket-repositories-caches.deletecaches
+      with:
+        workspace: tools.workspace
+        repo_slug: tools.repo_slug
+        name: tools.name
+      outputParameters:
+      - type: object
+        mapping: $.

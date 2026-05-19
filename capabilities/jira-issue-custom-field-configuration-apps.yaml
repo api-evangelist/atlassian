@@ -1,0 +1,170 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Issue Custom Field Configuration (Apps)
+  description: 'Atlassian The Jira Cloud platform REST API — Issue Custom Field Configuration (Apps). 2 operations. Lead operation:
+    Atlassian Get Custom Field Configurations. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Custom Field Configuration (Apps)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-issue-custom-field-configuration-apps
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Issue Custom Field Configuration (Apps) business capability.
+      Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-app-field-fieldIdOrKey-context-configuration
+      path: /rest/api/3/app/field/{fieldIdOrKey}/context/configuration
+      operations:
+      - name: atlassiangetcustomfieldconfiguration
+        method: GET
+        description: Atlassian Get Custom Field Configurations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: fieldIdOrKey
+          in: path
+          type: string
+          description: The ID or key of the custom field, for example `customfield_10000`.
+          required: true
+        - name: id
+          in: query
+          type: array
+          description: 'The list of configuration IDs. To include multiple configurations, separate IDs with an ampersand:
+            `id=10000&id=10001`. Can''t be provided with `fieldContextId`,'
+        - name: fieldContextId
+          in: query
+          type: array
+          description: 'The list of field context IDs. To include multiple field contexts, separate IDs with an ampersand:
+            `fieldContextId=10000&fieldContextId=10001`. Can''t be provide'
+        - name: issueId
+          in: query
+          type: integer
+          description: The ID of the issue to filter results by. If the issue doesn't exist, an empty list is returned. Can't
+            be provided with `projectKeyOrId`, or `issueTypeId`.
+        - name: projectKeyOrId
+          in: query
+          type: string
+          description: The ID or key of the project to filter results by. Must be provided with `issueTypeId`. Can't be provided
+            with `issueId`.
+        - name: issueTypeId
+          in: query
+          type: string
+          description: The ID of the issue type to filter results by. Must be provided with `projectKeyOrId`. Can't be provided
+            with `issueId`.
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+      - name: atlassianupdatecustomfieldconfiguration
+        method: PUT
+        description: Atlassian Update Custom Field Configurations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: fieldIdOrKey
+          in: path
+          type: string
+          description: The ID or key of the custom field, for example `customfield_10000`.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-issue-custom-field-configuration-apps-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Issue Custom Field Configuration (Apps). One
+      Spectral-compliant resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/app/field/{fieldidorkey}/context/configuration
+      name: rest-api-3-app-field-fieldidorkey-context-configuration
+      description: REST surface for rest-api-3-app-field-fieldIdOrKey-context-configuration.
+      operations:
+      - method: GET
+        name: atlassiangetcustomfieldconfiguration
+        description: Atlassian Get Custom Field Configurations
+        call: jira-issue-custom-field-configuration-apps.atlassiangetcustomfieldconfiguration
+        with:
+          fieldIdOrKey: rest.fieldIdOrKey
+          id: rest.id
+          fieldContextId: rest.fieldContextId
+          issueId: rest.issueId
+          projectKeyOrId: rest.projectKeyOrId
+          issueTypeId: rest.issueTypeId
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatecustomfieldconfiguration
+        description: Atlassian Update Custom Field Configurations
+        call: jira-issue-custom-field-configuration-apps.atlassianupdatecustomfieldconfiguration
+        with:
+          fieldIdOrKey: rest.fieldIdOrKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-issue-custom-field-configuration-apps-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Issue Custom Field Configuration (Apps). One
+      tool per consumed operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-custom-field-configurations
+      description: Atlassian Get Custom Field Configurations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-issue-custom-field-configuration-apps.atlassiangetcustomfieldconfiguration
+      with:
+        fieldIdOrKey: tools.fieldIdOrKey
+        id: tools.id
+        fieldContextId: tools.fieldContextId
+        issueId: tools.issueId
+        projectKeyOrId: tools.projectKeyOrId
+        issueTypeId: tools.issueTypeId
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-custom-field-configurations
+      description: Atlassian Update Custom Field Configurations
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-issue-custom-field-configuration-apps.atlassianupdatecustomfieldconfiguration
+      with:
+        fieldIdOrKey: tools.fieldIdOrKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

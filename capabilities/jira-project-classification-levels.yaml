@@ -1,0 +1,159 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Project Classification Levels
+  description: 'Atlassian The Jira Cloud platform REST API — Project Classification Levels. 3 operations. Lead operation:
+    Atlassian Remove The Default Data Classification Level From A Project. Self-contained Naftiko capability covering one
+    Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Project Classification Levels
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-project-classification-levels
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Project Classification Levels business capability. Self-contained,
+      no shared references.
+    resources:
+    - name: rest-api-3-project-projectIdOrKey-classification-level-default
+      path: /rest/api/3/project/{projectIdOrKey}/classification-level/default
+      operations:
+      - name: atlassianremovedefaultprojectclassification
+        method: DELETE
+        description: Atlassian Remove The Default Data Classification Level From A Project
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: projectIdOrKey
+          in: path
+          type: string
+          description: The project ID or project key (case-sensitive).
+          required: true
+      - name: atlassiangetdefaultprojectclassification
+        method: GET
+        description: Atlassian Get The Default Data Classification Level Of A Project
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: projectIdOrKey
+          in: path
+          type: string
+          description: The project ID or project key (case-sensitive).
+          required: true
+      - name: atlassianupdatedefaultprojectclassification
+        method: PUT
+        description: Atlassian Update The Default Data Classification Level Of A Project
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: projectIdOrKey
+          in: path
+          type: string
+          description: The project ID or project key (case-sensitive).
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-project-classification-levels-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Project Classification Levels. One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/project/{projectidorkey}/classification-level/default
+      name: rest-api-3-project-projectidorkey-classification-level-default
+      description: REST surface for rest-api-3-project-projectIdOrKey-classification-level-default.
+      operations:
+      - method: DELETE
+        name: atlassianremovedefaultprojectclassification
+        description: Atlassian Remove The Default Data Classification Level From A Project
+        call: jira-project-classification-levels.atlassianremovedefaultprojectclassification
+        with:
+          projectIdOrKey: rest.projectIdOrKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetdefaultprojectclassification
+        description: Atlassian Get The Default Data Classification Level Of A Project
+        call: jira-project-classification-levels.atlassiangetdefaultprojectclassification
+        with:
+          projectIdOrKey: rest.projectIdOrKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdatedefaultprojectclassification
+        description: Atlassian Update The Default Data Classification Level Of A Project
+        call: jira-project-classification-levels.atlassianupdatedefaultprojectclassification
+        with:
+          projectIdOrKey: rest.projectIdOrKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-project-classification-levels-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Project Classification Levels. One tool per
+      consumed operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-remove-default-data-classification
+      description: Atlassian Remove The Default Data Classification Level From A Project
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-project-classification-levels.atlassianremovedefaultprojectclassification
+      with:
+        projectIdOrKey: tools.projectIdOrKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-default-data-classification
+      description: Atlassian Get The Default Data Classification Level Of A Project
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-project-classification-levels.atlassiangetdefaultprojectclassification
+      with:
+        projectIdOrKey: tools.projectIdOrKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-default-data-classification
+      description: Atlassian Update The Default Data Classification Level Of A Project
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-project-classification-levels.atlassianupdatedefaultprojectclassification
+      with:
+        projectIdOrKey: tools.projectIdOrKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,112 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — App Data Policies (EAP)
+  description: 'Atlassian The Jira Cloud platform REST API — App Data Policies (EAP). 2 operations. Lead operation: Atlassian
+    Get Data Policy For The Workspace Eap. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - App Data Policies (EAP)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-app-data-policies-eap
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — App Data Policies (EAP) business capability. Self-contained,
+      no shared references.
+    resources:
+    - name: rest-api-3-data-policy
+      path: /rest/api/3/data-policy
+      operations:
+      - name: atlassiangetpolicy
+        method: GET
+        description: Atlassian Get Data Policy For The Workspace Eap
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: rest-api-3-data-policy-project
+      path: /rest/api/3/data-policy/project
+      operations:
+      - name: atlassiangetpolicies
+        method: GET
+        description: Atlassian Get Data Policy For Projects Eap
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: ids
+          in: query
+          type: string
+          description: A list of project identifiers. This parameter accepts a comma-separated list.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-app-data-policies-eap-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — App Data Policies (EAP). One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/data-policy
+      name: rest-api-3-data-policy
+      description: REST surface for rest-api-3-data-policy.
+      operations:
+      - method: GET
+        name: atlassiangetpolicy
+        description: Atlassian Get Data Policy For The Workspace Eap
+        call: jira-app-data-policies-eap.atlassiangetpolicy
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/data-policy/project
+      name: rest-api-3-data-policy-project
+      description: REST surface for rest-api-3-data-policy-project.
+      operations:
+      - method: GET
+        name: atlassiangetpolicies
+        description: Atlassian Get Data Policy For Projects Eap
+        call: jira-app-data-policies-eap.atlassiangetpolicies
+        with:
+          ids: rest.ids
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-app-data-policies-eap-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — App Data Policies (EAP). One tool per consumed
+      operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-data-policy-workspace
+      description: Atlassian Get Data Policy For The Workspace Eap
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-app-data-policies-eap.atlassiangetpolicy
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-data-policy-projects
+      description: Atlassian Get Data Policy For Projects Eap
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-app-data-policies-eap.atlassiangetpolicies
+      with:
+        ids: tools.ids
+      outputParameters:
+      - type: object
+        mapping: $.

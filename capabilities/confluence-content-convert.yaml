@@ -1,0 +1,194 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Confluence Content API — Convert
+  description: 'Atlassian Confluence Content API — Convert. 2 operations. Lead operation: Atlassian Get Macro Body by Macro
+    Id and Convert Representation Asynchronously. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Convert
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: confluence-content-convert
+    baseUri: ''
+    description: Atlassian Confluence Content API — Convert business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-id-history-version-macro-id-macroId-convert-async-to
+      path: /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}/convert/async/{to}
+      operations:
+      - name: getmacrobodybymacroidandconvertrepresentationasynchronously
+        method: GET
+        description: Atlassian Get Macro Body by Macro Id and Convert Representation Asynchronously
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID for the content that contains the macro.
+          required: true
+        - name: version
+          in: path
+          type: integer
+          description: The version of the content that contains the macro. Specifying `0` as the `version` will return
+          required: true
+        - name: macroId
+          in: path
+          type: string
+          description: The ID of the macro. For apps, this is passed to the macro by the Connect/Forge framework.
+          required: true
+        - name: to
+          in: path
+          type: string
+          description: The content representation to return the macro in.
+          required: true
+        - name: allowCache
+          in: query
+          type: boolean
+          description: If this field is false, the cache will erase its current value and begin a conversion.
+        - name: spaceKeyContext
+          in: query
+          type: string
+          description: The space key used for resolving embedded content (page includes,
+        - name: embeddedContentRender
+          in: query
+          type: string
+          description: Mode used for rendering embedded content, like attachments.
+    - name: wiki-rest-api-content-id-history-version-macro-id-macroId-convert-to
+      path: /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}/convert/{to}
+      operations:
+      - name: getmacrobodybymacroidandconverttherepresentationsynchronously
+        method: GET
+        description: Atlassian Get Macro Body by Macro Id and Convert the Representation Synchronously
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: The ID for the content that contains the macro.
+          required: true
+        - name: version
+          in: path
+          type: integer
+          description: The version of the content that contains the macro. Specifying `0` as the `version` will return
+          required: true
+        - name: macroId
+          in: path
+          type: string
+          description: The ID of the macro. This is usually passed by the app that the
+          required: true
+        - name: to
+          in: path
+          type: string
+          description: The content representation to return the macro in.
+          required: true
+        - name: spaceKeyContext
+          in: query
+          type: string
+          description: The space key used for resolving embedded content (page includes,
+        - name: embeddedContentRender
+          in: query
+          type: string
+          description: Mode used for rendering embedded content, like attachments.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: confluence-content-convert-rest
+    port: 8080
+    description: REST adapter for Atlassian Confluence Content API — Convert. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content/{id}/history/{version}/macro/id/{macroid}/convert/async/{to}
+      name: wiki-rest-api-content-id-history-version-macro-id-macroid-convert-async-to
+      description: REST surface for wiki-rest-api-content-id-history-version-macro-id-macroId-convert-async-to.
+      operations:
+      - method: GET
+        name: getmacrobodybymacroidandconvertrepresentationasynchronously
+        description: Atlassian Get Macro Body by Macro Id and Convert Representation Asynchronously
+        call: confluence-content-convert.getmacrobodybymacroidandconvertrepresentationasynchronously
+        with:
+          id: rest.id
+          version: rest.version
+          macroId: rest.macroId
+          to: rest.to
+          allowCache: rest.allowCache
+          spaceKeyContext: rest.spaceKeyContext
+          embeddedContentRender: rest.embeddedContentRender
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content/{id}/history/{version}/macro/id/{macroid}/convert/{to}
+      name: wiki-rest-api-content-id-history-version-macro-id-macroid-convert-to
+      description: REST surface for wiki-rest-api-content-id-history-version-macro-id-macroId-convert-to.
+      operations:
+      - method: GET
+        name: getmacrobodybymacroidandconverttherepresentationsynchronously
+        description: Atlassian Get Macro Body by Macro Id and Convert the Representation Synchronously
+        call: confluence-content-convert.getmacrobodybymacroidandconverttherepresentationsynchronously
+        with:
+          id: rest.id
+          version: rest.version
+          macroId: rest.macroId
+          to: rest.to
+          spaceKeyContext: rest.spaceKeyContext
+          embeddedContentRender: rest.embeddedContentRender
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: confluence-content-convert-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Confluence Content API — Convert. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-macro-body-macro
+      description: Atlassian Get Macro Body by Macro Id and Convert Representation Asynchronously
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-convert.getmacrobodybymacroidandconvertrepresentationasynchronously
+      with:
+        id: tools.id
+        version: tools.version
+        macroId: tools.macroId
+        to: tools.to
+        allowCache: tools.allowCache
+        spaceKeyContext: tools.spaceKeyContext
+        embeddedContentRender: tools.embeddedContentRender
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-macro-body-macro-2
+      description: Atlassian Get Macro Body by Macro Id and Convert the Representation Synchronously
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: confluence-content-convert.getmacrobodybymacroidandconverttherepresentationsynchronously
+      with:
+        id: tools.id
+        version: tools.version
+        macroId: tools.macroId
+        to: tools.to
+        spaceKeyContext: tools.spaceKeyContext
+        embeddedContentRender: tools.embeddedContentRender
+      outputParameters:
+      - type: object
+        mapping: $.

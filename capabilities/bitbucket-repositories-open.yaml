@@ -1,0 +1,85 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Open
+  description: 'Atlassian Bit Bucket Repositories API — Open. 1 operations. Lead operation: Atlassian List Open Branches.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Open
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-open
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Open business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-refs-branches
+      path: /repositories/{workspace}/{repo_slug}/refs/branches
+      operations:
+      - name: listopenbranches
+        method: GET
+        description: Atlassian List Open Branches
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          description: Query string to narrow down the response as per
+        - name: sort
+          in: query
+          type: string
+          description: Field by which the results should be sorted as per
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-open-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Open. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/refs/branches
+      name: repositories-workspace-repo-slug-refs-branches
+      description: REST surface for repositories-workspace-repo_slug-refs-branches.
+      operations:
+      - method: GET
+        name: listopenbranches
+        description: Atlassian List Open Branches
+        call: bitbucket-repositories-open.listopenbranches
+        with:
+          q: rest.q
+          sort: rest.sort
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-open-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Open. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-open-branches
+      description: Atlassian List Open Branches
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-repositories-open.listopenbranches
+      with:
+        q: tools.q
+        sort: tools.sort
+      outputParameters:
+      - type: object
+        mapping: $.

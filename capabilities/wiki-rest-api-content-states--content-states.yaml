@@ -1,0 +1,126 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/content-states/ — Content States
+  description: 'Atlassian wiki/rest/api/content-states/ — Content States. 2 operations. Lead operation: Atlassian Bulk Remove
+    Content States From Content. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Content States
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-content-states--content-states
+    baseUri: ''
+    description: Atlassian wiki/rest/api/content-states/ — Content States business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-content-states-delete
+      path: /wiki/rest/api/content-states/delete
+      operations:
+      - name: atlassianbulkremovecontentstates
+        method: POST
+        description: Atlassian Bulk Remove Content States From Content
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: status
+          in: query
+          type: string
+          description: Set status to one of [current,draft].
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: wiki-rest-api-content-states-task-taskId
+      path: /wiki/rest/api/content-states/task/{taskId}
+      operations:
+      - name: atlassiangettaskupdate
+        method: GET
+        description: Atlassian Get Update On Long Running Task For Setting Of Content State
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: taskId
+          in: path
+          type: string
+          description: taskId returned by put or delete requests to /wiki/rest/api/content-states
+          required: true
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-content-states--content-states-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/content-states/ — Content States. One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/content-states/delete
+      name: wiki-rest-api-content-states-delete
+      description: REST surface for wiki-rest-api-content-states-delete.
+      operations:
+      - method: POST
+        name: atlassianbulkremovecontentstates
+        description: Atlassian Bulk Remove Content States From Content
+        call: wiki-rest-api-content-states--content-states.atlassianbulkremovecontentstates
+        with:
+          status: rest.status
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/content-states/task/{taskid}
+      name: wiki-rest-api-content-states-task-taskid
+      description: REST surface for wiki-rest-api-content-states-task-taskId.
+      operations:
+      - method: GET
+        name: atlassiangettaskupdate
+        description: Atlassian Get Update On Long Running Task For Setting Of Content State
+        call: wiki-rest-api-content-states--content-states.atlassiangettaskupdate
+        with:
+          taskId: rest.taskId
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-content-states--content-states-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/content-states/ — Content States. One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-bulk-remove-content-states
+      description: Atlassian Bulk Remove Content States From Content
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: wiki-rest-api-content-states--content-states.atlassianbulkremovecontentstates
+      with:
+        status: tools.status
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-update-long-running
+      description: Atlassian Get Update On Long Running Task For Setting Of Content State
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-content-states--content-states.atlassiangettaskupdate
+      with:
+        taskId: tools.taskId
+      outputParameters:
+      - type: object
+        mapping: $.

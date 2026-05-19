@@ -1,0 +1,191 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Workspaces API — Create
+  description: 'Atlassian Bit Bucket Workspaces API — Create. 4 operations. Lead operation: Atlassian Create a Webhook for
+    a Workspace. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Create
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-workspaces-create
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Workspaces API — Create business capability. Self-contained, no shared references.
+    resources:
+    - name: workspaces-workspace-hooks
+      path: /workspaces/{workspace}/hooks
+      operations:
+      - name: atlassiancreateawebhookforaworkspace
+        method: POST
+        description: Atlassian Create a Webhook for a Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: workspaces-workspace-pipelines-config-variables
+      path: /workspaces/{workspace}/pipelines-config/variables
+      operations:
+      - name: atlassiancreatepipelinevariableforworkspace
+        method: POST
+        description: Atlassian Create a Variable for a Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: workspace
+          in: path
+          type: string
+          description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example
+            `{workspace UUID}`.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: workspaces-workspace-projects
+      path: /workspaces/{workspace}/projects
+      operations:
+      - name: atlassiancreateaprojectinaworkspace
+        method: POST
+        description: Atlassian Create a Project in a Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: false
+    - name: workspaces-workspace-projects-project_key-deploy-keys
+      path: /workspaces/{workspace}/projects/{project_key}/deploy-keys
+      operations:
+      - name: atlassiancreateaprojectdeploykey
+        method: POST
+        description: Atlassian Create a Project Deploy Key
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-workspaces-create-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Workspaces API — Create. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/workspaces/{workspace}/hooks
+      name: workspaces-workspace-hooks
+      description: REST surface for workspaces-workspace-hooks.
+      operations:
+      - method: POST
+        name: atlassiancreateawebhookforaworkspace
+        description: Atlassian Create a Webhook for a Workspace
+        call: bitbucket-workspaces-create.atlassiancreateawebhookforaworkspace
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/workspaces/{workspace}/pipelines-config/variables
+      name: workspaces-workspace-pipelines-config-variables
+      description: REST surface for workspaces-workspace-pipelines-config-variables.
+      operations:
+      - method: POST
+        name: atlassiancreatepipelinevariableforworkspace
+        description: Atlassian Create a Variable for a Workspace
+        call: bitbucket-workspaces-create.atlassiancreatepipelinevariableforworkspace
+        with:
+          workspace: rest.workspace
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/workspaces/{workspace}/projects
+      name: workspaces-workspace-projects
+      description: REST surface for workspaces-workspace-projects.
+      operations:
+      - method: POST
+        name: atlassiancreateaprojectinaworkspace
+        description: Atlassian Create a Project in a Workspace
+        call: bitbucket-workspaces-create.atlassiancreateaprojectinaworkspace
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/workspaces/{workspace}/projects/{project-key}/deploy-keys
+      name: workspaces-workspace-projects-project-key-deploy-keys
+      description: REST surface for workspaces-workspace-projects-project_key-deploy-keys.
+      operations:
+      - method: POST
+        name: atlassiancreateaprojectdeploykey
+        description: Atlassian Create a Project Deploy Key
+        call: bitbucket-workspaces-create.atlassiancreateaprojectdeploykey
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-workspaces-create-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Workspaces API — Create. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-create-webhook-workspace
+      description: Atlassian Create a Webhook for a Workspace
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-workspaces-create.atlassiancreateawebhookforaworkspace
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-variable-workspace
+      description: Atlassian Create a Variable for a Workspace
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-workspaces-create.atlassiancreatepipelinevariableforworkspace
+      with:
+        workspace: tools.workspace
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-project-workspace
+      description: Atlassian Create a Project in a Workspace
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-workspaces-create.atlassiancreateaprojectinaworkspace
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-create-project-deploy-key
+      description: Atlassian Create a Project Deploy Key
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-workspaces-create.atlassiancreateaprojectdeploykey
+      outputParameters:
+      - type: object
+        mapping: $.

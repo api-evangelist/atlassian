@@ -1,0 +1,120 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/uiModifications/ — UI Modifications (Apps)
+  description: 'Atlassian rest/api/3/uiModifications/ — UI Modifications (Apps). 2 operations. Lead operation: Atlassian Delete
+    Ui Modification. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - UI Modifications (Apps)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-uimodifications--ui-modifications-apps
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/uiModifications/ — UI Modifications (Apps) business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: rest-api-3-uiModifications-uiModificationId
+      path: /rest/api/3/uiModifications/{uiModificationId}
+      operations:
+      - name: atlassiandeleteuimodification
+        method: DELETE
+        description: Atlassian Delete Ui Modification
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: uiModificationId
+          in: path
+          type: string
+          description: The ID of the UI modification.
+          required: true
+      - name: atlassianupdateuimodification
+        method: PUT
+        description: Atlassian Update Ui Modification
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: uiModificationId
+          in: path
+          type: string
+          description: The ID of the UI modification.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+  exposes:
+  - type: rest
+    namespace: rest-api-3-uimodifications--ui-modifications-apps-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/uiModifications/ — UI Modifications (Apps). One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/uimodifications/{uimodificationid}
+      name: rest-api-3-uimodifications-uimodificationid
+      description: REST surface for rest-api-3-uiModifications-uiModificationId.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteuimodification
+        description: Atlassian Delete Ui Modification
+        call: rest-api-3-uimodifications--ui-modifications-apps.atlassiandeleteuimodification
+        with:
+          uiModificationId: rest.uiModificationId
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassianupdateuimodification
+        description: Atlassian Update Ui Modification
+        call: rest-api-3-uimodifications--ui-modifications-apps.atlassianupdateuimodification
+        with:
+          uiModificationId: rest.uiModificationId
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-uimodifications--ui-modifications-apps-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/uiModifications/ — UI Modifications (Apps). One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-delete-ui-modification
+      description: Atlassian Delete Ui Modification
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: rest-api-3-uimodifications--ui-modifications-apps.atlassiandeleteuimodification
+      with:
+        uiModificationId: tools.uiModificationId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-update-ui-modification
+      description: Atlassian Update Ui Modification
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: rest-api-3-uimodifications--ui-modifications-apps.atlassianupdateuimodification
+      with:
+        uiModificationId: tools.uiModificationId
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

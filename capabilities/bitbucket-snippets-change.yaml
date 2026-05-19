@@ -1,0 +1,67 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Snippets API — Change
+  description: 'Atlassian Bit Bucket Snippets API — Change. 1 operations. Lead operation: Atlassian Get Previous Snippet Change.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Change
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-snippets-change
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Snippets API — Change business capability. Self-contained, no shared references.
+    resources:
+    - name: snippets-workspace-encoded_id-commits-revision
+      path: /snippets/{workspace}/{encoded_id}/commits/{revision}
+      operations:
+      - name: getprevioussnippetchange
+        method: GET
+        description: Atlassian Get Previous Snippet Change
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: bitbucket-snippets-change-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Snippets API — Change. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/snippets/{workspace}/{encoded-id}/commits/{revision}
+      name: snippets-workspace-encoded-id-commits-revision
+      description: REST surface for snippets-workspace-encoded_id-commits-revision.
+      operations:
+      - method: GET
+        name: getprevioussnippetchange
+        description: Atlassian Get Previous Snippet Change
+        call: bitbucket-snippets-change.getprevioussnippetchange
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-snippets-change-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Snippets API — Change. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-previous-snippet-change
+      description: Atlassian Get Previous Snippet Change
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-snippets-change.getprevioussnippetchange
+      outputParameters:
+      - type: object
+        mapping: $.

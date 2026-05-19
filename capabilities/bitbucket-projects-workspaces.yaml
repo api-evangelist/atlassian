@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bitbucket API — Projects - Workspaces
+  description: 'Atlassian Bitbucket API — Projects - Workspaces. 1 operations. Lead operation: Atlassian Get A Project For
+    A Workspace. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Projects - Workspaces
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-projects-workspaces
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bitbucket API — Projects - Workspaces business capability. Self-contained, no shared references.
+    resources:
+    - name: workspaces-workspace-projects-project_key
+      path: /workspaces/{workspace}/projects/{project_key}
+      operations:
+      - name: atlassiangetaprojectforaworkspace
+        method: GET
+        description: Atlassian Get A Project For A Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-projects-workspaces-rest
+    port: 8080
+    description: REST adapter for Atlassian Bitbucket API — Projects - Workspaces. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/workspaces/{workspace}/projects/{project-key}
+      name: workspaces-workspace-projects-project-key
+      description: REST surface for workspaces-workspace-projects-project_key.
+      operations:
+      - method: GET
+        name: atlassiangetaprojectforaworkspace
+        description: Atlassian Get A Project For A Workspace
+        call: bitbucket-projects-workspaces.atlassiangetaprojectforaworkspace
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-projects-workspaces-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bitbucket API — Projects - Workspaces. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-project-workspace
+      description: Atlassian Get A Project For A Workspace
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-projects-workspaces.atlassiangetaprojectforaworkspace
+      outputParameters:
+      - type: object
+        mapping: $.

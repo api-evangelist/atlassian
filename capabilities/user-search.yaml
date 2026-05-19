@@ -1,0 +1,97 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian user — Search
+  description: 'Atlassian user — Search. 1 operations. Lead operation: Atlassian Search For Code In A User S Repositories.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Search
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: user-search
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian user — Search business capability. Self-contained, no shared references.
+    resources:
+    - name: users-selected_user-search-code
+      path: /users/{selected_user}/search/code
+      operations:
+      - name: atlassiansearchaccount
+        method: GET
+        description: Atlassian Search For Code In A User S Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: selected_user
+          in: path
+          type: string
+          description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian
+            Account ID.
+          required: true
+        - name: search_query
+          in: query
+          type: string
+          description: The search query
+          required: true
+        - name: page
+          in: query
+          type: integer
+          description: Which page of the search results to retrieve
+        - name: pagelen
+          in: query
+          type: integer
+          description: How many search results to retrieve per page
+  exposes:
+  - type: rest
+    namespace: user-search-rest
+    port: 8080
+    description: REST adapter for Atlassian user — Search. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/users/{selected-user}/search/code
+      name: users-selected-user-search-code
+      description: REST surface for users-selected_user-search-code.
+      operations:
+      - method: GET
+        name: atlassiansearchaccount
+        description: Atlassian Search For Code In A User S Repositories
+        call: user-search.atlassiansearchaccount
+        with:
+          selected_user: rest.selected_user
+          search_query: rest.search_query
+          page: rest.page
+          pagelen: rest.pagelen
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: user-search-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian user — Search. One tool per consumed operation, routed inline through this capability's
+      consumes block.
+    tools:
+    - name: atlassian-search-code-user-s
+      description: Atlassian Search For Code In A User S Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: user-search.atlassiansearchaccount
+      with:
+        selected_user: tools.selected_user
+        search_query: tools.search_query
+        page: tools.page
+        pagelen: tools.pagelen
+      outputParameters:
+      - type: object
+        mapping: $.

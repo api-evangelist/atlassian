@@ -1,0 +1,70 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Hook Events API — Lists
+  description: 'Atlassian Bit Bucket Hook Events API — Lists. 1 operations. Lead operation: Atlassian List Subscribable Webhook
+    Types. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Lists
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-hook-events-lists
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Hook Events API — Lists business capability. Self-contained, no shared references.
+    resources:
+    - name: hook_events-subject_type
+      path: /hook_events/{subject_type}
+      operations:
+      - name: gethookevents
+        method: GET
+        description: Atlassian List Subscribable Webhook Types
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-hook-events-lists-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Hook Events API — Lists. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/hook-events/{subject-type}
+      name: hook-events-subject-type
+      description: REST surface for hook_events-subject_type.
+      operations:
+      - method: GET
+        name: gethookevents
+        description: Atlassian List Subscribable Webhook Types
+        call: bitbucket-hook-events-lists.gethookevents
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-hook-events-lists-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Hook Events API — Lists. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-list-subscribable-webhook-types
+      description: Atlassian List Subscribable Webhook Types
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-hook-events-lists.gethookevents
+      outputParameters:
+      - type: object
+        mapping: $.

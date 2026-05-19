@@ -1,0 +1,223 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian The Jira Cloud platform REST API — Issue Type Properties
+  description: 'Atlassian The Jira Cloud platform REST API — Issue Type Properties. 4 operations. Lead operation: Atlassian
+    Get Issue Type Property Keys. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Type Properties
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: jira-issue-type-properties
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian The Jira Cloud platform REST API — Issue Type Properties business capability. Self-contained, no
+      shared references.
+    resources:
+    - name: rest-api-3-issuetype-issueTypeId-properties
+      path: /rest/api/3/issuetype/{issueTypeId}/properties
+      operations:
+      - name: atlassiangetissuetypepropertykeys
+        method: GET
+        description: Atlassian Get Issue Type Property Keys
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: issueTypeId
+          in: path
+          type: string
+          description: The ID of the issue type.
+          required: true
+    - name: rest-api-3-issuetype-issueTypeId-properties-propertyKey
+      path: /rest/api/3/issuetype/{issueTypeId}/properties/{propertyKey}
+      operations:
+      - name: atlassiandeleteissuetypeproperty
+        method: DELETE
+        description: Atlassian Delete Issue Type Property
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: issueTypeId
+          in: path
+          type: string
+          description: The ID of the issue type.
+          required: true
+        - name: propertyKey
+          in: path
+          type: string
+          description: The key of the property. Use [Get issue type property keys](#api-rest-api-3-issuetype-issueTypeId-properties-get)
+            to get a list of all issue type property keys.
+          required: true
+      - name: atlassiangetissuetypeproperty
+        method: GET
+        description: Atlassian Get Issue Type Property
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: issueTypeId
+          in: path
+          type: string
+          description: The ID of the issue type.
+          required: true
+        - name: propertyKey
+          in: path
+          type: string
+          description: The key of the property. Use [Get issue type property keys](#api-rest-api-3-issuetype-issueTypeId-properties-get)
+            to get a list of all issue type property keys.
+          required: true
+      - name: atlassiansetissuetypeproperty
+        method: PUT
+        description: Atlassian Set Issue Type Property
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: issueTypeId
+          in: path
+          type: string
+          description: The ID of the issue type.
+          required: true
+        - name: propertyKey
+          in: path
+          type: string
+          description: The key of the issue type property. The maximum length is 255 characters.
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: jira-issue-type-properties-rest
+    port: 8080
+    description: REST adapter for Atlassian The Jira Cloud platform REST API — Issue Type Properties. One Spectral-compliant
+      resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/issuetype/{issuetypeid}/properties
+      name: rest-api-3-issuetype-issuetypeid-properties
+      description: REST surface for rest-api-3-issuetype-issueTypeId-properties.
+      operations:
+      - method: GET
+        name: atlassiangetissuetypepropertykeys
+        description: Atlassian Get Issue Type Property Keys
+        call: jira-issue-type-properties.atlassiangetissuetypepropertykeys
+        with:
+          issueTypeId: rest.issueTypeId
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/issuetype/{issuetypeid}/properties/{propertykey}
+      name: rest-api-3-issuetype-issuetypeid-properties-propertykey
+      description: REST surface for rest-api-3-issuetype-issueTypeId-properties-propertyKey.
+      operations:
+      - method: DELETE
+        name: atlassiandeleteissuetypeproperty
+        description: Atlassian Delete Issue Type Property
+        call: jira-issue-type-properties.atlassiandeleteissuetypeproperty
+        with:
+          issueTypeId: rest.issueTypeId
+          propertyKey: rest.propertyKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: GET
+        name: atlassiangetissuetypeproperty
+        description: Atlassian Get Issue Type Property
+        call: jira-issue-type-properties.atlassiangetissuetypeproperty
+        with:
+          issueTypeId: rest.issueTypeId
+          propertyKey: rest.propertyKey
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetissuetypeproperty
+        description: Atlassian Set Issue Type Property
+        call: jira-issue-type-properties.atlassiansetissuetypeproperty
+        with:
+          issueTypeId: rest.issueTypeId
+          propertyKey: rest.propertyKey
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: jira-issue-type-properties-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian The Jira Cloud platform REST API — Issue Type Properties. One tool per consumed
+      operation, routed inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-issue-type-property
+      description: Atlassian Get Issue Type Property Keys
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-issue-type-properties.atlassiangetissuetypepropertykeys
+      with:
+        issueTypeId: tools.issueTypeId
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-delete-issue-type-property
+      description: Atlassian Delete Issue Type Property
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: jira-issue-type-properties.atlassiandeleteissuetypeproperty
+      with:
+        issueTypeId: tools.issueTypeId
+        propertyKey: tools.propertyKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-issue-type-property-2
+      description: Atlassian Get Issue Type Property
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: jira-issue-type-properties.atlassiangetissuetypeproperty
+      with:
+        issueTypeId: tools.issueTypeId
+        propertyKey: tools.propertyKey
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-issue-type-property
+      description: Atlassian Set Issue Type Property
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: jira-issue-type-properties.atlassiansetissuetypeproperty
+      with:
+        issueTypeId: tools.issueTypeId
+        propertyKey: tools.propertyKey
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

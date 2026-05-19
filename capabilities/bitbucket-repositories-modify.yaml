@@ -1,0 +1,80 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket Repositories API — Modify
+  description: 'Atlassian Bit Bucket Repositories API — Modify. 1 operations. Lead operation: Atlassian Modify the State of
+    an Issue. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Modify
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-repositories-modify
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket Repositories API — Modify business capability. Self-contained, no shared references.
+    resources:
+    - name: repositories-workspace-repo_slug-issues-issue_id-changes
+      path: /repositories/{workspace}/{repo_slug}/issues/{issue_id}/changes
+      operations:
+      - name: modifythestateofanissue
+        method: POST
+        description: Atlassian Modify the State of an Issue
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-repositories-modify-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket Repositories API — Modify. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/repositories/{workspace}/{repo-slug}/issues/{issue-id}/changes
+      name: repositories-workspace-repo-slug-issues-issue-id-changes
+      description: REST surface for repositories-workspace-repo_slug-issues-issue_id-changes.
+      operations:
+      - method: POST
+        name: modifythestateofanissue
+        description: Atlassian Modify the State of an Issue
+        call: bitbucket-repositories-modify.modifythestateofanissue
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-repositories-modify-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket Repositories API — Modify. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-modify-state-issue
+      description: Atlassian Modify the State of an Issue
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: bitbucket-repositories-modify.modifythestateofanissue
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

@@ -1,0 +1,158 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/project/ — Project Components
+  description: 'Atlassian rest/api/3/project/ — Project Components. 2 operations. Lead operation: Atlassian Get Project Components
+    Paginated. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Project Components
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-project--project-components
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/project/ — Project Components business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-project-projectIdOrKey-component
+      path: /rest/api/3/project/{projectIdOrKey}/component
+      operations:
+      - name: atlassiangetprojectcomponentspaginated
+        method: GET
+        description: Atlassian Get Project Components Paginated
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: projectIdOrKey
+          in: path
+          type: string
+          description: The project ID or project key (case sensitive).
+          required: true
+        - name: startAt
+          in: query
+          type: integer
+          description: The index of the first item to return in a page of results (page offset).
+        - name: maxResults
+          in: query
+          type: integer
+          description: The maximum number of items to return per page.
+        - name: orderBy
+          in: query
+          type: string
+          description: '[Order](#ordering) the results by a field:'
+        - name: componentSource
+          in: query
+          type: string
+          description: The source of the components to return. Can be `jira` (default), `compass` or `auto`. When `auto` is
+            specified, the API will return connected Compass components
+        - name: query
+          in: query
+          type: string
+          description: Filter the results using a literal string. Components with a matching `name` or `description` are returned
+            (case insensitive).
+    - name: rest-api-3-project-projectIdOrKey-components
+      path: /rest/api/3/project/{projectIdOrKey}/components
+      operations:
+      - name: atlassiangetprojectcomponents
+        method: GET
+        description: Atlassian Get Project Components
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: projectIdOrKey
+          in: path
+          type: string
+          description: The project ID or project key (case sensitive).
+          required: true
+        - name: componentSource
+          in: query
+          type: string
+          description: The source of the components to return. Can be `jira` (default), `compass` or `auto`. When `auto` is
+            specified, the API will return connected Compass components
+  exposes:
+  - type: rest
+    namespace: rest-api-3-project--project-components-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/project/ — Project Components. One Spectral-compliant resource per
+      consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/project/{projectidorkey}/component
+      name: rest-api-3-project-projectidorkey-component
+      description: REST surface for rest-api-3-project-projectIdOrKey-component.
+      operations:
+      - method: GET
+        name: atlassiangetprojectcomponentspaginated
+        description: Atlassian Get Project Components Paginated
+        call: rest-api-3-project--project-components.atlassiangetprojectcomponentspaginated
+        with:
+          projectIdOrKey: rest.projectIdOrKey
+          startAt: rest.startAt
+          maxResults: rest.maxResults
+          orderBy: rest.orderBy
+          componentSource: rest.componentSource
+          query: rest.query
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/3/project/{projectidorkey}/components
+      name: rest-api-3-project-projectidorkey-components
+      description: REST surface for rest-api-3-project-projectIdOrKey-components.
+      operations:
+      - method: GET
+        name: atlassiangetprojectcomponents
+        description: Atlassian Get Project Components
+        call: rest-api-3-project--project-components.atlassiangetprojectcomponents
+        with:
+          projectIdOrKey: rest.projectIdOrKey
+          componentSource: rest.componentSource
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-project--project-components-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/project/ — Project Components. One tool per consumed operation, routed
+      inline through this capability's consumes block.
+    tools:
+    - name: atlassian-get-project-components-paginated
+      description: Atlassian Get Project Components Paginated
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-project--project-components.atlassiangetprojectcomponentspaginated
+      with:
+        projectIdOrKey: tools.projectIdOrKey
+        startAt: tools.startAt
+        maxResults: tools.maxResults
+        orderBy: tools.orderBy
+        componentSource: tools.componentSource
+        query: tools.query
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-project-components
+      description: Atlassian Get Project Components
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: rest-api-3-project--project-components.atlassiangetprojectcomponents
+      with:
+        projectIdOrKey: tools.projectIdOrKey
+        componentSource: tools.componentSource
+      outputParameters:
+      - type: object
+        mapping: $.

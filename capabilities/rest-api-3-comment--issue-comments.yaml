@@ -1,0 +1,84 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian rest/api/3/comment/ — Issue Comments
+  description: 'Atlassian rest/api/3/comment/ — Issue Comments. 1 operations. Lead operation: Atlassian Get Comments By Ids.
+    Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Issue Comments
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: rest-api-3-comment--issue-comments
+    baseUri: https://your-domain.atlassian.net
+    description: Atlassian rest/api/3/comment/ — Issue Comments business capability. Self-contained, no shared references.
+    resources:
+    - name: rest-api-3-comment-list
+      path: /rest/api/3/comment/list
+      operations:
+      - name: atlassiangetcommentsbyids
+        method: POST
+        description: Atlassian Get Comments By Ids
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: expand
+          in: query
+          type: string
+          description: Use [expand](#expansion) to include additional information about comments in the response. This parameter
+            accepts a comma-separated list. Expand options include
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+  exposes:
+  - type: rest
+    namespace: rest-api-3-comment--issue-comments-rest
+    port: 8080
+    description: REST adapter for Atlassian rest/api/3/comment/ — Issue Comments. One Spectral-compliant resource per consumed
+      operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/3/comment/list
+      name: rest-api-3-comment-list
+      description: REST surface for rest-api-3-comment-list.
+      operations:
+      - method: POST
+        name: atlassiangetcommentsbyids
+        description: Atlassian Get Comments By Ids
+        call: rest-api-3-comment--issue-comments.atlassiangetcommentsbyids
+        with:
+          expand: rest.expand
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: rest-api-3-comment--issue-comments-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian rest/api/3/comment/ — Issue Comments. One tool per consumed operation, routed inline
+      through this capability's consumes block.
+    tools:
+    - name: atlassian-get-comments-ids
+      description: Atlassian Get Comments By Ids
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: false
+      call: rest-api-3-comment--issue-comments.atlassiangetcommentsbyids
+      with:
+        expand: tools.expand
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.

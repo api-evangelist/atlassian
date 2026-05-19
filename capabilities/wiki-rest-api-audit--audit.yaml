@@ -1,0 +1,226 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian wiki/rest/api/audit/ — Audit
+  description: 'Atlassian wiki/rest/api/audit/ — Audit. 4 operations. Lead operation: Atlassian Export Audit Records. Self-contained
+    Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Audit
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: wiki-rest-api-audit--audit
+    baseUri: ''
+    description: Atlassian wiki/rest/api/audit/ — Audit business capability. Self-contained, no shared references.
+    resources:
+    - name: wiki-rest-api-audit-export
+      path: /wiki/rest/api/audit/export
+      operations:
+      - name: atlassianexportauditrecords
+        method: GET
+        description: Atlassian Export Audit Records
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: startDate
+          in: query
+          type: string
+          description: Filters the exported results to the records on or after the `startDate`.
+        - name: endDate
+          in: query
+          type: string
+          description: Filters the exported results to the records on or before the `endDate`.
+        - name: searchString
+          in: query
+          type: string
+          description: Filters the exported results to records that have string property values
+        - name: format
+          in: query
+          type: string
+          description: The format of the export file for the audit records.
+    - name: wiki-rest-api-audit-retention
+      path: /wiki/rest/api/audit/retention
+      operations:
+      - name: atlassiangetretentionperiod
+        method: GET
+        description: Atlassian Get Retention Period
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: atlassiansetretentionperiod
+        method: PUT
+        description: Atlassian Set Retention Period
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: wiki-rest-api-audit-since
+      path: /wiki/rest/api/audit/since
+      operations:
+      - name: atlassiangetauditrecordsfortimeperiod
+        method: GET
+        description: Atlassian Get Audit Records For Time Period
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: number
+          in: query
+          type: integer
+          description: The number of units for the time period.
+        - name: units
+          in: query
+          type: string
+          description: The unit of time that the time period is measured in.
+        - name: searchString
+          in: query
+          type: string
+          description: Filters the results to records that have string property values
+        - name: start
+          in: query
+          type: integer
+          description: The starting index of the returned records.
+        - name: limit
+          in: query
+          type: integer
+          description: The maximum number of records to return per page.
+  exposes:
+  - type: rest
+    namespace: wiki-rest-api-audit--audit-rest
+    port: 8080
+    description: REST adapter for Atlassian wiki/rest/api/audit/ — Audit. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/wiki/rest/api/audit/export
+      name: wiki-rest-api-audit-export
+      description: REST surface for wiki-rest-api-audit-export.
+      operations:
+      - method: GET
+        name: atlassianexportauditrecords
+        description: Atlassian Export Audit Records
+        call: wiki-rest-api-audit--audit.atlassianexportauditrecords
+        with:
+          startDate: rest.startDate
+          endDate: rest.endDate
+          searchString: rest.searchString
+          format: rest.format
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/audit/retention
+      name: wiki-rest-api-audit-retention
+      description: REST surface for wiki-rest-api-audit-retention.
+      operations:
+      - method: GET
+        name: atlassiangetretentionperiod
+        description: Atlassian Get Retention Period
+        call: wiki-rest-api-audit--audit.atlassiangetretentionperiod
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PUT
+        name: atlassiansetretentionperiod
+        description: Atlassian Set Retention Period
+        call: wiki-rest-api-audit--audit.atlassiansetretentionperiod
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/wiki/rest/api/audit/since
+      name: wiki-rest-api-audit-since
+      description: REST surface for wiki-rest-api-audit-since.
+      operations:
+      - method: GET
+        name: atlassiangetauditrecordsfortimeperiod
+        description: Atlassian Get Audit Records For Time Period
+        call: wiki-rest-api-audit--audit.atlassiangetauditrecordsfortimeperiod
+        with:
+          number: rest.number
+          units: rest.units
+          searchString: rest.searchString
+          start: rest.start
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: wiki-rest-api-audit--audit-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian wiki/rest/api/audit/ — Audit. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-export-audit-records
+      description: Atlassian Export Audit Records
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-audit--audit.atlassianexportauditrecords
+      with:
+        startDate: tools.startDate
+        endDate: tools.endDate
+        searchString: tools.searchString
+        format: tools.format
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-retention-period
+      description: Atlassian Get Retention Period
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-audit--audit.atlassiangetretentionperiod
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-set-retention-period
+      description: Atlassian Set Retention Period
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-audit--audit.atlassiansetretentionperiod
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-audit-records-time
+      description: Atlassian Get Audit Records For Time Period
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: wiki-rest-api-audit--audit.atlassiangetauditrecordsfortimeperiod
+      with:
+        number: tools.number
+        units: tools.units
+        searchString: tools.searchString
+        start: tools.start
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.

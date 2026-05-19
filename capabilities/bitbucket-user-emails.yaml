@@ -1,0 +1,102 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Atlassian Bit Bucket User API — Emails
+  description: 'Atlassian Bit Bucket User API — Emails. 2 operations. Lead operation: Atlassian List Email Addresses for Current
+    User. Self-contained Naftiko capability covering one Atlassian business surface.'
+  tags:
+  - Atlassian
+  - Emails
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    ATLASSIAN_API_KEY: ATLASSIAN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: bitbucket-user-emails
+    baseUri: https://api.bitbucket.org/2.0
+    description: Atlassian Bit Bucket User API — Emails business capability. Self-contained, no shared references.
+    resources:
+    - name: user-emails
+      path: /user/emails
+      operations:
+      - name: listemailaddressesforcurrentuser
+        method: GET
+        description: Atlassian List Email Addresses for Current User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: user-emails-email
+      path: /user/emails/{email}
+      operations:
+      - name: getanemailaddressforcurrentuser
+        method: GET
+        description: Atlassian Get an Email Address for Current User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: bearer
+      token: '{{env.ATLASSIAN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: bitbucket-user-emails-rest
+    port: 8080
+    description: REST adapter for Atlassian Bit Bucket User API — Emails. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/user/emails
+      name: user-emails
+      description: REST surface for user-emails.
+      operations:
+      - method: GET
+        name: listemailaddressesforcurrentuser
+        description: Atlassian List Email Addresses for Current User
+        call: bitbucket-user-emails.listemailaddressesforcurrentuser
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/user/emails/{email}
+      name: user-emails-email
+      description: REST surface for user-emails-email.
+      operations:
+      - method: GET
+        name: getanemailaddressforcurrentuser
+        description: Atlassian Get an Email Address for Current User
+        call: bitbucket-user-emails.getanemailaddressforcurrentuser
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: bitbucket-user-emails-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for Atlassian Bit Bucket User API — Emails. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: atlassian-list-email-addresses-current
+      description: Atlassian List Email Addresses for Current User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-emails.listemailaddressesforcurrentuser
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: atlassian-get-email-address-current
+      description: Atlassian Get an Email Address for Current User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: bitbucket-user-emails.getanemailaddressforcurrentuser
+      outputParameters:
+      - type: object
+        mapping: $.
