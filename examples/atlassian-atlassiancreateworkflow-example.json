@@ -1,0 +1,130 @@
+{
+  "operationId": "atlassianCreateworkflow",
+  "method": "POST",
+  "path": "/rest/api/3/workflow",
+  "summary": "Atlassian Create Workflow",
+  "requestExamples": [
+    {
+      "contentType": "application/json",
+      "example": {
+        "description": "This is a workflow used for Stories and Tasks",
+        "name": "Workflow 1",
+        "statuses": [
+          {
+            "id": "1",
+            "properties": {
+              "jira.issue.editable": "false"
+            }
+          },
+          {
+            "id": "2"
+          },
+          {
+            "id": "3"
+          }
+        ],
+        "transitions": [
+          {
+            "from": [],
+            "name": "Created",
+            "to": "1",
+            "type": "initial"
+          },
+          {
+            "from": [
+              "1"
+            ],
+            "name": "In progress",
+            "properties": {
+              "custom-property": "custom-value"
+            },
+            "rules": {
+              "conditions": {
+                "conditions": [
+                  {
+                    "type": "RemoteOnlyCondition"
+                  },
+                  {
+                    "configuration": {
+                      "groups": [
+                        "developers",
+                        "qa-testers"
+                      ]
+                    },
+                    "type": "UserInAnyGroupCondition"
+                  }
+                ],
+                "operator": "AND"
+              },
+              "postFunctions": [
+                {
+                  "type": "AssignToCurrentUserFunction"
+                }
+              ]
+            },
+            "screen": {
+              "id": "10001"
+            },
+            "to": "2",
+            "type": "directed"
+          },
+          {
+            "name": "Completed",
+            "rules": {
+              "postFunctions": [
+                {
+                  "configuration": {
+                    "fieldId": "assignee"
+                  },
+                  "type": "ClearFieldValuePostFunction"
+                }
+              ],
+              "validators": [
+                {
+                  "configuration": {
+                    "parentStatuses": [
+                      {
+                        "id": "3"
+                      }
+                    ]
+                  },
+                  "type": "ParentStatusValidator"
+                },
+                {
+                  "configuration": {
+                    "permissionKey": "ADMINISTER_PROJECTS"
+                  },
+                  "type": "PermissionValidator"
+                }
+              ]
+            },
+            "to": "3",
+            "type": "global"
+          }
+        ]
+      }
+    }
+  ],
+  "responseExamples": [
+    {
+      "status": "201",
+      "contentType": "application/json",
+      "example": "{\"entityId\":\"d7178e8d-bf6c-4c0c-9e90-758a0b965b67\",\"name\":\"Workflow 1\"}"
+    },
+    {
+      "status": "400",
+      "contentType": "application/json",
+      "example": "{\"errorMessages\":[\"The request body parameters are missing.\"],\"errors\":{}}"
+    },
+    {
+      "status": "403",
+      "contentType": "application/json",
+      "example": "{\"errorMessages\":[\"Only Jira administrators can access the workflow configuration.\"],\"errors\":{}}"
+    },
+    {
+      "status": "404",
+      "contentType": "application/json",
+      "example": "{\"errorMessages\":[\"Status with ID 10000 was not found\"],\"errors\":{}}"
+    }
+  ]
+}
