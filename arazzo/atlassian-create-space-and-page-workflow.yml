@@ -1,0 +1,103 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create Space and Page
+  summary: Create a Confluence space, confirm it, then add a first page to it.
+  description: >-
+    Creates a new Confluence space from a key and name, reads the space back to
+    confirm it exists, and creates a first page inside the space with a
+    storage-format body. Each step inlines its Basic authentication header,
+    request body and documented success criteria so the flow is self-describing.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-space-and-page
+  summary: Create a Confluence space and seed it with a first page.
+  description: >-
+    Creates a space, confirms it by key, and creates a first page in the new
+    space.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - spaceKey
+    - spaceName
+    - pageTitle
+    - bodyHtml
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      spaceKey:
+        type: string
+        description: The key for the new space.
+      spaceName:
+        type: string
+        description: The display name for the new space.
+      pageTitle:
+        type: string
+        description: The title of the first page.
+      bodyHtml:
+        type: string
+        description: The first page body in storage (HTML) format.
+  steps:
+  - stepId: createSpace
+    description: Create a new space with the supplied key and name.
+    operationId: atlassianCreatespace
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        key: $inputs.spaceKey
+        name: $inputs.spaceName
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      spaceKey: $response.body#/key
+      spaceId: $response.body#/id
+  - stepId: getSpace
+    description: Read the space back by key to confirm it was created.
+    operationId: atlassianGetspace
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: spaceKey
+      in: path
+      value: $steps.createSpace.outputs.spaceKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      name: $response.body#/name
+  - stepId: createPage
+    description: Create a first page inside the newly created space.
+    operationId: atlassianCreatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $inputs.pageTitle
+        space:
+          key: $steps.createSpace.outputs.spaceKey
+        body:
+          storage:
+            value: $inputs.bodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pageId: $response.body#/id
+      title: $response.body#/title
+  outputs:
+    spaceKey: $steps.createSpace.outputs.spaceKey
+    pageId: $steps.createPage.outputs.pageId

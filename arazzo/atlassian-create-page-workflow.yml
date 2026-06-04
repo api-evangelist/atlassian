@@ -1,0 +1,83 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create Page
+  summary: Create a Confluence page in a space and read it back to confirm it.
+  description: >-
+    Creates a new Confluence page in a space using a title and storage-format
+    body, then reads the page back by id to confirm its title and version. Each
+    step inlines its Basic authentication header, request body and documented
+    success criteria so the flow is self-describing.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-page
+  summary: Create a Confluence page and read it back.
+  description: >-
+    Creates a page of type "page" in the supplied space with a storage-format
+    body, then fetches the page by id to confirm it.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - spaceKey
+    - title
+    - bodyHtml
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      spaceKey:
+        type: string
+        description: The key of the space to create the page in.
+      title:
+        type: string
+        description: The page title.
+      bodyHtml:
+        type: string
+        description: The page body in Confluence storage (HTML) format.
+  steps:
+  - stepId: createPage
+    description: Create a new page in the supplied space with a storage-format body.
+    operationId: atlassianCreatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $inputs.title
+        space:
+          key: $inputs.spaceKey
+        body:
+          storage:
+            value: $inputs.bodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pageId: $response.body#/id
+      title: $response.body#/title
+  - stepId: getPage
+    description: Read the created page back by id to confirm its title and version.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createPage.outputs.pageId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      title: $response.body#/title
+      versionNumber: $response.body#/version/number
+  outputs:
+    pageId: $steps.createPage.outputs.pageId
+    title: $steps.createPage.outputs.title

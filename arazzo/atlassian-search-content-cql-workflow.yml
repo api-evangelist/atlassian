@@ -1,0 +1,87 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Search Content with CQL
+  summary: Search Confluence content with CQL and fetch the first matching result.
+  description: >-
+    Searches Confluence content using a CQL expression and, when at least one
+    result is returned, fetches the full detail of the first matching content by
+    id. The flow branches on the result count so it only reads content when one
+    exists. Each step inlines its Basic authentication header, query parameters
+    and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: search-content-cql
+  summary: Search content with CQL and read back the first match.
+  description: >-
+    Runs a CQL search and reads the full detail of the first matching content
+    when the result set is non-empty.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - cql
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      cql:
+        type: string
+        description: The CQL expression to search with (e.g. "type=page and space=DEV").
+      limit:
+        type: integer
+        description: Maximum number of results to return.
+  steps:
+  - stepId: searchContent
+    description: Run the CQL search and return the matching content list.
+    operationId: atlassianSearchcontentbycql
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: cql
+      in: query
+      value: $inputs.cql
+    - name: limit
+      in: query
+      value: $inputs.limit
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      results: $response.body#/results
+      firstContentId: $response.body#/results/0/id
+    onSuccess:
+    - name: hasResults
+      type: goto
+      stepId: getContent
+      criteria:
+      - context: $response.body
+        condition: $.results.length > 0
+        type: jsonpath
+    - name: noResults
+      type: end
+      criteria:
+      - context: $response.body
+        condition: $.results.length == 0
+        type: jsonpath
+  - stepId: getContent
+    description: Fetch the full detail of the first matching content by id.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.searchContent.outputs.firstContentId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      title: $response.body#/title
+  outputs:
+    results: $steps.searchContent.outputs.results
+    firstContentId: $steps.searchContent.outputs.firstContentId

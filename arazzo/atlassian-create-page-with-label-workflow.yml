@@ -1,0 +1,104 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create Page with Label
+  summary: Create a Confluence page, tag it with a label, then read it back.
+  description: >-
+    Creates a new Confluence page in a space, applies a label to the page so it
+    can be categorized and found, and reads the page back to confirm it. Each
+    step inlines its Basic authentication header, request body and documented
+    success criteria so the flow is self-describing.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-page-with-label
+  summary: Create a Confluence page and apply a label to it.
+  description: >-
+    Creates a page, adds a global label to it, and reads the page back to
+    confirm it.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - spaceKey
+    - title
+    - bodyHtml
+    - labelName
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      spaceKey:
+        type: string
+        description: The key of the space to create the page in.
+      title:
+        type: string
+        description: The page title.
+      bodyHtml:
+        type: string
+        description: The page body in storage (HTML) format.
+      labelName:
+        type: string
+        description: The label name to apply to the page.
+  steps:
+  - stepId: createPage
+    description: Create a new page in the supplied space.
+    operationId: atlassianCreatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $inputs.title
+        space:
+          key: $inputs.spaceKey
+        body:
+          storage:
+            value: $inputs.bodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pageId: $response.body#/id
+  - stepId: addLabel
+    description: Apply a global label to the newly created page.
+    operationId: atlassianAddlabelstocontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createPage.outputs.pageId
+    requestBody:
+      contentType: application/json
+      payload:
+      - prefix: global
+        name: $inputs.labelName
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      labels: $response.body#/results
+  - stepId: getPage
+    description: Read the page back to confirm it.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createPage.outputs.pageId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      title: $response.body#/title
+  outputs:
+    pageId: $steps.createPage.outputs.pageId
+    labels: $steps.addLabel.outputs.labels

@@ -1,0 +1,65 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Page and Comments
+  summary: Read a Confluence page and then list the comments attached to it.
+  description: >-
+    Reads an existing Confluence page by id to confirm it, then lists the
+    comments attached to the page as child content. This is the read pattern for
+    reviewing a page and its discussion. Each step inlines its Basic
+    authentication header, parameters and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: page-and-comments
+  summary: Read a Confluence page and list its comments.
+  description: >-
+    Confirms a page by id and lists the comments attached to it.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - pageId
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      pageId:
+        type: string
+        description: The id of the page to read comments for.
+  steps:
+  - stepId: getPage
+    description: Read the page by id to confirm it exists.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $inputs.pageId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      title: $response.body#/title
+  - stepId: getComments
+    description: List the comments attached to the page as child content.
+    operationId: atlassianGetcontentcomments
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.getPage.outputs.id
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      comments: $response.body#/results
+      size: $response.body#/size
+  outputs:
+    pageTitle: $steps.getPage.outputs.title
+    comments: $steps.getComments.outputs.comments

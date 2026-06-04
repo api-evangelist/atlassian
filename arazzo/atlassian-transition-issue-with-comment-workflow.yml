@@ -1,0 +1,117 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Transition Issue with Comment
+  summary: List an issue's transitions, move it to a new status, then record why with a comment.
+  description: >-
+    Lists the workflow transitions available for an existing Jira issue, applies
+    the requested transition when one is available, and posts a comment recording
+    the reason for the status change. The flow branches on whether any transitions
+    are available. Each step inlines its Basic authentication header, request body
+    and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: transition-issue-with-comment
+  summary: Transition a Jira issue and record the change with a comment.
+  description: >-
+    Lists transitions for an existing issue, applies the supplied transition,
+    and adds a comment explaining the change.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - issueIdOrKey
+    - transitionId
+    - commentText
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      issueIdOrKey:
+        type: string
+        description: The id or key of the issue to transition.
+      transitionId:
+        type: string
+        description: The id of the transition to apply.
+      commentText:
+        type: string
+        description: Plain text used to build the comment body.
+  steps:
+  - stepId: getTransitions
+    description: List the transitions currently available for the issue.
+    operationId: atlassianGettransitions
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      transitions: $response.body#/transitions
+    onSuccess:
+    - name: hasTransitions
+      type: goto
+      stepId: doTransition
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length > 0
+        type: jsonpath
+    - name: noTransitions
+      type: end
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length == 0
+        type: jsonpath
+  - stepId: doTransition
+    description: Apply the supplied transition to move the issue to a new status.
+    operationId: atlassianDotransition
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    requestBody:
+      contentType: application/json
+      payload:
+        transition:
+          id: $inputs.transitionId
+    successCriteria:
+    - condition: $statusCode == 204
+    outputs:
+      statusCode: $statusCode
+  - stepId: addComment
+    description: Record the reason for the status change with a comment.
+    operationId: atlassianAddcomment
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    requestBody:
+      contentType: application/json
+      payload:
+        body:
+          type: doc
+          version: 1
+          content:
+          - type: paragraph
+            content:
+            - type: text
+              text: $inputs.commentText
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      commentId: $response.body#/id
+  outputs:
+    transitions: $steps.getTransitions.outputs.transitions
+    commentId: $steps.addComment.outputs.commentId

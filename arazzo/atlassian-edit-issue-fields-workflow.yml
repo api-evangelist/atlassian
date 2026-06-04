@@ -1,0 +1,100 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Edit Issue Fields
+  summary: Read an issue, edit its summary and description, then confirm the changes.
+  description: >-
+    Reads an existing Jira issue to confirm its current state, edits its summary
+    and description fields, and reads the issue back to confirm the new values.
+    The description uses Atlassian Document Format. Each step inlines its Basic
+    authentication header, request body and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: edit-issue-fields
+  summary: Edit a Jira issue's summary and description and confirm the changes.
+  description: >-
+    Reads an issue, edits its summary and description fields, and reads it back
+    to confirm.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - issueIdOrKey
+    - summary
+    - descriptionText
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      issueIdOrKey:
+        type: string
+        description: The id or key of the issue to edit.
+      summary:
+        type: string
+        description: The new summary line.
+      descriptionText:
+        type: string
+        description: Plain text used to build the new description body.
+  steps:
+  - stepId: getIssue
+    description: Read the issue to confirm its current summary.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      currentSummary: $response.body#/fields/summary
+  - stepId: editIssue
+    description: Edit the issue's summary and description fields.
+    operationId: atlassianEditissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    requestBody:
+      contentType: application/json
+      payload:
+        fields:
+          summary: $inputs.summary
+          description:
+            type: doc
+            version: 1
+            content:
+            - type: paragraph
+              content:
+              - type: text
+                text: $inputs.descriptionText
+    successCriteria:
+    - condition: $statusCode == 204
+    outputs:
+      statusCode: $statusCode
+  - stepId: confirmIssue
+    description: Read the issue back to confirm the new summary.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      newSummary: $response.body#/fields/summary
+  outputs:
+    issueKey: $steps.getIssue.outputs.key
+    newSummary: $steps.confirmIssue.outputs.newSummary

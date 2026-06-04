@@ -1,0 +1,100 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Create and Assign Issue
+  summary: Create a Jira issue, assign it to a user, then read it back to confirm the assignee.
+  description: >-
+    Creates a new Jira issue, assigns it to a specific account by accountId, and
+    reads the issue back to confirm the assignee was set. Each step inlines its
+    Basic authentication header, request body and documented success criteria so
+    the flow is self-describing.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-and-assign-issue
+  summary: Create a Jira issue and assign it to a user.
+  description: >-
+    Creates an issue, assigns it to the supplied accountId, and confirms the
+    assignment by reading the issue back.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - projectId
+    - issueTypeId
+    - summary
+    - assigneeAccountId
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      projectId:
+        type: string
+        description: The numeric id of the project to create the issue in.
+      issueTypeId:
+        type: string
+        description: The id of the issue type.
+      summary:
+        type: string
+        description: The issue summary line.
+      assigneeAccountId:
+        type: string
+        description: The Atlassian accountId of the user to assign the issue to.
+  steps:
+  - stepId: createIssue
+    description: Create a new issue in the supplied project.
+    operationId: atlassianCreateissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        fields:
+          project:
+            id: $inputs.projectId
+          issuetype:
+            id: $inputs.issueTypeId
+          summary: $inputs.summary
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      issueKey: $response.body#/key
+  - stepId: assignIssue
+    description: Assign the newly created issue to the supplied accountId.
+    operationId: atlassianAssignissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    requestBody:
+      contentType: application/json
+      payload:
+        accountId: $inputs.assigneeAccountId
+    successCriteria:
+    - condition: $statusCode == 204
+    outputs:
+      statusCode: $statusCode
+  - stepId: getIssue
+    description: Read the issue back to confirm the assignee was set.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      assigneeAccountId: $response.body#/fields/assignee/accountId
+  outputs:
+    issueKey: $steps.createIssue.outputs.issueKey
+    assigneeAccountId: $steps.getIssue.outputs.assigneeAccountId

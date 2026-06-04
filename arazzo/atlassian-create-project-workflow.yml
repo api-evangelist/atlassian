@@ -1,0 +1,91 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Create Project
+  summary: Create a Jira project and read it back to confirm its details.
+  description: >-
+    Creates a new Jira project from a key, name, project type and lead account,
+    then reads the project back to confirm its id, key and lead. Each step
+    inlines its Basic authentication header, request body and documented success
+    criteria so the flow is self-describing.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-project
+  summary: Create a Jira project and confirm its details.
+  description: >-
+    Creates a project and reads it back by key to confirm the created id, name
+    and lead.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - key
+    - name
+    - projectTypeKey
+    - leadAccountId
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      key:
+        type: string
+        description: The project key (e.g. "EX").
+      name:
+        type: string
+        description: The project display name.
+      projectTypeKey:
+        type: string
+        description: The project type key (e.g. "business" or "software").
+      leadAccountId:
+        type: string
+        description: The accountId of the project lead.
+      description:
+        type: string
+        description: An optional project description.
+      assigneeType:
+        type: string
+        description: The default assignee type, PROJECT_LEAD or UNASSIGNED.
+  steps:
+  - stepId: createProject
+    description: Create the project with the supplied key, name, type and lead.
+    operationId: atlassianCreateproject
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        key: $inputs.key
+        name: $inputs.name
+        projectTypeKey: $inputs.projectTypeKey
+        leadAccountId: $inputs.leadAccountId
+        description: $inputs.description
+        assigneeType: $inputs.assigneeType
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      projectId: $response.body#/id
+      projectKey: $response.body#/key
+  - stepId: getProject
+    description: Read the created project back to confirm its details.
+    operationId: atlassianGetproject
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: projectIdOrKey
+      in: path
+      value: $steps.createProject.outputs.projectKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      name: $response.body#/name
+      lead: $response.body#/lead/accountId
+  outputs:
+    projectId: $steps.createProject.outputs.projectId
+    projectKey: $steps.createProject.outputs.projectKey

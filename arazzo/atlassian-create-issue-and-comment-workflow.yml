@@ -1,0 +1,122 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Create Issue and Comment
+  summary: Create a Jira issue, read it back, then add an opening comment.
+  description: >-
+    A foundational Jira flow that creates a new issue in a project, fetches the
+    created issue to confirm its key and current fields, and posts an initial
+    comment using the Atlassian Document Format body. Every step inlines its
+    Basic authentication header, request body, and success criteria so the flow
+    can be read and run without opening the underlying OpenAPI description.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-issue-and-comment
+  summary: Create a Jira issue and add a first comment to it.
+  description: >-
+    Creates an issue from a project, issue type, summary and description, reads
+    the issue back to confirm its key, and then adds an Atlassian Document
+    Format comment to the newly created issue.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - projectId
+    - issueTypeId
+    - summary
+    - commentText
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value, e.g. "Basic dXNlcjp0b2tlbg==".
+      projectId:
+        type: string
+        description: The numeric id of the project to create the issue in.
+      issueTypeId:
+        type: string
+        description: The id of the issue type (e.g. "10000").
+      summary:
+        type: string
+        description: The issue summary line.
+      descriptionText:
+        type: string
+        description: Plain text used to build the issue description body.
+      commentText:
+        type: string
+        description: Plain text used to build the comment body.
+  steps:
+  - stepId: createIssue
+    description: Create a new issue in the supplied project with the given type and summary.
+    operationId: atlassianCreateissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        fields:
+          project:
+            id: $inputs.projectId
+          issuetype:
+            id: $inputs.issueTypeId
+          summary: $inputs.summary
+          description:
+            type: doc
+            version: 1
+            content:
+            - type: paragraph
+              content:
+              - type: text
+                text: $inputs.descriptionText
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      issueId: $response.body#/id
+      issueKey: $response.body#/key
+  - stepId: getIssue
+    description: Read the created issue back to confirm its key and current fields.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      summary: $response.body#/fields/summary
+  - stepId: addComment
+    description: Add an opening comment to the newly created issue.
+    operationId: atlassianAddcomment
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    requestBody:
+      contentType: application/json
+      payload:
+        body:
+          type: doc
+          version: 1
+          content:
+          - type: paragraph
+            content:
+            - type: text
+              text: $inputs.commentText
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      commentId: $response.body#/id
+  outputs:
+    issueKey: $steps.createIssue.outputs.issueKey
+    commentId: $steps.addComment.outputs.commentId

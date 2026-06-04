@@ -1,0 +1,110 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Create Project and First Issue
+  summary: Stand up a new Jira project and seed it with its first issue.
+  description: >-
+    Bootstraps a new Jira project from a key, name, type and lead, then creates
+    the first issue inside that project and reads the issue back to confirm its
+    key. Each step inlines its Basic authentication header, request body and
+    documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-project-and-first-issue
+  summary: Create a Jira project and seed it with a first issue.
+  description: >-
+    Creates a project, creates the first issue in it using the returned project
+    id, and reads the issue back to confirm its key.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - key
+    - name
+    - projectTypeKey
+    - leadAccountId
+    - issueTypeId
+    - summary
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      key:
+        type: string
+        description: The project key.
+      name:
+        type: string
+        description: The project display name.
+      projectTypeKey:
+        type: string
+        description: The project type key (e.g. "software").
+      leadAccountId:
+        type: string
+        description: The accountId of the project lead.
+      issueTypeId:
+        type: string
+        description: The id of the issue type for the first issue.
+      summary:
+        type: string
+        description: The summary of the first issue.
+  steps:
+  - stepId: createProject
+    description: Create the project with the supplied key, name, type and lead.
+    operationId: atlassianCreateproject
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        key: $inputs.key
+        name: $inputs.name
+        projectTypeKey: $inputs.projectTypeKey
+        leadAccountId: $inputs.leadAccountId
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      projectId: $response.body#/id
+      projectKey: $response.body#/key
+  - stepId: createIssue
+    description: Create the first issue in the newly created project.
+    operationId: atlassianCreateissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        fields:
+          project:
+            id: $steps.createProject.outputs.projectId
+          issuetype:
+            id: $inputs.issueTypeId
+          summary: $inputs.summary
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      issueKey: $response.body#/key
+  - stepId: getIssue
+    description: Read the first issue back to confirm its key.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      summary: $response.body#/fields/summary
+  outputs:
+    projectKey: $steps.createProject.outputs.projectKey
+    issueKey: $steps.createIssue.outputs.issueKey

@@ -1,0 +1,84 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create Space and Inventory Content
+  summary: Create a Confluence space, confirm it, then list the content it contains.
+  description: >-
+    Creates a new Confluence space, reads it back to confirm it exists, and lists
+    the content currently in the space. This is the bootstrap and audit pattern
+    for a freshly created space. Each step inlines its Basic authentication
+    header, request body and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-space-and-inventory-content
+  summary: Create a Confluence space and list its content.
+  description: >-
+    Creates a space, confirms it by key, and lists the content it contains.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - spaceKey
+    - spaceName
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      spaceKey:
+        type: string
+        description: The key for the new space.
+      spaceName:
+        type: string
+        description: The display name for the new space.
+  steps:
+  - stepId: createSpace
+    description: Create a new space with the supplied key and name.
+    operationId: atlassianCreatespace
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        key: $inputs.spaceKey
+        name: $inputs.spaceName
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      spaceKey: $response.body#/key
+  - stepId: getSpace
+    description: Read the space back by key to confirm it was created.
+    operationId: atlassianGetspace
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: spaceKey
+      in: path
+      value: $steps.createSpace.outputs.spaceKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      name: $response.body#/name
+  - stepId: listContent
+    description: List the content currently contained in the space.
+    operationId: atlassianGetcontentforspace
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: spaceKey
+      in: path
+      value: $steps.createSpace.outputs.spaceKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      page: $response.body#/page
+  outputs:
+    spaceKey: $steps.createSpace.outputs.spaceKey
+    spaceName: $steps.getSpace.outputs.name

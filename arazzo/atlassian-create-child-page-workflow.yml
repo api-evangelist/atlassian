@@ -1,0 +1,102 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create Child Page
+  summary: Confirm a parent page, create a child page under it, then read the child back.
+  description: >-
+    Reads an existing Confluence page to confirm it and capture its space, creates
+    a new child page nested under it via the ancestors relationship, and reads the
+    child page back to confirm its parent. Each step inlines its Basic
+    authentication header, request body and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-child-page
+  summary: Create a Confluence child page under an existing parent.
+  description: >-
+    Confirms a parent page, creates a child page nested under it in the same
+    space, and reads the child back.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - parentId
+    - spaceKey
+    - title
+    - bodyHtml
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      parentId:
+        type: string
+        description: The id of the parent page to nest the new page under.
+      spaceKey:
+        type: string
+        description: The key of the space both pages live in.
+      title:
+        type: string
+        description: The child page title.
+      bodyHtml:
+        type: string
+        description: The child page body in storage (HTML) format.
+  steps:
+  - stepId: getParent
+    description: Read the parent page to confirm it exists before nesting under it.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $inputs.parentId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      parentId: $response.body#/id
+      parentTitle: $response.body#/title
+  - stepId: createChild
+    description: Create a child page nested under the parent via the ancestors relationship.
+    operationId: atlassianCreatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $inputs.title
+        space:
+          key: $inputs.spaceKey
+        ancestors:
+        - id: $steps.getParent.outputs.parentId
+        body:
+          storage:
+            value: $inputs.bodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      childId: $response.body#/id
+  - stepId: getChild
+    description: Read the child page back to confirm it was created.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createChild.outputs.childId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      id: $response.body#/id
+      title: $response.body#/title
+  outputs:
+    parentId: $steps.getParent.outputs.parentId
+    childId: $steps.createChild.outputs.childId

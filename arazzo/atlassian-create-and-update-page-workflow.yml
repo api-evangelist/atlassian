@@ -1,0 +1,111 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Confluence Create and Update Page
+  summary: Create a Confluence page, read its version, then publish an updated body.
+  description: >-
+    Creates a new Confluence page, reads it back to capture its current version
+    number, and publishes an updated storage-format body by incrementing the
+    version. Confluence updates are optimistic-concurrency controlled by version
+    number, so the read step is required before the update. Each step inlines its
+    Basic authentication header, request body and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: confluenceApi
+  url: ../openapi/confluence-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-and-update-page
+  summary: Create a Confluence page and then update its body.
+  description: >-
+    Creates a page, reads it back for the current version number, and updates the
+    body with an incremented version.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - spaceKey
+    - title
+    - bodyHtml
+    - updatedBodyHtml
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      spaceKey:
+        type: string
+        description: The key of the space to create the page in.
+      title:
+        type: string
+        description: The page title.
+      bodyHtml:
+        type: string
+        description: The initial page body in storage (HTML) format.
+      updatedBodyHtml:
+        type: string
+        description: The replacement page body in storage (HTML) format.
+  steps:
+  - stepId: createPage
+    description: Create a new page in the supplied space.
+    operationId: atlassianCreatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $inputs.title
+        space:
+          key: $inputs.spaceKey
+        body:
+          storage:
+            value: $inputs.bodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pageId: $response.body#/id
+  - stepId: getPage
+    description: Read the page back to capture its current version number.
+    operationId: atlassianGetcontentbyid
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createPage.outputs.pageId
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      versionNumber: $response.body#/version/number
+      title: $response.body#/title
+  - stepId: updatePage
+    description: Publish an updated body by incrementing the version number to 2.
+    operationId: atlassianUpdatecontent
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: id
+      in: path
+      value: $steps.createPage.outputs.pageId
+    requestBody:
+      contentType: application/json
+      payload:
+        type: page
+        title: $steps.getPage.outputs.title
+        version:
+          number: 2
+        body:
+          storage:
+            value: $inputs.updatedBodyHtml
+            representation: storage
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      newVersionNumber: $response.body#/version/number
+  outputs:
+    pageId: $steps.createPage.outputs.pageId
+    newVersionNumber: $steps.updatePage.outputs.newVersionNumber

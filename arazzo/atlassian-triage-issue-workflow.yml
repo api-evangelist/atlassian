@@ -1,0 +1,132 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Triage Issue
+  summary: Read an existing issue, comment on it, then transition it to a triaged status.
+  description: >-
+    A triage flow for an existing Jira issue. It reads the issue to confirm its
+    current state, posts a triage comment in Atlassian Document Format, lists the
+    available workflow transitions, and applies the requested transition when one
+    is available. Each step inlines its Basic authentication header, request body
+    and documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: triage-issue
+  summary: Comment on and transition an existing Jira issue.
+  description: >-
+    Reads an existing issue, adds a triage comment, lists transitions, and moves
+    the issue to a new status when a transition is available.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - issueIdOrKey
+    - commentText
+    - transitionId
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      issueIdOrKey:
+        type: string
+        description: The id or key of the issue to triage.
+      commentText:
+        type: string
+        description: Plain text used to build the triage comment body.
+      transitionId:
+        type: string
+        description: The id of the transition to apply once available.
+  steps:
+  - stepId: getIssue
+    description: Read the issue to confirm its current summary and status.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      status: $response.body#/fields/status/name
+  - stepId: addComment
+    description: Add a triage comment to the issue.
+    operationId: atlassianAddcomment
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    requestBody:
+      contentType: application/json
+      payload:
+        body:
+          type: doc
+          version: 1
+          content:
+          - type: paragraph
+            content:
+            - type: text
+              text: $inputs.commentText
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      commentId: $response.body#/id
+  - stepId: getTransitions
+    description: List the transitions currently available for the issue.
+    operationId: atlassianGettransitions
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      transitions: $response.body#/transitions
+    onSuccess:
+    - name: hasTransitions
+      type: goto
+      stepId: doTransition
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length > 0
+        type: jsonpath
+    - name: noTransitions
+      type: end
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length == 0
+        type: jsonpath
+  - stepId: doTransition
+    description: Apply the supplied transition to move the issue to a triaged status.
+    operationId: atlassianDotransition
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $inputs.issueIdOrKey
+    requestBody:
+      contentType: application/json
+      payload:
+        transition:
+          id: $inputs.transitionId
+    successCriteria:
+    - condition: $statusCode == 204
+    outputs:
+      statusCode: $statusCode
+  outputs:
+    issueKey: $steps.getIssue.outputs.key
+    commentId: $steps.addComment.outputs.commentId

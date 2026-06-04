@@ -1,0 +1,116 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Create Issue and Transition
+  summary: Create a Jira issue, list its available transitions, then move it to a new status.
+  description: >-
+    Creates a new Jira issue, retrieves the transitions that are currently
+    available for it given the project workflow, and applies the requested
+    transition to move the issue into a new status. The flow branches on whether
+    any transitions are available before attempting to transition. Each step
+    inlines its Basic authentication header, request body and success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: create-issue-and-transition
+  summary: Create a Jira issue and transition it to a new status.
+  description: >-
+    Creates an issue, reads its available workflow transitions, and applies the
+    supplied transition id to change the issue status.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - projectId
+    - issueTypeId
+    - summary
+    - transitionId
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      projectId:
+        type: string
+        description: The numeric id of the project to create the issue in.
+      issueTypeId:
+        type: string
+        description: The id of the issue type.
+      summary:
+        type: string
+        description: The issue summary line.
+      transitionId:
+        type: string
+        description: The id of the transition to apply (e.g. "5").
+  steps:
+  - stepId: createIssue
+    description: Create a new issue in the supplied project.
+    operationId: atlassianCreateissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    requestBody:
+      contentType: application/json
+      payload:
+        fields:
+          project:
+            id: $inputs.projectId
+          issuetype:
+            id: $inputs.issueTypeId
+          summary: $inputs.summary
+    successCriteria:
+    - condition: $statusCode == 201
+    outputs:
+      issueKey: $response.body#/key
+  - stepId: getTransitions
+    description: List the transitions currently available for the issue.
+    operationId: atlassianGettransitions
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      transitions: $response.body#/transitions
+    onSuccess:
+    - name: hasTransitions
+      type: goto
+      stepId: doTransition
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length > 0
+        type: jsonpath
+    - name: noTransitions
+      type: end
+      criteria:
+      - context: $response.body
+        condition: $.transitions.length == 0
+        type: jsonpath
+  - stepId: doTransition
+    description: Apply the supplied transition to move the issue to a new status.
+    operationId: atlassianDotransition
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.createIssue.outputs.issueKey
+    requestBody:
+      contentType: application/json
+      payload:
+        transition:
+          id: $inputs.transitionId
+    successCriteria:
+    - condition: $statusCode == 204
+    outputs:
+      statusCode: $statusCode
+  outputs:
+    issueKey: $steps.createIssue.outputs.issueKey
+    transitions: $steps.getTransitions.outputs.transitions

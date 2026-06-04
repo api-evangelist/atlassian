@@ -1,0 +1,88 @@
+arazzo: 1.0.1
+info:
+  title: Atlassian Jira Search Issues with JQL
+  summary: Run a JQL search and fetch the full detail of the first matching issue.
+  description: >-
+    Searches Jira for issues using a JQL expression and, when at least one issue
+    matches, fetches the full detail of the first result. The flow branches on
+    the total count so it only attempts to read an issue when one exists. Each
+    step inlines its Basic authentication header, query parameters and
+    documented success criteria.
+  version: 1.0.0
+sourceDescriptions:
+- name: jiraApi
+  url: ../openapi/jira-openapi-original.yml
+  type: openapi
+workflows:
+- workflowId: search-issues-jql
+  summary: Search issues with JQL and read back the first match.
+  description: >-
+    Executes a JQL search, returns the matching issue list and total, and reads
+    the full detail of the first matching issue when the result set is non-empty.
+  inputs:
+    type: object
+    required:
+    - authorization
+    - jql
+    properties:
+      authorization:
+        type: string
+        description: HTTP Basic auth header value.
+      jql:
+        type: string
+        description: The JQL expression to search with (e.g. "project = EX ORDER BY created DESC").
+      maxResults:
+        type: integer
+        description: Maximum number of issues to return per page.
+  steps:
+  - stepId: searchIssues
+    description: Run the JQL search and return the matching issues and total count.
+    operationId: atlassianSearchforissuesusingjql
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: jql
+      in: query
+      value: $inputs.jql
+    - name: maxResults
+      in: query
+      value: $inputs.maxResults
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      issues: $response.body#/issues
+      total: $response.body#/total
+      firstIssueKey: $response.body#/issues/0/key
+    onSuccess:
+    - name: hasResults
+      type: goto
+      stepId: getFirstIssue
+      criteria:
+      - context: $response.body
+        condition: $.issues.length > 0
+        type: jsonpath
+    - name: noResults
+      type: end
+      criteria:
+      - context: $response.body
+        condition: $.issues.length == 0
+        type: jsonpath
+  - stepId: getFirstIssue
+    description: Fetch the full detail of the first matching issue.
+    operationId: atlassianGetissue
+    parameters:
+    - name: Authorization
+      in: header
+      value: $inputs.authorization
+    - name: issueIdOrKey
+      in: path
+      value: $steps.searchIssues.outputs.firstIssueKey
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      key: $response.body#/key
+      summary: $response.body#/fields/summary
+  outputs:
+    total: $steps.searchIssues.outputs.total
+    firstIssueKey: $steps.searchIssues.outputs.firstIssueKey
