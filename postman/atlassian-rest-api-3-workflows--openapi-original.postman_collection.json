@@ -1,0 +1,1115 @@
+{
+  "info": {
+    "_postman_id": "43715960-4fb6-4051-aeab-99f1cca0b650",
+    "name": "Atlassian rest/api/3/workflows/",
+    "description": "Needs description.\n\nContact Support:\n Email: ecosystem@atlassian.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "createdAt": "2026-06-05T15:09:17.000Z",
+    "updatedAt": "2026-06-05T15:09:17.000Z",
+    "lastUpdatedBy": "35240",
+    "uid": "35240-43715960-4fb6-4051-aeab-99f1cca0b650"
+  },
+  "item": [
+    {
+      "name": "rest",
+      "item": [
+        {
+          "name": "api",
+          "item": [
+            {
+              "name": "3",
+              "item": [
+                {
+                  "name": "workflows",
+                  "item": [
+                    {
+                      "name": "capabilities",
+                      "item": [
+                        {
+                          "name": "Atlassian Get Available Workflow Capabilities",
+                          "id": "c2e7da67-c801-440f-bb95-07ffafb84888",
+                          "protocolProfileBehavior": {
+                            "disableBodyPruning": true
+                          },
+                          "request": {
+                            "method": "GET",
+                            "header": [
+                              {
+                                "key": "Accept",
+                                "value": "application/json"
+                              }
+                            ],
+                            "url": {
+                              "raw": "{{baseUrl}}/rest/api/3/workflows/capabilities?workflowId=<string>&projectId=<string>&issueTypeId=<string>",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "rest",
+                                "api",
+                                "3",
+                                "workflows",
+                                "capabilities"
+                              ],
+                              "query": [
+                                {
+                                  "key": "workflowId",
+                                  "value": "<string>"
+                                },
+                                {
+                                  "key": "projectId",
+                                  "value": "<string>"
+                                },
+                                {
+                                  "key": "issueTypeId",
+                                  "value": "<string>"
+                                }
+                              ]
+                            },
+                            "description": "Get the list of workflow capabilities for a specific workflow using either the workflow ID, or the project and issue type ID pair. The response includes the scope of the workflow, defined as global/project-based, and a list of project types that the workflow is scoped to. It also includes all rules organised into their broad categories (conditions, validators, actions, triggers, screens) as well as the source location (Atlassian-provided, Connect, Forge).<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to access all, including global-scoped, workflows<br> *  *Administer projects* project permissions to access project-scoped workflows<br><br>The current list of Atlassian-provided rules:<br><br>#### Validators ####<br><br>A validator rule that checks if a user has the required permissions to execute the transition in the workflow.<br><br>##### Permission validator #####<br><br>A validator rule that checks if a user has the required permissions to execute the transition in the workflow.<br><br>    {<br>       \"ruleKey\": \"system:check-permission-validator\",<br>       \"parameters\": {<br>         \"permissionKey\": \"ADMINISTER_PROJECTS\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `permissionKey` The permission required to perform the transition. Allowed values: [built-in Jira permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#built-in-permissions).<br><br>##### Parent or child blocking validator #####<br><br>A validator to block the child issue\\\\u2019s transition depending on the parent issue\\\\u2019s status.<br><br>    {<br>       \"ruleKey\" : \"system:parent-or-child-blocking-validator\"<br>       \"parameters\" : {<br>         \"blocker\" : \"PARENT\"<br>         \"statusIds\" : \"1,2,3\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `blocker` currently only supports `PARENT`.<br> *  `statusIds` a comma-separated list of status IDs.<br><br>##### Previous status validator #####<br><br>A validator that checks if an issue has transitioned through specified previous status(es) before allowing the current transition to occur.<br><br>    {<br>       \"ruleKey\": \"system:previous-status-validator\",<br>       \"parameters\": {<br>         \"previousStatusIds\": \"10014\",<br>         \"mostRecentStatusOnly\": \"true\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `previousStatusIds` a comma-separated list of status IDs, currently only support one ID.<br> *  `mostRecentStatusOnly` when `true` only considers the most recent status for the condition evaluation. Allowed values: `true`, `false`.<br><br>##### Validate a field value #####<br><br>A validation that ensures a specific field's value meets the defined criteria before allowing an issue to transition in the workflow.<br><br>Depending on the rule type, the result will vary:<br><br>###### Field required ######<br><br>    {<br>       \"ruleKey\": \"system:validate-field-value\",<br>       \"parameters\": {<br>         \"ruleType\": \"fieldRequired\",<br>         \"fieldsRequired\": \"assignee\",<br>         \"ignoreContext\": \"true\",<br>         \"errorMessage\": \"An assignee must be set!\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `fieldsRequired` the ID of the field that is required. For a custom field, it would look like `customfield_123`.<br> *  `ignoreContext` controls the impact of context settings on field validation. When set to `true`, the validator doesn't check a required field if its context isn't configured for the current issue. When set to `false`, the validator requires a field even if its context is invalid. Allowed values: `true`, `false`.<br> *  `errorMessage` is the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don't provide one (Optional).<br><br>###### Field changed ######<br><br>    {<br>       \"ruleKey\": \"system:validate-field-value\",<br>       \"parameters\": {<br>         \"ruleType\": \"fieldChanged\",<br>         \"groupsExemptFromValidation\": \"6862ac20-8672-4f68-896d-4854f5efb79e\",<br>         \"fieldKey\": \"versions\",<br>         \"errorMessage\": \"Affect versions must be modified before transition\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `groupsExemptFromValidation` a comma-separated list of group IDs to be exempt from the validation.<br> *  `fieldKey` the ID of the field that has changed. For a custom field, it would look like `customfield_123`.<br> *  `errorMessage` the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don't provide one (Optional).<br><br>###### Field has a single value ######<br><br>    {<br>       \"ruleKey\": \"system:validate-field-value\",<br>       \"parameters\": {<br>         \"ruleType\": \"fieldHasSingleValue\",<br>         \"fieldKey\": \"created\",<br>         \"excludeSubtasks\": \"true\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.<br> *  `excludeSubtasks` Option to exclude values copied from sub-tasks. Allowed values: `true`, `false`.<br><br>###### Field matches regular expression ######<br><br>    {<br>       \"ruleKey\": \"system:validate-field-value\",<br>       \"parameters\": {<br>         \"ruleType\": \"fieldMatchesRegularExpression\",<br>         \"regexp\": \"[0-9]{4}\",<br>         \"fieldKey\": \"description\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `regexp` the regular expression used to validate the field\\\\u2019s content.<br> *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.<br><br>###### Date field comparison ######<br><br>    {<br>       \"ruleKey\": \"system:validate-field-value\",<br>       \"parameters\": {<br>         \"ruleType\": \"dateFieldComparison\",<br>         \"date1FieldKey\": \"duedate\",<br>         \"date2FieldKey\": \"customfield_10054\",<br>         \"includeTime\": \"true\",<br>         \"conditionSelected\": \">=\"<br>       }<br>     }<br><br>Parameters:<br><br> *  `date1FieldKey` the ID of the first field to compare. For a custom field, it would look like `customfield_123`.<br> *  `date2FieldKey` the ID of the second field to compare. For a custom field, it would look like `customfield_123`.<br> *  `includeTime` if `true`, compares both date and time. Allowed values: `true`, `false`.<br> *  `conditionSelected` the condition to compare with. Allowed values: `>`, `>=`, `=`, ``, `>=`, `=`, `"
+                          },
+                          "response": [
+                            {
+                              "id": "feeca7a9-2e53-4ae4-b28c-736b300119cd",
+                              "name": "Returned if the request is successful.",
+                              "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                  {
+                                    "key": "Accept",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/capabilities?workflowId=<string>&projectId=<string>&issueTypeId=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "capabilities"
+                                  ],
+                                  "query": [
+                                    {
+                                      "key": "workflowId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "projectId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "issueTypeId",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "OK",
+                              "code": 200,
+                              "_postman_previewlanguage": "json",
+                              "header": [
+                                {
+                                  "key": "Content-Type",
+                                  "value": "application/json"
+                                }
+                              ],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": "{\n  \"connectRules\": [\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowConnectRule not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowConnectRule not found in the OpenAPI spec\"\n    }\n  ],\n  \"editorScope\": \"GLOBAL\",\n  \"forgeRules\": [\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowForgeRule not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowForgeRule not found in the OpenAPI spec\"\n    }\n  ],\n  \"projectTypes\": \"software\",\n  \"systemRules\": [\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowSystemRule not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowSystemRule not found in the OpenAPI spec\"\n    }\n  ],\n  \"triggerRules\": [\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowTriggers not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/AvailableWorkflowTriggers not found in the OpenAPI spec\"\n    }\n  ]\n}",
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-feeca7a9-2e53-4ae4-b28c-736b300119cd"
+                            },
+                            {
+                              "id": "7f512b0a-64ff-48d0-a43b-f0a02da0b5df",
+                              "name": "Returned if the request is not valid.",
+                              "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/capabilities?workflowId=<string>&projectId=<string>&issueTypeId=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "capabilities"
+                                  ],
+                                  "query": [
+                                    {
+                                      "key": "workflowId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "projectId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "issueTypeId",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "Bad Request",
+                              "code": 400,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-7f512b0a-64ff-48d0-a43b-f0a02da0b5df"
+                            },
+                            {
+                              "id": "8a32bc8f-c296-4639-b444-e8ce5c794e99",
+                              "name": "Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.",
+                              "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/capabilities?workflowId=<string>&projectId=<string>&issueTypeId=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "capabilities"
+                                  ],
+                                  "query": [
+                                    {
+                                      "key": "workflowId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "projectId",
+                                      "value": "<string>"
+                                    },
+                                    {
+                                      "key": "issueTypeId",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "Unauthorized",
+                              "code": 401,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-8a32bc8f-c296-4639-b444-e8ce5c794e99"
+                            }
+                          ],
+                          "createdAt": "2026-06-05T15:09:17.000Z",
+                          "updatedAt": "2026-06-05T15:09:17.000Z",
+                          "uid": "35240-c2e7da67-c801-440f-bb95-07ffafb84888"
+                        }
+                      ],
+                      "id": "d25aaab9-c9ed-41bd-9ee0-0fdf33da7308",
+                      "createdAt": "2026-06-05T15:09:17.000Z",
+                      "updatedAt": "2026-06-05T15:09:17.000Z",
+                      "uid": "35240-d25aaab9-c9ed-41bd-9ee0-0fdf33da7308"
+                    },
+                    {
+                      "name": "create",
+                      "item": [
+                        {
+                          "name": "validation",
+                          "item": [
+                            {
+                              "name": "Atlassian Validate Create Workflows",
+                              "id": "a061f9dd-ba01-4bf1-9052-c3af6b3bae3b",
+                              "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                              },
+                              "request": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  },
+                                  {
+                                    "key": "Accept",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateValidateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/create/validation",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "create",
+                                    "validation"
+                                  ]
+                                },
+                                "description": "Validate the payload for bulk create workflows.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows"
+                              },
+                              "response": [
+                                {
+                                  "id": "1de2132f-8788-4cca-995b-f402a8b95d02",
+                                  "name": "Returned if the request is successful.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      },
+                                      {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateValidateRequest not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/create/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "create",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "OK",
+                                  "code": 200,
+                                  "_postman_previewlanguage": "json",
+                                  "header": [
+                                    {
+                                      "key": "Content-Type",
+                                      "value": "application/json"
+                                    }
+                                  ],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": "{\n  \"errors\": [\n    {\n      \"value\": \"reference #/components/schemas/WorkflowValidationError not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/WorkflowValidationError not found in the OpenAPI spec\"\n    }\n  ]\n}",
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-1de2132f-8788-4cca-995b-f402a8b95d02"
+                                },
+                                {
+                                  "id": "e08f64a9-fc2b-4f17-8bfb-7ed6b6b290a9",
+                                  "name": "Returned if the request is not valid.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateValidateRequest not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/create/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "create",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "Bad Request",
+                                  "code": 400,
+                                  "_postman_previewlanguage": "text",
+                                  "header": [],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": null,
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-e08f64a9-fc2b-4f17-8bfb-7ed6b6b290a9"
+                                },
+                                {
+                                  "id": "73b1b888-c2c1-48e3-91d5-e198c913a3ca",
+                                  "name": "Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateValidateRequest not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/create/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "create",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "Unauthorized",
+                                  "code": 401,
+                                  "_postman_previewlanguage": "text",
+                                  "header": [],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": null,
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-73b1b888-c2c1-48e3-91d5-e198c913a3ca"
+                                }
+                              ],
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-a061f9dd-ba01-4bf1-9052-c3af6b3bae3b"
+                            }
+                          ],
+                          "id": "cb31f29d-380e-410f-99b3-5ec57744e91c",
+                          "createdAt": "2026-06-05T15:09:17.000Z",
+                          "updatedAt": "2026-06-05T15:09:17.000Z",
+                          "uid": "35240-cb31f29d-380e-410f-99b3-5ec57744e91c"
+                        },
+                        {
+                          "name": "Atlassian Bulk Create Workflows",
+                          "id": "ed5cef60-1121-4b95-a778-fe98bc6e736b",
+                          "protocolProfileBehavior": {
+                            "disableBodyPruning": true
+                          },
+                          "request": {
+                            "method": "POST",
+                            "header": [
+                              {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                              },
+                              {
+                                "key": "Accept",
+                                "value": "application/json"
+                              }
+                            ],
+                            "body": {
+                              "mode": "raw",
+                              "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateRequest not found in the OpenAPI spec\"\n}",
+                              "options": {
+                                "raw": {
+                                  "headerFamily": "json",
+                                  "language": "json"
+                                }
+                              }
+                            },
+                            "url": {
+                              "raw": "{{baseUrl}}/rest/api/3/workflows/create",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "rest",
+                                "api",
+                                "3",
+                                "workflows",
+                                "create"
+                              ]
+                            },
+                            "description": "Create workflows and related statuses.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows"
+                          },
+                          "response": [
+                            {
+                              "id": "b679f760-4e76-4955-9d70-712a39eab81b",
+                              "name": "Returned if the request is successful.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  },
+                                  {
+                                    "key": "Accept",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/create",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "create"
+                                  ]
+                                }
+                              },
+                              "status": "OK",
+                              "code": 200,
+                              "_postman_previewlanguage": "json",
+                              "header": [
+                                {
+                                  "key": "Content-Type",
+                                  "value": "application/json"
+                                }
+                              ],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": "{\n  \"statuses\": [\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflowStatus not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflowStatus not found in the OpenAPI spec\"\n    }\n  ],\n  \"workflows\": [\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflow not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflow not found in the OpenAPI spec\"\n    }\n  ]\n}",
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-b679f760-4e76-4955-9d70-712a39eab81b"
+                            },
+                            {
+                              "id": "4f0b9317-694d-4852-abb7-dc586e441c29",
+                              "name": "Returned if the request is not valid.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/create",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "create"
+                                  ]
+                                }
+                              },
+                              "status": "Bad Request",
+                              "code": 400,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-4f0b9317-694d-4852-abb7-dc586e441c29"
+                            },
+                            {
+                              "id": "d7f6d159-1774-43f1-a0aa-3477ba007a22",
+                              "name": "Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowCreateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/create",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "create"
+                                  ]
+                                }
+                              },
+                              "status": "Unauthorized",
+                              "code": 401,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-d7f6d159-1774-43f1-a0aa-3477ba007a22"
+                            }
+                          ],
+                          "createdAt": "2026-06-05T15:09:17.000Z",
+                          "updatedAt": "2026-06-05T15:09:17.000Z",
+                          "uid": "35240-ed5cef60-1121-4b95-a778-fe98bc6e736b"
+                        }
+                      ],
+                      "id": "38660bbc-7e46-406b-a9c7-1cef9b92f57d",
+                      "createdAt": "2026-06-05T15:09:17.000Z",
+                      "updatedAt": "2026-06-05T15:09:17.000Z",
+                      "uid": "35240-38660bbc-7e46-406b-a9c7-1cef9b92f57d"
+                    },
+                    {
+                      "name": "update",
+                      "item": [
+                        {
+                          "name": "validation",
+                          "item": [
+                            {
+                              "name": "Atlassian Validate Update Workflows",
+                              "id": "33c9c455-d683-4f57-b718-bea924694516",
+                              "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                              },
+                              "request": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  },
+                                  {
+                                    "key": "Accept",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateValidateRequestBean not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/update/validation",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "update",
+                                    "validation"
+                                  ]
+                                },
+                                "description": "Validate the payload for bulk update workflows.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows"
+                              },
+                              "response": [
+                                {
+                                  "id": "14b0648d-4626-46bb-8c3b-7a46ef1350ee",
+                                  "name": "Returned if the request is successful.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      },
+                                      {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateValidateRequestBean not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/update/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "update",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "OK",
+                                  "code": 200,
+                                  "_postman_previewlanguage": "json",
+                                  "header": [
+                                    {
+                                      "key": "Content-Type",
+                                      "value": "application/json"
+                                    }
+                                  ],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": "{\n  \"errors\": [\n    {\n      \"value\": \"reference #/components/schemas/WorkflowValidationError not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/WorkflowValidationError not found in the OpenAPI spec\"\n    }\n  ]\n}",
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-14b0648d-4626-46bb-8c3b-7a46ef1350ee"
+                                },
+                                {
+                                  "id": "3a9c3d92-2c9c-43c7-861a-3c99eca8139f",
+                                  "name": "Returned if the request is not valid.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateValidateRequestBean not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/update/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "update",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "Bad Request",
+                                  "code": 400,
+                                  "_postman_previewlanguage": "text",
+                                  "header": [],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": null,
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-3a9c3d92-2c9c-43c7-861a-3c99eca8139f"
+                                },
+                                {
+                                  "id": "9d1a992a-8c25-4073-a7ac-90cd085f0dae",
+                                  "name": "Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.",
+                                  "originalRequest": {
+                                    "method": "POST",
+                                    "header": [
+                                      {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                      }
+                                    ],
+                                    "body": {
+                                      "mode": "raw",
+                                      "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateValidateRequestBean not found in the OpenAPI spec\"\n}",
+                                      "options": {
+                                        "raw": {
+                                          "headerFamily": "json",
+                                          "language": "json"
+                                        }
+                                      }
+                                    },
+                                    "url": {
+                                      "raw": "{{baseUrl}}/rest/api/3/workflows/update/validation",
+                                      "host": [
+                                        "{{baseUrl}}"
+                                      ],
+                                      "path": [
+                                        "rest",
+                                        "api",
+                                        "3",
+                                        "workflows",
+                                        "update",
+                                        "validation"
+                                      ]
+                                    }
+                                  },
+                                  "status": "Unauthorized",
+                                  "code": 401,
+                                  "_postman_previewlanguage": "text",
+                                  "header": [],
+                                  "cookie": [],
+                                  "responseTime": null,
+                                  "body": null,
+                                  "createdAt": "2026-06-05T15:09:17.000Z",
+                                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                                  "uid": "35240-9d1a992a-8c25-4073-a7ac-90cd085f0dae"
+                                }
+                              ],
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-33c9c455-d683-4f57-b718-bea924694516"
+                            }
+                          ],
+                          "id": "27620dc7-ac44-49cf-a8a5-d11685f1dd64",
+                          "createdAt": "2026-06-05T15:09:17.000Z",
+                          "updatedAt": "2026-06-05T15:09:17.000Z",
+                          "uid": "35240-27620dc7-ac44-49cf-a8a5-d11685f1dd64"
+                        },
+                        {
+                          "name": "Atlassian Bulk Update Workflows",
+                          "id": "68862ee0-23ca-4842-873d-4a89ad3628b7",
+                          "protocolProfileBehavior": {
+                            "disableBodyPruning": true
+                          },
+                          "request": {
+                            "method": "POST",
+                            "header": [
+                              {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                              },
+                              {
+                                "key": "Accept",
+                                "value": "application/json"
+                              }
+                            ],
+                            "body": {
+                              "mode": "raw",
+                              "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateRequest not found in the OpenAPI spec\"\n}",
+                              "options": {
+                                "raw": {
+                                  "headerFamily": "json",
+                                  "language": "json"
+                                }
+                              }
+                            },
+                            "url": {
+                              "raw": "{{baseUrl}}/rest/api/3/workflows/update?expand=<string>",
+                              "host": [
+                                "{{baseUrl}}"
+                              ],
+                              "path": [
+                                "rest",
+                                "api",
+                                "3",
+                                "workflows",
+                                "update"
+                              ],
+                              "query": [
+                                {
+                                  "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with.",
+                                  "key": "expand",
+                                  "value": "<string>"
+                                }
+                              ]
+                            },
+                            "description": "Update workflows and related statuses.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows"
+                          },
+                          "response": [
+                            {
+                              "id": "8fe940ae-bd2c-42be-b21d-8e0000bc5ed7",
+                              "name": "Returned if the request is successful.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  },
+                                  {
+                                    "key": "Accept",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/update?expand=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "update"
+                                  ],
+                                  "query": [
+                                    {
+                                      "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with.",
+                                      "key": "expand",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "OK",
+                              "code": 200,
+                              "_postman_previewlanguage": "json",
+                              "header": [
+                                {
+                                  "key": "Content-Type",
+                                  "value": "application/json"
+                                }
+                              ],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": "{\n  \"statuses\": [\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflowStatus not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflowStatus not found in the OpenAPI spec\"\n    }\n  ],\n  \"taskId\": \"<string>\",\n  \"workflows\": [\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflow not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/JiraWorkflow not found in the OpenAPI spec\"\n    }\n  ]\n}",
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-8fe940ae-bd2c-42be-b21d-8e0000bc5ed7"
+                            },
+                            {
+                              "id": "288665e9-6e90-4ac2-aa6b-65e156fb3b91",
+                              "name": "Returned if the request is not valid.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/update?expand=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "update"
+                                  ],
+                                  "query": [
+                                    {
+                                      "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with.",
+                                      "key": "expand",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "Bad Request",
+                              "code": 400,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-288665e9-6e90-4ac2-aa6b-65e156fb3b91"
+                            },
+                            {
+                              "id": "f528bb72-39df-4ee0-8dbb-d00150534039",
+                              "name": "Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.",
+                              "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                  {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                  }
+                                ],
+                                "body": {
+                                  "mode": "raw",
+                                  "raw": "{\n  \"value\": \"reference #/components/schemas/WorkflowUpdateRequest not found in the OpenAPI spec\"\n}",
+                                  "options": {
+                                    "raw": {
+                                      "headerFamily": "json",
+                                      "language": "json"
+                                    }
+                                  }
+                                },
+                                "url": {
+                                  "raw": "{{baseUrl}}/rest/api/3/workflows/update?expand=<string>",
+                                  "host": [
+                                    "{{baseUrl}}"
+                                  ],
+                                  "path": [
+                                    "rest",
+                                    "api",
+                                    "3",
+                                    "workflows",
+                                    "update"
+                                  ],
+                                  "query": [
+                                    {
+                                      "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with.",
+                                      "key": "expand",
+                                      "value": "<string>"
+                                    }
+                                  ]
+                                }
+                              },
+                              "status": "Unauthorized",
+                              "code": 401,
+                              "_postman_previewlanguage": "text",
+                              "header": [],
+                              "cookie": [],
+                              "responseTime": null,
+                              "body": null,
+                              "createdAt": "2026-06-05T15:09:17.000Z",
+                              "updatedAt": "2026-06-05T15:09:17.000Z",
+                              "uid": "35240-f528bb72-39df-4ee0-8dbb-d00150534039"
+                            }
+                          ],
+                          "createdAt": "2026-06-05T15:09:17.000Z",
+                          "updatedAt": "2026-06-05T15:09:17.000Z",
+                          "uid": "35240-68862ee0-23ca-4842-873d-4a89ad3628b7"
+                        }
+                      ],
+                      "id": "0ede0324-7da6-484a-9daf-d47cb064e7c8",
+                      "createdAt": "2026-06-05T15:09:17.000Z",
+                      "updatedAt": "2026-06-05T15:09:17.000Z",
+                      "uid": "35240-0ede0324-7da6-484a-9daf-d47cb064e7c8"
+                    }
+                  ],
+                  "id": "e9b51f11-5053-4558-b6bb-218772c20111",
+                  "createdAt": "2026-06-05T15:09:17.000Z",
+                  "updatedAt": "2026-06-05T15:09:17.000Z",
+                  "uid": "35240-e9b51f11-5053-4558-b6bb-218772c20111"
+                }
+              ],
+              "id": "f46b4e75-2896-400e-b0f5-b31b24f76caa",
+              "createdAt": "2026-06-05T15:09:17.000Z",
+              "updatedAt": "2026-06-05T15:09:17.000Z",
+              "uid": "35240-f46b4e75-2896-400e-b0f5-b31b24f76caa"
+            }
+          ],
+          "id": "fa8e98f4-4059-48f7-95a9-7810f79a94de",
+          "createdAt": "2026-06-05T15:09:17.000Z",
+          "updatedAt": "2026-06-05T15:09:17.000Z",
+          "uid": "35240-fa8e98f4-4059-48f7-95a9-7810f79a94de"
+        }
+      ],
+      "id": "8ce4a8a9-8c25-4a4e-9c1f-84805b325ec6",
+      "createdAt": "2026-06-05T15:09:17.000Z",
+      "updatedAt": "2026-06-05T15:09:17.000Z",
+      "uid": "35240-8ce4a8a9-8c25-4a4e-9c1f-84805b325ec6"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://your-domain.atlassian.net"
+    }
+  ]
+}
