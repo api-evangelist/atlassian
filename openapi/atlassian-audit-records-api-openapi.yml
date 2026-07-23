@@ -1,0 +1,262 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Audit Records API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Audit Records
+paths:
+  /rest/api/3/auditing/record:
+    get:
+      deprecated: false
+      description: 'Returns a list of audit records. The list can be filtered to include items:<br><br> *  where each item in `filter` has at least one match in any of these fields:<br>    <br>     *  `summary`<br>     *  `category`<br>     *  `eventSource`<br>     *  `objectItem.name` If the object is a user, account ID is available to filter.<br>     *  `objectItem.parentName`<br>     *  `objectItem.typeName`<br>     *  `changedValues.changedFrom`<br>     *  `changedValues.changedTo`<br>     *  `remoteAddress`<br>    <br>    For example, if `filter` contains *man ed*, an audit record containing `summary": "User added to group"` and `"category": "group management"` is returned.<br> *  created on or after a date and time.<br> *  created or or before a date and time.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).'
+      operationId: atlassianGetauditrecords
+      parameters:
+      - description: The number of records to skip before returning the first result.
+        in: query
+        name: offset
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of results to return.
+        in: query
+        name: limit
+        schema:
+          default: 1000
+          format: int32
+          type: integer
+      - description: The strings to match with audit field content, space separated.
+        in: query
+        name: filter
+        schema:
+          type: string
+      - description: The date and time on or after which returned audit records must have been created. If `to` is provided `from` must be before `to` or no audit records are returned.
+        in: query
+        name: from
+        schema:
+          type: string
+      - description: The date and time on or before which returned audit results must have been created. If `from` is provided `to` must be after `from` or no audit records are returned.
+        in: query
+        name: to
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"limit":1000,"offset":0,"records":[{"associatedItems":[{"id":"jira-software-users","name":"jira-software-users","parentId":"1","parentName":"Jira Internal Directory","typeName":"GROUP"}],"authorAccountId":"5ab8f18d741e9c2c7e9d4538","authorKey":"administrator","category":"user management","changedValues":[{"changedFrom":"user@atlassian.com","changedTo":"newuser@atlassian.com","fieldName":"email"}],"created":"2014-03-19T18:45:42.967+0000","description":"Optional description","eventSource":"Jira Connect Plugin","id":1,"objectItem":{"id":"user","name":"user","parentId":"1","parentName":"Jira Internal Directory","typeName":"USER"},"remoteAddress":"192.168.1.1","summary":"User created"}],"total":1}'
+              schema:
+                $ref: '#/components/schemas/AuditRecords'
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: "Returned if:\n\n *  the user does not have the required permissions.\n *  all Jira products are on free plans. Audit logs are available when at least one Jira product is on a paid plan."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Audit Records
+      tags:
+      - Audit Records
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:audit-log:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    AssociatedItemBean:
+      additionalProperties: false
+      description: Details of an item associated with the changed record.
+      properties:
+        id:
+          description: The ID of the associated record.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the associated record.
+          readOnly: true
+          type: string
+        parentId:
+          description: The ID of the associated parent record.
+          readOnly: true
+          type: string
+        parentName:
+          description: The name of the associated parent record.
+          readOnly: true
+          type: string
+        typeName:
+          description: The type of the associated record.
+          readOnly: true
+          type: string
+      type: object
+    ChangedValueBean:
+      additionalProperties: false
+      description: Details of names changed in the record event.
+      properties:
+        changedFrom:
+          description: The value of the field before the change.
+          readOnly: true
+          type: string
+        changedTo:
+          description: The value of the field after the change.
+          readOnly: true
+          type: string
+        fieldName:
+          description: The name of the field changed.
+          readOnly: true
+          type: string
+      type: object
+    AuditRecords:
+      additionalProperties: false
+      description: Container for a list of audit records.
+      properties:
+        limit:
+          description: The requested or default limit on the number of audit items to be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        offset:
+          description: The number of audit items skipped before the first item in this list.
+          format: int32
+          readOnly: true
+          type: integer
+        records:
+          description: The list of audit items.
+          items:
+            $ref: '#/components/schemas/AuditRecordBean'
+          readOnly: true
+          type: array
+        total:
+          description: The total number of audit items returned.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    AuditRecordBean:
+      additionalProperties: false
+      description: An audit record.
+      properties:
+        associatedItems:
+          description: The list of items associated with the changed record.
+          items:
+            $ref: '#/components/schemas/AssociatedItemBean'
+          readOnly: true
+          type: array
+        authorKey:
+          description: Deprecated, use `authorAccountId` instead. The key of the user who created the audit record.
+          readOnly: true
+          type: string
+        category:
+          description: The category of the audit record. For a list of these categories, see the help article [Auditing in Jira applications](https://confluence.atlassian.com/x/noXKM).
+          readOnly: true
+          type: string
+        changedValues:
+          description: The list of values changed in the record event.
+          items:
+            $ref: '#/components/schemas/ChangedValueBean'
+          readOnly: true
+          type: array
+        created:
+          description: The date and time on which the audit record was created.
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          description: The description of the audit record.
+          readOnly: true
+          type: string
+        eventSource:
+          description: The event the audit record originated from.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the audit record.
+          format: int64
+          readOnly: true
+          type: integer
+        objectItem:
+          $ref: '#/components/schemas/AssociatedItemBean'
+        remoteAddress:
+          description: The URL of the computer where the creation of the audit record was initiated.
+          readOnly: true
+          type: string
+        summary:
+          description: The summary of the audit record.
+          readOnly: true
+          type: string
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

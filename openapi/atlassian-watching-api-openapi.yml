@@ -1,0 +1,382 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Watching API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Watching
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/watch:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Watching
+      description: Removes the authenticated user's watch status from a specific issue in a Bitbucket repository. This endpoint allows users to unsubscribe from notifications and updates related to a particular issue they were previously watching. By sending a DELETE request to this endpoint with the workspace identifier, repository slug, and issue ID, the user will no longer receive notifications when the issue is updated, commented on, or changes status. This is useful for managing notification preferences and reducing alert fatigue when an issue is no longer relevant to the user's work or interests.
+      summary: Atlassian Stop Watching an Issue
+      responses:
+        '204':
+          description: Indicates that the authenticated user successfully stopped watching this issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified repository or issue does not exist or does not have the issue tracker enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account:write
+        - issue:write
+      - basic: []
+      - api_key: []
+      operationId: stopWatchingAnIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Watching
+      description: This GET endpoint allows you to check whether the currently authenticated user is watching a specific issue in a Bitbucket repository. By making a request to this endpoint with the workspace ID, repository slug, and issue ID, you'll receive a response indicating the watch status of the authenticated user for that particular issue. This is useful for applications that need to determine if a user has subscribed to receive notifications about updates, comments, or changes to a specific issue, enabling features like watch/unwatch toggles or displaying watch status indicators in the user interface.
+      summary: Atlassian Check if Current User Is Watching Issue
+      responses:
+        '204':
+          description: If the authenticated user is watching this issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the authenticated user is not watching this issue, or when the repo does not exist, or does not have an issue tracker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account
+        - issue
+      - basic: []
+      - api_key: []
+      operationId: checkIfCurrentUserIsWatchingIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/watch:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Watching
+      description: Removes the authenticated user's watch status from a specific code snippet in Bitbucket. This DELETE operation requires the workspace identifier and the encoded snippet ID as path parameters. Once executed, the user will no longer receive notifications or updates related to changes made to the snippet. Authentication is required to perform this action, and the user must have previously been watching the snippet for this operation to have any effect. This is useful when users want to unsubscribe from notifications about snippets they are no longer interested in following.
+      summary: Atlassian Stop Watching Snippet
+      responses:
+        '204':
+          description: Indicates the user stopped watching the snippet successfully.
+        '401':
+          description: If the request was not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: stopWatchingSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Watching
+      description: Used to check whether the authenticated user is watching a specific code snippet in a Bitbucket workspace. This endpoint accepts the workspace identifier and the encoded snippet ID as path parameters, returning the watch status for the current user. When called, it indicates if the user has subscribed to notifications for changes or updates to that particular snippet, helping users manage their snippet subscriptions and stay informed about modifications to code snippets they're interested in tracking.
+      summary: Atlassian Check if the Current User Is Watching Snippet
+      responses:
+        '204':
+          description: If the authenticated user is watching the snippet.
+        '404':
+          description: If the snippet does not exist, or if the authenticated user is not watching the snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: checkIfTheCurrentUserIsWatchingSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/watchers:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Watching
+      description: This API endpoint retrieves a paginated list of all users who are currently watching a specific snippet in Bitbucket. By making a GET request to /snippets/{workspace}/{encoded_id}/watchers, you can access information about the watchers of a snippet identified by its encoded ID within a particular workspace. The endpoint returns user details for each watcher, allowing snippet owners and authorized users to see who is monitoring the snippet for updates or changes. This is useful for understanding the audience and engagement level of shared code snippets within a team or organization.
+      summary: Atlassian List Users Watching Snippet
+      responses:
+        '200':
+          description: The paginated list of users watching this snippet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_accounts'
+              examples:
+                paginated-accounts:
+                  $ref: '#/components/examples/paginated-accounts'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      deprecated: true
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: listUsersWatchingSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    paginated_accounts:
+      type: object
+      title: Paginated Accounts
+      description: A paginated list of accounts.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: object
+          title: Account
+          description: An account object.
+          properties:
+            links:
+              $ref: '#/components/schemas/account_links'
+            created_on:
+              type: string
+              format: date-time
+            display_name:
+              type: string
+            username:
+              type: string
+              pattern: ^[a-zA-Z0-9_\-]+$
+            uuid:
+              type: string
+          additionalProperties: true
+          example: example_value
+      additionalProperties: false
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    paginated-accounts:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/accounts?page=2
+      previous: https://api.example.com/accounts?page=0
+      values:
+        created_on: '2023-11-15T10:30:00Z'
+        display_name: John Doe
+        username: john_doe-123
+        uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

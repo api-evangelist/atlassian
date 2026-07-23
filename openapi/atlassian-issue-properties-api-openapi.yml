@@ -1,0 +1,721 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Properties API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Properties
+paths:
+  /rest/api/3/issue/properties:
+    post:
+      deprecated: false
+      description: Sets or updates a list of entity property values on issues. A list of up to 10 entity properties can be specified along with up to 10,000 issues on which to set or update that list of entity properties.<br><br>The value of the request body must be a [valid](http://tools.ietf.org/html/rfc4627), non-empty JSON. The maximum length of single issue property value is 32768 characters. This operation can be accessed anonymously.<br><br>This operation is:<br><br> *  transactional, either all properties are updated in all eligible issues or, when errors occur, no properties are updated.<br> *  [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Edit issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianBulksetissuespropertieslist
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueEntityProperties'
+        description: Issue properties to be set or updated with values.
+        required: true
+      responses:
+        '303':
+          description: Returned if the operation is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Return if the request is invalid or the user does not have the necessary permission.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Bulk Set Issues Properties By List
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/issue/properties/multi:
+    post:
+      deprecated: false
+      description: Sets or updates entity property values on issues. Up to 10 entity properties can be specified for each issue and up to 100 issues included in the request.<br><br>The value of the request body must be a [valid](http://tools.ietf.org/html/rfc4627), non-empty JSON.<br><br>This operation is:<br><br> *  [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br> *  non-transactional. Updating some entities may fail. Such information will available in the task result.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Edit issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianBulksetissuepropertiesbyissue
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              issues:
+              - issueID: 1000
+                properties:
+                  myProperty:
+                    owner: admin
+                    weight: 100
+              - issueID: 1001
+                properties:
+                  myOtherProperty:
+                    cost: 150
+                    transportation: car
+            schema:
+              $ref: '#/components/schemas/MultiIssueEntityProperties'
+        description: Details of the issue properties to be set or updated. Note that if an issue is not found, it is ignored.
+        required: true
+      responses:
+        '303':
+          description: Returned if the operation is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Return if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Return if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Bulk Set Issue Properties By Issue
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/issue/properties/{propertyKey}:
+    delete:
+      deprecated: false
+      description: 'Deletes a property value from multiple issues. The issues to be updated can be specified by filter criteria.<br><br>The criteria the filter used to identify eligible issues are:<br><br> *  `entityIds` Only issues from this list are eligible.<br> *  `currentValue` Only issues with the property set to this value are eligible.<br><br>If both criteria is specified, they are joined with the logical *AND*: only issues that satisfy both criteria are considered eligible.<br><br>If no filter criteria are specified, all the issues visible to the user and where the user has the EDIT\_ISSUES permission for the issue are considered eligible.<br><br>This operation is:<br><br> *  transactional, either the property is deleted from all eligible issues or, when errors occur, no properties are deleted.<br> *  [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [ project permission](https://confluence.atlassian.com/x/yodKLg) for each project containing issues.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  *Edit issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for each issue.'
+      operationId: atlassianBulkdeleteissueproperty
+      parameters:
+      - description: The key of the property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              currentValue: deprecated value
+              entityIds:
+              - 10100
+              - 100010
+            schema:
+              $ref: '#/components/schemas/IssueFilterForBulkPropertyDelete'
+        required: true
+      responses:
+        '303':
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Bulk Delete Issue Property
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    put:
+      deprecated: false
+      description: 'Sets a property value on multiple issues.<br><br>The value set can be a constant or determined by a [Jira expression](https://developer.atlassian.com/cloud/jira/platform/jira-expressions/). Expressions must be computable with constant complexity when applied to a set of issues. Expressions must also comply with the [restrictions](https://developer.atlassian.com/cloud/jira/platform/jira-expressions/#restrictions) that apply to all Jira expressions.<br><br>The issues to be updated can be specified by a filter.<br><br>The filter identifies issues eligible for update using these criteria:<br><br> *  `entityIds` Only issues from this list are eligible.<br> *  `currentValue` Only issues with the property set to this value are eligible.<br> *  `hasProperty`:<br>    <br>     *  If *true*, only issues with the property are eligible.<br>     *  If *false*, only issues without the property are eligible.<br><br>If more than one criteria is specified, they are joined with the logical *AND*: only issues that satisfy all criteria are eligible.<br><br>If an invalid combination of criteria is provided, an error is returned. For example, specifying a `currentValue` and `hasProperty` as *false* would not match any issues (because without the property the property cannot have a value).<br><br>The filter is optional. Without the filter all the issues visible to the user and where the user has the EDIT\_ISSUES permission for the issue are considered eligible.<br><br>This operation is:<br><br> *  transactional, either all eligible issues are updated or, when errors occur, none are updated.<br> *  [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for each project containing issues.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  *Edit issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for each issue.'
+      operationId: atlassianBulksetissueproperty
+      parameters:
+      - description: The key of the property. The maximum length is 255 characters.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              filter:
+                currentValue:
+                  owner: admin
+                  weight: 50
+                entityIds:
+                - 10100
+                - 100010
+                hasProperty: true
+              value:
+                owner: admin
+                weight: 100
+            schema:
+              $ref: '#/components/schemas/BulkIssuePropertyUpdateRequest'
+        required: true
+      responses:
+        '303':
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Bulk Set Issue Property
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:jira-expressions:jira
+        - write:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/issue/{issueIdOrKey}/properties:
+    get:
+      deprecated: false
+      description: Returns the URLs and keys of an issue's properties.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** Property details are only returned where the user has:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetissuepropertykeys
+      parameters:
+      - description: The key or ID of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"keys":[{"key":"issue.support","self":"https://your-domain.atlassian.net/rest/api/3/issue/EX-2/properties/issue.support"}]}'
+              schema:
+                $ref: '#/components/schemas/PropertyKeys'
+          description: Returned if the request is successful.
+        '404':
+          description: Returned if the issue is not found or the user does not have permissions to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Issue Property Keys
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/issue/{issueIdOrKey}/properties/{propertyKey}:
+    delete:
+      deprecated: false
+      description: Deletes an issue's property.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Edit issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianDeleteissueproperty
+      parameters:
+      - description: The key or ID of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The key of the property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the issue or property is not found, or the user does not have permission to edit the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Issue Property
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns the key and value of an issue's property.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetissueproperty
+      parameters:
+      - description: The key or ID of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The key of the property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"issue.support","value":{"system.conversation.id":"b1bf38be-5e94-4b40-a3b8-9278735ee1e6","system.support.time":"1m"}}'
+              schema:
+                $ref: '#/components/schemas/EntityProperty'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the issue or property is not found or the user does not have permission to see the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Issue Property
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Sets the value of an issue's property. Use this resource to store custom data against an issue.<br><br>The value of the request body must be a [valid](http://tools.ietf.org/html/rfc4627), non-empty JSON blob. The maximum length is 32768 characters.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Edit issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project containing the issue.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianSetissueproperty
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The key of the issue property. The maximum length is 255 characters.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+        description: The value of the property. The value has to be a valid, non-empty [JSON](https://tools.ietf.org/html/rfc4627) value. The maximum length of the property value is 32768 bytes.
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the issue property is updated.
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the issue property is created.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to edit the issue.
+        '404':
+          description: Returned if the issue is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Set Issue Property
+      tags:
+      - Issue Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    IssueEntityPropertiesForMultiUpdate:
+      additionalProperties: false
+      description: An issue ID with entity property values. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
+      maxProperties: 100
+      minProperties: 1
+      properties:
+        issueID:
+          description: The ID of the issue.
+          format: int64
+          type: integer
+        properties:
+          additionalProperties:
+            $ref: '#/components/schemas/JsonNode'
+          description: Entity properties to set on the issue. The maximum length of an issue property value is 32768 characters.
+          maxProperties: 10
+          minProperties: 1
+          type: object
+      type: object
+    PropertyKey:
+      additionalProperties: false
+      description: Property key details.
+      properties:
+        key:
+          description: The key of the property.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the property.
+          readOnly: true
+          type: string
+      type: object
+    IssueFilterForBulkPropertySet:
+      additionalProperties: false
+      description: Bulk operation filter details.
+      properties:
+        currentValue:
+          description: The value of properties to perform the bulk operation on.
+        entityIds:
+          description: List of issues to perform the bulk operation on.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+        hasProperty:
+          description: Whether the bulk operation occurs only when the property is present on or absent from an issue.
+          type: boolean
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    BulkIssuePropertyUpdateRequest:
+      additionalProperties: false
+      description: Bulk issue property update request details.
+      properties:
+        expression:
+          description: EXPERIMENTAL. The Jira expression to calculate the value of the property. The value of the expression must be an object that can be converted to JSON, such as a number, boolean, string, list, or map. The context variables available to the expression are `issue` and `user`. Issues for which the expression returns a value whose JSON representation is longer than 32768 characters are ignored.
+          type: string
+        filter:
+          allOf:
+          - $ref: '#/components/schemas/IssueFilterForBulkPropertySet'
+          description: The bulk operation filter.
+        value:
+          description: The value of the property. The value must be a [valid](https://tools.ietf.org/html/rfc4627), non-empty JSON blob. The maximum length is 32768 characters.
+      type: object
+    IssueFilterForBulkPropertyDelete:
+      additionalProperties: false
+      description: Bulk operation filter details.
+      properties:
+        currentValue:
+          description: The value of properties to perform the bulk operation on.
+        entityIds:
+          description: List of issues to perform the bulk delete operation on.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      type: object
+    IssueEntityProperties:
+      additionalProperties: false
+      description: Lists of issues and entity properties. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
+      properties:
+        entitiesIds:
+          description: A list of entity property IDs.
+          items:
+            format: int64
+            type: integer
+          maxItems: 10000
+          minItems: 1
+          type: array
+          uniqueItems: true
+        properties:
+          additionalProperties:
+            $ref: '#/components/schemas/JsonNode'
+          description: A list of entity property keys and values.
+          maxProperties: 10
+          minProperties: 1
+          type: object
+      type: object
+    PropertyKeys:
+      additionalProperties: false
+      description: List of property keys.
+      properties:
+        keys:
+          description: Property key details.
+          items:
+            $ref: '#/components/schemas/PropertyKey'
+          readOnly: true
+          type: array
+      type: object
+    JsonNode:
+      additionalProperties: false
+      maxProperties: 10
+      minProperties: 1
+      properties:
+        array:
+          type: boolean
+        bigDecimal:
+          type: boolean
+        bigInteger:
+          type: boolean
+        bigIntegerValue:
+          type: integer
+        binary:
+          type: boolean
+        binaryValue:
+          items:
+            format: byte
+            type: string
+          type: array
+        boolean:
+          type: boolean
+        booleanValue:
+          type: boolean
+        containerNode:
+          type: boolean
+        decimalValue:
+          type: number
+        double:
+          type: boolean
+        doubleValue:
+          format: double
+          type: number
+        elements:
+          type: object
+        fieldNames:
+          type: object
+        fields:
+          type: object
+        floatingPointNumber:
+          type: boolean
+        int:
+          type: boolean
+        intValue:
+          format: int32
+          type: integer
+        integralNumber:
+          type: boolean
+        long:
+          type: boolean
+        longValue:
+          format: int64
+          type: integer
+        missingNode:
+          type: boolean
+        'null':
+          type: boolean
+        number:
+          type: boolean
+        numberType:
+          enum:
+          - INT
+          - LONG
+          - BIG_INTEGER
+          - FLOAT
+          - DOUBLE
+          - BIG_DECIMAL
+          type: string
+        numberValue:
+          type: number
+        object:
+          type: boolean
+        pojo:
+          type: boolean
+        textValue:
+          type: string
+        textual:
+          type: boolean
+        valueAsBoolean:
+          type: boolean
+        valueAsDouble:
+          format: double
+          type: number
+        valueAsInt:
+          format: int32
+          type: integer
+        valueAsLong:
+          format: int64
+          type: integer
+        valueAsText:
+          type: string
+        valueNode:
+          type: boolean
+      type: object
+    EntityProperty:
+      additionalProperties: false
+      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+      properties:
+        key:
+          description: The key of the property. Required on create and update.
+          type: string
+        value:
+          description: The value of the property. Required on create and update.
+      type: object
+    MultiIssueEntityProperties:
+      additionalProperties: false
+      description: A list of issues and their respective properties to set or update. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
+      properties:
+        issues:
+          description: A list of issue IDs and their respective properties.
+          items:
+            $ref: '#/components/schemas/IssueEntityPropertiesForMultiUpdate'
+          maxProperties: 100
+          minProperties: 1
+          type: array
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

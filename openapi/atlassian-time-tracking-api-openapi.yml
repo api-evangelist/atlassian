@@ -1,0 +1,310 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Time Tracking API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Time Tracking
+paths:
+  /rest/api/3/configuration/timetracking:
+    get:
+      deprecated: false
+      description: Returns the time tracking provider that is currently selected. Note that if time tracking is disabled, then a successful but empty response is returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetselectedtimetrackingimplementation
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"Jira","name":"JIRA provided time tracking","url":"/example/config/url"}'
+              schema:
+                $ref: '#/components/schemas/TimeTrackingProvider'
+          description: Returned if the request is successful and time tracking is enabled.
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful but time tracking is disabled.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Selected Time Tracking Provider
+      tags:
+      - Time Tracking
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Selects a time tracking provider.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSelecttimetrackingimplementation
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              key: Jira
+            schema:
+              $ref: '#/components/schemas/TimeTrackingProvider'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the time tracking provider is not found.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Select Time Tracking Provider
+      tags:
+      - Time Tracking
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/configuration/timetracking/list:
+    get:
+      deprecated: false
+      description: 'Returns all time tracking providers. By default, Jira only has one time tracking provider: *JIRA provided time tracking*. However, you can install other time tracking providers via apps from the Atlassian Marketplace. For more information on time tracking providers, see the documentation for the [ Time Tracking Provider](https://developer.atlassian.com/cloud/jira/platform/modules/time-tracking-provider/) module.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).'
+      operationId: atlassianGetavailabletimetrackingimplementations
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"key":"Jira","name":"JIRA provided time tracking","url":"/example/config/url"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/TimeTrackingProvider'
+                type: array
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get All Time Tracking Providers
+      tags:
+      - Time Tracking
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/configuration/timetracking/options:
+    get:
+      deprecated: false
+      description: Returns the time tracking settings. This includes settings such as the time format, default time unit, and others. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetsharedtimetrackingconfiguration
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"defaultUnit":"hour","timeFormat":"pretty","workingDaysPerWeek":5.5,"workingHoursPerDay":7.6}'
+              schema:
+                $ref: '#/components/schemas/TimeTrackingConfiguration'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Time Tracking Settings
+      tags:
+      - Time Tracking
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Sets the time tracking settings.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSetsharedtimetrackingconfiguration
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              defaultUnit: hour
+              timeFormat: pretty
+              workingDaysPerWeek: 5.5
+              workingHoursPerDay: 7.6
+            schema:
+              $ref: '#/components/schemas/TimeTrackingConfiguration'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"defaultUnit":"hour","timeFormat":"pretty","workingDaysPerWeek":5.5,"workingHoursPerDay":7.6}'
+              schema:
+                $ref: '#/components/schemas/TimeTrackingConfiguration'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request object is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Set Time Tracking Settings
+      tags:
+      - Time Tracking
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue.time-tracking:jira
+        - read:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    TimeTrackingConfiguration:
+      additionalProperties: false
+      description: Details of the time tracking configuration.
+      properties:
+        defaultUnit:
+          description: The default unit of time applied to logged time.
+          enum:
+          - minute
+          - hour
+          - day
+          - week
+          type: string
+        timeFormat:
+          description: The format that will appear on an issue's *Time Spent* field.
+          enum:
+          - pretty
+          - days
+          - hours
+          type: string
+        workingDaysPerWeek:
+          description: The number of days in a working week.
+          format: double
+          type: number
+        workingHoursPerDay:
+          description: The number of hours in a working day.
+          format: double
+          type: number
+      required:
+      - defaultUnit
+      - timeFormat
+      - workingDaysPerWeek
+      - workingHoursPerDay
+      type: object
+    TimeTrackingProvider:
+      additionalProperties: false
+      description: Details about the time tracking provider.
+      properties:
+        key:
+          description: The key for the time tracking provider. For example, *JIRA*.
+          type: string
+        name:
+          description: The name of the time tracking provider. For example, *JIRA provided time tracking*.
+          type: string
+        url:
+          description: The URL of the configuration page for the time tracking provider app. For example, */example/config/url*. This property is only returned if the `adminPageKey` property is set in the module descriptor of the time tracking provider app.
+          readOnly: true
+          type: string
+      required:
+      - key
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

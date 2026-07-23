@@ -1,0 +1,155 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Navigator Settings API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Navigator Settings
+paths:
+  /rest/api/3/settings/columns:
+    get:
+      deprecated: false
+      description: Returns the default issue navigator columns.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetissuenavigatordefaultcolumns
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"label":"Key","value":"issuekey"},{"label":"Summary","value":"summary"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/ColumnItem'
+                type: array
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      summary: Atlassian Get Issue Navigator Default Columns
+      tags:
+      - Issue Navigator Settings
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    put:
+      deprecated: false
+      description: Sets the default issue navigator columns.<br><br>The `columns` parameter accepts a navigable field value and is expressed as HTML form data. To specify multiple columns, pass multiple `columns` parameters. For example, in curl:<br><br>`curl -X PUT -d columns=summary -d columns=description https://your-domain.atlassian.net/rest/api/3/settings/columns`<br><br>If no column details are sent, then all default columns are removed.<br><br>A navigable field is one that can be used as a column on the issue navigator. Find details of navigable issue columns using [Get fields](#api-rest-api-3-field-get).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSetissuenavigatordefaultcolumns
+      parameters: []
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ColumnRequestBody'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ColumnRequestBody'
+        description: A navigable field value.
+        required: true
+      responses:
+        '200':
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if invalid parameters are passed.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if a navigable field value is not found.
+      security:
+      - basicAuth: []
+      summary: Atlassian Set Issue Navigator Default Columns
+      tags:
+      - Issue Navigator Settings
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+components:
+  schemas:
+    ColumnItem:
+      additionalProperties: false
+      description: Details of an issue navigator column item.
+      properties:
+        label:
+          description: The issue navigator column label.
+          type: string
+        value:
+          description: The issue navigator column value.
+          type: string
+      type: object
+    ColumnRequestBody:
+      additionalProperties: false
+      properties:
+        columns:
+          items:
+            type: string
+          type: array
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

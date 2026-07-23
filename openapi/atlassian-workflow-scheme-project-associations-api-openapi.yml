@@ -1,0 +1,626 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Workflow Scheme Project Associations API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Workflow Scheme Project Associations
+paths:
+  /rest/api/3/workflowscheme/project:
+    get:
+      deprecated: false
+      description: Returns a list of the workflow schemes associated with a list of projects. Each returned workflow scheme includes a list of the requested projects associated with it. Any team-managed or non-existent projects in the request are ignored and no errors are returned.<br><br>If the project is associated with the `Default Workflow Scheme` no ID is returned. This is because the way the `Default Workflow Scheme` is stored means it has no ID.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetworkflowschemeprojectassociations
+      parameters:
+      - description: 'The ID of a project to return the workflow schemes for. To include multiple projects, provide an ampersand-Jim: oneseparated list. For example, `projectId=10000&projectId=10001`.'
+        in: query
+        name: projectId
+        required: true
+        schema:
+          items:
+            example: 10010
+            format: int64
+            type: integer
+          maxItems: 100
+          minItems: 1
+          type: array
+          uniqueItems: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"values":[{"projectIds":["10010","10020"],"workflowScheme":{"defaultWorkflow":"jira","description":"The description of the example workflow scheme.","id":101010,"issueTypeMappings":{"10000":"scrum workflow","10001":"builds workflow"},"name":"Example workflow scheme","self":"https://your-domain.atlassian.net/rest/api/3/workflowscheme/101010"}}]}'
+              schema:
+                $ref: '#/components/schemas/ContainerOfWorkflowSchemeAssociations'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":[],"errors":{"projectId":"The ID of a project has to be provided."}}'
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access workflow scheme associations."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Workflow Scheme Project Associations
+      tags:
+      - Workflow Scheme Project Associations
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow-scheme:jira
+        - read:workflow:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        - read:issue-type:jira
+        - read:project-category:jira
+        - read:project:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Assigns a workflow scheme to a project. This operation is performed only when there are no issues in the project.<br><br>Workflow schemes can only be assigned to classic projects.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAssignschemetoproject
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              projectId: '10001'
+              workflowSchemeId: '10032'
+            schema:
+              $ref: '#/components/schemas/WorkflowSchemeProjectAssociation'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only classic projects can have workflow schemes assigned."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access workflow scheme associations."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The workflow scheme was not found."],"errors":{}}'
+          description: Returned if the workflow scheme or the project are not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Assign Workflow Scheme To Project
+      tags:
+      - Workflow Scheme Project Associations
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    WorkflowScheme:
+      additionalProperties: false
+      description: Details about a workflow scheme.
+      properties:
+        defaultWorkflow:
+          description: The name of the default workflow for the workflow scheme. The default workflow has *All Unassigned Issue Types* assigned to it in Jira. If `defaultWorkflow` is not specified when creating a workflow scheme, it is set to *Jira Workflow (jira)*.
+          type: string
+        description:
+          description: The description of the workflow scheme.
+          type: string
+        draft:
+          description: Whether the workflow scheme is a draft or not.
+          readOnly: true
+          type: boolean
+        id:
+          description: The ID of the workflow scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        issueTypeMappings:
+          additionalProperties:
+            type: string
+          description: The issue type to workflow mappings, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.
+          type: object
+        issueTypes:
+          additionalProperties:
+            $ref: '#/components/schemas/IssueTypeDetails'
+          description: The issue types available in Jira.
+          readOnly: true
+          type: object
+        lastModified:
+          description: The date-time that the draft workflow scheme was last modified. A modification is a change to the issue type-project mappings only. This property does not apply to non-draft workflows.
+          readOnly: true
+          type: string
+        lastModifiedUser:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          description: The user that last modified the draft workflow scheme. A modification is a change to the issue type-project mappings only. This property does not apply to non-draft workflows.
+          readOnly: true
+        name:
+          description: The name of the workflow scheme. The name must be unique. The maximum length is 255 characters. Required when creating a workflow scheme.
+          type: string
+        originalDefaultWorkflow:
+          description: For draft workflow schemes, this property is the name of the default workflow for the original workflow scheme. The default workflow has *All Unassigned Issue Types* assigned to it in Jira.
+          readOnly: true
+          type: string
+        originalIssueTypeMappings:
+          additionalProperties:
+            readOnly: true
+            type: string
+          description: For draft workflow schemes, this property is the issue type to workflow mappings for the original workflow scheme, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.
+          readOnly: true
+          type: object
+        self:
+          format: uri
+          readOnly: true
+          type: string
+        updateDraftIfNeeded:
+          description: "Whether to create or update a draft workflow scheme when updating an active workflow scheme. An active workflow scheme is a workflow scheme that is used by at least one project. The following examples show how this property works:\n\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `true`: If a draft workflow scheme exists, it is updated. Otherwise, a draft workflow scheme is created.\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `false`: An error is returned, as active workflow schemes cannot be updated.\n *  Update an inactive workflow scheme with `updateDraftIfNeeded` set to `true`: The workflow scheme is updated, as inactive workflow schemes do not require drafts to update.\n\nDefaults to `false`."
+          type: boolean
+      type: object
+    ListWrapperCallbackGroupName:
+      additionalProperties: false
+      type: object
+    SimpleListWrapperApplicationRole:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationRole'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
+          type: string
+      type: object
+    GroupName:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          nullable: true
+          type: string
+        name:
+          description: The name of group.
+          type: string
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    ApplicationRole:
+      additionalProperties: false
+      description: Details of an application role.
+      properties:
+        defaultGroups:
+          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        defaultGroupsDetails:
+          description: The groups that are granted default access for this application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        defined:
+          description: Deprecated.
+          type: boolean
+        groupDetails:
+          description: The groups associated with the application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        groups:
+          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        hasUnlimitedSeats:
+          type: boolean
+        key:
+          description: The key of the application role.
+          type: string
+        name:
+          description: The display name of the application role.
+          type: string
+        numberOfSeats:
+          description: The maximum count of users on your license.
+          format: int32
+          type: integer
+        platform:
+          description: Indicates if the application role belongs to Jira platform (`jira-core`).
+          type: boolean
+        remainingSeats:
+          description: The count of users remaining on your license.
+          format: int32
+          type: integer
+        selectedByDefault:
+          description: Determines whether this application role should be selected by default on user creation.
+          type: boolean
+        userCount:
+          description: The number of users counting against your license.
+          format: int32
+          type: integer
+        userCountDescription:
+          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+          type: string
+      type: object
+    ListWrapperCallbackApplicationRole:
+      additionalProperties: false
+      type: object
+    ContainerOfWorkflowSchemeAssociations:
+      additionalProperties: false
+      description: A container for a list of workflow schemes together with the projects they are associated with.
+      properties:
+        values:
+          description: A list of workflow schemes together with projects they are associated with.
+          items:
+            $ref: '#/components/schemas/WorkflowSchemeAssociations'
+          type: array
+      required:
+      - values
+      type: object
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    WorkflowSchemeProjectAssociation:
+      additionalProperties: false
+      description: An associated workflow scheme and project.
+      properties:
+        projectId:
+          description: The ID of the project.
+          type: string
+        workflowSchemeId:
+          description: The ID of the workflow scheme. If the workflow scheme ID is `null`, the operation assigns the default workflow scheme.
+          type: string
+      required:
+      - projectId
+      type: object
+    User:
+      additionalProperties: false
+      description: "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.
+          maxLength: 128
+          type: string
+        accountType:
+          description: "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk"
+          enum:
+          - atlassian
+          - app
+          - customer
+          - unknown
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        applicationRoles:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperApplicationRole'
+          description: The application roles the user is assigned to.
+          readOnly: true
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        expand:
+          description: Expand options that include additional user details in the response.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+        groups:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperGroupName'
+          description: The groups that the user belongs to.
+          readOnly: true
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        locale:
+          description: The locale of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        self:
+          description: The URL of the user.
+          format: uri
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: user
+    WorkflowSchemeAssociations:
+      additionalProperties: false
+      description: A workflow scheme along with a list of projects that use it.
+      properties:
+        projectIds:
+          description: The list of projects that use the workflow scheme.
+          items:
+            type: string
+          type: array
+        workflowScheme:
+          allOf:
+          - $ref: '#/components/schemas/WorkflowScheme'
+          description: The workflow scheme.
+      required:
+      - projectIds
+      - workflowScheme
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    ProjectDetails:
+      additionalProperties: false
+      description: Details about a project.
+      properties:
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The URLs of the project's avatars.
+          readOnly: true
+        id:
+          description: The ID of the project.
+          type: string
+        key:
+          description: The key of the project.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the project.
+          readOnly: true
+          type: string
+        projectCategory:
+          allOf:
+          - $ref: '#/components/schemas/UpdatedProjectCategory'
+          description: The category the project belongs to.
+          readOnly: true
+        projectTypeKey:
+          description: The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.
+          enum:
+          - software
+          - service_desk
+          - business
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project details.
+          readOnly: true
+          type: string
+        simplified:
+          description: Whether or not the project is simplified.
+          readOnly: true
+          type: boolean
+      type: object
+    IssueTypeDetails:
+      additionalProperties: false
+      description: Details about an issue type.
+      properties:
+        avatarId:
+          description: The ID of the issue type's avatar.
+          format: int64
+          readOnly: true
+          type: integer
+        description:
+          description: The description of the issue type.
+          readOnly: true
+          type: string
+        entityId:
+          description: Unique ID for next-gen projects.
+          format: uuid
+          readOnly: true
+          type: string
+        hierarchyLevel:
+          description: Hierarchy level of the issue type.
+          format: int32
+          readOnly: true
+          type: integer
+        iconUrl:
+          description: The URL of the issue type's avatar.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue type.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the issue type.
+          readOnly: true
+          type: string
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: Details of the next-gen projects the issue type is available in.
+          readOnly: true
+        self:
+          description: The URL of these issue type details.
+          readOnly: true
+          type: string
+        subtask:
+          description: Whether this issue type is used to create subtasks.
+          readOnly: true
+          type: boolean
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

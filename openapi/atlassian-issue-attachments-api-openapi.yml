@@ -1,0 +1,977 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Attachments API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Attachments
+paths:
+  /rest/api/3/attachment/content/{id}:
+    get:
+      deprecated: false
+      description: Returns the contents of an attachment. A `Range` header can be set to define a range of bytes within the attachment to download. See the [HTTP Range header standard](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range) for details.<br><br>To return a thumbnail of the attachment, use [Get attachment thumbnail](#api-rest-api-3-attachment-thumbnail-id-get).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** For the issue containing the attachment:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetattachmentcontent
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Whether a redirect is provided for the attachment download. Clients that do not automatically follow redirects can set this to `false` to avoid making multiple requests to download the attachment.
+        in: query
+        name: redirect
+        schema:
+          default: true
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingResponseBody'
+          description: Returned if the request is successful when `redirect` is set to `false`.
+        '206':
+          description: Returned if the request is successful when a `Range` header is provided and `redirect` is set to `false`.
+        '303':
+          description: Returned if the request is successful. See the `Location` header for the download URL.
+        '400':
+          description: Returned if the range supplied in the `Range` header is malformed.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          description: The user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings."
+        '416':
+          description: Returned if the server is unable to satisfy the range of bytes provided.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Attachment Content
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:attachment:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/attachment/meta:
+    get:
+      deprecated: false
+      description: Returns the attachment settings, that is, whether attachments are enabled and the maximum attachment size allowed.<br><br>Note that there are also [project permissions](https://confluence.atlassian.com/x/yodKLg) that restrict whether users can create and delete attachments.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetattachmentmeta
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"enabled":true,"uploadLimit":1000000}'
+              schema:
+                $ref: '#/components/schemas/AttachmentSettings'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Jira Attachment Settings
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:instance-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/attachment/thumbnail/{id}:
+    get:
+      deprecated: false
+      description: Returns the thumbnail of an attachment.<br><br>To return the attachment contents, use [Get attachment content](#api-rest-api-3-attachment-content-id-get).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** For the issue containing the attachment:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetattachmentthumbnail
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Whether a redirect is provided for the attachment download. Clients that do not automatically follow redirects can set this to `false` to avoid making multiple requests to download the attachment.
+        in: query
+        name: redirect
+        schema:
+          default: true
+          type: boolean
+      - description: Whether a default thumbnail is returned when the requested thumbnail is not found.
+        in: query
+        name: fallbackToDefault
+        schema:
+          default: true
+          type: boolean
+      - description: The maximum width to scale the thumbnail to.
+        in: query
+        name: width
+        schema:
+          format: int32
+          type: integer
+      - description: The maximum height to scale the thumbnail to.
+        in: query
+        name: height
+        schema:
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingResponseBody'
+          description: Returned if the request is successful when `redirect` is set to `false`.
+        '303':
+          description: Returned if the request is successful. See the `Location` header for the download URL.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          description: The user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings.\n *  `fallbackToDefault` is `false` and the request thumbnail cannot be downloaded."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Attachment Thumbnail
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:attachment:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/attachment/{id}:
+    delete:
+      deprecated: false
+      description: Deletes an attachment from an issue.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** For the project holding the issue containing the attachment:<br><br> *  *Delete own attachments* [project permission](https://confluence.atlassian.com/x/yodKLg) to delete an attachment created by the calling user.<br> *  *Delete all attachments* [project permission](https://confluence.atlassian.com/x/yodKLg) to delete an attachment created by any user.
+      operationId: atlassianRemoveattachment
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Attachment
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:attachment:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns the metadata for an attachment. Note that the attachment itself is not returned.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetattachment
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"author":{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"content":"https://your-domain.atlassian.net/jira/rest/api/3/attachment/content/10000","created":"2022-10-06T07:32:47.000+0000","filename":"picture.jpg","id":10000,"mimeType":"image/jpeg","self":"https://your-domain.atlassian.net/rest/api/3/attachments/10000","size":23123,"thumbnail":"https://your-domain.atlassian.net/jira/rest/api/3/attachment/thumbnail/10000"}'
+              schema:
+                $ref: '#/components/schemas/AttachmentMetadata'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Attachment Metadata
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:attachment:jira
+        - read:user:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/attachment/{id}/expand/human:
+    get:
+      deprecated: false
+      description: Returns the metadata for the contents of an attachment, if it is an archive, and metadata for the attachment itself. For example, if the attachment is a ZIP archive, then information about the files in the archive is returned and metadata for the ZIP archive. Currently, only the ZIP archive format is supported.<br><br>Use this operation to retrieve data that is presented to the user, as this operation returns the metadata for the attachment itself, such as the attachment's ID and name. Otherwise, use [ Get contents metadata for an expanded attachment](#api-rest-api-3-attachment-id-expand-raw-get), which only returns the metadata for the attachment's contents.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** For the issue containing the attachment:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianExpandattachmentforhumans
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"entries":[{"index":0,"label":"MG00N067.JPG","mediaType":"image/jpeg","path":"MG00N067.JPG","size":"119 kB"},{"index":1,"label":"Allegro from Duet in C Major.mp3","mediaType":"audio/mpeg","path":"Allegro from Duet in C Major.mp3","size":"1.36 MB"},{"index":2,"label":"long/path/thanks/to/.../reach/the/leaf.txt","mediaType":"text/plain","path":"long/path/thanks/to/lots/of/subdirectories/inside/making/it/quite/hard/to/reach/the/leaf.txt","size":"0.0 k"}],"id":7237823,"mediaType":"application/zip","name":"images.zip","totalEntryCount":39}'
+              schema:
+                $ref: '#/components/schemas/AttachmentArchiveMetadataReadable'
+          description: Returned if the request is successful. If an empty list is returned in the response, the attachment is empty, corrupt, or not an archive.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: The user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings."
+        '409':
+          description: Returned if the attachment is an archive, but not a supported archive format.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get All Metadata For An Expanded Attachment
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:attachment:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/attachment/{id}/expand/raw:
+    get:
+      deprecated: false
+      description: Returns the metadata for the contents of an attachment, if it is an archive. For example, if the attachment is a ZIP archive, then information about the files in the archive is returned. Currently, only the ZIP archive format is supported.<br><br>Use this operation if you are processing the data without presenting it to the user, as this operation only returns the metadata for the contents of the attachment. Otherwise, to retrieve data to present to the user, use [ Get all metadata for an expanded attachment](#api-rest-api-3-attachment-id-expand-human-get) which also returns the metadata for the attachment itself, such as the attachment's ID and name.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** For the issue containing the attachment:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianExpandattachmentformachines
+      parameters:
+      - description: The ID of the attachment.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"entries":[{"entryIndex":0,"mediaType":"audio/mpeg","name":"Allegro from Duet in C Major.mp3","size":1430174},{"entryIndex":1,"mediaType":"text/rtf","name":"lrm.rtf","size":331}],"totalEntryCount":24}'
+              schema:
+                $ref: '#/components/schemas/AttachmentArchiveImpl'
+          description: Returned if the request is successful. If an empty list is returned in the response, the attachment is empty, corrupt, or not an archive.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: The user does not have the necessary permission.
+        '404':
+          description: "Returned if:\n\n *  the attachment is not found.\n *  attachments are disabled in the Jira settings."
+        '409':
+          description: Returned if the attachment is an archive, but not a supported archive format.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Contents Metadata For An Expanded Attachment
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:attachment:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/issue/{issueIdOrKey}/attachments:
+    post:
+      deprecated: false
+      description: 'Adds one or more attachments to an issue. Attachments are posted as multipart/form-data ([RFC 1867](https://www.ietf.org/rfc/rfc1867.txt)).<br><br>Note that:<br><br> *  The request must have a `X-Atlassian-Token: no-check` header, if not it is blocked. See [Special headers](#special-request-headers) for more information.<br> *  The name of the multipart/form-data parameter that contains the attachments must be `file`.<br><br>The following examples upload a file called *myfile.txt* to the issue *TEST-123*:<br><br>#### curl ####<br><br>    curl --location --request POST ''https://your-domain.atlassian.net/rest/api/3/issue/TEST-123/attachments''<br>     -u ''email@example.com:''<br>     -H ''X-Atlassian-Token: no-check''<br>     --form ''file=@"myfile.txt"''<br><br>#### Node.js ####<br><br>    // This code sample uses the ''node-fetch'' and ''form-data'' libraries:<br>     // https://www.npmjs.com/package/node-fetch<br>     // https://www.npmjs.com/package/form-data<br>     const fetch = require(''node-fetch'');<br>     const FormData = require(''form-data'');<br>     const fs = require(''fs'');<br>    <br>     const filePath = ''myfile.txt'';<br>     const form = new FormData();<br>     const stats = fs.statSync(filePath);<br>     const fileSizeInBytes = stats.size;<br>     const fileStream = fs.createReadStream(filePath);<br>    <br>     form.append(''file'', fileStream, {knownLength: fileSizeInBytes});<br>    <br>     fetch(''https://your-domain.atlassian.net/rest/api/3/issue/TEST-123/attachments'', {<br>         method: ''POST'',<br>         body: form,<br>         headers: {<br>             ''Authorization'': `Basic ${Buffer.from(<br>                 ''email@example.com:''<br>             ).toString(''base64'')}`,<br>             ''Accept'': ''application/json'',<br>             ''X-Atlassian-Token'': ''no-check''<br>         }<br>     })<br>         .then(response => {<br>             console.log(<br>                 `Response: ${response.status} ${response.statusText}`<br>             );<br>             return response.text();<br>         })<br>         .then(text => console.log(text))<br>         .catch(err => console.error(err));<br><br>#### Java ####<br><br>    // This code sample uses the  ''Unirest'' library:<br>     // http://unirest.io/java.html<br>     HttpResponse response = Unirest.post("https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments")<br>             .basicAuth("email@example.com", "")<br>             .header("Accept", "application/json")<br>             .header("X-Atlassian-Token", "no-check")<br>             .field("file", new File("myfile.txt"))<br>             .asJson();<br>    <br>             System.out.println(response.getBody());<br><br>#### Python ####<br><br>    # This code sample uses the ''requests'' library:<br>     # http://docs.python-requests.org<br>     import requests<br>     from requests.auth import HTTPBasicAuth<br>     import json<br>    <br>     url = "https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments"<br>    <br>     auth = HTTPBasicAuth("email@example.com", "")<br>    <br>     headers = {<br>        "Accept": "application/json",<br>        "X-Atlassian-Token": "no-check"<br>     }<br>    <br>     response = requests.request(<br>        "POST",<br>        url,<br>        headers = headers,<br>        auth = auth,<br>        files = {<br>             "file": ("myfile.txt", open("myfile.txt","rb"), "application-type")<br>        }<br>     )<br>    <br>     print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))<br><br>#### PHP ####<br><br>    // This code sample uses the ''Unirest'' library:<br>     // http://unirest.io/php.html<br>     Unirest\Request::auth(''email@example.com'', '''');<br>    <br>     $headers = array(<br>       ''Accept'' => ''application/json'',<br>       ''X-Atlassian-Token'' => ''no-check''<br>     );<br>    <br>     $parameters = array(<br>       ''file'' => File::add(''myfile.txt'')<br>     );<br>    <br>     $response = Unirest\Request::post(<br>       ''https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments'',<br>       $headers,<br>       $parameters<br>     );<br>    <br>     var_dump($response)<br><br>#### Forge ####<br><br>    // This sample uses Atlassian Forge and the `form-data` library.<br>     // https://developer.atlassian.com/platform/forge/<br>     // https://www.npmjs.com/package/form-data<br>     import api from "@forge/api";<br>     import FormData from "form-data";<br>    <br>     const form = new FormData();<br>     form.append(''file'', fileStream, {knownLength: fileSizeInBytes});<br>    <br>     const response = await api.asApp().requestJira(''/rest/api/2/issue/{issueIdOrKey}/attachments'', {<br>         method: ''POST'',<br>         body: form,<br>         headers: {<br>             ''Accept'': ''application/json'',<br>             ''X-Atlassian-Token'': ''no-check''<br>         }<br>     });<br>    <br>     console.log(`Response: ${response.status} ${response.statusText}`);<br>     console.log(await response.json());<br><br>Tip: Use a client library. Many client libraries have classes for handling multipart POST operations. For example, in Java, the Apache HTTP Components library provides a [MultiPartEntity](http://hc.apache.org/httpcomponents-client-ga/httpmime/apidocs/org/apache/http/entity/mime/MultipartEntity.html) class for multipart POST operations.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** <br><br> *  *Browse Projects* and *Create attachments* [ project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.'
+      operationId: atlassianAddattachment
+      parameters:
+      - description: The ID or key of the issue that attachments are added to.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              items:
+                $ref: '#/components/schemas/MultipartFile'
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"author":{"accountId":"5b10a2844c20165700ede21g","active":true,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","emailAddress":"mia@example.com","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g","timeZone":"Australia/Sydney"},"content":"https://your-domain.atlassian.net/rest/api/3/attachment/content/10000","created":1651316514000,"filename":"picture.jpg","id":"10001","mimeType":"image/jpeg","self":"https://your-domain.atlassian.net/rest/api/3/attachments/10000","size":23123,"thumbnail":"https://your-domain.atlassian.net/rest/api/3/attachment/thumbnail/10000"},{"author":{"accountId":"5b10a2844c20165700ede21g","active":true,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","emailAddress":"mia@example.com","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g","timeZone":"Australia/Sydney"},"content":"https://your-domain.atlassian.net/rest/api/3/attachment/content/10001","created":1658898511000,"filename":"dbeuglog.txt","mimeType":"text/plain","self":"https://your-domain.atlassian.net/rest/api/3/attachments/10001","size":2460}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/Attachment'
+                type: array
+          description: Returned if the request is successful.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: "Returned if any of the following is true:\n\n *  the issue is not found.\n *  the user does not have permission to view the issue."
+        '413':
+          description: The attachments exceed the maximum attachment size for issues, or more than 60 files are requested to be uploaded. See [Configuring file attachments](https://confluence.atlassian.com/x/wIXKM) for details.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Add Attachment
+      tags:
+      - Issue Attachments
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user:jira
+        - write:attachment:jira
+        - read:attachment:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    AttachmentSettings:
+      additionalProperties: false
+      description: Details of the instance's attachment settings.
+      properties:
+        enabled:
+          description: Whether the ability to add attachments is enabled.
+          readOnly: true
+          type: boolean
+        uploadLimit:
+          description: The maximum size of attachments permitted, in bytes.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    GroupName:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          nullable: true
+          type: string
+        name:
+          description: The name of group.
+          type: string
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    UserDetails:
+      additionalProperties: false
+      description: "User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
+          type: string
+        accountType:
+          description: The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy settings, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
+          type: string
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the user.
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+    ListWrapperCallbackApplicationRole:
+      additionalProperties: false
+      type: object
+    AttachmentArchiveItemReadable:
+      additionalProperties: false
+      description: Metadata for an item in an attachment archive.
+      properties:
+        index:
+          description: The position of the item within the archive.
+          format: int64
+          readOnly: true
+          type: integer
+        label:
+          description: The label for the archive item.
+          readOnly: true
+          type: string
+        mediaType:
+          description: The MIME type of the archive item.
+          readOnly: true
+          type: string
+        path:
+          description: The path of the archive item.
+          readOnly: true
+          type: string
+        size:
+          description: The size of the archive item.
+          readOnly: true
+          type: string
+      type: object
+    StreamingResponseBody:
+      additionalProperties: false
+      type: object
+    Resource:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        file:
+          format: binary
+          type: string
+        filename:
+          type: string
+        inputStream:
+          type: object
+        open:
+          type: boolean
+        readable:
+          type: boolean
+        uri:
+          format: uri
+          type: string
+        url:
+          format: url
+          type: string
+      type: object
+    AttachmentArchiveEntry:
+      additionalProperties: false
+      properties:
+        abbreviatedName:
+          type: string
+        entryIndex:
+          format: int64
+          type: integer
+        mediaType:
+          type: string
+        name:
+          type: string
+        size:
+          format: int64
+          type: integer
+      type: object
+    ListWrapperCallbackGroupName:
+      additionalProperties: false
+      type: object
+    AttachmentMetadata:
+      additionalProperties: false
+      description: Metadata for an issue attachment.
+      properties:
+        author:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          description: Details of the user who attached the file.
+          readOnly: true
+        content:
+          description: The URL of the attachment.
+          readOnly: true
+          type: string
+        created:
+          description: The datetime the attachment was created.
+          format: date-time
+          readOnly: true
+          type: string
+        filename:
+          description: The name of the attachment file.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the attachment.
+          format: int64
+          readOnly: true
+          type: integer
+        mimeType:
+          description: The MIME type of the attachment.
+          readOnly: true
+          type: string
+        properties:
+          additionalProperties:
+            readOnly: true
+          description: Additional properties of the attachment.
+          readOnly: true
+          type: object
+        self:
+          description: The URL of the attachment metadata details.
+          format: uri
+          readOnly: true
+          type: string
+        size:
+          description: The size of the attachment.
+          format: int64
+          readOnly: true
+          type: integer
+        thumbnail:
+          description: The URL of a thumbnail representing the attachment.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: attachment
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    User:
+      additionalProperties: false
+      description: "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.
+          maxLength: 128
+          type: string
+        accountType:
+          description: "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk"
+          enum:
+          - atlassian
+          - app
+          - customer
+          - unknown
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        applicationRoles:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperApplicationRole'
+          description: The application roles the user is assigned to.
+          readOnly: true
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        expand:
+          description: Expand options that include additional user details in the response.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+        groups:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperGroupName'
+          description: The groups that the user belongs to.
+          readOnly: true
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        locale:
+          description: The locale of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        self:
+          description: The URL of the user.
+          format: uri
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: user
+    SimpleListWrapperApplicationRole:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationRole'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    AttachmentArchiveMetadataReadable:
+      additionalProperties: false
+      description: Metadata for an archive (for example a zip) and its contents.
+      properties:
+        entries:
+          description: The list of the items included in the archive.
+          items:
+            $ref: '#/components/schemas/AttachmentArchiveItemReadable'
+          readOnly: true
+          type: array
+        id:
+          description: The ID of the attachment.
+          format: int64
+          readOnly: true
+          type: integer
+        mediaType:
+          description: The MIME type of the attachment.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the archive file.
+          readOnly: true
+          type: string
+        totalEntryCount:
+          description: The number of items included in the archive.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    AttachmentArchiveImpl:
+      additionalProperties: false
+      properties:
+        entries:
+          description: The list of the items included in the archive.
+          items:
+            $ref: '#/components/schemas/AttachmentArchiveEntry'
+          type: array
+        totalEntryCount:
+          description: The number of items in the archive.
+          format: int32
+          type: integer
+      type: object
+    ApplicationRole:
+      additionalProperties: false
+      description: Details of an application role.
+      properties:
+        defaultGroups:
+          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        defaultGroupsDetails:
+          description: The groups that are granted default access for this application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        defined:
+          description: Deprecated.
+          type: boolean
+        groupDetails:
+          description: The groups associated with the application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        groups:
+          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        hasUnlimitedSeats:
+          type: boolean
+        key:
+          description: The key of the application role.
+          type: string
+        name:
+          description: The display name of the application role.
+          type: string
+        numberOfSeats:
+          description: The maximum count of users on your license.
+          format: int32
+          type: integer
+        platform:
+          description: Indicates if the application role belongs to Jira platform (`jira-core`).
+          type: boolean
+        remainingSeats:
+          description: The count of users remaining on your license.
+          format: int32
+          type: integer
+        selectedByDefault:
+          description: Determines whether this application role should be selected by default on user creation.
+          type: boolean
+        userCount:
+          description: The number of users counting against your license.
+          format: int32
+          type: integer
+        userCountDescription:
+          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+          type: string
+      type: object
+    Attachment:
+      additionalProperties: true
+      description: Details about an attachment.
+      properties:
+        author:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          description: Details of the user who added the attachment.
+          readOnly: true
+        content:
+          description: The content of the attachment.
+          readOnly: true
+          type: string
+        created:
+          description: The datetime the attachment was created.
+          format: date-time
+          readOnly: true
+          type: string
+        filename:
+          description: The file name of the attachment.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the attachment.
+          readOnly: true
+          type: string
+        mimeType:
+          description: The MIME type of the attachment.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the attachment details response.
+          readOnly: true
+          type: string
+        size:
+          description: The size of the attachment.
+          format: int64
+          readOnly: true
+          type: integer
+        thumbnail:
+          description: The URL of a thumbnail representing the attachment.
+          readOnly: true
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    MultipartFile:
+      additionalProperties: false
+      properties:
+        bytes:
+          items:
+            format: byte
+            type: string
+          type: array
+        contentType:
+          type: string
+        empty:
+          type: boolean
+        inputStream:
+          type: object
+        name:
+          type: string
+        originalFilename:
+          type: string
+        resource:
+          $ref: '#/components/schemas/Resource'
+        size:
+          format: int64
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

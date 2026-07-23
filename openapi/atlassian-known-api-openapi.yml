@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Known API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Known
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines_config/ssh/known_hosts:
+    get:
+      tags:
+      - Known
+      summary: Atlassian List Known Hosts
+      description: This API endpoint retrieves a list of configured SSH known hosts for a specific Bitbucket repository's pipeline configuration. By making a GET request to `/repositories/{workspace}/{repo_slug}/pipelines_config/ssh/known_hosts`, developers can view all SSH host fingerprints that have been added to the repository's pipeline settings, which are used to verify the identity of remote servers during SSH connections in CI/CD pipeline executions. The endpoint requires the workspace identifier and repository slug as path parameters, and typically returns details about each known host including the hostname, public key type, and the actual SSH key fingerprint that will be used for host verification during automated builds and deployments.
+      operationId: listKnownHosts
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The retrieved known hosts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_known_hosts'
+              examples:
+                paginated-pipeline-known-hosts:
+                  $ref: '#/components/examples/paginated-pipeline-known-hosts'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Known
+      summary: Atlassian Create Known Host
+      description: Creates a new known host entry in the Bitbucket Pipelines SSH configuration for a specified repository, allowing the pipeline to establish secure SSH connections to external servers by adding their public key fingerprints to the trusted known hosts list. This endpoint requires authentication and accepts the workspace identifier and repository slug as path parameters, along with the host details in the request body, which typically includes the hostname and its corresponding SSH public key. Once configured, Bitbucket Pipelines can securely connect to the specified host during build and deployment processes without manual verification prompts.
+      operationId: createKnownHost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_known_host'
+            examples:
+              pipeline-known-host:
+                $ref: '#/components/examples/pipeline-known-host'
+        description: The known host to create.
+        required: true
+      responses:
+        '201':
+          description: The known host was created.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline known host.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+              examples:
+                pipeline-known-host_2:
+                  $ref: '#/components/examples/pipeline-known-host_2'
+        '404':
+          description: The account or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: A known host with the provided hostname already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines_config/ssh/known_hosts/{known_host_uuid}:
+    get:
+      tags:
+      - Known
+      summary: Atlassian Get Known Host
+      description: This GET operation retrieves a specific known host entry from a Bitbucket repository's Pipelines SSH configuration using the known host's unique identifier. The endpoint requires the workspace name, repository slug, and the UUID of the known host to return detailed information about that particular SSH known host entry, which is used to verify and establish secure SSH connections during pipeline executions. This allows administrators and developers to inspect individual known host configurations that have been added to the repository's Pipelines settings for secure server authentication.
+      operationId: getKnownHost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The known host.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+              examples:
+                pipeline-known-host_2:
+                  $ref: '#/components/examples/pipeline-known-host_2'
+        '404':
+          description: The account, repository or known host with the specified UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Known
+      summary: Atlassian Update Known Host
+      description: This API operation updates an existing known host entry in the SSH configuration for Bitbucket Pipelines within a specific repository. By sending a PUT request to this endpoint with the workspace name, repository slug, and the UUID of the known host to be updated, you can modify the SSH host key information that Pipelines uses to verify connections to external servers during build executions. This is useful when SSH host keys change due to server migrations or security updates, allowing you to maintain secure SSH connections without recreating the entire known host entry. The operation requires appropriate repository permissions and expects the updated known host details in the request body, returning the modified known host configuration upon successful execution.
+      operationId: updateKnownHost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to update.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_known_host'
+            examples:
+              pipeline-known-host_2:
+                $ref: '#/components/examples/pipeline-known-host_2'
+        description: The updated known host.
+        required: true
+      responses:
+        '200':
+          description: The known host was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+              examples:
+                pipeline-known-host_2:
+                  $ref: '#/components/examples/pipeline-known-host_2'
+        '404':
+          description: The account, repository or known host with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Known
+      summary: Atlassian Delete Known Host
+      description: This API operation removes a specific SSH known host entry from a Bitbucket repository's Pipelines configuration by providing the workspace identifier, repository slug, and the unique UUID of the known host to be deleted. Known hosts are SSH server fingerprints that Pipelines uses to verify the identity of remote servers during SSH connections, and deleting a known host entry means that the repository's pipeline will no longer have that server's SSH key fingerprint stored for authentication purposes. This DELETE request is typically used when a known host is no longer needed, has been compromised, or when the server's SSH keys have changed and need to be re-added with updated fingerprints. The operation requires appropriate authentication and authorization permissions for the specified repository and workspace, and upon successful deletion, the known host will be permanently removed from the Pipelines SSH configuration for that repository.
+      operationId: deleteKnownHost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The known host was deleted.
+        '404':
+          description: The account, repository or known host with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    pipeline-known-host_2:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      hostname: github.com
+      public_key:
+        type: ssh-rsa
+        key: AAAAB3NzaC1yc2EAAAADAQABAAABAQC7...
+        md5_fingerprint: 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48
+        sha256_fingerprint: SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8
+    paginated-pipeline-known-hosts:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        hostname: github.com
+        public_key:
+          type: ssh-rsa
+          key: AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines_config/known_hosts?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines_config/known_hosts?page=0
+    pipeline-known-host:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      hostname: github.com
+      public_key:
+        type: ssh-rsa
+        key: AAAAB3NzaC1yc2EAAAADAQABAAABAQC7...
+  schemas:
+    paginated_pipeline_known_hosts:
+      type: object
+      title: Paginated Pipeline Known Hosts
+      description: A paged list of known hosts.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_known_host'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    pipeline_ssh_public_key:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline SSH Public Key
+        description: A Pipelines known host public key.
+        properties:
+          key_type:
+            type: string
+            description: The type of the public key.
+          key:
+            type: string
+            description: The base64 encoded public key.
+          md5_fingerprint:
+            type: string
+            description: The MD5 fingerprint of the public key.
+          sha256_fingerprint:
+            type: string
+            description: The SHA-256 fingerprint of the public key.
+    pipeline_known_host:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Known Host
+        description: A Pipelines known host.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the known host.
+          hostname:
+            type: string
+            description: The hostname of the known host.
+          public_key:
+            $ref: '#/components/schemas/pipeline_ssh_public_key'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

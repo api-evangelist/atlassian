@@ -1,0 +1,704 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Audit API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Audit
+paths:
+  /wiki/rest/api/audit/export:
+    get:
+      tags:
+      - Audit
+      summary: Atlassian Export Audit Records
+      description: The Export Audit Records operation is a GET endpoint in the Atlassian Confluence Audit API accessible via `/wiki/rest/api/audit/export` that allows administrators to retrieve and download audit log data from their Confluence instance. This endpoint enables users to export audit records in a structured format for compliance, security analysis, archival purposes, or integration with external monitoring and SIEM systems. The operation typically supports filtering parameters to narrow down the audit records by date range, event type, user, or affected content, and returns the data in a downloadable format such as CSV or JSON. This functionality is essential for organizations that need to maintain comprehensive audit trails of user activities, content changes, permission modifications, and system events within their Confluence workspace for regulatory compliance and security auditing requirements.
+      operationId: exportAuditRecords
+      parameters:
+      - name: startDate
+        in: query
+        description: 'Filters the exported results to the records on or after the `startDate`.
+
+          The `startDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        description: 'Filters the exported results to the records on or before the `endDate`.
+
+          The `endDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: searchString
+        in: query
+        description: 'Filters the exported results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: format
+        in: query
+        description: The format of the export file for the audit records.
+        schema:
+          type: string
+          default: csv
+          enum:
+          - csv
+          - zip
+      responses:
+        '200':
+          description: Returned if the requested export of the audit records is returned.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/audit/since:
+    get:
+      tags:
+      - Audit
+      summary: Atlassian Get Audit Records for Time Period
+      description: The Atlassian Confluence Audit API endpoint `/wiki/rest/api/audit/since` using the GET method retrieves audit records that have been created since a specified time period. This operation allows administrators and authorized users to query and review system audit logs within a defined timeframe, providing visibility into user actions, system changes, and security-related events that occurred after a particular timestamp. The endpoint is essential for compliance monitoring, security auditing, and tracking changes made to Confluence spaces, pages, and configuration settings over time.
+      operationId: getAuditRecordsForTimePeriod
+      parameters:
+      - name: number
+        in: query
+        description: The number of units for the time period.
+        schema:
+          type: integer
+          format: int64
+          default: 3
+      - name: units
+        in: query
+        description: The unit of time that the time period is measured in.
+        schema:
+          type: string
+          default: MONTHS
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+      - name: searchString
+        in: query
+        description: 'Filters the results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned records.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of records to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 1000
+      responses:
+        '200':
+          description: Returned if the requested records are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecordArray'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/audit/retention:
+    get:
+      tags:
+      - Audit
+      summary: Atlassian Get Retention Period
+      description: Returns the retention period for records in the audit log. The retention<br>period is how long an audit record is kept for, from creation date until<br>it is deleted.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianGetretentionperiod
+      responses:
+        '200':
+          description: Returned if the requested retention period is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPeriod'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    put:
+      tags:
+      - Audit
+      summary: Atlassian Set Retention Period
+      description: Sets the retention period for records in the audit log. The retention period<br>can be set to a maximum of 1 year.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianSetretentionperiod
+      requestBody:
+        description: The updated retention period.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionPeriod'
+        required: true
+      responses:
+        '200':
+          description: Returned if the retention period is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPeriod'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+  /wiki/rest/api/audit:
+    get:
+      tags:
+      - Audit
+      summary: Atlassian Get Audit Records
+      description: Returns all records in the audit log, optionally for a certain date range.<br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianGetauditrecords
+      parameters:
+      - name: startDate
+        in: query
+        description: 'Filters the results to the records on or after the `startDate`.
+
+          The `startDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        description: 'Filters the results to the records on or before the `endDate`.
+
+          The `endDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: searchString
+        in: query
+        description: 'Filters the results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned records.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of records to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 1000
+      responses:
+        '200':
+          description: Returned if the requested records are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecordArray_3'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    post:
+      tags:
+      - Audit
+      summary: Atlassian Create Audit Record
+      description: Creates a record in the audit log.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianCreateauditrecord
+      requestBody:
+        description: The record to be created in the audit log.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRecordCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the record is created in the audit log.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecord'
+        '400':
+          description: Returned if the `remoteAddress` property is not specified.
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+        - write:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+        - write:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+components:
+  schemas:
+    RetentionPeriod:
+      required:
+      - number
+      - units
+      type: object
+      properties:
+        number:
+          type: integer
+          description: The number of units for the retention period.
+          format: int32
+        units:
+          type: string
+          description: The unit of time that the retention period is measured in.
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+          - MILLENNIA
+          - ERAS
+          - FOREVER
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ChangedValue:
+      required:
+      - name
+      - newValue
+      - oldValue
+      type: object
+      properties:
+        name:
+          type: string
+        oldValue:
+          type: string
+        hiddenOldValue:
+          type: string
+        newValue:
+          type: string
+        hiddenNewValue:
+          type: string
+    AuditRecord:
+      required:
+      - affectedObject
+      - associatedObjects
+      - author
+      - category
+      - changedValues
+      - creationDate
+      - description
+      - remoteAddress
+      - summary
+      - sysAdmin
+      type: object
+      properties:
+        author:
+          required:
+          - displayName
+          - operations
+          - type
+          type: object
+          properties:
+            type:
+              type: string
+              default: user
+              enum:
+              - user
+            displayName:
+              type: string
+            operations:
+              nullable: true
+              type: object
+              properties: {}
+            username:
+              $ref: '#/components/schemas/GenericUserName'
+            userKey:
+              $ref: '#/components/schemas/GenericUserKey'
+            accountId:
+              $ref: '#/components/schemas/GenericAccountId'
+            accountType:
+              type: string
+            externalCollaborator:
+              type: boolean
+            isExternalCollaborator:
+              type: boolean
+              description: Whether the user is an external collaborator user
+            publicName:
+              type: string
+              description: The public name or nickname of the user. Will always contain a value.
+        remoteAddress:
+          type: string
+        creationDate:
+          type: integer
+          description: The creation date-time of the audit record, as a timestamp.
+          format: int64
+        summary:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        sysAdmin:
+          type: boolean
+        superAdmin:
+          type: boolean
+        affectedObject:
+          $ref: '#/components/schemas/AffectedObject'
+        changedValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangedValue'
+        associatedObjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/AffectedObject'
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    AuditRecordArray_3:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditRecord'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    AuditRecordArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          example: example_value
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    AuditRecordCreate:
+      required:
+      - remoteAddress
+      type: object
+      properties:
+        author:
+          required:
+          - type
+          type: object
+          properties:
+            type:
+              type: string
+              description: Set to 'user'.
+              default: user
+              enum:
+              - user
+            displayName:
+              type: string
+              description: The name that is displayed on the audit log in the Confluence UI.
+            operations:
+              type: object
+              properties: {}
+              description: Always defaults to null.
+            username:
+              $ref: '#/components/schemas/GenericUserName'
+            userKey:
+              $ref: '#/components/schemas/GenericUserKey'
+          description: 'The user that actioned the event. If `author` is not specified, then all
+
+            `author` properties will be set to null/empty, except for `type` which
+
+            will be set to ''user''.'
+        remoteAddress:
+          type: string
+          description: The IP address of the computer where the event was initiated from.
+        creationDate:
+          type: integer
+          description: 'The creation date-time of the audit record, as a timestamp. This is converted
+
+            to a date-time display in the Confluence UI. If the `creationDate` is not
+
+            specified, then it will be set to the timestamp for the current date-time.'
+          format: int64
+        summary:
+          type: string
+          description: 'The summary of the event, which is displayed in the ''Change'' column on
+
+            the audit log in the Confluence UI.'
+        description:
+          type: string
+          description: 'A long description of the event, which is displayed in the ''Description''
+
+            field on the audit log in the Confluence UI.'
+        category:
+          type: string
+          description: 'The category of the event, which is displayed in the ''Event type'' column
+
+            on the audit log in the Confluence UI.'
+        sysAdmin:
+          type: boolean
+          description: Indicates whether the event was actioned by a system administrator.
+          default: false
+        affectedObject:
+          $ref: '#/components/schemas/AffectedObject'
+        changedValues:
+          type: array
+          description: The values that were changed in the event.
+          items:
+            $ref: '#/components/schemas/ChangedValue'
+        associatedObjects:
+          type: array
+          description: 'Objects that were associated with the event. For example, if the event
+
+            was a space permission change then the associated object would be the
+
+            space.'
+          items:
+            $ref: '#/components/schemas/AffectedObject'
+    AffectedObject:
+      required:
+      - name
+      - objectType
+      type: object
+      properties:
+        name:
+          type: string
+        objectType:
+          type: string
+  examples:
+    undefined_2:
+      _links:
+        self: https://api.example.com/resource
+        next: https://api.example.com/resource?start=10
+        base: https://api.example.com
+      limit: 10
+      results: []
+      size: 0
+      start: 0
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,587 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Steps API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Steps
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps:
+    get:
+      tags:
+      - Steps
+      summary: Atlassian List Steps for Pipeline
+      description: Retrieves a paginated list of all build steps that belong to a specific pipeline execution in a Bitbucket repository. This endpoint requires the workspace identifier, repository slug, and pipeline UUID as path parameters to locate the target pipeline, then returns detailed information about each step in the pipeline's execution sequence including their status, duration, commands executed, and any associated logs or artifacts. The response provides visibility into the individual stages of a CI/CD pipeline run, allowing developers and DevOps teams to monitor progress, debug failures, and analyze the execution flow of their automated builds and deployments.
+      operationId: listStepsForPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The steps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_steps'
+              examples:
+                paginated-pipeline-steps:
+                  $ref: '#/components/examples/paginated-pipeline-steps'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/log:
+    get:
+      tags:
+      - Steps
+      summary: Atlassian Get Log File for Step
+      description: This API operation retrieves the log file for a specific step within a Bitbucket pipeline. By providing the workspace ID, repository slug, pipeline UUID, and step UUID, you can access the detailed execution logs generated during that particular pipeline step. The logs contain console output, error messages, and other diagnostic information that occurred while the step was running, which is useful for debugging failed builds, monitoring deployment processes, or auditing pipeline execution history. This endpoint returns the raw log content that was captured during the step's execution in the CI/CD pipeline.
+      operationId: getLogFileForStep
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for this pipeline step.
+        '304':
+          description: The log has the same etag as the provided If-None-Match header.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: A pipeline with the given UUID does not exist, a step with the given UUID does not exist in the pipeline or a log file does not exist for the given step.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+        '416':
+          description: The requested range does not exist for requests that specified the [HTTP Range header](https://tools.ietf.org/html/rfc7233#section-3.1).
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/logs/{log_uuid}:
+    get:
+      tags:
+      - Steps
+      summary: Atlassian Get the Logs for the Build Container or Service Container for Given Step of Pipeline.
+      description: This API endpoint retrieves the logs for a specific build or service container associated with a particular step in a Bitbucket pipeline execution. By providing the workspace identifier, repository slug, pipeline UUID, step UUID, and log UUID, developers can access detailed log information that captures the output and execution details of containers running during the pipeline process. This is particularly useful for debugging pipeline failures, monitoring build processes, and tracking the behavior of services or builds within a specific pipeline step, enabling teams to troubleshoot issues and optimize their CI/CD workflows effectively.
+      operationId: getTheLogsForTheBuildContainerOrServiceContainerForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: log_uuid
+        description: For the main build container specify the step UUID; for a service container specify the service container UUID
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for the build container or service container.
+        '404':
+          description: No account, repository, pipeline, step or log exist for the provided path.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports:
+    get:
+      tags:
+      - Steps
+      summary: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+      operationId: getSummaryOfTestReportsForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A summary of test reports for this pipeline step.
+        '404':
+          description: No account, repository, pipeline, step or test reports exist for the provided path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API endpoint retrieves a comprehensive summary of test reports for a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, users can access aggregated test results including passed, failed, and skipped tests, along with detailed metrics and statistics generated during that particular pipeline step's test execution phase.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports/test_cases:
+    get:
+      tags:
+      - Steps
+      summary: Atlassian Get Test Cases for Given Step of Pipeline.
+      operationId: getTestCasesForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Test cases for this pipeline step.
+        '404':
+          description: No account, repository, pipeline, step or test reports exist for the provided path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API operation retrieves test case results for a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, developers can access detailed information about individual test cases that were executed during that particular pipeline step, including test names, status (passed, failed, skipped), execution time, and any associated error messages or stack traces. This endpoint is particularly useful for analyzing test failures, generating custom reports, or integrating Bitbucket pipeline test results into external monitoring and quality assurance tools.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  ? /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports/test_cases/{test_case_uuid}/test_case_reasons
+  : get:
+      tags:
+      - Steps
+      summary: Atlassian Get Test Case Reasons (output) for Given Test Case in Step of Pipeline.
+      operationId: getTestCaseReasonsOutputForGivenTestCaseInStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: test_case_uuid
+        description: The UUID of the test case.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Test case reasons (output).
+        '404':
+          description: No account, repository, pipeline, step or test case with the UUID provided exists for the pipeline with the UUID provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API endpoint retrieves the test case reasons (output) for a specific test case within a pipeline step in Atlassian Bitbucket. It requires authentication and accepts path parameters including the workspace identifier, repository slug, pipeline UUID, step UUID, and test case UUID to uniquely identify the test case whose reasons or failure details you want to access. The GET operation returns information about why a particular test case passed, failed, or was skipped during the execution of that specific pipeline step, providing detailed diagnostic information useful for debugging automated test failures in your CI/CD pipeline.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    paginated-pipeline-steps:
+      page: 1
+      values:
+        uuid: 3c7a5e2f-4b8d-4e9a-a1c3-6f2d8b4e9a1c
+        started_on: '2024-01-15T10:30:00Z'
+        completed_on: '2024-01-15T10:35:30Z'
+        state:
+          name: COMPLETED
+          type: pipeline_step_state
+        image:
+          name: atlassian/default-image:latest
+        setup_commands:
+        - name: setup-environment
+          command: export ENV_VAR=value
+        script_commands:
+        - name: build
+          command: npm install
+        - name: test
+          command: npm test
+      size: 50
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines/123/steps?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines/123/steps?page=0
+  schemas:
+    pipeline_step:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step
+        description: A step of a Bitbucket pipeline. This represents the actual result of the step execution.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the step.
+          started_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was started. This is not set when the step hasn't executed yet.
+          completed_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was completed. This is not set if the step is still in progress.
+          state:
+            $ref: '#/components/schemas/pipeline_step_state'
+          image:
+            $ref: '#/components/schemas/pipeline_image'
+          setup_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of commands that are executed as part of the setup phase of the build. These commands are executed outside the build container.
+          script_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of build commands. These commands are executed in the build container.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/{pipeline.uuid}/steps/{uuid}
+      x-bb-batch-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/steps_batch
+      x-bb-batch-max-size: 100
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_pipeline_steps:
+      type: object
+      title: Paginated Pipeline Steps
+      description: A paged list of pipeline steps.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_step'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    pipeline_command:
+      type: object
+      title: Pipeline Command
+      description: An executable pipeline command.
+      properties:
+        name:
+          type: string
+          description: The name of the command.
+          example: Example Title
+        command:
+          type: string
+          description: The executable command.
+          example: example_value
+    pipeline_image:
+      type: object
+      title: Pipeline Image
+      description: The definition of a Docker image that can be used for a Bitbucket Pipelines step execution context.
+      properties:
+        name:
+          type: string
+          description: The name of the image. If the image is hosted on DockerHub the short name can be used, otherwise the fully qualified name is required here.
+          example: Example Title
+        username:
+          type: string
+          description: The username needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        password:
+          type: string
+          description: The password needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        email:
+          type: string
+          description: The email needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: user@example.com
+    pipeline_step_state:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step State
+        description: The representation of the progress state of a pipeline step.
+        properties: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

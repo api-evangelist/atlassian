@@ -1,0 +1,2320 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content States API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content States
+paths:
+  /wiki/rest/api/content-states/delete:
+    post:
+      tags:
+      - Content States
+      summary: Atlassian Bulk Remove Content States From Content
+      description: Creates a long running task that Removes content state from draft or published versions of pages specified.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**<br>Content Edit Permission for a content to have its state removed via this endpoint.
+      operationId: atlassianBulkremovecontentstates
+      parameters:
+      - name: status
+        in: query
+        required: true
+        description: Set status to one of [current,draft].
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ContentId'
+      responses:
+        '200':
+          description: 'Returned if a task to remove content states is created. Returns the taskId.
+
+            This task id can be passed into /wiki/rest/api/content-states/task/{taskId}'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncId'
+        '400':
+          description: Returned if too many contents, no contents, no content state, or no status are passed in.
+        '401':
+          description: Returned if user not authenticated.
+        '403':
+          description: Returned if user not found or does not have permission for content stat
+        '404':
+          description: Returned if content cannot be found with the provided context.
+      security:
+      - oAuthDefinitions:
+        - write:confluence-content
+      - basicAuth: []
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content-states/task/{taskId}:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Update on Long Running Task for Setting of Content State
+      description: Get Status of long running task that was previously created to set or remove content states from content.<br>User must first create a task by passing in details to /wiki/rest/api/content-states PUT or DELETE endpoints.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**<br>Must have created long running task
+      operationId: atlassianGettaskupdate
+      parameters:
+      - name: taskId
+        in: path
+        schema:
+          type: string
+        description: taskId returned by put or delete requests to /wiki/rest/api/content-states
+        required: true
+      responses:
+        '200':
+          description: Task found. State of task is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateBulkSetTaskUpdate'
+        '403':
+          description: User not authenticated.
+        '404':
+          description: No long running task by calling user with given taskId found.
+      security:
+      - oAuthDefinitions:
+        - read:confluence-content
+      - basicAuth: []
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/state:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Space Suggested Content States
+      description: Get content states that are suggested in the space.<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Space view permission
+      operationId: atlassianGetspacecontentstates
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content state settings.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested space exists, and user has space view permission.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentState'
+                description: Space suggested content states that users can choose from
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have space admin permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/state/settings:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Content State Settings for Space
+      description: Get object describing whether content states are allowed at all, if custom content states or space content states<br>are restricted, and a list of space content states allowed for the space if they are not restricted.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Space admin permission
+      operationId: atlassianGetcontentstatesettings
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content state settings.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested space exists, and user has space admin permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateSettings'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have space admin permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/state/content:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Content in Space With Given Content State
+      description: Finds paginated content with <br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Space View Permission
+      operationId: atlassianGetcontentswithstate
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content state settings.
+        required: true
+        schema:
+          type: string
+      - name: state-id
+        in: query
+        description: The id of the content state to filter content by
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content to expand.
+
+          Options include: space, version, history, children, etc.
+
+
+          Ex: space,version'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: limit
+        in: query
+        description: Maximum number of results to return
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 0
+          format: int32
+          default: 25
+      - name: start
+        in: query
+        description: Number of result to start returning. (0 indexed)
+        schema:
+          type: integer
+          minimum: 0
+          format: int32
+      responses:
+        '200':
+          description: Returned if search was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '400':
+          description: Returned if limit or start are out of range, stateId is omitted.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have space view permission.
+        '404':
+          description: Returned if the space with given key can not be found.
+      security:
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      - basicAuth: []
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/state:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Content State
+      description: Gets the current content state of the draft or current version of content. To specify the draft version, set<br>the parameter status to draft, otherwise archived or current will get the relevant published state.<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetcontentstate
+      parameters:
+      - name: id
+        in: path
+        description: The id of the content whose content state is of interest.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: Set status to one of [current,draft,archived]. Default value is current.
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - draft
+          - archived
+      responses:
+        '200':
+          description: Returned if permission allows viewing of content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content view permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content States
+      summary: Atlassian Set The Content State Of A Content And Publishes A New Version Of The Content
+      description: Sets the content state of the content specified and creates a new version<br>(publishes the content without changing the body) of the content with the new state.<br><br>You may pass in either an id of a state, or the name and color of a desired new state.<br>If all 3 are passed in, id will be used.<br>If the name and color passed in already exist under the current user's existing custom states, the existing state will be reused.<br>If custom states are disabled in the space of the content (which can be determined by getting the content state space settings of the content's space)<br>then this set will fail.<br><br>You may not remove a content state via this PUT request. You must use the DELETE method. A specified state is required in the body of this request.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianSetcontentstate
+      requestBody:
+        description: Content state fields for state. Pass in id for an existing state, or new name and color for best matching existing state, or new state if allowed in space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentStateRestInput'
+        required: true
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the content whose content state is to be set.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: 'Status of content onto which state will be placed. If draft, then draft state will change.
+
+          If current, state will be placed onto a new version of the content with same body as previous version.'
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      responses:
+        '200':
+          description: Returned if content state is set successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '400':
+          description: 'Invalid Name/Color, non-existent id of content state, or type of state desired is not allowed.
+
+            Name must be less than or exactly 20 characters. Color must be a valid hex string.
+
+            Status must be in [draft,current].'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content States
+      summary: Atlassian Removes The Content State Of A Content And Publishes A New Version
+      description: Removes the content state of the content specified and creates a new version<br>(publishes the content without changing the body) of the content with the new status.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianRemovecontentstate
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the content whose content state is to be set.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: status of content state from which to delete state. Can be draft or archived
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      responses:
+        '200':
+          description: Returned if content state is removed from content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/state/available:
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Gets Available Content States For Content
+      description: Gets content states that are available for the content to be set as.<br>Will return all enabled Space Content States.<br>Will only return most the 3 most recently published custom content states to match UI editor list.<br>To get all custom content states, use the /content-states endpoint.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianGetavailablecontentstates
+      parameters:
+      - name: id
+        in: path
+        description: id of content to get available states for
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the content is found and permission is valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableContentStates'
+        '400':
+          description: Invalid status for content. Must be in [current,draft,archived].
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/content-states:
+    put:
+      tags:
+      - Content States
+      summary: Atlassian Bulk Set Content State Of Many Contents
+      deprecated: true
+      description: Creates a long running task that sets content state of draft or published versions of pages specified.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**<br>Content Edit Permission for a content to have its state set via this endpoint.
+      operationId: atlassianBulksetcontentstates
+      parameters:
+      - name: status
+        in: query
+        required: true
+        description: Set status to one of [current,draft].
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      requestBody:
+        description: The content state and ids to set it to.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkContentStateSetInput'
+        required: true
+      responses:
+        '200':
+          description: 'Returned if a task to set content states is created. Returns the taskId.
+
+            This task id can be passed into /wiki/rest/api/content-states/task/{taskId} for a result'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncId_3'
+        '400':
+          description: Returned if too many contents, no contents, no content state, or no status are passed in.
+        '404':
+          description: Returned if content cannot be found with the provided context.
+      security:
+      - oAuthDefinitions:
+        - write:confluence-content
+      - basicAuth: []
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    get:
+      tags:
+      - Content States
+      summary: Atlassian Get Custom Content States
+      description: Get custom content states that authenticated user has created.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**<br>Must have user authentication.
+      operationId: atlassianGetcustomcontentstates
+      responses:
+        '200':
+          description: Custom Content States that user has crated. Returned if user authenticated.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentState'
+        '401':
+          description: Returned if user is not authenticated.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:user.property:confluence
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Space:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
+      - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content'
+        type:
+          type: string
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ButtonLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    UsersUserKeys:
+      required:
+      - userAccountIds
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        userKeys:
+          type: array
+          items:
+            type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type: object
+      nullable: true
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        padding:
+          type: string
+        borderRadius:
+          type: string
+    ContentChildType:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    BulkContentStateSetInput:
+      type: object
+      required:
+      - ids
+      - contentState
+      properties:
+        ids:
+          description: maximum number of ids you can pass in is 300
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentId'
+        contentState:
+          $ref: '#/components/schemas/ContentStateInput'
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    MenusLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+        color:
+          type: string
+    ContentHistory:
+      required:
+      - latest
+      type: object
+      nullable: true
+      properties:
+        latest:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/User'
+        ownedBy:
+          $ref: '#/components/schemas/User'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User'
+        createdDate:
+          type: string
+          format: date-time
+        lastUpdated:
+          $ref: '#/components/schemas/Version'
+        previousVersion:
+          $ref: '#/components/schemas/Version'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys'
+        nextVersion:
+          $ref: '#/components/schemas/Version'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+    ContentArray_3:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ScreenLookAndFeel:
+      required:
+      - background
+      type: object
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        layer:
+          type: object
+          properties:
+            width:
+              type: string
+            height:
+              type: string
+          nullable: true
+        gutterTop:
+          type: string
+          nullable: true
+        gutterRight:
+          type: string
+          nullable: true
+        gutterBottom:
+          type: string
+          nullable: true
+        gutterLeft:
+          type: string
+          nullable: true
+    TopNavigationLookAndFeel:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+        highlightColor:
+          type: string
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    ContentStateSettings:
+      required:
+      - contentStatesAllowed
+      - customContentStatesAllowed
+      - spaceContentStatesAllowed
+      type: object
+      properties:
+        contentStatesAllowed:
+          type: boolean
+          description: Whether users can place any content states on content
+          example: true
+        customContentStatesAllowed:
+          type: boolean
+          description: Whether users can place their custom states on content
+          example: true
+        spaceContentStatesAllowed:
+          type: boolean
+          description: Whether users can place space suggested states on content
+          example: true
+        spaceContentStates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentState'
+          description: space suggested content states that users can choose from
+          example: []
+    HeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    Group:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+        name:
+          type: string
+        id:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    ContentStateRestInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of content state. Maximum 20 characters.
+        color:
+          type: string
+          description: "Color of state. Must be in 6 digit hex form (#FFFFFF). The default colors offered in the UI are:\n #ff7452 (red),\n #2684ff (blue),\n #ffc400 (yellow),\n #57d9a3 (green), and\n #8777d9 (purple)"
+        id:
+          type: integer
+          description: id of state. This can be 0,1, or 2 if you wish to specify a default space state.
+          format: int64
+    UserArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    ContentId:
+      type: string
+    AvailableContentStates:
+      required:
+      - spaceContentStates
+      - customContentStates
+      type: object
+      properties:
+        spaceContentStates:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/ContentState'
+          description: 'Space suggested content states that can be used in the space. This can be null if space content states are disabled in the space.
+
+            This list can be empty if there are no space content states defined in the space.
+
+            All spaces start with 3 default space content states, and this can be modified in the UI under space settings.'
+        customContentStates:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/ContentState'
+          description: "Custom content states that can be used by the user on the content of this call.\nThis can be null if custom content states are disabled in the space of the content.\nThis list can be empty if there are no custom content states defined by the user.\nThis will at most have 3 of the most recently published content states. \nOnly the calling user has access to place these states on content, but all users can see these states once they are placed."
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    ContentState:
+      required:
+      - id
+      - name
+      - color
+      type: object
+      properties:
+        id:
+          type: integer
+          description: identifier of content state. If 0, 1, or 2, this is a default space state
+          format: int64
+        name:
+          type: string
+          description: name of content state.
+        color:
+          type: string
+          description: hex string representing color of state
+    SpaceDescription:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+    AsyncId_3:
+      required:
+      - asyncId
+      type: object
+      properties:
+        asyncId:
+          type: string
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ContentStateFailure:
+      required:
+      - contentId
+      - failureReason
+      type: object
+      properties:
+        contentId:
+          $ref: '#/components/schemas/ContentId'
+        failureReason:
+          type: string
+      description: Object describing why a content state set failed
+    ContentMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label'
+      description: Metadata object for page, blogpost, comment content
+    ContentChildren:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray_3'
+        comment:
+          $ref: '#/components/schemas/ContentArray_3'
+        page:
+          $ref: '#/components/schemas/ContentArray_3'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentStateBulkSetTaskUpdate:
+      required:
+      - set
+      - failed
+      - success
+      - percentage
+      properties:
+        set:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentId'
+          example: []
+        failed:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentStateFailure'
+          example: []
+        percentage:
+          type: integer
+          format: int64
+          example: 10
+        message:
+          type: string
+          example: example_value
+        state:
+          $ref: '#/components/schemas/ContentState'
+        success:
+          type: boolean
+          example: true
+      type: object
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        spaceReference:
+          type: object
+          nullable: true
+    AsyncId:
+      required:
+      - asyncId
+      type: object
+      properties:
+        asyncId:
+          type: string
+          example: '500123'
+    Container:
+      type: object
+      nullable: true
+      additionalProperties: true
+      description: 'Container for content. This can be either a space (containing a page or blogpost)
+
+        or a page/blog post (containing an attachment or comment)'
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+      description: An operation and the target entity that it applies to, e.g. create page.
+    User:
+      required:
+      - type
+      type: object
+      additionalProperties: true
+      nullable: true
+      properties:
+        type:
+          type: string
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+        email:
+          nullable: true
+          type: string
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          nullable: true
+          type: string
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+        timeZone:
+          nullable: true
+          type: string
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        operations:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        personalSpace:
+          $ref: '#/components/schemas/Space'
+        _expandable:
+          type: object
+          properties:
+            operations:
+              type: string
+            details:
+              type: string
+            personalSpace:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpacePermission:
+      required:
+      - anonymousAccess
+      - operation
+      - unlicensedAccess
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subjects:
+          type: object
+          properties:
+            user:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            group:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          description: The users and/or groups that the permission applies to.
+        operation:
+          $ref: '#/components/schemas/OperationCheckResult'
+        anonymousAccess:
+          type: boolean
+          description: Grant anonymous users permission to use the operation.
+          default: false
+        unlicensedAccess:
+          type: boolean
+          description: 'Grants access to unlicensed users from JIRA Service Desk when used
+
+            with the ''read space'' operation.'
+          default: false
+      description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    ContentArray:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    NavigationLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      nullable: true
+      properties:
+        color:
+          type: string
+        highlightColor:
+          type: string
+          nullable: true
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    GroupArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    ContentRestriction:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray'
+            group:
+              $ref: '#/components/schemas/GroupArray'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+        content:
+          $ref: '#/components/schemas/Content'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Content:
+      required:
+      - status
+      - type
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Can be "page", "blogpost", "attachment" or "content"
+        status:
+          type: string
+        title:
+          type: string
+        space:
+          $ref: '#/components/schemas/Space'
+        history:
+          $ref: '#/components/schemas/ContentHistory'
+        version:
+          $ref: '#/components/schemas/Version'
+        ancestors:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        children:
+          $ref: '#/components/schemas/ContentChildren'
+        childTypes:
+          $ref: '#/components/schemas/ContentChildType'
+        descendants:
+          $ref: '#/components/schemas/ContentChildren'
+        container:
+          $ref: '#/components/schemas/Container'
+        body:
+          type: object
+          properties:
+            view:
+              $ref: '#/components/schemas/ContentBody'
+            export_view:
+              $ref: '#/components/schemas/ContentBody'
+            styled_view:
+              $ref: '#/components/schemas/ContentBody'
+            storage:
+              $ref: '#/components/schemas/ContentBody'
+            wiki:
+              $ref: '#/components/schemas/ContentBody'
+            editor:
+              $ref: '#/components/schemas/ContentBody'
+            editor2:
+              $ref: '#/components/schemas/ContentBody'
+            anonymous_export_view:
+              $ref: '#/components/schemas/ContentBody'
+            atlas_doc_format:
+              $ref: '#/components/schemas/ContentBody'
+            dynamic:
+              $ref: '#/components/schemas/ContentBody'
+            raw:
+              $ref: '#/components/schemas/ContentBody'
+            _expandable:
+              type: object
+              properties:
+                editor:
+                  type: string
+                view:
+                  type: string
+                export_view:
+                  type: string
+                styled_view:
+                  type: string
+                storage:
+                  type: string
+                editor2:
+                  type: string
+                anonymous_export_view:
+                  type: string
+                atlas_doc_format:
+                  type: string
+                wiki:
+                  type: string
+                dynamic:
+                  type: string
+                raw:
+                  type: string
+        restrictions:
+          type: object
+          properties:
+            read:
+              $ref: '#/components/schemas/ContentRestriction'
+            update:
+              $ref: '#/components/schemas/ContentRestriction'
+            _expandable:
+              type: object
+              properties:
+                read:
+                  type: string
+                update:
+                  type: string
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        metadata:
+          $ref: '#/components/schemas/ContentMetadata'
+        macroRenderedOutput:
+          type: object
+          additionalProperties:
+            type: object
+        extensions:
+          type: object
+        _expandable:
+          type: object
+          properties:
+            childTypes:
+              type: string
+            container:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            children:
+              type: string
+            restrictions:
+              type: string
+            history:
+              type: string
+            ancestors:
+              type: string
+            body:
+              type: string
+            version:
+              type: string
+            descendants:
+              type: string
+            space:
+              type: string
+            extensions:
+              type: string
+            schedulePublishDate:
+              type: string
+            schedulePublishInfo:
+              type: string
+            macroRenderedOutput:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: Base object for all content types.
+    Version:
+      required:
+      - minorEdit
+      - number
+      - when
+      type: object
+      nullable: true
+      additionalProperties: true
+      properties:
+        by:
+          $ref: '#/components/schemas/User'
+        when:
+          type: string
+          format: date-time
+          nullable: true
+        friendlyWhen:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+        content:
+          $ref: '#/components/schemas/Content'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+        confRev:
+          type: string
+          nullable: true
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+        syncRev:
+          type: string
+          nullable: true
+          description: The revision id provided by Synchrony
+        syncRevSource:
+          type: string
+          nullable: true
+          description: Source of the synchrony revision
+    ContentStateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          description: "Color of state. Must be in 6 digit hex form (#FFFFFF). The default colors offered in the UI are:\n #ff7452 (red),\n #2684ff (blue),\n #ffc400 (yellow),\n #57d9a3 (green), and\n #8777d9 (purple)"
+          type: string
+        id:
+          type: integer
+          format: int32
+        spaceKey:
+          type: string
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    Embeddable:
+      type: object
+      additionalProperties: true
+    ContentStateResponse:
+      type: object
+      properties:
+        contentState:
+          $ref: '#/components/schemas/ContentState'
+          description: Null or content state
+        lastUpdated:
+          type: string
+          description: Timestamp of last publish event where content state changed
+    SpaceSettings:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+        spaceKey:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

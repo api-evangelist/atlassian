@@ -1,0 +1,1174 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Type Screen Schemes API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Type Screen Schemes
+paths:
+  /rest/api/3/issuetypescreenscheme/mapping:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of issue type screen scheme items.<br><br>Only issue type screen schemes used in classic projects are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetissuetypescreenschememappings
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: 'The list of issue type screen scheme IDs. To include multiple issue type screen schemes, separate IDs with ampersand: `issueTypeScreenSchemeId=10000&issueTypeScreenSchemeId=10001`.'
+        in: query
+        name: issueTypeScreenSchemeId
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":4,"values":[{"issueTypeId":"10000","issueTypeScreenSchemeId":"10020","screenSchemeId":"10010"},{"issueTypeId":"10001","issueTypeScreenSchemeId":"10021","screenSchemeId":"10010"},{"issueTypeId":"10002","issueTypeScreenSchemeId":"10022","screenSchemeId":"10010"},{"issueTypeId":"default","issueTypeScreenSchemeId":"10023","screenSchemeId":"10011"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanIssueTypeScreenSchemeItem'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Type Screen Scheme Items
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/project:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of issue type screen schemes and, for each issue type screen scheme, a list of the projects that use it.<br><br>Only issue type screen schemes used in classic projects are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetissuetypescreenschemeprojectassociations
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: 'The list of project IDs. To include multiple projects, separate IDs with ampersand: `projectId=10000&projectId=10001`.'
+        in: query
+        name: projectId
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":1,"values":[{"issueTypeScreenScheme":{"id":"1","name":"Default Issue Type Screen Scheme","description":"The default issue type screen scheme"},"projectIds":["10000","10001"]}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanIssueTypeScreenSchemesProjects'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Type Screen Schemes For Projects
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Assigns an issue type screen scheme to a project.<br><br>Issue type screen schemes can only be assigned to classic projects.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAssignissuetypescreenschemetoproject
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              issueTypeScreenSchemeId: '10001'
+              projectId: '10002'
+            schema:
+              $ref: '#/components/schemas/IssueTypeScreenSchemeProjectAssociation'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only classic projects can have issue type screen schemes assigned."],"errors":{}}'
+          description: "Returned if:\n\n *  project is not found.\n *  issue type screen scheme is not found.\n *  the project is not a classic project."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access issue type screen schemes."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme or the project are missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Assign Issue Type Screen Scheme To Project
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        - write:project:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/{issueTypeScreenSchemeId}:
+    delete:
+      deprecated: false
+      description: Deletes an issue type screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeleteissuetypescreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the issue type screen scheme is deleted.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme cannot be deleted because it is assigned to one or more projects."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Issue Type Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates an issue type screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdateissuetypescreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: Screens for scrum issue types.
+              name: Scrum scheme
+            schema:
+              $ref: '#/components/schemas/IssueTypeScreenSchemeUpdateDetails'
+        description: The issue type screen scheme update details.
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme name is in use."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access issue type screen schemes."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Issue Type Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/{issueTypeScreenSchemeId}/mapping:
+    put:
+      deprecated: false
+      description: Appends issue type to screen scheme mappings to an issue type screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAppendmappingsforissuetypescreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              issueTypeMappings:
+              - issueTypeId: '10000'
+                screenSchemeId: '10001'
+              - issueTypeId: '10001'
+                screenSchemeId: '10002'
+              - issueTypeId: '10002'
+                screenSchemeId: '10002'
+            schema:
+              $ref: '#/components/schemas/IssueTypeScreenSchemeMappingDetails'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["A default mapping cannot be added."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme, issue type, or screen scheme is not found.
+        '409':
+          content:
+            application/json:
+              example: '{"errorMessages":["Sub-tasks are disabled in Jira. At least one of the issue types is a sub-task."],"errors":{}}'
+          description: Returned if the issue type is a sub-task, but sub-tasks are disabled in Jira settings.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Append Mappings To Issue Type Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/{issueTypeScreenSchemeId}/mapping/default:
+    put:
+      deprecated: false
+      description: Updates the default screen scheme of an issue type screen scheme. The default screen scheme is used for all unmapped issue types.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdatedefaultscreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              screenSchemeId: '10010'
+            schema:
+              $ref: '#/components/schemas/UpdateDefaultScreenScheme'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The screenSchemeId has to be provided."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access issue type screen schemes."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme or the screen scheme is not found, or the screen scheme isn't used in classic projects.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Issue Type Screen Scheme Default Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/{issueTypeScreenSchemeId}/mapping/remove:
+    post:
+      deprecated: false
+      description: Removes issue type to screen scheme mappings from an issue type screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianRemovemappingsfromissuetypescreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              issueTypeIds:
+              - '10000'
+              - '10001'
+              - '10004'
+            schema:
+              $ref: '#/components/schemas/IssueTypeIds'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the screen scheme mappings are removed from the issue type screen scheme.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issueTypeIds must not contain duplicates."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access issue type screen schemes."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The issue type screen scheme was not found."],"errors":{}}'
+          description: Returned if the issue type screen scheme or one or more issue type mappings are not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Remove Mappings From Issue Type Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme/{issueTypeScreenSchemeId}/project:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of projects associated with an issue type screen scheme.<br><br>Only company-managed projects associated with an issue type screen scheme are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetprojectsforissuetypescreenscheme
+      parameters:
+      - description: The ID of the issue type screen scheme.
+        in: path
+        name: issueTypeScreenSchemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - in: query
+        name: query
+        schema:
+          default: ''
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":1,"values":[{"avatarUrls":{"16x16":"secure/projectavatar?size=xsmall&pid=10000","24x24":"secure/projectavatar?size=small&pid=10000","32x32":"secure/projectavatar?size=medium&pid=10000","48x48":"secure/projectavatar?size=large&pid=10000"},"id":"10000","key":"EX","name":"Example","projectCategory":{"description":"Project category description","id":"10000","name":"A project category"},"projectTypeKey":"ProjectTypeKey{key=''software''}","self":"project/EX","simplified":false}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanProjectDetails'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Type Screen Scheme Projects
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:project:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuetypescreenscheme:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of issue type screen schemes.<br><br>Only issue type screen schemes used in classic projects are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetissuetypescreenschemes
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: The list of issue type screen scheme IDs. To include multiple IDs, provide an ampersand-separated list. For example, `id=10000&id=10001`.
+        in: query
+        name: id
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      - description: String used to perform a case-insensitive partial match with issue type screen scheme name.
+        in: query
+        name: queryString
+        schema:
+          default: ''
+          type: string
+      - description: "[Order](#ordering) the results by a field:\n\n *  `name` Sorts by issue type screen scheme name.\n *  `id` Sorts by issue type screen scheme ID."
+        in: query
+        name: orderBy
+        schema:
+          default: id
+          enum:
+          - name
+          - -name
+          - +name
+          - id
+          - -id
+          - +id
+          type: string
+      - description: Use [expand](#expansion) to include additional information in the response. This parameter accepts `projects` that, for each issue type screen schemes, returns information about the projects the issue type screen scheme is assigned to.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":2,"values":[{"id":"1","name":"Default Issue Type Screen Scheme","description":"The default issue type screen scheme"},{"id":"10000","name":"Office issue type screen scheme","description":"Managing office projects","projects":{"isLast":true,"maxResults":100,"startAt":0,"total":1,"values":[{"avatarUrls":{"16x16":"secure/projectavatar?size=xsmall&pid=10000","24x24":"secure/projectavatar?size=small&pid=10000","32x32":"secure/projectavatar?size=medium&pid=10000","48x48":"secure/projectavatar?size=large&pid=10000"},"id":"10000","key":"EX","name":"Example","projectCategory":{"description":"Project category description","id":"10000","name":"A project category"},"projectTypeKey":"ProjectTypeKey{key=''software''}","self":"project/EX","simplified":false}]}}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanIssueTypeScreenScheme'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Type Screen Schemes
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: Creates an issue type screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreateissuetypescreenscheme
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              issueTypeMappings:
+              - issueTypeId: default
+                screenSchemeId: '10001'
+              - issueTypeId: '10001'
+                screenSchemeId: '10002'
+              - issueTypeId: '10002'
+                screenSchemeId: '10002'
+              name: Scrum issue type screen scheme
+            schema:
+              $ref: '#/components/schemas/IssueTypeScreenSchemeDetails'
+        description: An issue type screen scheme bean.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"id":"10001"}'
+              schema:
+                $ref: '#/components/schemas/IssueTypeScreenSchemeId'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["One or more issue type IDs are repeated, an issue type ID can only be specified once."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access issue type screen schemes."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["One or more issue type IDs were not found."],"errors":{}}'
+          description: Returned if the issue type or screen scheme is not found.
+        '409':
+          content:
+            application/json:
+              example: '{"errorMessages":["Sub-tasks are disabled in Jira. At least one of the issue types is a sub-task."],"errors":{}}'
+          description: Returned if the issue type is a sub-task, but sub-tasks are disabled in Jira settings.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Issue Type Screen Scheme
+      tags:
+      - Issue Type Screen Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-type-screen-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    IssueTypeScreenSchemeUpdateDetails:
+      additionalProperties: false
+      description: Details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+      type: object
+    IssueTypeScreenSchemeProjectAssociation:
+      additionalProperties: false
+      description: Associated issue type screen scheme and project.
+      properties:
+        issueTypeScreenSchemeId:
+          description: The ID of the issue type screen scheme.
+          type: string
+          writeOnly: true
+        projectId:
+          description: The ID of the project.
+          type: string
+          writeOnly: true
+      type: object
+    IssueTypeScreenSchemeMappingDetails:
+      additionalProperties: false
+      description: A list of issue type screen scheme mappings.
+      properties:
+        issueTypeMappings:
+          description: The list of issue type to screen scheme mappings. A *default* entry cannot be specified because a default entry is added when an issue type screen scheme is created.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
+          type: array
+          writeOnly: true
+      required:
+      - issueTypeMappings
+      type: object
+    IssueTypeScreenSchemeId:
+      additionalProperties: false
+      description: The ID of an issue type screen scheme.
+      properties:
+        id:
+          description: The ID of the issue type screen scheme.
+          readOnly: true
+          type: string
+      required:
+      - id
+      type: object
+    IssueTypeScreenSchemesProjects:
+      additionalProperties: false
+      description: Issue type screen scheme with a list of the projects that use it.
+      properties:
+        issueTypeScreenScheme:
+          allOf:
+          - $ref: '#/components/schemas/IssueTypeScreenScheme'
+          description: Details of an issue type screen scheme.
+        projectIds:
+          description: The IDs of the projects using the issue type screen scheme.
+          items:
+            type: string
+          type: array
+      required:
+      - issueTypeScreenScheme
+      - projectIds
+      type: object
+    IssueTypeScreenSchemeItem:
+      additionalProperties: false
+      description: The screen scheme for an issue type.
+      properties:
+        issueTypeId:
+          description: The ID of the issue type or *default*. Only issue types used in classic projects are accepted. When creating an issue screen scheme, an entry for *default* must be provided and defines the mapping for all issue types without a screen scheme. Otherwise, a *default* entry can't be provided.
+          type: string
+        issueTypeScreenSchemeId:
+          description: The ID of the issue type screen scheme.
+          type: string
+        screenSchemeId:
+          description: The ID of the screen scheme.
+          type: string
+      required:
+      - issueTypeId
+      - issueTypeScreenSchemeId
+      - screenSchemeId
+      type: object
+    IssueTypeScreenScheme:
+      additionalProperties: false
+      description: Details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme.
+          type: string
+        id:
+          description: The ID of the issue type screen scheme.
+          type: string
+        name:
+          description: The name of the issue type screen scheme.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    IssueTypeScreenSchemeMapping:
+      additionalProperties: false
+      description: The IDs of the screen schemes for the issue type IDs.
+      properties:
+        issueTypeId:
+          description: The ID of the issue type or *default*. Only issue types used in classic projects are accepted. An entry for *default* must be provided and defines the mapping for all issue types without a screen scheme.
+          type: string
+          writeOnly: true
+        screenSchemeId:
+          description: The ID of the screen scheme. Only screen schemes used in classic projects are accepted.
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeId
+      - screenSchemeId
+      type: object
+      writeOnly: true
+    IssueTypeScreenSchemeDetails:
+      additionalProperties: false
+      description: The details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        issueTypeMappings:
+          description: The IDs of the screen schemes for the issue type IDs and *default*. A *default* entry is required to create an issue type screen scheme, it defines the mapping for all issue types without a screen scheme.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
+          type: array
+          writeOnly: true
+        name:
+          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeMappings
+      - name
+      type: object
+    PageBeanIssueTypeScreenSchemesProjects:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemesProjects'
+          readOnly: true
+          type: array
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    PageBeanIssueTypeScreenScheme:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenScheme'
+          readOnly: true
+          type: array
+      type: object
+    PageBeanIssueTypeScreenSchemeItem:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeItem'
+          readOnly: true
+          type: array
+      type: object
+    UpdateDefaultScreenScheme:
+      additionalProperties: false
+      description: The ID of a screen scheme.
+      properties:
+        screenSchemeId:
+          description: The ID of the screen scheme.
+          type: string
+          writeOnly: true
+      required:
+      - screenSchemeId
+      type: object
+    IssueTypeIds:
+      additionalProperties: false
+      description: The list of issue type IDs.
+      properties:
+        issueTypeIds:
+          description: The list of issue type IDs.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+      required:
+      - issueTypeIds
+      type: object
+    PageBeanProjectDetails:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/ProjectDetails'
+          readOnly: true
+          type: array
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    ProjectDetails:
+      additionalProperties: false
+      description: Details about a project.
+      properties:
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The URLs of the project's avatars.
+          readOnly: true
+        id:
+          description: The ID of the project.
+          type: string
+        key:
+          description: The key of the project.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the project.
+          readOnly: true
+          type: string
+        projectCategory:
+          allOf:
+          - $ref: '#/components/schemas/UpdatedProjectCategory'
+          description: The category the project belongs to.
+          readOnly: true
+        projectTypeKey:
+          description: The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.
+          enum:
+          - software
+          - service_desk
+          - business
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project details.
+          readOnly: true
+          type: string
+        simplified:
+          description: Whether or not the project is simplified.
+          readOnly: true
+          type: boolean
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

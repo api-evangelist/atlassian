@@ -1,0 +1,291 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Defined API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Defined
+paths:
+  /repositories/{workspace}/{repo_slug}/versions:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Defined
+      description: 'This API endpoint retrieves a paginated list of all defined versions associated with a specific repository in Bitbucket. By making a GET request to /repositories/{workspace}/{repo_slug}/versions, users can access version information that is typically used for issue tracking and release management within the repository. The endpoint requires two path parameters: the workspace identifier and the repository slug, which together uniquely identify the target repository. The response returns version objects that may include details such as version names, identifiers, and metadata that teams use to categorize and track issues across different releases or milestones of their software project.'
+      summary: Atlassian List Defined Versions for Issues
+      responses:
+        '200':
+          description: The versions that have been defined in the issue tracker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_versions'
+              examples:
+                paginated-versions:
+                  $ref: '#/components/examples/paginated-versions'
+        '404':
+          description: The specified repository does not exist or does not have the issue tracker enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue
+      - basic: []
+      - api_key: []
+      operationId: listDefinedVersionsForIssues
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/versions/{version_id}:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: version_id
+      in: path
+      description: The version's id
+      required: true
+      schema:
+        type: integer
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Defined
+      description: 'This GET operation retrieves a specific defined version for issues within a Bitbucket repository by accessing the endpoint /repositories/{workspace}/{repo_slug}/versions/{version_id}. It requires three path parameters: the workspace identifier, the repository slug (a URL-friendly repository name), and the version_id of the specific version you want to retrieve. This endpoint is useful for fetching detailed information about a particular version or milestone that has been configured for issue tracking within a Bitbucket repository, allowing developers and project managers to access version-specific metadata, release information, and associated issue tracking details programmatically.'
+      summary: Atlassian Get Defined Version for Issues
+      responses:
+        '200':
+          description: The specified version object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/version'
+              examples:
+                version:
+                  $ref: '#/components/examples/version'
+        '404':
+          description: The specified repository or version does not exist or does not have the issue tracker enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue
+      - basic: []
+      - api_key: []
+      operationId: getDefinedVersionForIssues
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    paginated_versions:
+      type: object
+      title: Paginated Versions
+      description: A paginated list of issue tracker versions.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/version'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    version:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Version
+        description: A version as defined in a repository's issue tracker.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          name:
+            type: string
+          id:
+            type: integer
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+  examples:
+    version:
+      links:
+        self:
+          href: https://api.example.com/versions/123
+          name: v1.0.0
+      name: v1.0.0
+      id: 123
+    paginated-versions:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/versions?page=2
+      previous: https://api.example.com/versions?page=0
+      values:
+        links:
+          self:
+            href: https://api.example.com/versions/123
+            name: self
+        name: Version 1.0
+        id: 123
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

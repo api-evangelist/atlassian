@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Post API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Post
+paths:
+  /addon/linkers/{linker_key}/values:
+    parameters:
+    - name: linker_key
+      in: path
+      description: 'The unique key of a [linker module](/cloud/bitbucket/modules/linker/)
+
+        as defined in an application descriptor.'
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - Post
+      description: 'Creates a [linker](/cloud/bitbucket/modules/linker/) value for the specified
+
+        linker of authenticated application.
+
+
+        A linker value lets applications supply values to modify its regular expression.
+
+
+        The base regular expression must use a Bitbucket-specific match group `(?K)`
+
+        which will be translated to `([\w\-]+)`. A value must match this pattern.
+
+
+        [Read more about linker values](/cloud/bitbucket/modules/linker/#usingthebitbucketapitosupplyvalues)'
+      summary: Atlassian Post Addon Linkers Key Values
+      responses:
+        '201':
+          description: Successfully created the linker value.
+        '401':
+          description: Authentication must use app JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The linker does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: The linker already has the value being added.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      operationId: postAddonLinkersLinkerKeyValues
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

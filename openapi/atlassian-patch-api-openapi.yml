@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Patch API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Patch
+paths:
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/patch:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Patch
+      description: 'The Atlassian Bitbucket Pull Requests API endpoint `/repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/patch` using the GET method retrieves the raw patch file representation of a specific pull request, which contains the unified diff format showing all code changes between the source and destination branches. This endpoint requires three path parameters: the workspace identifier, the repository slug, and the pull request ID, and returns the patch in text format that can be applied using standard patch utilities or version control commands. The patch output includes metadata such as commit information, file modifications, additions, and deletions, making it useful for code review processes, automated testing pipelines, or applying changes across different repositories without performing a full merge operation.'
+      summary: Atlassian Get the Patch for Pull Request
+      responses:
+        '302':
+          description: 'Redirects to the [repository patch](/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-patch-spec-get) with
+
+            the revspec that corresponds to pull request.
+
+            '
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: getThePatchForPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/patch/{spec}:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: spec
+      in: path
+      description: 'A commit SHA (e.g. `3a8b42`) or a commit range using double dot
+
+        notation (e.g. `3a8b42..9ff173`).
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Patch
+      description: This API endpoint retrieves a raw unified diff patch comparing two commits within a specific Bitbucket repository. By providing the workspace identifier, repository slug, and a commit specification (typically in the format "commit1..commit2"), the endpoint returns the patch content showing the line-by-line differences between the two commits. This is particularly useful for code review processes, examining specific changes between versions, or programmatically analyzing modifications made to a codebase. The patch follows the standard unified diff format, making it compatible with various version control tools and patch application utilities.
+      summary: Atlassian Get Patch for Two Commits
+      responses:
+        '200':
+          description: The raw patches
+        '555':
+          description: 'If the diff was too large and timed out.
+
+
+            Since this endpoint does not employ any form of pagination, but
+
+            instead returns the diff as a single document, it can run into
+
+            trouble on very large diffs. If Bitbucket times out in cases
+
+            like these, a 555 status code is returned.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      operationId: getPatchForTwoCommits
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/{revision}/patch:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: revision
+      in: path
+      description: A revspec expression. This can simply be a commit SHA1, a ref name, or a compare expression like `staging..production`.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Patch
+      description: This API endpoint retrieves a unified diff or patch representation of changes made to a specific snippet between different revisions in Atlassian Bitbucket. By providing the workspace identifier, encoded snippet ID, and a revision specifier, users can obtain a detailed comparison showing the line-by-line differences between the specified revision and its predecessor, formatted as a standard patch file that can be applied using tools like git or diff utilities, making it useful for tracking changes, code reviews, or understanding the evolution of code snippets over time.
+      summary: Atlassian Get Snippet Patch Between Versions
+      responses:
+        '200':
+          description: The raw patch contents.
+        '403':
+          description: If the authenticated user does not have access to the snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: getSnippetPatchBetweenVersions
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

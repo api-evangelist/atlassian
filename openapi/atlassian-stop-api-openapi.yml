@@ -1,0 +1,249 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Stop API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Stop
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/watch:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Stop
+      description: Removes the authenticated user's watch status from a specific issue in a Bitbucket repository. This endpoint allows users to unsubscribe from notifications and updates related to a particular issue they were previously watching. By sending a DELETE request to this endpoint with the workspace identifier, repository slug, and issue ID, the user will no longer receive notifications when the issue is updated, commented on, or changes status. This is useful for managing notification preferences and reducing alert fatigue when an issue is no longer relevant to the user's work or interests.
+      summary: Atlassian Stop Watching an Issue
+      responses:
+        '204':
+          description: Indicates that the authenticated user successfully stopped watching this issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified repository or issue does not exist or does not have the issue tracker enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account:write
+        - issue:write
+      - basic: []
+      - api_key: []
+      operationId: stopWatchingAnIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/stopPipeline:
+    post:
+      tags:
+      - Stop
+      summary: Atlassian Stop Pipeline
+      description: This API operation allows you to stop a currently running pipeline in a Bitbucket repository by sending a POST request to the endpoint with the workspace identifier, repository slug, and the unique UUID of the pipeline you want to terminate. When executed, it immediately halts the execution of the specified pipeline, canceling any in-progress steps or builds. This is useful for scenarios where you need to abort a pipeline that was triggered by mistake, is taking too long, or is no longer needed due to subsequent code changes. The operation requires appropriate authentication and permissions to manage pipelines within the specified workspace and repository.
+      operationId: stopPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The pipeline has been signaled to stop.
+        '400':
+          description: The specified pipeline has already completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Either the account, repository or pipeline with the given UUID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/watch:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Stop
+      description: Removes the authenticated user's watch status from a specific code snippet in Bitbucket. This DELETE operation requires the workspace identifier and the encoded snippet ID as path parameters. Once executed, the user will no longer receive notifications or updates related to changes made to the snippet. Authentication is required to perform this action, and the user must have previously been watching the snippet for this operation to have any effect. This is useful when users want to unsubscribe from notifications about snippets they are no longer interested in following.
+      summary: Atlassian Stop Watching Snippet
+      responses:
+        '204':
+          description: Indicates the user stopped watching the snippet successfully.
+        '401':
+          description: If the request was not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: stopWatchingSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

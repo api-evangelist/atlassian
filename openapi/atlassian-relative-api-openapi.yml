@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Relative API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Relative
+paths:
+  /wiki/rest/api/content/{pageId}/move/{position}/{targetId}:
+    put:
+      tags:
+      - Relative
+      summary: Atlassian Move Page to New Location Relative to Target Page
+      description: 'This API operation moves a Confluence page to a new location in the content hierarchy by repositioning it relative to a target page. The operation requires three path parameters: the pageId of the page being moved, the position parameter that specifies where to place it (such as ''before'' or ''after''), and the targetId of the reference page that determines the new location. By sending a PUT request to this endpoint, users can programmatically reorganize their Confluence space structure, moving pages to appear before or after other pages in the page tree, which is particularly useful for maintaining documentation hierarchies or restructuring content organization without manual intervention through the Confluence UI.'
+      operationId: movePageToNewLocationRelativeToTargetPage
+      parameters:
+      - name: pageId
+        in: path
+        description: The ID of the page to be moved
+        required: true
+        schema:
+          type: string
+      - name: position
+        in: path
+        description: 'The position to move the page to relative to the target page:
+
+          * `before` - move the page under the same parent as the target, before the target in the list of children
+
+          * `after` - move the page under the same parent as the target, after the target in the list of children
+
+          * `append` - move the page to be a child of the target'
+        required: true
+        schema:
+          type: string
+          enum:
+          - before
+          - after
+          - append
+      - name: targetId
+        in: path
+        description: The ID of the target page for this operation
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Page was successfully moved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pageId:
+                    $ref: '#/components/schemas/ContentId'
+        '400':
+          description: "Returned if;\n\n- A page already exists in the target space with the same name.\n  User is advised to rename page before moving.\n- The move would create a parent-child loop (page becomes a descendant and ancestor of itself)\n- The page has permission restrictions that the user does not have permission to create in the target space.\n  User is advised to remove restrictions before moving."
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - User does not have permission to remove page from current space
+
+            - User does not have permission to create a page in target space'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - The id or targetId refer to non-existent pages'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:page:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    ContentId:
+      type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

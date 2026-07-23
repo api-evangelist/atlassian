@@ -1,0 +1,2279 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Explicit API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Explicit
+paths:
+  /repositories/{workspace}/{repo_slug}/permissions-config/groups:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Explicit
+      description: This API operation retrieves a paginated list of all explicit group permissions that have been configured for a specific Bitbucket repository within a workspace. It returns permission configurations that directly grant access to groups at the repository level, as opposed to inherited or default permissions. The endpoint requires both the workspace identifier and repository slug to be specified in the URL path, and it returns details about which groups have been explicitly granted permissions to access or interact with the repository, along with the specific permission levels assigned to each group.
+      summary: Atlassian List Explicit Group Permissions for Repository
+      responses:
+        '200':
+          description: Paginated of explicit group permissions on the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_repository_group_permissions'
+              examples:
+                paginated-repository-group-permissions:
+                  $ref: '#/components/examples/paginated-repository-group-permissions'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or both of the workspace and repository doesn't exist for the given identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+        - read:user:bitbucket
+      operationId: listExplicitGroupPermissionsForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/permissions-config/groups/{group_slug}:
+    parameters:
+    - name: group_slug
+      in: path
+      description: Slug of the requested group.
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Explicit
+      description: This API operation removes an explicitly granted permission for a specific group from a Bitbucket repository. It targets a particular group identified by its slug within a repository (specified by workspace and repository slug) and deletes the permission configuration that was directly assigned to that group. This endpoint is useful when you need to revoke repository access rights that were previously granted to a team or group, requiring authentication and appropriate administrative privileges. The operation uses the DELETE HTTP method and returns a success status when the group permission is successfully removed from the repository's access control list.
+      summary: Atlassian Delete an Explicit Group Permission for Repository
+      responses:
+        '204':
+          description: Group permission deleted
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The workspace does not exist, the repository does not exist, or the group does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: deleteAnExplicitGroupPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Explicit
+      description: This API operation retrieves explicit permission settings assigned to a specific group for a given repository in Bitbucket. By providing the workspace identifier, repository slug, and group slug as path parameters, it returns detailed information about the permission level that has been directly granted to that group for accessing and managing the specified repository. This is useful for administrators who need to audit or verify group-level access controls, as it shows only explicitly configured permissions rather than inherited or default permissions. The response typically includes the group's identifier, the permission level (such as read, write, or admin), and potentially additional metadata about when and how the permission was assigned.
+      summary: Atlassian Get an Explicit Group Permission for Repository
+      responses:
+        '200':
+          description: Group permission for group slug and repository
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_group_permission'
+              examples:
+                repository-group-permission:
+                  $ref: '#/components/examples/repository-group-permission'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The given user, workspace, and/or repository could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+        - read:user:bitbucket
+      operationId: getAnExplicitGroupPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Explicit
+      description: This API operation updates the explicit permission level for a specific group on a Bitbucket repository within a workspace. By sending a PUT request to the endpoint with the workspace identifier, repository slug, and group slug, administrators can modify the access rights granted to that group for the specified repository. The operation allows you to change permission levels such as read, write, or admin access for the group, providing fine-grained control over repository access management. This is particularly useful for managing team permissions and ensuring that user groups have appropriate access levels based on their roles and responsibilities within the organization.
+      summary: Atlassian Update an Explicit Group Permission for Repository
+      responses:
+        '200':
+          description: Group permission updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_group_permission'
+              examples:
+                repository-group-permission_2:
+                  $ref: '#/components/examples/repository-group-permission_2'
+        '400':
+          description: No permission value was provided or the value is invalid(not one of read, write, or admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '402':
+          description: You have reached your plan's user limit and must upgrade before giving access to additional users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The workspace does not exist, the repository does not exist, or the group does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        $ref: '#/components/requestBodies/BitbucketAppsPermissionsSerializersRepoPermissionUpdateSchema'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: updateAnExplicitGroupPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/permissions-config/users:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Explicit
+      description: This API operation retrieves a list of explicit user permissions that have been directly assigned to a specific Bitbucket repository within a given workspace. By making a GET request to the endpoint with the workspace identifier and repository slug as path parameters, it returns detailed information about individual users who have been granted specific permission levels on the repository, excluding permissions inherited through group memberships or workspace-level settings. This is useful for repository administrators who need to audit, review, or manage direct user access controls and understand exactly which users have been explicitly granted permissions such as read, write, or admin access to the repository.
+      summary: Atlassian List Explicit User Permissions for Repository
+      responses:
+        '200':
+          description: Paginated of explicit user permissions on the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_repository_user_permissions'
+              examples:
+                paginated-repository-user-permissions:
+                  $ref: '#/components/examples/paginated-repository-user-permissions'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No repository exists for the given repository slug and workspace.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+        - read:user:bitbucket
+      operationId: listExplicitUserPermissionsForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/permissions-config/users/{selected_user_id}:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: selected_user_id
+      in: path
+      description: 'This can either be the UUID of the account, surrounded by curly-braces, for
+
+        example: `{account UUID}`, OR an Atlassian Account ID.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Explicit
+      description: 'This API operation removes an explicitly granted permission for a specific user from a Bitbucket repository by sending a DELETE request to the endpoint /repositories/{workspace}/{repo_slug}/permissions-config/users/{selected_user_id}. The operation requires three path parameters: the workspace identifier, the repository slug, and the selected user''s ID whose permission is being revoked. When executed, it deletes the direct permission assignment for that user on the specified repository, meaning the user will no longer have the explicitly granted access level unless they inherit permissions through group membership or workspace-level settings. This is useful for repository administrators who need to revoke individual user access without affecting other users or group-based permissions.'
+      summary: Atlassian Delete an Explicit User Permission for Repository
+      responses:
+        '204':
+          description: The repository user permission was deleted and no content returned.
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, repository, and user doesn't exist for the given identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: deleteAnExplicitUserPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Explicit
+      description: This API endpoint retrieves the explicit permission settings for a specific user on a particular Bitbucket repository within a workspace. By providing the workspace identifier, repository slug, and the selected user's ID in the path parameters, it returns detailed information about what level of access (such as read, write, or admin) has been directly granted to that user for the specified repository. This is useful for auditing user permissions, managing repository access control, and understanding who has been explicitly granted permissions rather than inheriting them through group memberships or workspace-level settings.
+      summary: Atlassian Get an Explicit User Permission for Repository
+      responses:
+        '200':
+          description: Explicit user permission for user and repository
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_user_permission'
+              examples:
+                repository-user-permission:
+                  $ref: '#/components/examples/repository-user-permission'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or both of the workspace and repository doesn't exist for the given identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+        - read:user:bitbucket
+      operationId: getAnExplicitUserPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Explicit
+      description: Updates the explicit permission level for a specific user on a Bitbucket repository within a workspace. This operation requires specifying the workspace identifier, repository slug, and the selected user's ID in the endpoint path. The PUT request allows repository administrators to modify access permissions for individual users, setting their level of access (such as read, write, or admin) directly on the repository. This is useful for managing fine-grained access control when you need to grant or modify permissions for specific team members outside of group-based permissions, enabling precise control over who can view, contribute to, or administer the repository.
+      summary: Atlassian Update an Explicit User Permission for Repository
+      responses:
+        '200':
+          description: Explicit user permission updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_user_permission'
+              examples:
+                repository-user-permission_2:
+                  $ref: '#/components/examples/repository-user-permission_2'
+        '400':
+          description: No permission value was provided or the value is invalid (not one of read, write, or admin), or the selected user is not a valid user to update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '402':
+          description: You have reached your plan's user limit and must upgrade before giving access to additional users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the repository, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, repository, and selected user doesn't exist for the given identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        $ref: '#/components/requestBodies/BitbucketAppsPermissionsSerializersRepoPermissionUpdateSchema'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: updateAnExplicitUserPermissionForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/permissions-config/users:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual key assigned to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Explicit
+      description: This API operation retrieves a list of explicit user permissions that have been granted for a specific project within a Bitbucket workspace. By providing the workspace identifier and project key as path parameters, the endpoint returns details about individual users who have been explicitly assigned permissions to the project, including their access levels and roles. This allows administrators to audit and review which users have direct access to a particular project, separate from any permissions they might inherit through group memberships or workspace-level settings.
+      summary: Atlassian List Explicit User Permissions for Project
+      responses:
+        '200':
+          description: Paginated list of explicit user permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_project_user_permissions'
+              examples:
+                paginated-project-user-permissions:
+                  $ref: '#/components/examples/paginated-project-user-permissions'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The user doesn't have admin access to the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or both of the workspace and project don't exist for the given identifiers or the requesting user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:project:bitbucket
+        - read:user:bitbucket
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: listExplicitUserPermissionsForProject
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/permissions-config/users/{selected_user_id}:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual key assigned to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: selected_user_id
+      in: path
+      description: 'This can either be the username, the Users UUID surrounded by curly-braces,
+
+        for example: {account UUID}, or the Users Atlassian ID.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Explicit
+      description: This API operation removes an explicitly assigned permission for a specific user within a Bitbucket project by making a DELETE request to the specified endpoint. It requires the workspace slug, project key, and the selected user's ID as path parameters to identify and revoke the user's direct access rights to the project. This operation is useful for project administrators who need to manage team access by removing individual user permissions, though it only affects explicit permissions and does not impact permissions inherited through group memberships or workspace-level access. Upon successful deletion, the user will lose their direct permission assignment for the specified project unless they retain access through other means.
+      summary: Atlassian Delete an Explicit User Permission for Project
+      responses:
+        '204':
+          description: The project user permission was deleted and no content returned.
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the project, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and selected user doesn't exist for the given identifiers or the requesting user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: deleteAnExplicitUserPermissionForProject
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Explicit
+      description: 'Retrieves the explicit permission details for a specific user within a designated project in a Bitbucket workspace. This endpoint requires three path parameters: the workspace slug identifying the Bitbucket workspace, the project key for the specific project, and the selected user ID representing the user whose permissions are being queried. When called, it returns the permission level that has been directly assigned to the specified user for that project, excluding any inherited permissions from groups or workspace-level access. This is useful for auditing individual user access rights, verifying specific permission assignments, or displaying user-level access information in administrative interfaces.'
+      summary: Atlassian Get an Explicit User Permission for Project
+      responses:
+        '200':
+          description: Explicit user permission for user and project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_user_permission'
+              examples:
+                project-user-permission:
+                  $ref: '#/components/examples/project-user-permission'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and selected user doesn't exist for the given identifiers or the requesting user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:project:bitbucket
+        - read:user:bitbucket
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: getAnExplicitUserPermissionForProject
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Explicit
+      description: Updates the explicit permission level for a specific user within a Bitbucket project workspace. This PUT operation requires the workspace slug, project key, and the selected user's ID as path parameters, allowing administrators to modify individual user access rights at the project level. The endpoint is used to grant, revoke, or change permission levels (such as read, write, or admin) for a particular user, overriding any inherited permissions from groups or workspace-level settings. This provides fine-grained access control for project resources and is typically used when a user needs different permissions than what they would inherit from their group memberships.
+      summary: Atlassian Update an Explicit User Permission for Project
+      responses:
+        '200':
+          description: Explicit user permission updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_user_permission'
+              examples:
+                project-user-permission_2:
+                  $ref: '#/components/examples/project-user-permission_2'
+        '400':
+          description: No permission value was provided or the value is invalid (not one of read, write, create-repo, or admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '402':
+          description: You have reached your plan's user limit and must upgrade before giving access to additional users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the project, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and selected user doesn't exist for the given identifiers or the requesting user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        $ref: '#/components/requestBodies/bitbucket.apps.permissions.serializers.ProjectPermissionUpdateSchema'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: updateAnExplicitUserPermissionForProject
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/permissions-config/groups:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual key assigned to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Explicit
+      description: This API endpoint retrieves a paginated list of explicit group permissions that have been directly granted to groups for a specific project within a Bitbucket workspace. By making a GET request to this endpoint with the workspace identifier and project key as path parameters, you can view all groups that have been explicitly assigned permissions to the project, along with their corresponding permission levels. This is useful for auditing access control, understanding who has what level of access to a project, and managing team permissions. The response excludes inherited permissions and only shows permissions that have been directly configured at the project level for groups, making it easier to track and manage explicit access grants without the noise of inherited permissions from workspace-level settings.
+      summary: Atlassian List Explicit Group Permissions for a Project
+      responses:
+        '200':
+          description: Paginated list of project group permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_project_group_permissions'
+              examples:
+                paginated-project-group-permissions:
+                  $ref: '#/components/examples/paginated-project-group-permissions'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The user doesn't have admin access to the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or both of the workspace and project don't exist for the given identifiers or the requesting user is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:project:bitbucket
+        - read:user:bitbucket
+      operationId: atlassianListExplicitGroupPermissionsForAProject
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/permissions-config/groups/{group_slug}:
+    parameters:
+    - name: group_slug
+      in: path
+      description: Slug of the requested group.
+      required: true
+      schema:
+        type: string
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual key assigned to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Explicit
+      description: This API operation removes an explicitly granted group permission from a specific project within a Bitbucket workspace by sending a DELETE request to the designated endpoint, which requires the workspace identifier, project key, and group slug as path parameters to target the exact permission configuration that needs to be revoked, effectively revoking that group's direct access rights to the project while potentially leaving inherited or other permission types intact, allowing workspace administrators to maintain granular control over project-level access by selectively removing group permissions without affecting individual user permissions or other security settings associated with the project.
+      summary: Atlassian Delete an Explicit Group Permission for a Project
+      responses:
+        '204':
+          description: The project group permission was deleted and no content returned.
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the project, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and group doesn't exist                               for the given identifiers or the requesting user is not                               authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      operationId: atlassianDeleteAnExplicitGroupPermissionForAProject
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Explicit
+      description: This API operation retrieves the explicit permission settings assigned to a specific group for a particular project within a Bitbucket workspace. By providing the workspace identifier, project key, and group slug as path parameters, the endpoint returns detailed information about what access level and permissions have been directly granted to that group for the specified project. This is useful for auditing group-level permissions, understanding access control configurations, and managing team-based security policies within Bitbucket projects, as it shows only the permissions explicitly set for the group rather than inherited or default permissions.
+      summary: Atlassian Get an Explicit Group Permission for a Project
+      responses:
+        '200':
+          description: Project group permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_group_permission'
+              examples:
+                project-group-permission:
+                  $ref: '#/components/examples/project-group-permission'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The user doesn't have admin access to the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and group doesn't exist                               for the given identifiers or the requesting user is not                               authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:project:bitbucket
+        - read:user:bitbucket
+      operationId: atlassianGetAnExplicitGroupPermissionForAProject
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Explicit
+      description: This API operation updates the explicit permissions assigned to a specific group within a Bitbucket project. By making a PUT request to the endpoint with the workspace identifier, project key, and group slug, administrators can modify the access level granted to that group for the specified project. This allows for fine-grained control over project permissions by adjusting what actions members of a particular group can perform, such as read, write, or admin privileges. The operation requires proper authentication and administrative rights within the workspace, and it directly modifies the existing permission configuration rather than creating a new one, making it useful for maintaining and adjusting team access controls as project requirements evolve.
+      summary: Atlassian Update an Explicit Group Permission for a Project
+      responses:
+        '200':
+          description: Project group permission updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_group_permission'
+              examples:
+                project-group-permission_2:
+                  $ref: '#/components/examples/project-group-permission_2'
+        '400':
+          description: No permission value was provided or the value is invalid(not one of read, write, create-repo, or admin).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The user couldn't be authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '402':
+          description: You have reached your plan's user limit and must upgrade before giving access to additional users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: The requesting user isn't an admin of the project, or the authentication method was not via app password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: One or more of the workspace, project, and group doesn't exist                               for the given identifiers or the requesting user is not                               authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        $ref: '#/components/requestBodies/bitbucket.apps.permissions.serializers.ProjectPermissionUpdateSchema'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      operationId: atlassianUpdateAnExplicitGroupPermissionForAProject
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    paginated_repository_group_permissions:
+      type: object
+      title: Paginated Repository Group Permissions
+      description: A paginated list of repository group permissions.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/repository_group_permission'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    group:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Group
+        description: A group object
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          owner:
+            $ref: '#/components/schemas/account'
+          workspace:
+            $ref: '#/components/schemas/workspace'
+          name:
+            type: string
+          slug:
+            type: string
+            description: 'The "sluggified" version of the group''s name. This contains only ASCII
+
+              characters and can therefore be slightly different than the name'
+          full_slug:
+            type: string
+            description: 'The concatenation of the workspace''s slug and the group''s slug,
+
+              separated with a colon (e.g. `acme:developers`)
+
+              '
+        additionalProperties: true
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    project_group_permission:
+      type: object
+      title: Project Group Permission
+      description: A group's permission for a given project.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        permission:
+          type: string
+          enum:
+          - read
+          - write
+          - create-repo
+          - admin
+          - none
+          example: read
+        group:
+          $ref: '#/components/schemas/group'
+        project:
+          $ref: '#/components/schemas/project'
+      required:
+      - type
+      additionalProperties: true
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    paginated_repository_user_permissions:
+      type: object
+      title: Paginated Repository User Permissions
+      description: A paginated list of repository user permissions.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/repository_user_permission'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    workspace:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Workspace
+        description: "A Bitbucket workspace.\n            Workspaces are used to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              members:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              owners:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              projects:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              repositories:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              snippets:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The workspace's immutable id.
+          name:
+            type: string
+            description: The name of the workspace.
+          slug:
+            type: string
+            description: The short label that identifies this workspace.
+          is_private:
+            type: boolean
+            description: 'Indicates whether the workspace is publicly accessible, or whether it is
+
+              private to the members and consequently only visible to members.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+        additionalProperties: true
+    user_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: User Links
+        description: Links related to a User.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    repository_user_permission:
+      type: object
+      title: Repository User Permission
+      description: A user's direct permission for a given repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        permission:
+          type: string
+          enum:
+          - read
+          - write
+          - admin
+          - none
+          example: read
+        user:
+          $ref: '#/components/schemas/user'
+        repository:
+          $ref: '#/components/schemas/repository'
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    repository_group_permission:
+      type: object
+      title: Repository Group Permission
+      description: A group's permission for a given repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        permission:
+          type: string
+          enum:
+          - read
+          - write
+          - admin
+          - none
+          example: read
+        group:
+          $ref: '#/components/schemas/group'
+        repository:
+          $ref: '#/components/schemas/repository'
+      required:
+      - type
+      additionalProperties: true
+    project_user_permission:
+      type: object
+      title: Project User Permission
+      description: A user's direct permission for a given project.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        permission:
+          type: string
+          enum:
+          - read
+          - write
+          - create-repo
+          - admin
+          - none
+          example: read
+        user:
+          $ref: '#/components/schemas/user'
+        project:
+          $ref: '#/components/schemas/project'
+      required:
+      - type
+      additionalProperties: true
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    paginated_project_group_permissions:
+      type: object
+      title: Paginated Project Group Permissions
+      description: A paginated list of project group permissions.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/project_group_permission'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    paginated_project_user_permissions:
+      type: object
+      title: Paginated Project User Permissions
+      description: A paginated list of project user permissions.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/project_user_permission'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    user:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: User
+        description: A user object.
+        properties:
+          links:
+            $ref: '#/components/schemas/user_links'
+          account_id:
+            type: string
+            description: The user's Atlassian account ID.
+          account_status:
+            type: string
+            description: The status of the account. Currently the only possible value is "active", but more values may be added in the future.
+          has_2fa_enabled:
+            type: boolean
+          nickname:
+            type: string
+            description: Account name defined by the owner. Should be used instead of the "username" field. Note that "nickname" cannot be used in place of "username" in URLs and queries, as "nickname" is not guaranteed to be unique.
+          is_staff:
+            type: boolean
+          website:
+            type: string
+        additionalProperties: true
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    paginated-repository-user-permissions:
+      size: 150
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/repositories/permissions?page=2
+      previous: https://api.example.com/repositories/permissions?page=0
+      values: {}
+    paginated-project-user-permissions:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/projects/permissions?page=2
+      previous: https://api.example.com/projects/permissions?page=0
+      values: []
+    repository-user-permission:
+      type: repository_user_permission
+      permission: write
+      user:
+        username: johndoe
+        display_name: John Doe
+        uuid: '{12345678-1234-1234-1234-123456789abc}'
+        type: user
+      repository:
+        name: my-repo
+        full_name: johndoe/my-repo
+        uuid: '{87654321-4321-4321-4321-cba987654321}'
+        type: repository
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/johndoe/my-repo/permissions-config/users/johndoe
+          name: Repository User Permission
+    project-user-permission_2:
+      type: project-user-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/456
+          name: Project Permission
+      permission: admin
+      user:
+        name: john.doe
+        emailAddress: john.doe@example.com
+        id: 456
+        displayName: John Doe
+        active: true
+      project:
+        key: PROJ
+        id: 123
+        name: Example Project
+        description: An example project
+        public: false
+    paginated-project-group-permissions:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/project-groups/permissions?page=2
+      previous: https://api.example.com/project-groups/permissions?page=0
+      values: []
+    project-group-permission:
+      type: project-group-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/groups/456
+          name: Project Group Permission
+      permission: admin
+      group:
+        name: developers
+        id: 456
+      project:
+        key: PROJ
+        name: Example Project
+        id: 123
+    repository-user-permission_2:
+      type: repository_user_permission
+      permission: write
+      user:
+        username: john_doe
+        display_name: John Doe
+        uuid: '{12345678-1234-1234-1234-123456789abc}'
+      repository:
+        name: my-repo
+        full_name: john_doe/my-repo
+        uuid: '{87654321-4321-4321-4321-cba987654321}'
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/john_doe/my-repo/permissions/john_doe
+          name: self
+    project-group-permission_2:
+      type: project-group-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/groups/456
+          name: Project Group Permission
+      permission: write
+      group:
+        name: developers
+        id: 456
+      project:
+        key: PROJ
+        id: 123
+        name: Example Project
+    project-user-permission:
+      type: project-user-permission
+      links:
+        self:
+          href: https://api.example.com/projects/123/permissions/456
+          name: Project Permission
+      permission: admin
+      user:
+        id: 123
+        name: john.doe
+        email: john.doe@example.com
+      project:
+        id: 456
+        key: PROJ
+        name: Example Project
+    repository-group-permission:
+      type: repository_group_permission
+      links:
+        self:
+          href: https://api.example.com/repositories/my-repo/permissions/groups/developers
+          name: developers-permission
+      permission: write
+      group:
+        slug: developers
+        name: Developers
+      repository:
+        slug: my-repo
+        name: My Repository
+    repository-group-permission_2:
+      type: repository_group_permission
+      links:
+        self:
+          href: https://api.example.com/repositories/my-repo/permissions/groups/developers
+          name: self
+      permission: write
+      group:
+        type: group
+        name: developers
+        slug: developers
+      repository:
+        type: repository
+        name: my-repository
+        slug: my-repository
+        full_name: myworkspace/my-repository
+    paginated-repository-group-permissions:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/repositories/groups/permissions?page=2
+      previous: https://api.example.com/repositories/groups/permissions?page=0
+      values: []
+  requestBodies:
+    BitbucketAppsPermissionsSerializersRepoPermissionUpdateSchema:
+      content:
+        application/json:
+          schema:
+            title: object
+      description: The permission to grant
+      required: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

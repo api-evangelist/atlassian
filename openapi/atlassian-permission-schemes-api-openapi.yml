@@ -1,0 +1,774 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Permission Schemes API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Permission Schemes
+paths:
+  /rest/api/3/permissionscheme/{schemeId}:
+    delete:
+      deprecated: false
+      description: Deletes a permission scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeletepermissionscheme
+      parameters:
+      - description: The ID of the permission scheme being deleted.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: Returned if the permission scheme is deleted.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the permission scheme is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Permission Scheme
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:permission-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    get:
+      deprecated: false
+      description: Returns a permission scheme.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetpermissionscheme
+      parameters:
+      - description: The ID of the permission scheme to return.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are included when you specify any value. Expand options include:\n\n *  `all` Returns all expandable information.\n *  `field` Returns information about the custom field granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `user` Returns information about the user who is granted the permission."
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"description":"description","id":10000,"name":"Example permission scheme","permissions":[{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}],"self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/10000"}'
+              schema:
+                $ref: '#/components/schemas/PermissionScheme'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the permission scheme is not found or the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Permission Scheme
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission-scheme:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Updates a permission scheme. Below are some important things to note when using this resource:<br><br> *  If a permissions list is present in the request, then it is set in the permission scheme, overwriting *all existing* grants.<br> *  If you want to update only the name and description, then do not send a permissions list in the request.<br> *  Sending an empty list will remove all permission grants from the permission scheme.<br><br>If you want to add or delete a permission grant instead of updating the whole list, see [Create permission grant](#api-rest-api-3-permissionscheme-schemeId-permission-post) or [Delete permission scheme entity](#api-rest-api-3-permissionscheme-schemeId-permission-permissionId-delete).<br><br>See [About permission schemes and grants](../api-group-permission-schemes/#about-permission-schemes-and-grants) for more details.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdatepermissionscheme
+      parameters:
+      - description: The ID of the permission scheme to update.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are always included when you specify any value. Expand options include:\n\n *  `all` Returns all expandable information.\n *  `field` Returns information about the custom field granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `user` Returns information about the user who is granted the permission."
+        in: query
+        name: expand
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: description
+              name: Example permission scheme
+              permissions:
+              - holder:
+                  parameter: jira-core-users
+                  type: group
+                  value: ca85fac0-d974-40ca-a615-7af99c48d24f
+                permission: ADMINISTER_PROJECTS
+            schema:
+              $ref: '#/components/schemas/PermissionScheme'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"description":"description","id":10000,"name":"Example permission scheme","permissions":[{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}],"self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/10000"}'
+              schema:
+                $ref: '#/components/schemas/PermissionScheme'
+          description: Returned if the scheme is updated.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: "Returned if:\n\n *  the user does not have the necessary permission to update permission schemes.\n *  the Jira instance is Jira Core Free or Jira Software Free. Permission schemes cannot be updated on free plans."
+        '404':
+          description: Returned if the permission scheme is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Permission Scheme
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:permission-scheme:jira
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission-scheme:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/permissionscheme/{schemeId}/permission:
+    get:
+      deprecated: false
+      description: Returns all permission grants for a permission scheme.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetpermissionschemegrants
+      parameters:
+      - description: The ID of the permission scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are always included when you specify any value. Expand options include:\n\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `user` Returns information about the user who is granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `field` Returns information about the custom field granted the permission.\n *  `all` Returns all expandable information."
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"expand":"user,group,projectRole,field,all","permissions":[{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}]}'
+              schema:
+                $ref: '#/components/schemas/PermissionGrants'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the permission schemes is not found or the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Permission Scheme Grants
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Creates a permission grant in a permission scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreatepermissiongrant
+      parameters:
+      - description: The ID of the permission scheme in which to create a new permission grant.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are always included when you specify any value. Expand options include:\n\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `user` Returns information about the user who is granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `field` Returns information about the custom field granted the permission.\n *  `all` Returns all expandable information."
+        in: query
+        name: expand
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              holder:
+                parameter: jira-core-users
+                type: group
+                value: ca85fac0-d974-40ca-a615-7af99c48d24f
+              permission: ADMINISTER_PROJECTS
+            schema:
+              $ref: '#/components/schemas/PermissionGrant'
+        description: The permission grant to create.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}'
+              schema:
+                $ref: '#/components/schemas/PermissionGrant'
+          description: Returned if the scheme permission is created.
+        '400':
+          description: Returned if the value for expand is invalid or the same permission grant is present.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Permission Grant
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        - write:permission:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/permissionscheme/{schemeId}/permission/{permissionId}:
+    delete:
+      deprecated: false
+      description: Deletes a permission grant from a permission scheme. See [About permission schemes and grants](../api-group-permission-schemes/#about-permission-schemes-and-grants) for more details.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeletepermissionschemeentity
+      parameters:
+      - description: The ID of the permission scheme to delete the permission grant from.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the permission grant to delete.
+        in: path
+        name: permissionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: Returned if the permission grant is deleted.
+        '400':
+          description: Returned if permission grant with the provided ID is not found.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Permission Scheme Grant
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:permission:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    get:
+      deprecated: false
+      description: Returns a permission grant.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetpermissionschemegrant
+      parameters:
+      - description: The ID of the permission scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the permission grant.
+        in: path
+        name: permissionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are always included when you specify any value. Expand options include:\n\n *  `all` Returns all expandable information.\n *  `field` Returns information about the custom field granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `user` Returns information about the user who is granted the permission."
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}'
+              schema:
+                $ref: '#/components/schemas/PermissionGrant'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the permission scheme or permission grant is not found or the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Permission Scheme Grant
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/permissionscheme:
+    get:
+      deprecated: false
+      description: 'Returns all permission schemes.<br><br>### About permission schemes and grants ###<br><br>A permission scheme is a collection of permission grants. A permission grant consists of a `holder` and a `permission`.<br><br>#### Holder object ####<br><br>The `holder` object contains information about the user or group being granted the permission. For example, the *Administer projects* permission is granted to a group named *Teams in space administrators*. In this case, the type is `"type": "group"`, and the parameter is the group name, `"parameter": "Teams in space administrators"` and the value is group ID, `"value": "ca85fac0-d974-40ca-a615-7af99c48d24f"`.<br><br>The `holder` object is defined by the following properties:<br><br> *  `type` Identifies the user or group (see the list of types below).<br> *  `parameter` As a group''s name can change, use of `value` is recommended. The value of this property depends on the `type`. For example, if the `type` is a group, then you need to specify the group name.<br> *  `value` The value of this property depends on the `type`. If the `type` is a group, then you need to specify the group ID. For other `type` it has the same value as `parameter`<br><br>The following `types` are available. The expected values for `parameter` and `value` are given in parentheses (some types may not have a `parameter` or `value`):<br><br> *  `anyone` Grant for anonymous users.<br> *  `applicationRole` Grant for users with access to the specified application (application name, application name). See [Update product access settings](https://confluence.atlassian.com/x/3YxjL) for more information.<br> *  `assignee` Grant for the user currently assigned to an issue.<br> *  `group` Grant for the specified group (`parameter` : group name, `value` : group ID).<br> *  `groupCustomField` Grant for a user in the group selected in the specified custom field (`parameter` : custom field ID, `value` : custom field ID).<br> *  `projectLead` Grant for a project lead.<br> *  `projectRole` Grant for the specified project role (`parameter` :project role ID, `value` : project role ID).<br> *  `reporter` Grant for the user who reported the issue.<br> *  `sd.customer.portal.only` Jira Service Desk only. Grants customers permission to access the customer portal but not Jira. See [Customizing Jira Service Desk permissions](https://confluence.atlassian.com/x/24dKLg) for more information.<br> *  `user` Grant for the specified user (`parameter` : user ID - historically this was the userkey but that is deprecated and the account ID should be used, `value` : user ID).<br> *  `userCustomField` Grant for a user selected in the specified custom field (`parameter` : custom field ID, `value` : custom field ID).<br><br>#### Built-in permissions ####<br><br>The [built-in Jira permissions](https://confluence.atlassian.com/x/yodKLg) are listed below. Apps can also define custom permissions. See the [project permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/) and [global permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/) module documentation for more information.<br><br>**Project permissions**<br><br> *  `ADMINISTER_PROJECTS`<br> *  `BROWSE_PROJECTS`<br> *  `MANAGE_SPRINTS_PERMISSION` (Jira Software only)<br> *  `SERVICEDESK_AGENT` (Jira Service Desk only)<br> *  `VIEW_DEV_TOOLS` (Jira Software only)<br> *  `VIEW_READONLY_WORKFLOW`<br><br>**Issue permissions**<br><br> *  `ASSIGNABLE_USER`<br> *  `ASSIGN_ISSUES`<br> *  `CLOSE_ISSUES`<br> *  `CREATE_ISSUES`<br> *  `DELETE_ISSUES`<br> *  `EDIT_ISSUES`<br> *  `LINK_ISSUES`<br> *  `MODIFY_REPORTER`<br> *  `MOVE_ISSUES`<br> *  `RESOLVE_ISSUES`<br> *  `SCHEDULE_ISSUES`<br> *  `SET_ISSUE_SECURITY`<br> *  `TRANSITION_ISSUES`<br><br>**Voters and watchers permissions**<br><br> *  `MANAGE_WATCHERS`<br> *  `VIEW_VOTERS_AND_WATCHERS`<br><br>**Comments permissions**<br><br> *  `ADD_COMMENTS`<br> *  `DELETE_ALL_COMMENTS`<br> *  `DELETE_OWN_COMMENTS`<br> *  `EDIT_ALL_COMMENTS`<br> *  `EDIT_OWN_COMMENTS`<br><br>**Attachments permissions**<br><br> *  `CREATE_ATTACHMENTS`<br> *  `DELETE_ALL_ATTACHMENTS`<br> *  `DELETE_OWN_ATTACHMENTS`<br><br>**Time tracking permissions**<br><br> *  `DELETE_ALL_WORKLOGS`<br> *  `DELETE_OWN_WORKLOGS`<br> *  `EDIT_ALL_WORKLOGS`<br> *  `EDIT_OWN_WORKLOGS`<br> *  `WORK_ON_ISSUES`<br><br>**[Permissions](#permissions) required:** Permission to access Jira.'
+      operationId: atlassianGetallpermissionschemes
+      parameters:
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are included when you specify any value. Expand options include:\n\n *  `all` Returns all expandable information.\n *  `field` Returns information about the custom field granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `user` Returns information about the user who is granted the permission."
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"permissionSchemes":[{"description":"description","id":10000,"name":"Example permission scheme","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/10000"}]}'
+              schema:
+                $ref: '#/components/schemas/PermissionSchemes'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get All Permission Schemes
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission-scheme:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Creates a new permission scheme. You can create a permission scheme with or without defining a set of permission grants.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreatepermissionscheme
+      parameters:
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Note that permissions are always included when you specify any value. Expand options include:\n\n *  `all` Returns all expandable information.\n *  `field` Returns information about the custom field granted the permission.\n *  `group` Returns information about the group that is granted the permission.\n *  `permissions` Returns all permission grants for each permission scheme.\n *  `projectRole` Returns information about the project role granted the permission.\n *  `user` Returns information about the user who is granted the permission."
+        in: query
+        name: expand
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: description
+              name: Example permission scheme
+              permissions:
+              - holder:
+                  parameter: jira-core-users
+                  type: group
+                  value: ca85fac0-d974-40ca-a615-7af99c48d24f
+                permission: ADMINISTER_PROJECTS
+            schema:
+              $ref: '#/components/schemas/PermissionScheme'
+        description: The permission scheme to create.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"description":"description","id":10000,"name":"Example permission scheme","permissions":[{"holder":{"expand":"group","parameter":"jira-core-users","type":"group","value":"ca85fac0-d974-40ca-a615-7af99c48d24f"},"id":10000,"permission":"ADMINISTER_PROJECTS","self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/permission/10000"}],"self":"https://your-domain.atlassian.net/rest/api/3/permissionscheme/10000"}'
+              schema:
+                $ref: '#/components/schemas/PermissionScheme'
+          description: Returned if the permission scheme is created.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission or the feature is not available in the Jira plan.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Permission Scheme
+      tags:
+      - Permission Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:permission-scheme:jira
+        - read:application-role:jira
+        - read:field:jira
+        - read:group:jira
+        - read:permission-scheme:jira
+        - read:permission:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    PermissionSchemes:
+      additionalProperties: false
+      description: List of all permission schemes.
+      properties:
+        permissionSchemes:
+          description: Permission schemes list.
+          items:
+            $ref: '#/components/schemas/PermissionScheme'
+          readOnly: true
+          type: array
+      type: object
+    PermissionGrants:
+      additionalProperties: false
+      description: List of permission grants.
+      properties:
+        expand:
+          description: Expand options that include additional permission grant details in the response.
+          readOnly: true
+          type: string
+        permissions:
+          description: Permission grants list.
+          items:
+            $ref: '#/components/schemas/PermissionGrant'
+          readOnly: true
+          type: array
+      type: object
+    PermissionHolder:
+      additionalProperties: false
+      description: Details of a user, group, field, or project role that holds a permission. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+      properties:
+        expand:
+          description: Expand options that include additional permission holder details in the response.
+          readOnly: true
+          type: string
+        parameter:
+          description: As a group's name can change, use of `value` is recommended. The identifier associated withthe `type` value that defines the holder of the permission.
+          type: string
+        type:
+          description: The type of permission holder.
+          type: string
+        value:
+          description: The identifier associated with the `type` value that defines the holder of the permission.
+          type: string
+      required:
+      - type
+      type: object
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
+          type: string
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    PermissionGrant:
+      additionalProperties: true
+      description: Details about a permission granted to a user or group.
+      properties:
+        holder:
+          allOf:
+          - $ref: '#/components/schemas/PermissionHolder'
+          description: The user or group being granted the permission. It consists of a `type`, a type-dependent `parameter` and a type-dependent `value`. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+        id:
+          description: The ID of the permission granted details.
+          format: int64
+          readOnly: true
+          type: integer
+        permission:
+          description: The permission to grant. This permission can be one of the built-in permissions or a custom permission added by an app. See [Built-in permissions](../api-group-permission-schemes/#built-in-permissions) in *Get all permission schemes* for more information about the built-in permissions. See the [project permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/) and [global permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/) module documentation for more information about custom permissions.
+          type: string
+        self:
+          description: The URL of the permission granted details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    PermissionScheme:
+      additionalProperties: true
+      description: Details of a permission scheme.
+      properties:
+        description:
+          description: A description for the permission scheme.
+          type: string
+        expand:
+          description: The expand options available for the permission scheme.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the permission scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        name:
+          description: The name of the permission scheme. Must be unique.
+          type: string
+        permissions:
+          description: The permission scheme to create or update. See [About permission schemes and grants](../api-group-permission-schemes/#about-permission-schemes-and-grants) for more information.
+          items:
+            $ref: '#/components/schemas/PermissionGrant'
+          type: array
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope of the permission scheme.
+        self:
+          description: The URL of the permission scheme.
+          format: uri
+          readOnly: true
+          type: string
+      required:
+      - name
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    ProjectDetails:
+      additionalProperties: false
+      description: Details about a project.
+      properties:
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The URLs of the project's avatars.
+          readOnly: true
+        id:
+          description: The ID of the project.
+          type: string
+        key:
+          description: The key of the project.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the project.
+          readOnly: true
+          type: string
+        projectCategory:
+          allOf:
+          - $ref: '#/components/schemas/UpdatedProjectCategory'
+          description: The category the project belongs to.
+          readOnly: true
+        projectTypeKey:
+          description: The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.
+          enum:
+          - software
+          - service_desk
+          - business
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project details.
+          readOnly: true
+          type: string
+        simplified:
+          description: Whether or not the project is simplified.
+          readOnly: true
+          type: boolean
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

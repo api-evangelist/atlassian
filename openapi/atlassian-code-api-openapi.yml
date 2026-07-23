@@ -1,0 +1,1015 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Code API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Code
+paths:
+  /teams/{username}/search/code:
+    get:
+      tags:
+      - Code
+      summary: Atlassian Search for Code in Teams Repositories
+      description: This API operation allows you to search for code across all repositories belonging to a specific team in Bitbucket. By making a GET request to the endpoint with the team's username as a path parameter, you can perform code searches within the team's repository collection. The operation returns matching code snippets and their locations across the team's codebase, making it useful for finding specific code patterns, function definitions, or text strings across multiple repositories owned by the team. This is particularly valuable for organizations that need to audit code, find usage examples, or track specific implementations across their team's projects.
+      operationId: searchForCodeInTeamsRepositories
+      parameters:
+      - name: username
+        in: path
+        description: The account to search in; either the username or the UUID in curly braces
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined:
+                  $ref: '#/components/examples/undefined'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested team, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /users/{selected_user}/search/code:
+    get:
+      tags:
+      - Code
+      summary: Atlassian Search for Code in Users Repositories
+      description: The Atlassian Bitbucket User API endpoint `/users/{selected_user}/search/code` accessed via GET method enables developers to perform code searches across all repositories belonging to a specific user. By providing a username in the `{selected_user}` path parameter along with search query parameters, this operation scans through the code content within that user's repositories and returns matching results. This is particularly useful for finding specific code snippets, function names, variables, or any text patterns across a user's entire codebase without needing to search individual repositories separately. The endpoint helps developers quickly locate where certain code elements are used, identify duplicated code, or conduct code audits across a user's portfolio of repositories.
+      operationId: searchForCodeInUsersRepositories
+      parameters:
+      - name: selected_user
+        in: path
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested user, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/search/code:
+    get:
+      tags:
+      - Code
+      summary: Atlassian Search for Code in a Workspace
+      description: This GET endpoint allows you to search for code across repositories within a specified Atlassian Bitbucket workspace. By providing the workspace identifier in the path parameter, you can perform code searches using query parameters to find specific strings, patterns, or code snippets across all accessible repositories in that workspace. The operation returns matching results that include file paths, repository information, and code context where the search terms appear, making it useful for developers who need to locate specific code implementations, function definitions, or configuration settings across multiple repositories within their workspace.
+      operationId: atlassianSearchworkspace
+      parameters:
+      - name: workspace
+        in: path
+        description: The workspace to search in; either the slug or the UUID in curly braces
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested workspace, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    search_result_page:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 10
+        page:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        pagelen:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        query_substituted:
+          type: boolean
+          readOnly: true
+          example: true
+        next:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://www.example.com
+        values:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_code_search_result'
+          example: []
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    search_code_search_result:
+      type: object
+      properties:
+        type:
+          type: string
+          readOnly: true
+          example: example_value
+        content_match_count:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 10
+        content_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_content_match'
+          example: []
+        path_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+          example: []
+        file:
+          $ref: '#/components/schemas/commit_file'
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    commit_file:
+      type: object
+      title: Commit File
+      description: A file object, representing a file at a commit in a repository
+      properties:
+        type:
+          type: string
+          example: example_value
+        path:
+          type: string
+          description: The path in the repository
+          example: example_value
+        commit:
+          $ref: '#/components/schemas/commit'
+        attributes:
+          type: string
+          enum:
+          - link
+          - executable
+          - subrepository
+          - binary
+          - lfs
+          example: link
+        escaped_path:
+          type: string
+          description: The escaped version of the path as it appears in a diff. If the path does not require escaping this will be the same as path.
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    search_content_match:
+      type: object
+      properties:
+        lines:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_line'
+          example: []
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    search_line:
+      type: object
+      properties:
+        line:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        segments:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+          example: []
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    search_segment:
+      type: object
+      properties:
+        text:
+          type: string
+          readOnly: true
+          example: example_value
+        match:
+          type: boolean
+          readOnly: true
+          example: true
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    undefined:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
+    undefined_2:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

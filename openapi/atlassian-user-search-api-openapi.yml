@@ -1,0 +1,1136 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account User Search API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: User Search
+paths:
+  /rest/api/3/user/assignable/multiProjectSearch:
+    get:
+      deprecated: false
+      description: Returns a list of users who can be assigned issues in one or more projects. The list may be restricted to users whose attributes match a string.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that can be assigned issues in the projects. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who can be assigned issues in the projects, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianFindbulkassignableusers
+      parameters:
+      - description: A query string that is matched against user attributes, such as `displayName` and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*. Required, unless `accountId` is specified.
+        in: query
+        name: query
+        schema:
+          example: query
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: A query string that is matched exactly against user `accountId`. Required, unless `query` is specified.
+        in: query
+        name: accountId
+        schema:
+          maxLength: 128
+          type: string
+      - description: A list of project keys (case sensitive). This parameter accepts a comma-separated list.
+        in: query
+        name: projectKeys
+        required: true
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},{"accountId":"5b10ac8d82e05b22cc7d4ef5","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=48&s=48"},"displayName":"Emma Richards","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `projectKeys` is missing.\n *  `query` or `accountId` is missing.\n *  `query` and `accountId` are provided."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if one or more of the projects is not found.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users Assignable To Projects
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:project:jira
+        - read:user:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/assignable/search:
+    get:
+      deprecated: false
+      description: Returns a list of users that can be assigned to an issue. Use this operation to find the list of users who can be assigned to:<br><br> *  a new issue, by providing the `projectKeyOrId`.<br> *  an updated issue, by providing the `issueKey`.<br> *  to an issue during a transition (workflow action), by providing the `issueKey` and the transition id in `actionDescriptorId`. You can obtain the IDs of an issue's valid transitions using the `transitions` option in the `expand` parameter of [ Get issue](#api-rest-api-3-issue-issueIdOrKey-get).<br><br>In all these cases, you can pass an account ID to determine if a user can be assigned to an issue. The user is returned in the response if they can be assigned to the issue or issue transition.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that can be assigned the issue. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who can be assigned the issue, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg) or *Assign issues* [project permission](https://confluence.atlassian.com/x/yodKLg)
+      operationId: atlassianFindassignableusers
+      parameters:
+      - description: A query string that is matched against user attributes, such as `displayName`, and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*. Required, unless `username` or `accountId` is specified.
+        in: query
+        name: query
+        schema:
+          example: query
+          type: string
+        x-showInExample: 'true'
+      - description: The sessionId of this request. SessionId is the same until the assignee is set.
+        in: query
+        name: sessionId
+        schema:
+          type: string
+      - description: This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: A query string that is matched exactly against user `accountId`. Required, unless `query` is specified.
+        in: query
+        name: accountId
+        schema:
+          maxLength: 128
+          type: string
+      - description: The project ID or project key (case sensitive). Required, unless `issueKey` is specified.
+        in: query
+        name: project
+        schema:
+          type: string
+      - description: The key of the issue. Required, unless `project` is specified.
+        in: query
+        name: issueKey
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of items to return. This operation may return less than the maximum number of items even if more are available. The operation fetches users up to the maximum and then, from the fetched users, returns only the users that can be assigned to the issue.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: The ID of the transition.
+        in: query
+        name: actionDescriptorId
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: recommend
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":true,"applicationRoles":{"items":[],"size":1},"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","emailAddress":"mia@example.com","groups":{"items":[],"size":3},"key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g","timeZone":"Australia/Sydney"}'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `issueKey` or `project` is missing.\n *  `query` or `accountId` is missing.\n *  `query` and `accountId` are provided."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the project, issue, or transition is not found.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users Assignable To Issues
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue:jira
+        - read:project:jira
+        - read:user:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/permission/search:
+    get:
+      deprecated: false
+      description: Returns a list of users who fulfill these criteria:<br><br> *  their user attributes match a search string.<br> *  they have a set of permissions for a project or issue.<br><br>If no search string is provided, a list of all users with the permissions is returned.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that match the search string and have permission for the project or issue. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the search string and have permission for the project or issue, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg), to get users for any project.<br> *  *Administer Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for a project, to get users for that project.
+      operationId: atlassianFinduserswithallpermissions
+      parameters:
+      - description: A query string that is matched against user attributes, such as `displayName` and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*. Required, unless `accountId` is specified.
+        in: query
+        name: query
+        schema:
+          example: query
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: A query string that is matched exactly against user `accountId`. Required, unless `query` is specified.
+        in: query
+        name: accountId
+        schema:
+          maxLength: 128
+          type: string
+      - description: "A comma separated list of permissions. Permissions can be specified as any:\n\n *  permission returned by [Get all permissions](#api-rest-api-3-permissions-get).\n *  custom project permission added by Connect apps.\n *  (deprecated) one of the following:\n    \n     *  ASSIGNABLE\\_USER\n     *  ASSIGN\\_ISSUE\n     *  ATTACHMENT\\_DELETE\\_ALL\n     *  ATTACHMENT\\_DELETE\\_OWN\n     *  BROWSE\n     *  CLOSE\\_ISSUE\n     *  COMMENT\\_DELETE\\_ALL\n     *  COMMENT\\_DELETE\\_OWN\n     *  COMMENT\\_EDIT\\_ALL\n     *  COMMENT\\_EDIT\\_OWN\n     *  COMMENT\\_ISSUE\n     *  CREATE\\_ATTACHMENT\n     *  CREATE\\_ISSUE\n     *  DELETE\\_ISSUE\n     *  EDIT\\_ISSUE\n     *  LINK\\_ISSUE\n     *  MANAGE\\_WATCHER\\_LIST\n     *  MODIFY\\_REPORTER\n     *  MOVE\\_ISSUE\n     *  PROJECT\\_ADMIN\n     *  RESOLVE\\_ISSUE\n     *  SCHEDULE\\_ISSUE\n     *  SET\\_ISSUE\\_SECURITY\n     *  TRANSITION\\_ISSUE\n     *  VIEW\\_VERSION\\_CONTROL\n     *  VIEW\\_VOTERS\\_AND\\_WATCHERS\n     *  VIEW\\_WORKFLOW\\_READONLY\n     *  WORKLOG\\_DELETE\\_ALL\n     *  WORKLOG\\_DELETE\\_OWN\n     *  WORKLOG\\_EDIT\\_ALL\n     *  WORKLOG\\_EDIT\\_OWN\n     *  WORK\\_ISSUE"
+        in: query
+        name: permissions
+        required: true
+        schema:
+          type: string
+      - description: The issue key for the issue.
+        in: query
+        name: issueKey
+        schema:
+          type: string
+      - description: The project key for the project (case sensitive).
+        in: query
+        name: projectKey
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},{"accountId":"5b10ac8d82e05b22cc7d4ef5","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=48&s=48"},"displayName":"Emma Richards","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `issueKey` or `projectKey` is missing.\n *  `query` or `accountId` is missing.\n *  `query` and `accountId` are provided.\n *  `permissions` is empty or contains an invalid entry."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the issue or project is not found.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users With Permissions
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue:jira
+        - read:project:jira
+        - read:user:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/picker:
+    get:
+      deprecated: false
+      description: Returns a list of users whose attributes match the query term. The returned object includes the `html` field where the matched query term is highlighted with the HTML strong tag. A list of account IDs can be provided to exclude users from the results.<br><br>This operation takes the users in the range defined by `maxResults`, up to the thousandth user, and then returns only the users from that range that match the query term. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the query term, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg). Anonymous calls and calls by users without the required permission return search results for an exact name match only.
+      operationId: atlassianFindusersforpicker
+      parameters:
+      - description: A query string that is matched against user attributes, such as `displayName`, and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*.
+        in: query
+        name: query
+        required: true
+        schema:
+          type: string
+      - description: The maximum number of items to return. The total number of matched users is returned in `total`.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: Include the URI to the user's avatar.
+        in: query
+        name: showAvatar
+        schema:
+          default: false
+          type: boolean
+      - description: This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: exclude
+        schema:
+          items:
+            type: string
+          type: array
+      - description: A list of account IDs to exclude from the search results. This parameter accepts a comma-separated list. Multiple account IDs can also be provided using an ampersand-separated list. For example, `excludeAccountIds=5b10a2844c20165700ede21g,5b10a0effa615349cb016cd8&excludeAccountIds=5b10ac8d82e05b22cc7d4ef5`. Cannot be provided with `exclude`.
+        in: query
+        name: excludeAccountIds
+        schema:
+          items:
+            type: string
+          type: array
+      - in: query
+        name: avatarSize
+        schema:
+          type: string
+      - in: query
+        name: excludeConnectUsers
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"header":"Showing 20 of 25 matching groups","total":25,"users":[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","avatarUrl":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","displayName":"Mia Krystof","html":"<strong>Mi</strong>a Krystof - <strong>mi</strong>a@example.com (<strong>mi</strong>a)","key":"mia","name":"mia"}]}'
+              schema:
+                $ref: '#/components/schemas/FoundUsers'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if `exclude` and `excludeAccountIds` are provided.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users For Picker
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/search:
+    get:
+      deprecated: false
+      description: Returns a list of active users that match the search string and property.<br><br>This operation first applies a filter to match the search string and property, and then takes the filtered users in the range defined by `startAt` and `maxResults`, up to the thousandth user. To get all the users who match the search string and property, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>This operation can be accessed anonymously.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg). Anonymous calls or calls by users without the required permission return empty search results.
+      operationId: atlassianFindusers
+      parameters:
+      - description: A query string that is matched against user attributes ( `displayName`, and `emailAddress`) to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*. Required, unless `accountId` or `property` is specified.
+        in: query
+        name: query
+        schema:
+          example: query
+          type: string
+        x-showInExample: 'true'
+      - in: query
+        name: username
+        schema:
+          type: string
+      - description: A query string that is matched exactly against a user `accountId`. Required, unless `query` or `property` is specified.
+        in: query
+        name: accountId
+        schema:
+          maxLength: 128
+          type: string
+      - description: The index of the first item to return in a page of filtered results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: 'A query string used to search properties. Property keys are specified by path, so property keys containing dot (.) or equals (=) characters cannot be used. The query string cannot be specified using a JSON object. Example: To search for the value of `nested` from `{"something":{"nested":1,"other":2}}` use `thepropertykey.something.nested=1`. Required, unless `accountId` or `query` is specified.'
+        in: query
+        name: property
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},{"accountId":"5b10ac8d82e05b22cc7d4ef5","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=48&s=48"},"displayName":"Emma Richards","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `accountId`, `query` or `property` is missing.\n *  `query` and `accountId` are provided.\n *  `property` parameter is not valid."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user:jira
+        - read:user.property:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/search/query:
+    get:
+      deprecated: false
+      description: Finds users with a structured query and returns a [paginated](#pagination) list of user details.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that match the structured query. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the structured query, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg).<br><br>The query statements are:<br><br> *  `is assignee of PROJ` Returns the users that are assignees of at least one issue in project *PROJ*.<br> *  `is assignee of (PROJ-1, PROJ-2)` Returns users that are assignees on the issues *PROJ-1* or *PROJ-2*.<br> *  `is reporter of (PROJ-1, PROJ-2)` Returns users that are reporters on the issues *PROJ-1* or *PROJ-2*.<br> *  `is watcher of (PROJ-1, PROJ-2)` Returns users that are watchers on the issues *PROJ-1* or *PROJ-2*.<br> *  `is voter of (PROJ-1, PROJ-2)` Returns users that are voters on the issues *PROJ-1* or *PROJ-2*.<br> *  `is commenter of (PROJ-1, PROJ-2)` Returns users that have posted a comment on the issues *PROJ-1* or *PROJ-2*.<br> *  `is transitioner of (PROJ-1, PROJ-2)` Returns users that have performed a transition on issues *PROJ-1* or *PROJ-2*.<br> *  `[propertyKey].entity.property.path is "property value"` Returns users with the entity property value.<br><br>The list of issues can be extended as needed, as in *(PROJ-1, PROJ-2, ... PROJ-n)*. Statements can be combined using the `AND` and `OR` operators to form more complex queries. For example:<br><br>`is assignee of PROJ AND [propertyKey].entity.property.path is "property value"`
+      operationId: atlassianFindusersbyquery
+      parameters:
+      - description: The search query.
+        in: query
+        name: query
+        required: true
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageBeanUser'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the query is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+        '408':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the search is timed out.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Find Users By Query
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment:jira
+        - read:issue:jira
+        - read:issue.vote:jira
+        - read:issue.watcher:jira
+        - read:project:jira
+        - read:user:jira
+        - read:user.property:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/search/query/key:
+    get:
+      deprecated: false
+      description: Finds users with a structured query and returns a [paginated](#pagination) list of user keys.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that match the structured query. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the structured query, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg).<br><br>The query statements are:<br><br> *  `is assignee of PROJ` Returns the users that are assignees of at least one issue in project *PROJ*.<br> *  `is assignee of (PROJ-1, PROJ-2)` Returns users that are assignees on the issues *PROJ-1* or *PROJ-2*.<br> *  `is reporter of (PROJ-1, PROJ-2)` Returns users that are reporters on the issues *PROJ-1* or *PROJ-2*.<br> *  `is watcher of (PROJ-1, PROJ-2)` Returns users that are watchers on the issues *PROJ-1* or *PROJ-2*.<br> *  `is voter of (PROJ-1, PROJ-2)` Returns users that are voters on the issues *PROJ-1* or *PROJ-2*.<br> *  `is commenter of (PROJ-1, PROJ-2)` Returns users that have posted a comment on the issues *PROJ-1* or *PROJ-2*.<br> *  `is transitioner of (PROJ-1, PROJ-2)` Returns users that have performed a transition on issues *PROJ-1* or *PROJ-2*.<br> *  `[propertyKey].entity.property.path is "property value"` Returns users with the entity property value.<br><br>The list of issues can be extended as needed, as in *(PROJ-1, PROJ-2, ... PROJ-n)*. Statements can be combined using the `AND` and `OR` operators to form more complex queries. For example:<br><br>`is assignee of PROJ AND [propertyKey].entity.property.path is "property value"`
+      operationId: atlassianFinduserkeysbyquery
+      parameters:
+      - description: The search query.
+        in: query
+        name: query
+        required: true
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResult
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageBeanUserKey'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the query is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+        '408':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the search is timed out.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Find User Keys By Query
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment:jira
+        - read:issue:jira
+        - read:issue.vote:jira
+        - read:issue.watcher:jira
+        - read:project:jira
+        - read:user.property:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/viewissue/search:
+    get:
+      deprecated: false
+      description: Returns a list of users who fulfill these criteria:<br><br> *  their user attributes match a search string.<br> *  they have permission to browse issues.<br><br>Use this resource to find users who can browse:<br><br> *  an issue, by providing the `issueKey`.<br> *  any issue in a project, by providing the `projectKey`.<br><br>This operation takes the users in the range defined by `startAt` and `maxResults`, up to the thousandth user, and then returns only the users from that range that match the search string and have permission to browse issues. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the search string and have permission to browse issues, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.<br><br>Privacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg). Anonymous calls and calls by users without the required permission return empty search results.
+      operationId: atlassianFinduserswithbrowsepermission
+      parameters:
+      - description: A query string that is matched against user attributes, such as `displayName` and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*. Required, unless `accountId` is specified.
+        in: query
+        name: query
+        schema:
+          example: query
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: A query string that is matched exactly against user `accountId`. Required, unless `query` is specified.
+        in: query
+        name: accountId
+        schema:
+          maxLength: 128
+          type: string
+      - description: The issue key for the issue. Required, unless `projectKey` is specified.
+        in: query
+        name: issueKey
+        schema:
+          type: string
+      - description: The project key for the project (case sensitive). Required, unless `issueKey` is specified.
+        in: query
+        name: projectKey
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},{"accountId":"5b10ac8d82e05b22cc7d4ef5","accountType":"atlassian","active":false,"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/AA-3.png?size=48&s=48"},"displayName":"Emma Richards","key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5"}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `issueKey` or `projectKey` is missing.\n *  `query` or `accountId` is missing.\n *  `query` and `accountId` are provided."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the issue or project is not found.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      - {}
+      summary: Atlassian Find Users With Browse Permission
+      tags:
+      - User Search
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue:jira
+        - read:project:jira
+        - read:user:jira
+        - read:application-role:jira
+        - read:avatar:jira
+        - read:group:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    ListWrapperCallbackGroupName:
+      additionalProperties: false
+      type: object
+    SimpleListWrapperApplicationRole:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationRole'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    GroupName:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          nullable: true
+          type: string
+        name:
+          description: The name of group.
+          type: string
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    UserPickerUser:
+      additionalProperties: false
+      description: A user found in a search.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          type: string
+        avatarUrl:
+          description: The avatar URL of the user.
+          format: uri
+          type: string
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may be returned as null.
+          type: string
+        html:
+          description: The display name, email address, and key of the user with the matched query string highlighted with the HTML bold tag.
+          type: string
+        key:
+          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        name:
+          description: This property is no longer available . See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+      type: object
+    FoundUsers:
+      additionalProperties: false
+      description: The list of users found in a search, including header text (Showing X of Y matching users) and total of matched users.
+      properties:
+        header:
+          description: Header text indicating the number of users in the response and the total number of users found in the search.
+          type: string
+        total:
+          description: The total number of users found in the search.
+          format: int32
+          type: integer
+        users:
+          items:
+            $ref: '#/components/schemas/UserPickerUser'
+          type: array
+      type: object
+    PageBeanUser:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/User'
+          readOnly: true
+          type: array
+      type: object
+    ApplicationRole:
+      additionalProperties: false
+      description: Details of an application role.
+      properties:
+        defaultGroups:
+          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        defaultGroupsDetails:
+          description: The groups that are granted default access for this application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        defined:
+          description: Deprecated.
+          type: boolean
+        groupDetails:
+          description: The groups associated with the application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        groups:
+          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        hasUnlimitedSeats:
+          type: boolean
+        key:
+          description: The key of the application role.
+          type: string
+        name:
+          description: The display name of the application role.
+          type: string
+        numberOfSeats:
+          description: The maximum count of users on your license.
+          format: int32
+          type: integer
+        platform:
+          description: Indicates if the application role belongs to Jira platform (`jira-core`).
+          type: boolean
+        remainingSeats:
+          description: The count of users remaining on your license.
+          format: int32
+          type: integer
+        selectedByDefault:
+          description: Determines whether this application role should be selected by default on user creation.
+          type: boolean
+        userCount:
+          description: The number of users counting against your license.
+          format: int32
+          type: integer
+        userCountDescription:
+          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+          type: string
+      type: object
+    ListWrapperCallbackApplicationRole:
+      additionalProperties: false
+      type: object
+    PageBeanUserKey:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/UserKey'
+          readOnly: true
+          type: array
+      type: object
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    User:
+      additionalProperties: false
+      description: "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.
+          maxLength: 128
+          type: string
+        accountType:
+          description: "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk"
+          enum:
+          - atlassian
+          - app
+          - customer
+          - unknown
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        applicationRoles:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperApplicationRole'
+          description: The application roles the user is assigned to.
+          readOnly: true
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        expand:
+          description: Expand options that include additional user details in the response.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+        groups:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperGroupName'
+          description: The groups that the user belongs to.
+          readOnly: true
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        locale:
+          description: The locale of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        self:
+          description: The URL of the user.
+          format: uri
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: user
+    UserKey:
+      additionalProperties: false
+      description: List of user account IDs.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Returns *unknown* if the record is deleted and corrupted, for example, as the result of a server import.
+          maxLength: 128
+          type: string
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

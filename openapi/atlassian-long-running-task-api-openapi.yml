@@ -1,0 +1,410 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Long-Running Task API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Long-Running Task
+paths:
+  /wiki/rest/api/longtask/{id}:
+    get:
+      tags:
+      - Long-Running Task
+      summary: Atlassian Get Long Running Task
+      description: Returns information about an active long-running task (e.g. space export),<br>such as how long it has been running and the percentage of the task that<br>has completed.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianGettask
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the task.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested task is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTaskStatusWithLinks'
+        '401':
+          description: Returned if the calling user is not logged in to Confluence.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no task with the given ID.
+
+            - The calling user does not have permission to view the task.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/longtask:
+    get:
+      tags:
+      - Long-Running Task
+      summary: Atlassian Get Long Running Tasks
+      description: Returns information about all active long-running tasks (e.g. space export),<br>such as how long each task has been running and the percentage of each task<br>that has completed.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianGettasks
+      parameters:
+      - name: start
+        in: query
+        description: The starting index of the returned tasks.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of tasks to return per page. Note, this may be
+
+          restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        '200':
+          description: Returned if the requested tasks are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTaskStatusArray'
+        '401':
+          description: Returned if the calling user is not logged in to Confluence.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:content.metadata:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    LongTaskStatusArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LongTaskStatus'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    Message:
+      required:
+      - args
+      type: object
+      additionalProperties: true
+      properties:
+        translation:
+          type: string
+        args:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+    LongTaskStatusWithLinks:
+      required:
+      - _links
+      - elapsedTime
+      - finished
+      - id
+      - messages
+      - name
+      - percentageComplete
+      - successful
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+          example: example_value
+        id:
+          type: string
+          example: abc123
+        name:
+          required:
+          - args
+          - key
+          type: object
+          properties:
+            key:
+              type: string
+            args:
+              type: array
+              items:
+                type: object
+                properties: {}
+          example: Example Title
+        elapsedTime:
+          type: integer
+          format: int64
+          example: 10
+        percentageComplete:
+          type: integer
+          format: int32
+          example: 10
+        successful:
+          type: boolean
+          example: true
+        finished:
+          type: boolean
+          example: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          example: []
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        status:
+          type: string
+          example: example_value
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          example: []
+        additionalDetails:
+          type: object
+          properties:
+            destinationId:
+              type: string
+              nullable: true
+            destinationUrl:
+              type: string
+            totalPageNeedToCopy:
+              type: integer
+            additionalProperties:
+              type: string
+          example: example_value
+      description: 'Same as LongTaskStatus but with `_links` property.
+
+
+        Status keys:
+
+
+        - `ERROR_UNKNOWN` - Generic error
+
+        - `ERROR_LOCK_FAILED` - Could not get the lock on destination space
+
+        - `ERROR_RELINK` - Error when relink pages/attachments
+
+        - `ERROR_COPY_PAGE` - Error while copying 1 page
+
+        - `WARN_RENAME_PAGE` - Warning page is rename during copy
+
+        - `WARN_IGNORE_COPY_PERMISSION` - Warning could not copy permission
+
+        - `WARN_IGNORE_COPY_ATTACHMENT` - Warning could not copy attachment
+
+        - `WARN_IGNORE_DELETE_PAGE` - Warning ignoring delete of a non agreed on page
+
+        - `STATUS_COPIED_PAGES` - Message total pages are copied
+
+        - `STATUS_COPYING_PAGES` - Message copy pages
+
+        - `STATUS_RELINK_PAGES` - Message relink pages/attachments
+
+        - `STATUS_DELETING_PAGES` - Message delete pages
+
+        - `STATUS_DELETED_PAGES` - Message total pages are deleted
+
+        - `STATUS_MOVING_PAGES` - Message move pages
+
+        - `WARN_IGNORE_VIEW_RESTRICTED` - Permission changed - view restricted
+
+        - `WARN_IGNORE_EDIT_RESTRICTED` - Permission changed - edit restricted
+
+        - `INITIALIZING_TASK` - Message when initializing task
+
+        - `UNKNOWN_STATUS` - Message when status is unknown'
+    LongTaskStatus:
+      required:
+      - elapsedTime
+      - finished
+      - id
+      - messages
+      - name
+      - percentageComplete
+      - successful
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+        id:
+          type: string
+        name:
+          required:
+          - args
+          - key
+          type: object
+          properties:
+            key:
+              type: string
+            args:
+              type: array
+              items:
+                type: object
+                properties: {}
+        elapsedTime:
+          type: integer
+          format: int64
+        percentageComplete:
+          type: integer
+          format: int32
+        successful:
+          type: boolean
+        finished:
+          type: boolean
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        status:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        additionalDetails:
+          type: object
+          properties:
+            destinationId:
+              type: string
+            destinationUrl:
+              type: string
+            totalPageNeedToCopy:
+              type: integer
+            additionalProperties:
+              type: string
+      description: 'Current status of a long running task
+
+
+        Status keys:
+
+
+        - `ERROR_UNKNOWN` - Generic error
+
+        - `ERROR_LOCK_FAILED` - Could not get the lock on destination space
+
+        - `ERROR_RELINK` - Error when relink pages/attachments
+
+        - `ERROR_COPY_PAGE` - Error while copying 1 page
+
+        - `WARN_RENAME_PAGE` - Warning page is rename during copy
+
+        - `WARN_IGNORE_COPY_PERMISSION` - Warning could not copy permission
+
+        - `WARN_IGNORE_COPY_ATTACHMENT` - Warning could not copy attachment
+
+        - `WARN_IGNORE_DELETE_PAGE` - Warning ignoring delete of a non agreed on page
+
+        - `STATUS_COPIED_PAGES` - Message total pages are copied
+
+        - `STATUS_COPYING_PAGES` - Message copy pages
+
+        - `STATUS_RELINK_PAGES` - Message relink pages/attachments
+
+        - `STATUS_DELETING_PAGES` - Message delete pages
+
+        - `STATUS_DELETED_PAGES` - Message total pages are deleted
+
+        - `STATUS_MOVING_PAGES` - Message move pages
+
+        - `WARN_IGNORE_VIEW_RESTRICTED` - Permission changed - view restricted
+
+        - `WARN_IGNORE_EDIT_RESTRICTED` - Permission changed - edit restricted
+
+        - `INITIALIZING_TASK` - Message when initializing task
+
+        - `UNKNOWN_STATUS` - Message when status is unknown'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

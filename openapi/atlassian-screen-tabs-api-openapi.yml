@@ -1,0 +1,417 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Screen Tabs API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Screen Tabs
+paths:
+  /rest/api/3/screens/tabs:
+    get:
+      deprecated: false
+      description: Returns the list of tabs for a bulk of screens.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetbulkscreentabs
+      parameters:
+      - description: The list of screen IDs. To include multiple screen IDs, provide an ampersand-separated list. For example, `screenId=10000&screenId=10001`.
+        in: query
+        name: screenId
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      - description: The list of tab IDs. To include multiple tab IDs, provide an ampersand-separated list. For example, `tabId=10000&tabId=10001`.
+        in: query
+        name: tabId
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page. The maximum number is 100,
+        in: query
+        name: maxResult
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":2,"values":[{"screenId":10000,"tabId":10001,"tabName":"My Custom Tab 1"},{"screenId":10001,"tabId":10002,"tabName":"My Custom Tab 2"}]}'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the screen ID or the tab ID is empty.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      summary: Atlassian Get Bulk Screen Tabs
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:screen-tab:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/screens/{screenId}/tabs:
+    get:
+      deprecated: false
+      description: Returns the list of tabs for a screen.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).<br> *  *Administer projects* [project permission](https://confluence.atlassian.com/x/yodKLg) when the project key is specified, providing that the screen is associated with the project through a Screen Scheme and Issue Type Screen Scheme.
+      operationId: atlassianGetallscreentabs
+      parameters:
+      - description: The ID of the screen.
+        in: path
+        name: screenId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The key of the project.
+        in: query
+        name: projectKey
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ScreenableTab'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the screen ID is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the screen is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Get All Screen Tabs
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:screen-tab:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: Creates a tab for a screen.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAddscreentab
+      parameters:
+      - description: The ID of the screen.
+        in: path
+        name: screenId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: Fields Tab
+            schema:
+              $ref: '#/components/schemas/ScreenableTab'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"id":10000,"name":"Fields Tab"}'
+              schema:
+                $ref: '#/components/schemas/ScreenableTab'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the screen is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Create Screen Tab
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:screen-tab:jira
+        - write:screen-tab:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/screens/{screenId}/tabs/{tabId}:
+    delete:
+      deprecated: false
+      description: Deletes a screen tab.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeletescreentab
+      parameters:
+      - description: The ID of the screen.
+        in: path
+        name: screenId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the screen tab.
+        in: path
+        name: tabId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the screen or screen tab is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Delete Screen Tab
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:screen-tab:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates the name of a screen tab.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianRenamescreentab
+      parameters:
+      - description: The ID of the screen.
+        in: path
+        name: screenId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the screen tab.
+        in: path
+        name: tabId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScreenableTab'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"id":10000,"name":"Fields Tab"}'
+              schema:
+                $ref: '#/components/schemas/ScreenableTab'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the screen or screen tab is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Update Screen Tab
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:screen-tab:jira
+        - write:screen-tab:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/screens/{screenId}/tabs/{tabId}/move/{pos}:
+    post:
+      deprecated: false
+      description: Moves a screen tab.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianMovescreentab
+      parameters:
+      - description: The ID of the screen.
+        in: path
+        name: screenId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the screen tab.
+        in: path
+        name: tabId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The position of tab. The base index is 0.
+        in: path
+        name: pos
+        required: true
+        schema:
+          format: int32
+          type: integer
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the screen or screen tab is not found or the position is invalid.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Move Screen Tab
+      tags:
+      - Screen Tabs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:screen:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    ScreenableTab:
+      additionalProperties: false
+      description: A screen tab.
+      properties:
+        id:
+          description: The ID of the screen tab.
+          format: int64
+          readOnly: true
+          type: integer
+        name:
+          description: The name of the screen tab. The maximum length is 255 characters.
+          type: string
+      required:
+      - name
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

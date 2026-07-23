@@ -1,0 +1,2604 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Workflows API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Workflows
+paths:
+  /rest/api/3/workflow/search:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of published classic workflows. When workflow names are specified, details of those workflows are returned. Otherwise, all published classic workflows are returned.<br><br>This operation does not return next-gen workflows.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetworkflowspaginated
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: The name of a workflow to return. To include multiple workflows, provide an ampersand-separated list. For example, `workflowName=name1&workflowName=name2`.
+        in: query
+        name: workflowName
+        schema:
+          items:
+            default: ''
+            type: string
+          type: array
+          uniqueItems: true
+      - description: "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `transitions` For each workflow, returns information about the transitions inside the workflow.\n *  `transitions.rules` For each workflow transition, returns information about its rules. Transitions are included automatically if this expand is requested.\n *  `transitions.properties` For each workflow transition, returns information about its properties. Transitions are included automatically if this expand is requested.\n *  `statuses` For each workflow, returns information about the statuses inside the workflow.\n *  `statuses.properties` For each workflow status, returns information about its properties. Statuses are included automatically if this expand is requested.\n *  `default` For each workflow, returns information about whether this is the default workflow.\n *  `schemes` For each workflow, returns information about the workflow schemes the workflow is assigned to.\n *  `projects` For each workflow, returns information about the projects the workflow is assigned to, through workflow schemes.\n *  `hasDraftWorkflow` For each workflow, returns information about whether the workflow has a draft version.\n *  `operations` For each workflow, returns information about the actions that can be undertaken on the workflow."
+        in: query
+        name: expand
+        schema:
+          type: string
+      - description: String used to perform a case-insensitive partial match with workflow name.
+        in: query
+        name: queryString
+        schema:
+          type: string
+      - description: "[Order](#ordering) the results by a field:\n\n *  `name` Sorts by workflow name.\n *  `created` Sorts by create time.\n *  `updated` Sorts by update time."
+        in: query
+        name: orderBy
+        schema:
+          enum:
+          - name
+          - -name
+          - +name
+          - created
+          - -created
+          - +created
+          - updated
+          - +updated
+          - -updated
+          type: string
+      - description: Filters active and inactive workflows.
+        in: query
+        name: isActive
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":false,"maxResults":1,"startAt":0,"total":5,"values":[{"id":{"name":"SCRUM Workflow","entityId":"5ed312c5-f7a6-4a78-a1f6-8ff7f307d063"},"description":"A workflow used for Software projects in the SCRUM methodology","transitions":[{"id":"5","name":"In Progress","description":"Start working on the issue.","from":["10","13"],"to":"14","type":"directed","screen":{"id":"10000","name":"Issue screen"},"rules":{"conditionsTree":{"nodeType":"compound","operator":"AND","conditions":[{"nodeType":"simple","type":"PermissionCondition","configuration":{"permissionKey":"WORK_ON_ISSUES"}},{"nodeType":"simple","type":"PermissionCondition","configuration":{"permissionKey":"RESOLVE_ISSUES"}}]},"validators":[{"type":"FieldRequiredValidator","configuration":{"errorMessage":"A custom error message","fields":["description","assignee"],"ignoreContext":true}}],"postFunctions":[{"type":"UpdateIssueStatusFunction"},{"type":"GenerateChangeHistoryFunction"},{"type":"FireIssueEventFunction"}]},"properties":{"jira.fieldscreen.id":1}}],"statuses":[{"id":"3","name":"In Progress","properties":{"issueEditable":false,"jira.issue.editable":"false"}}],"isDefault":false,"schemes":[{"id":"10001","name":"Test Workflow Scheme"}],"projects":[{"avatarUrls":{"16x16":"secure/projectavatar?size=xsmall&pid=10000","24x24":"secure/projectavatar?size=small&pid=10000","32x32":"secure/projectavatar?size=medium&pid=10000","48x48":"secure/projectavatar?size=large&pid=10000"},"id":"10000","key":"EX","name":"Example","projectCategory":{"description":"Project category description","id":"10000","name":"A project category"},"projectTypeKey":"ProjectTypeKey{key=''software''}","self":"project/EX","simplified":false}],"hasDraftWorkflow":true,"operations":{"canEdit":true,"canDelete":false},"created":"2018-12-10T16:30:15.000+0000","updated":"2018-12-11T11:45:13.000+0000"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanWorkflow'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access workflows."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      summary: Atlassian Get Workflows Paginated
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:group:jira
+        - read:issue-security-level:jira
+        - read:project-role:jira
+        - read:screen:jira
+        - read:status:jira
+        - read:user:jira
+        - read:workflow:jira
+        - read:webhook:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/{entityId}:
+    delete:
+      deprecated: false
+      description: Deletes a workflow.<br><br>The workflow cannot be deleted if it is:<br><br> *  an active workflow.<br> *  a system workflow.<br> *  associated with any workflow scheme.<br> *  associated with any draft workflow scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeleteinactiveworkflow
+      parameters:
+      - description: The entity ID of the workflow.
+        in: path
+        name: entityId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the workflow is deleted.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["Cannot delete an active workflow."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access the workflow configuration."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The workflow was not found."],"errors":{}}'
+          description: Returned if the workflow is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Inactive Workflow
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/capabilities:
+    get:
+      deprecated: false
+      description: 'Get the list of workflow capabilities for a specific workflow using either the workflow ID, or the project and issue type ID pair. The response includes the scope of the workflow, defined as global/project-based, and a list of project types that the workflow is scoped to. It also includes all rules organised into their broad categories (conditions, validators, actions, triggers, screens) as well as the source location (Atlassian-provided, Connect, Forge).<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to access all, including global-scoped, workflows<br> *  *Administer projects* project permissions to access project-scoped workflows<br><br>The current list of Atlassian-provided rules:<br><br>#### Validators ####<br><br>A validator rule that checks if a user has the required permissions to execute the transition in the workflow.<br><br>##### Permission validator #####<br><br>A validator rule that checks if a user has the required permissions to execute the transition in the workflow.<br><br>    {<br>       "ruleKey": "system:check-permission-validator",<br>       "parameters": {<br>         "permissionKey": "ADMINISTER_PROJECTS"<br>       }<br>     }<br><br>Parameters:<br><br> *  `permissionKey` The permission required to perform the transition. Allowed values: [built-in Jira permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#built-in-permissions).<br><br>##### Parent or child blocking validator #####<br><br>A validator to block the child issue\\u2019s transition depending on the parent issue\\u2019s status.<br><br>    {<br>       "ruleKey" : "system:parent-or-child-blocking-validator"<br>       "parameters" : {<br>         "blocker" : "PARENT"<br>         "statusIds" : "1,2,3"<br>       }<br>     }<br><br>Parameters:<br><br> *  `blocker` currently only supports `PARENT`.<br> *  `statusIds` a comma-separated list of status IDs.<br><br>##### Previous status validator #####<br><br>A validator that checks if an issue has transitioned through specified previous status(es) before allowing the current transition to occur.<br><br>    {<br>       "ruleKey": "system:previous-status-validator",<br>       "parameters": {<br>         "previousStatusIds": "10014",<br>         "mostRecentStatusOnly": "true"<br>       }<br>     }<br><br>Parameters:<br><br> *  `previousStatusIds` a comma-separated list of status IDs, currently only support one ID.<br> *  `mostRecentStatusOnly` when `true` only considers the most recent status for the condition evaluation. Allowed values: `true`, `false`.<br><br>##### Validate a field value #####<br><br>A validation that ensures a specific field''s value meets the defined criteria before allowing an issue to transition in the workflow.<br><br>Depending on the rule type, the result will vary:<br><br>###### Field required ######<br><br>    {<br>       "ruleKey": "system:validate-field-value",<br>       "parameters": {<br>         "ruleType": "fieldRequired",<br>         "fieldsRequired": "assignee",<br>         "ignoreContext": "true",<br>         "errorMessage": "An assignee must be set!"<br>       }<br>     }<br><br>Parameters:<br><br> *  `fieldsRequired` the ID of the field that is required. For a custom field, it would look like `customfield_123`.<br> *  `ignoreContext` controls the impact of context settings on field validation. When set to `true`, the validator doesn''t check a required field if its context isn''t configured for the current issue. When set to `false`, the validator requires a field even if its context is invalid. Allowed values: `true`, `false`.<br> *  `errorMessage` is the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don''t provide one (Optional).<br><br>###### Field changed ######<br><br>    {<br>       "ruleKey": "system:validate-field-value",<br>       "parameters": {<br>         "ruleType": "fieldChanged",<br>         "groupsExemptFromValidation": "6862ac20-8672-4f68-896d-4854f5efb79e",<br>         "fieldKey": "versions",<br>         "errorMessage": "Affect versions must be modified before transition"<br>       }<br>     }<br><br>Parameters:<br><br> *  `groupsExemptFromValidation` a comma-separated list of group IDs to be exempt from the validation.<br> *  `fieldKey` the ID of the field that has changed. For a custom field, it would look like `customfield_123`.<br> *  `errorMessage` the error message to display if the user does not provide a value during the transition. A default error message will be shown if you don''t provide one (Optional).<br><br>###### Field has a single value ######<br><br>    {<br>       "ruleKey": "system:validate-field-value",<br>       "parameters": {<br>         "ruleType": "fieldHasSingleValue",<br>         "fieldKey": "created",<br>         "excludeSubtasks": "true"<br>       }<br>     }<br><br>Parameters:<br><br> *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.<br> *  `excludeSubtasks` Option to exclude values copied from sub-tasks. Allowed values: `true`, `false`.<br><br>###### Field matches regular expression ######<br><br>    {<br>       "ruleKey": "system:validate-field-value",<br>       "parameters": {<br>         "ruleType": "fieldMatchesRegularExpression",<br>         "regexp": "[0-9]{4}",<br>         "fieldKey": "description"<br>       }<br>     }<br><br>Parameters:<br><br> *  `regexp` the regular expression used to validate the field\\u2019s content.<br> *  `fieldKey` the ID of the field to validate. For a custom field, it would look like `customfield_123`.<br><br>###### Date field comparison ######<br><br>    {<br>       "ruleKey": "system:validate-field-value",<br>       "parameters": {<br>         "ruleType": "dateFieldComparison",<br>         "date1FieldKey": "duedate",<br>         "date2FieldKey": "customfield_10054",<br>         "includeTime": "true",<br>         "conditionSelected": ">="<br>       }<br>     }<br><br>Parameters:<br><br> *  `date1FieldKey` the ID of the first field to compare. For a custom field, it would look like `customfield_123`.<br> *  `date2FieldKey` the ID of the second field to compare. For a custom field, it would look like `customfield_123`.<br> *  `includeTime` if `true`, compares both date and time. Allowed values: `true`, `false`.<br> *  `conditionSelected` the condition to compare with. Allowed values: `>`, `>=`, `=`, ``, `>=`, `=`, `'
+      operationId: atlassianWorkflowcapabilities
+      parameters:
+      - in: query
+        name: workflowId
+        schema:
+          type: string
+      - in: query
+        name: projectId
+        schema:
+          type: string
+      - in: query
+        name: issueTypeId
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"connectRules":[{"addonKey":"com.atlassian.jira.refapp","createUrl":"/validators/jira-expression/create?id={validator.id}","description":"Validates if the given Jira expression is true.","editUrl":"/validators/jira-expression/edit?id={validator.id}","moduleKey":"jiraExpressionValidator","name":"Jira expression validator (by APPNAME)","ruleKey":"connect:expression-validator","ruleType":"Validator","viewUrl":"/validators/jira-expression/view?id={validator.id}"}],"editorScope":"GLOBAL","forgeRules":[{"description":"A Jira workflow validator example.","id":"ari:cloud:ecosystem::extension/9df6d15f-1bbe-443e-be08-150309e8dbb0/f6a3bed3-737f-4e7a-8942-130df302b749/static/workflow-validator-example-workflow-validator","name":"workflow-validator","ruleKey":"forge:expression-validator","ruleType":"Validator"}],"projectTypes":["software","business"],"systemRules":[{"description":"Automatically assign a request to someone after moving the request using a particular transition.","incompatibleRuleKeys":[],"isAvailableForInitialTransition":true,"isVisible":true,"name":"Assign a request","ruleKey":"system:change-assignee","ruleType":"Function"}],"triggerRules":[{"availableTypes":[{"description":"Automatically transitions the issue when a related branch is created in a connected repository","name":"Branch created","type":"com.atlassian.jira.plugins.jira-development-integration-plugin:branch-created-trigger"}],"ruleKey":"system:development-triggers"}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowCapabilities'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Available Workflow Capabilities
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/create:
+    post:
+      deprecated: false
+      description: Create workflows and related statuses.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: atlassianCreateworkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              scope:
+                type: GLOBAL
+              statuses:
+              - description: ''
+                name: To Do
+                statusCategory: TODO
+                statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+              - description: ''
+                name: In Progress
+                statusCategory: IN_PROGRESS
+                statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+              - description: ''
+                name: Done
+                statusCategory: DONE
+                statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+              workflows:
+              - description: ''
+                name: Software workflow 1
+                startPointLayout:
+                  x: -100.00030899047852
+                  y: -153.00020599365234
+                statuses:
+                - layout:
+                    x: 114.99993896484375
+                    y: -16
+                  properties: {}
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - layout:
+                    x: 317.0000915527344
+                    y: -16
+                  properties: {}
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - layout:
+                    x: 508.000244140625
+                    y: -16
+                  properties: {}
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                transitions:
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '1'
+                  name: Create
+                  properties: {}
+                  to:
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  triggers: []
+                  type: INITIAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '11'
+                  name: To Do
+                  properties: {}
+                  to:
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '21'
+                  name: In Progress
+                  properties: {}
+                  to:
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '31'
+                  name: Done
+                  properties: {}
+                  to:
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"statuses":[{"description":"","id":"10001","name":"To Do","scope":{"type":"GLOBAL"},"statusCategory":"TODO","statusReference":"10001","usages":[]},{"description":"","id":"10002","name":"In Progress","scope":{"type":"GLOBAL"},"statusCategory":"IN_PROGRESS","statusReference":"10002","usages":[]},{"description":"","id":"10003","name":"Done","scope":{"type":"GLOBAL"},"statusCategory":"DONE","statusReference":"10003","usages":[]}],"workflows":[{"description":"","id":"b9ff2384-d3b6-4d4e-9509-3ee19f607168","isEditable":true,"name":"Software workflow 1","scope":{"type":"GLOBAL"},"startPointLayout":{"x":-100.00030899047852,"y":-153.00020599365234},"statuses":[{"deprecated":false,"layout":{"x":114.99993896484375,"y":-16.0},"properties":{},"statusReference":"10001"},{"deprecated":false,"layout":{"x":317.0000915527344,"y":-16.0},"properties":{},"statusReference":"10002"},{"deprecated":false,"layout":{"x":508.000244140625,"y":-16.0},"properties":{},"statusReference":"10003"}],"transitions":[{"actions":[],"description":"","from":[],"id":"31","name":"Done","properties":{},"to":{"statusReference":"10003"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"11","name":"To Do","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"21","name":"In Progress","properties":{},"to":{"statusReference":"10002"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"1","name":"Create","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"INITIAL","validators":[]}],"usages":[],"version":{"id":"f010ac1b-3dd3-43a3-aa66-0ee8a447f76e","versionNumber":0}}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowCreateResponse'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Bulk Create Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/create/validation:
+    post:
+      deprecated: false
+      description: Validate the payload for bulk create workflows.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: atlassianValidatecreateworkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              payload:
+                scope:
+                  type: GLOBAL
+                statuses:
+                - description: ''
+                  name: To Do
+                  statusCategory: TODO
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - description: ''
+                  name: In Progress
+                  statusCategory: IN_PROGRESS
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - description: ''
+                  name: Done
+                  statusCategory: DONE
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                workflows:
+                - description: ''
+                  name: Software workflow 1
+                  startPointLayout:
+                    x: -100.00030899047852
+                    y: -153.00020599365234
+                  statuses:
+                  - layout:
+                      x: 114.99993896484375
+                      y: -16
+                    properties: {}
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  - layout:
+                      x: 317.0000915527344
+                      y: -16
+                    properties: {}
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  - layout:
+                      x: 508.000244140625
+                      y: -16
+                    properties: {}
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  transitions:
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '1'
+                    name: Create
+                    properties: {}
+                    to:
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    triggers: []
+                    type: INITIAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '11'
+                    name: To Do
+                    properties: {}
+                    to:
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '21'
+                    name: In Progress
+                    properties: {}
+                    to:
+                      statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '31'
+                    name: Done
+                    properties: {}
+                    to:
+                      statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+              validationOptions:
+                levels:
+                - ERROR
+                - WARNING
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateValidateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"errors":[{"code":"NON_UNIQUE_STATUS_NAME","elementReference":{"statusReference":"1f0443ff-47e4-4306-9c26-0af696059a43"},"level":"ERROR","message":"You must use a unique status name.","type":"STATUS"}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowValidationErrorList'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Validate Create Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/update:
+    post:
+      deprecated: false
+      description: Update workflows and related statuses.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: atlassianUpdateworkflows
+      parameters:
+      - description: "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with."
+        in: query
+        name: expand
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              statuses:
+              - description: ''
+                name: To Do
+                statusCategory: TODO
+                statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+              - description: ''
+                name: In Progress
+                statusCategory: IN_PROGRESS
+                statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+              - description: ''
+                name: Done
+                statusCategory: DONE
+                statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+              workflows:
+              - defaultStatusMappings:
+                - newStatusReference: '10011'
+                  oldStatusReference: '10010'
+                description: ''
+                id: '10001'
+                startPointLayout:
+                  x: -100.00030899047852
+                  y: -153.00020599365234
+                statusMappings:
+                - issueTypeId: '10002'
+                  projectId: '10003'
+                  statusMigrations:
+                  - newStatusReference: '10011'
+                    oldStatusReference: '10010'
+                statuses:
+                - layout:
+                    x: 114.99993896484375
+                    y: -16
+                  properties: {}
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - layout:
+                    x: 317.0000915527344
+                    y: -16
+                  properties: {}
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - layout:
+                    x: 508.000244140625
+                    y: -16
+                  properties: {}
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                transitions:
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '1'
+                  name: Create
+                  properties: {}
+                  to:
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  triggers: []
+                  type: INITIAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '11'
+                  name: To Do
+                  properties: {}
+                  to:
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '21'
+                  name: In Progress
+                  properties: {}
+                  to:
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+                - actions: []
+                  description: ''
+                  from: []
+                  id: '31'
+                  name: Done
+                  properties: {}
+                  to:
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  triggers: []
+                  type: GLOBAL
+                  validators: []
+                version:
+                  id: 6f6c988b-2590-4358-90c2-5f7960265592
+                  versionNumber: 1
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"statuses":[{"description":"","id":"10001","name":"To Do","scope":{"type":"GLOBAL"},"statusCategory":"TODO","statusReference":"10001","usages":[]},{"description":"","id":"10002","name":"In Progress","scope":{"type":"GLOBAL"},"statusCategory":"IN_PROGRESS","statusReference":"10002","usages":[]},{"description":"","id":"10003","name":"Done","scope":{"type":"GLOBAL"},"statusCategory":"DONE","statusReference":"10003","usages":[]}],"taskId":"10001","workflows":[{"description":"","id":"b9ff2384-d3b6-4d4e-9509-3ee19f607168","isEditable":true,"name":"Software workflow 1","scope":{"type":"GLOBAL"},"startPointLayout":{"x":-100.00030899047852,"y":-153.00020599365234},"statuses":[{"deprecated":false,"layout":{"x":114.99993896484375,"y":-16.0},"properties":{},"statusReference":"10001"},{"deprecated":false,"layout":{"x":317.0000915527344,"y":-16.0},"properties":{},"statusReference":"10002"},{"deprecated":false,"layout":{"x":508.000244140625,"y":-16.0},"properties":{},"statusReference":"10003"}],"transitions":[{"actions":[],"description":"","from":[],"id":"31","name":"Done","properties":{},"to":{"statusReference":"10003"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"11","name":"To Do","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"21","name":"In Progress","properties":{},"to":{"statusReference":"10002"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"1","name":"Create","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"INITIAL","validators":[]}],"usages":[],"version":{"id":"f010ac1b-3dd3-43a3-aa66-0ee8a447f76e","versionNumber":0}}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowUpdateResponse'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Bulk Update Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows/update/validation:
+    post:
+      deprecated: false
+      description: Validate the payload for bulk update workflows.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* project permission to create all, including global-scoped, workflows<br> *  *Administer projects* project permissions to create project-scoped workflows
+      operationId: atlassianValidateupdateworkflows
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              payload:
+                statuses:
+                - description: ''
+                  name: To Do
+                  statusCategory: TODO
+                  statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                - description: ''
+                  name: In Progress
+                  statusCategory: IN_PROGRESS
+                  statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                - description: ''
+                  name: Done
+                  statusCategory: DONE
+                  statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                workflows:
+                - defaultStatusMappings:
+                  - newStatusReference: '10011'
+                    oldStatusReference: '10010'
+                  description: ''
+                  id: '10001'
+                  startPointLayout:
+                    x: -100.00030899047852
+                    y: -153.00020599365234
+                  statusMappings:
+                  - issueTypeId: '10002'
+                    projectId: '10003'
+                    statusMigrations:
+                    - newStatusReference: '10011'
+                      oldStatusReference: '10010'
+                  statuses:
+                  - layout:
+                      x: 114.99993896484375
+                      y: -16
+                    properties: {}
+                    statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                  - layout:
+                      x: 317.0000915527344
+                      y: -16
+                    properties: {}
+                    statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                  - layout:
+                      x: 508.000244140625
+                      y: -16
+                    properties: {}
+                    statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                  transitions:
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '1'
+                    name: Create
+                    properties: {}
+                    to:
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    triggers: []
+                    type: INITIAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '11'
+                    name: To Do
+                    properties: {}
+                    to:
+                      statusReference: f0b24de5-25e7-4fab-ab94-63d81db6c0c0
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '21'
+                    name: In Progress
+                    properties: {}
+                    to:
+                      statusReference: c7a35bf0-c127-4aa6-869f-4033730c61d8
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+                  - actions: []
+                    description: ''
+                    from: []
+                    id: '31'
+                    name: Done
+                    properties: {}
+                    to:
+                      statusReference: 6b3fc04d-3316-46c5-a257-65751aeb8849
+                    triggers: []
+                    type: GLOBAL
+                    validators: []
+                  version:
+                    id: 6f6c988b-2590-4358-90c2-5f7960265592
+                    versionNumber: 1
+              validationOptions:
+                levels:
+                - ERROR
+                - WARNING
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdateValidateRequestBean'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"errors":[{"code":"NON_UNIQUE_STATUS_NAME","elementReference":{"statusReference":"1f0443ff-47e4-4306-9c26-0af696059a43"},"level":"ERROR","message":"You must use a unique status name.","type":"STATUS"}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowValidationErrorList'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Validate Update Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow:
+    get:
+      deprecated: true
+      description: Returns all workflows in Jira or a workflow. Deprecated, use [Get workflows paginated](#api-rest-api-3-workflow-search-get).<br><br>If the `workflowName` parameter is specified, the workflow is returned as an object (not in an array). Otherwise, an array of workflow objects is returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetallworkflows
+      parameters:
+      - description: The name of the workflow to be returned. Only one workflow can be specified.
+        in: query
+        name: workflowName
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"default":true,"description":"A classic Jira workflow","lastModifiedDate":"01-01-2011","lastModifiedUser":"admin","lastModifiedUserAccountId":"5b10a2844c20165700ede21g","name":"classic workflow","steps":5}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/DeprecatedWorkflow'
+                type: array
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get All Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow:jira
+        - read:project:jira
+        - read:project-category:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: true
+      description: 'Creates a workflow. You can define transition rules using the shapes detailed in the following sections. If no transitional rules are specified the default system transition rules are used. Note: This only applies to company-managed scoped workflows. Use [bulk create workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-create-post) to create both team and company-managed scoped workflows.<br><br>#### Conditions ####<br><br>Conditions enable workflow rules that govern whether a transition can execute.<br><br>##### Always false condition #####<br><br>A condition that always fails.<br><br>    {<br>       "type": "AlwaysFalseCondition"<br>     }<br><br>##### Block transition until approval #####<br><br>A condition that blocks issue transition if there is a pending approval.<br><br>    {<br>       "type": "BlockInProgressApprovalCondition"<br>     }<br><br>##### Compare number custom field condition #####<br><br>A condition that allows transition if a comparison between a number custom field and a value is true.<br><br>    {<br>       "type": "CompareNumberCFCondition",<br>       "configuration": {<br>         "comparator": "=",<br>         "fieldId": "customfield_10029",<br>         "fieldValue": 2<br>       }<br>     }<br><br> *  `comparator` One of the supported comparator: `=`, `>`, and ``, `>=`, `=`, `",<br>           "date1": "updated",<br>           "date2": "created",<br>           "expression": "1d",<br>           "includeTime": true<br>         }<br>     }<br><br> *  `comparator` One of the supported comparator: `>`, `>=`, `=`, `'
+      operationId: atlassianCreateworkflow
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: This is a workflow used for Stories and Tasks
+              name: Workflow 1
+              statuses:
+              - id: '1'
+                properties:
+                  jira.issue.editable: 'false'
+              - id: '2'
+              - id: '3'
+              transitions:
+              - from: []
+                name: Created
+                to: '1'
+                type: initial
+              - from:
+                - '1'
+                name: In progress
+                properties:
+                  custom-property: custom-value
+                rules:
+                  conditions:
+                    conditions:
+                    - type: RemoteOnlyCondition
+                    - configuration:
+                        groups:
+                        - developers
+                        - qa-testers
+                      type: UserInAnyGroupCondition
+                    operator: AND
+                  postFunctions:
+                  - type: AssignToCurrentUserFunction
+                screen:
+                  id: '10001'
+                to: '2'
+                type: directed
+              - name: Completed
+                rules:
+                  postFunctions:
+                  - configuration:
+                      fieldId: assignee
+                    type: ClearFieldValuePostFunction
+                  validators:
+                  - configuration:
+                      parentStatuses:
+                      - id: '3'
+                    type: ParentStatusValidator
+                  - configuration:
+                      permissionKey: ADMINISTER_PROJECTS
+                    type: PermissionValidator
+                to: '3'
+                type: global
+            schema:
+              $ref: '#/components/schemas/CreateWorkflowDetails'
+        description: The workflow details.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"entityId":"d7178e8d-bf6c-4c0c-9e90-758a0b965b67","name":"Workflow 1"}'
+              schema:
+                $ref: '#/components/schemas/WorkflowIDs'
+          description: Returned if the workflow is created.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The request body parameters are missing."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access the workflow configuration."],"errors":{}}'
+          description: Returned if the user does not have the required permissions.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Status with ID 10000 was not found"],"errors":{}}'
+          description: Returned if one or more statuses is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Workflow
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        - read:workflow:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflows:
+    post:
+      deprecated: false
+      description: Returns a list of workflows and related statuses by providing workflow names, workflow IDs, or project and issue types.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* global permission to access all, including project-scoped, workflows<br> *  At least one of the *Administer projects* and *View (read-only) workflow* project permissions to access project-scoped workflows
+      operationId: atlassianReadworkflows
+      parameters:
+      - description: "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `workflows.usages` Returns the project and issue types that each workflow is associated with.\n *  `statuses.usages` Returns the project and issue types that each status is associated with."
+        in: query
+        name: expand
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              projectAndIssueTypes: []
+              workflowIds: []
+              workflowNames:
+              - Workflow 1
+              - Workflow 2
+            schema:
+              $ref: '#/components/schemas/WorkflowReadRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"statuses":[{"description":"","id":"10001","name":"To Do","scope":{"type":"GLOBAL"},"statusCategory":"TODO","statusReference":"10001","usages":[]},{"description":"","id":"10002","name":"In Progress","scope":{"type":"GLOBAL"},"statusCategory":"IN_PROGRESS","statusReference":"10002","usages":[]},{"description":"","id":"10003","name":"Done","scope":{"type":"GLOBAL"},"statusCategory":"DONE","statusReference":"10003","usages":[]}],"workflows":[{"description":"","id":"b9ff2384-d3b6-4d4e-9509-3ee19f607168","isEditable":true,"name":"Workflow 1","scope":{"type":"GLOBAL"},"startPointLayout":{"x":-100.00030899047852,"y":-153.00020599365234},"statuses":[{"deprecated":false,"layout":{"x":114.99993896484375,"y":-16.0},"properties":{},"statusReference":"10001"},{"deprecated":false,"layout":{"x":317.0000915527344,"y":-16.0},"properties":{},"statusReference":"10002"},{"deprecated":false,"layout":{"x":508.000244140625,"y":-16.0},"properties":{},"statusReference":"10003"}],"transitions":[{"actions":[],"description":"","from":[],"id":"31","name":"Done","properties":{},"to":{"statusReference":"10003"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"11","name":"To Do","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"21","name":"In Progress","properties":{},"to":{"statusReference":"10002"},"triggers":[],"type":"GLOBAL","validators":[]},{"actions":[],"description":"","from":[],"id":"1","name":"Create","properties":{},"to":{"statusReference":"10001"},"triggers":[],"type":"INITIAL","validators":[]}],"usages":[],"version":{"id":"f010ac1b-3dd3-43a3-aa66-0ee8a447f76e","versionNumber":0}}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowReadResponse'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing, or the caller doesn't have permissions to perform the operation.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Bulk Get Workflows
+      tags:
+      - Workflows
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    WorkflowTrigger:
+      additionalProperties: false
+      description: The trigger configuration associated with a workflow.
+      properties:
+        id:
+          description: The ID of the trigger.
+          type: string
+        parameters:
+          additionalProperties:
+            description: The parameters of the trigger.
+            type: string
+          description: The parameters of the trigger.
+          type: object
+        ruleKey:
+          description: The rule key of the trigger.
+          type: string
+      required:
+      - parameters
+      - ruleKey
+      type: object
+    WorkflowSimpleCondition:
+      description: A workflow transition rule condition. This object returns `nodeType` as `simple`.
+      properties:
+        configuration:
+          description: EXPERIMENTAL. The configuration of the transition rule.
+          type: object
+        nodeType:
+          type: string
+        type:
+          description: The type of the transition rule.
+          type: string
+      required:
+      - nodeType
+      - type
+      type: object
+    WorkflowOperations:
+      additionalProperties: false
+      description: Operations allowed on a workflow
+      properties:
+        canDelete:
+          description: Whether the workflow can be deleted.
+          type: boolean
+        canEdit:
+          description: Whether the workflow can be updated.
+          type: boolean
+      required:
+      - canDelete
+      - canEdit
+      type: object
+    CreateWorkflowDetails:
+      additionalProperties: false
+      description: The details of a workflow.
+      properties:
+        description:
+          description: The description of the workflow. The maximum length is 1000 characters.
+          type: string
+        name:
+          description: The name of the workflow. The name must be unique. The maximum length is 255 characters. Characters can be separated by a whitespace but the name cannot start or end with a whitespace.
+          type: string
+        statuses:
+          description: The statuses of the workflow. Any status that does not include a transition is added to the workflow without a transition.
+          items:
+            $ref: '#/components/schemas/CreateWorkflowStatusDetails'
+          type: array
+          uniqueItems: true
+        transitions:
+          description: "The transitions of the workflow. For the request to be valid, these transitions must:\n\n *  include one *initial* transition.\n *  not use the same name for a *global* and *directed* transition.\n *  have a unique name for each *global* transition.\n *  have a unique 'to' status for each *global* transition.\n *  have unique names for each transition from a status.\n *  not have a 'from' status on *initial* and *global* transitions.\n *  have a 'from' status on *directed* transitions.\n\nAll the transition statuses must be included in `statuses`."
+          items:
+            $ref: '#/components/schemas/CreateWorkflowTransitionDetails'
+          type: array
+      required:
+      - name
+      - statuses
+      - transitions
+      type: object
+      writeOnly: true
+    JiraWorkflowStatus:
+      additionalProperties: false
+      description: Details of a status.
+      properties:
+        description:
+          description: The description of the status.
+          type: string
+        id:
+          description: The ID of the status.
+          type: string
+        name:
+          description: The name of the status.
+          type: string
+        scope:
+          $ref: '#/components/schemas/WorkflowScope'
+        statusCategory:
+          description: The category of the status.
+          enum:
+          - TODO
+          - IN_PROGRESS
+          - DONE
+          type: string
+        statusReference:
+          description: The reference of the status.
+          type: string
+        usages:
+          description: The `statuses.usages` expand is an optional parameter that can be used when reading and updating statuses in Jira. It provides additional information about the projects and issue types associated with the requested statuses.
+          items:
+            $ref: '#/components/schemas/ProjectIssueTypes'
+          type: array
+          uniqueItems: true
+      type: object
+    StatusMappingDTO:
+      additionalProperties: true
+      description: The mapping of old to new status ID for a specific project and issue type.
+      properties:
+        issueTypeId:
+          description: The issue type for the status mapping.
+          type: string
+        projectId:
+          description: The project for the status mapping.
+          type: string
+        statusMigrations:
+          description: The list of old and new status ID mappings for the specified project and issue type.
+          items:
+            $ref: '#/components/schemas/StatusMigration'
+          type: array
+      required:
+      - issueTypeId
+      - projectId
+      - statusMigrations
+      type: object
+    TransitionUpdateDTO:
+      additionalProperties: true
+      description: The transitions of this workflow.
+      properties:
+        actions:
+          description: The post-functions of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+        conditions:
+          $ref: '#/components/schemas/ConditionGroupUpdate'
+        customIssueEventId:
+          description: The custom event ID of the transition.
+          type: string
+        description:
+          description: The description of the transition.
+          type: string
+        from:
+          description: The statuses the transition can start from.
+          items:
+            $ref: '#/components/schemas/StatusReferenceAndPort'
+          type: array
+        id:
+          description: The ID of the transition.
+          type: string
+        name:
+          description: The name of the transition.
+          type: string
+        properties:
+          additionalProperties:
+            description: The properties of the transition.
+            type: string
+          description: The properties of the transition.
+          type: object
+        to:
+          $ref: '#/components/schemas/StatusReferenceAndPort'
+        transitionScreen:
+          $ref: '#/components/schemas/WorkflowRuleConfiguration'
+        triggers:
+          description: The triggers of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowTrigger'
+          type: array
+        type:
+          description: The transition type.
+          enum:
+          - INITIAL
+          - GLOBAL
+          - DIRECTED
+          type: string
+        validators:
+          description: The validators of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+      required:
+      - id
+      - name
+      - type
+      type: object
+    ValidationOptionsForUpdate:
+      additionalProperties: false
+      description: The level of validation to return from the API. If no values are provided, the default would return `WARNING` and `ERROR` level validation results.
+      properties:
+        levels:
+          items:
+            enum:
+            - WARNING
+            - ERROR
+            type: string
+          maxItems: 2
+          type: array
+      type: object
+    CreateWorkflowCondition:
+      additionalProperties: false
+      description: A workflow transition condition.
+      properties:
+        conditions:
+          description: The list of workflow conditions.
+          items:
+            $ref: '#/components/schemas/CreateWorkflowCondition'
+          type: array
+        configuration:
+          additionalProperties:
+            description: EXPERIMENTAL. The configuration of the transition rule.
+          description: EXPERIMENTAL. The configuration of the transition rule.
+          type: object
+        operator:
+          description: The compound condition operator.
+          enum:
+          - AND
+          - OR
+          type: string
+        type:
+          description: The type of the transition rule.
+          type: string
+      type: object
+    AvailableWorkflowForgeRule:
+      additionalProperties: false
+      description: The Forge provided ecosystem rules available.
+      properties:
+        description:
+          description: The rule description.
+          type: string
+        id:
+          description: The unique ARI of the forge rule type.
+          type: string
+        name:
+          description: The rule name.
+          type: string
+        ruleKey:
+          description: The rule key.
+          type: string
+        ruleType:
+          description: The rule type.
+          enum:
+          - Condition
+          - Validator
+          - Function
+          - Screen
+          type: string
+      type: object
+    WorkflowLayout:
+      additionalProperties: false
+      description: The starting point for the statuses in the workflow.
+      nullable: true
+      properties:
+        x:
+          description: The x axis location.
+          format: double
+          type: number
+        y:
+          description: The y axis location.
+          format: double
+          type: number
+      type: object
+    AvailableWorkflowSystemRule:
+      additionalProperties: false
+      description: The Atlassian provided system rules available.
+      properties:
+        description:
+          description: The rule description.
+          type: string
+        incompatibleRuleKeys:
+          description: List of rules that conflict with this one.
+          items:
+            description: List of rules that conflict with this one.
+            type: string
+          type: array
+        isAvailableForInitialTransition:
+          description: Whether the rule can be added added to an initial transition.
+          type: boolean
+        isVisible:
+          description: Whether the rule is visible.
+          type: boolean
+        name:
+          description: The rule name.
+          type: string
+        ruleKey:
+          description: The rule key.
+          type: string
+        ruleType:
+          description: The rule type.
+          enum:
+          - Condition
+          - Validator
+          - Function
+          - Screen
+          type: string
+      required:
+      - description
+      - incompatibleRuleKeys
+      - isAvailableForInitialTransition
+      - isVisible
+      - name
+      - ruleKey
+      - ruleType
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    ProjectDetails:
+      additionalProperties: false
+      description: Details about a project.
+      properties:
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The URLs of the project's avatars.
+          readOnly: true
+        id:
+          description: The ID of the project.
+          type: string
+        key:
+          description: The key of the project.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the project.
+          readOnly: true
+          type: string
+        projectCategory:
+          allOf:
+          - $ref: '#/components/schemas/UpdatedProjectCategory'
+          description: The category the project belongs to.
+          readOnly: true
+        projectTypeKey:
+          description: The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.
+          enum:
+          - software
+          - service_desk
+          - business
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project details.
+          readOnly: true
+          type: string
+        simplified:
+          description: Whether or not the project is simplified.
+          readOnly: true
+          type: boolean
+      type: object
+    ValidationOptionsForCreate:
+      additionalProperties: false
+      description: The level of validation to return from the API. If no values are provided, the default would return `WARNING` and `ERROR` level validation results.
+      properties:
+        levels:
+          items:
+            enum:
+            - WARNING
+            - ERROR
+            type: string
+          maxItems: 2
+          type: array
+      type: object
+    ProjectAndIssueTypePair:
+      additionalProperties: false
+      description: A project and issueType ID pair that identifies a status mapping.
+      properties:
+        issueTypeId:
+          description: The ID of the issue type.
+          type: string
+        projectId:
+          description: The ID of the project.
+          type: string
+      required:
+      - issueTypeId
+      - projectId
+      type: object
+    StatusReferenceAndPort:
+      additionalProperties: false
+      description: The status reference and port that a transition is connected to.
+      nullable: true
+      properties:
+        port:
+          description: The port this transition uses to connect to this status.
+          format: int32
+          type: integer
+        statusReference:
+          description: The reference of this status.
+          type: string
+      required:
+      - statusReference
+      type: object
+    JiraWorkflow:
+      additionalProperties: false
+      description: Details of a workflow.
+      properties:
+        description:
+          description: The description of the workflow.
+          type: string
+        id:
+          description: The ID of the workflow.
+          type: string
+        isEditable:
+          description: Indicates if the workflow can be edited.
+          type: boolean
+        name:
+          description: The name of the workflow.
+          type: string
+        scope:
+          $ref: '#/components/schemas/WorkflowScope'
+        startPointLayout:
+          $ref: '#/components/schemas/WorkflowLayout'
+        statuses:
+          description: The statuses referenced in this workflow.
+          items:
+            $ref: '#/components/schemas/WorkflowReferenceStatus'
+          type: array
+          uniqueItems: true
+        taskId:
+          description: If there is a current [asynchronous task](#async-operations) operation for this workflow.
+          nullable: true
+          type: string
+        transitions:
+          description: The transitions of the workflow.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitions'
+          type: array
+          uniqueItems: true
+        usages:
+          description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
+          items:
+            $ref: '#/components/schemas/ProjectIssueTypes'
+          type: array
+          uniqueItems: true
+        version:
+          $ref: '#/components/schemas/DocumentVersion'
+      type: object
+    CreateWorkflowStatusDetails:
+      additionalProperties: false
+      description: The details of a transition status.
+      properties:
+        id:
+          description: The ID of the status.
+          type: string
+        properties:
+          additionalProperties:
+            type: string
+          description: The properties of the status.
+          type: object
+      required:
+      - id
+      type: object
+      writeOnly: true
+    WorkflowValidationErrorList:
+      additionalProperties: false
+      properties:
+        errors:
+          description: The list of validation errors.
+          items:
+            $ref: '#/components/schemas/WorkflowValidationError'
+          type: array
+      type: object
+    WorkflowIDs:
+      additionalProperties: false
+      description: The classic workflow identifiers.
+      properties:
+        entityId:
+          description: The entity ID of the workflow.
+          type: string
+        name:
+          description: The name of the workflow.
+          type: string
+      required:
+      - name
+      type: object
+    DeprecatedWorkflow:
+      additionalProperties: false
+      description: Details about a workflow.
+      properties:
+        default:
+          type: boolean
+        description:
+          description: The description of the workflow.
+          readOnly: true
+          type: string
+        lastModifiedDate:
+          description: The datetime the workflow was last modified.
+          readOnly: true
+          type: string
+        lastModifiedUser:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        lastModifiedUserAccountId:
+          description: The account ID of the user that last modified the workflow.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the workflow.
+          readOnly: true
+          type: string
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope where this workflow applies
+          readOnly: true
+        steps:
+          description: The number of steps included in the workflow.
+          format: int32
+          readOnly: true
+          type: integer
+      type: object
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
+          type: string
+      type: object
+    Transition:
+      additionalProperties: false
+      description: Details of a workflow transition.
+      properties:
+        description:
+          description: The description of the transition.
+          type: string
+        from:
+          description: The statuses the transition can start from.
+          items:
+            description: The statuses the transition can start from.
+            type: string
+          type: array
+        id:
+          description: The ID of the transition.
+          type: string
+        name:
+          description: The name of the transition.
+          type: string
+        properties:
+          additionalProperties:
+            description: The properties of the transition.
+          description: The properties of the transition.
+          type: object
+        rules:
+          $ref: '#/components/schemas/WorkflowRules'
+        screen:
+          $ref: '#/components/schemas/TransitionScreenDetails'
+        to:
+          description: The status the transition goes to.
+          type: string
+        type:
+          description: The type of the transition.
+          enum:
+          - global
+          - initial
+          - directed
+          type: string
+      required:
+      - description
+      - from
+      - id
+      - name
+      - to
+      - type
+      type: object
+    ConditionGroupConfiguration:
+      additionalProperties: false
+      description: The conditions group associated with the transition.
+      nullable: true
+      properties:
+        conditionGroups:
+          description: The nested conditions of the condition group.
+          items:
+            $ref: '#/components/schemas/ConditionGroupConfiguration'
+          type: array
+        conditions:
+          description: The rules for this condition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+        operation:
+          description: Determines how the conditions in the group are evaluated. Accepts either `ANY` or `ALL`. If `ANY` is used, at least one condition in the group must be true for the group to evaluate to true. If `ALL` is used, all conditions in the group must be true for the group to evaluate to true.
+          enum:
+          - ANY
+          - ALL
+          type: string
+      type: object
+    WorkflowCapabilities:
+      additionalProperties: false
+      properties:
+        connectRules:
+          description: The Connect provided ecosystem rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowConnectRule'
+          type: array
+        editorScope:
+          description: The scope of the workflow capabilities. `GLOBAL` for company-managed projects and `PROJECT` for team-managed projects.
+          enum:
+          - PROJECT
+          - GLOBAL
+          type: string
+        forgeRules:
+          description: The Forge provided ecosystem rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowForgeRule'
+          type: array
+        projectTypes:
+          description: The types of projects that this capability set is available for.
+          enum:
+          - software
+          - service_desk
+          - product_discovery
+          - business
+          - unknown
+          items:
+            description: The types of projects that this capability set is available for.
+            enum:
+            - software
+            - service_desk
+            - product_discovery
+            - business
+            - unknown
+            type: string
+          type: array
+        systemRules:
+          description: The Atlassian provided system rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowSystemRule'
+          type: array
+        triggerRules:
+          description: The trigger rules available.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowTriggers'
+          type: array
+      type: object
+    TransitionScreenDetails:
+      additionalProperties: false
+      description: The details of a transition screen.
+      properties:
+        id:
+          description: The ID of the screen.
+          type: string
+        name:
+          description: The name of the screen.
+          type: string
+      required:
+      - id
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    WorkflowRuleConfiguration:
+      additionalProperties: false
+      description: The configuration of the rule.
+      nullable: true
+      properties:
+        id:
+          description: The ID of the rule.
+          nullable: true
+          type: string
+        parameters:
+          additionalProperties:
+            description: The parameters related to the rule.
+            type: string
+          description: The parameters related to the rule.
+          type: object
+        ruleKey:
+          description: The rule key of the rule.
+          type: string
+      required:
+      - ruleKey
+      type: object
+    WorkflowElementReference:
+      additionalProperties: false
+      description: A reference to the location of the error. This will be null if the error does not refer to a specific element.
+      properties:
+        propertyKey:
+          description: A property key.
+          type: string
+        ruleId:
+          description: A rule ID.
+          type: string
+        statusMappingReference:
+          $ref: '#/components/schemas/ProjectAndIssueTypePair'
+        statusReference:
+          description: A status reference.
+          type: string
+        transitionId:
+          description: A transition ID.
+          type: string
+      type: object
+    AvailableWorkflowTriggers:
+      additionalProperties: false
+      description: The trigger rules available.
+      properties:
+        availableTypes:
+          description: The list of available trigger types.
+          items:
+            $ref: '#/components/schemas/AvailableWorkflowTriggerTypes'
+          type: array
+        ruleKey:
+          description: The rule key of the rule.
+          type: string
+      required:
+      - availableTypes
+      - ruleKey
+      type: object
+    PublishedWorkflowId:
+      additionalProperties: false
+      description: Properties that identify a published workflow.
+      properties:
+        entityId:
+          description: The entity ID of the workflow.
+          type: string
+        name:
+          description: The name of the workflow.
+          type: string
+      required:
+      - name
+      type: object
+    AvailableWorkflowConnectRule:
+      additionalProperties: false
+      description: The Connect provided ecosystem rules available.
+      properties:
+        addonKey:
+          description: The add-on providing the rule.
+          type: string
+        createUrl:
+          description: The URL creation path segment defined in the Connect module.
+          type: string
+        description:
+          description: The rule description.
+          type: string
+        editUrl:
+          description: The URL edit path segment defined in the Connect module.
+          type: string
+        moduleKey:
+          description: The module providing the rule.
+          type: string
+        name:
+          description: The rule name.
+          type: string
+        ruleKey:
+          description: The rule key.
+          type: string
+        ruleType:
+          description: The rule type.
+          enum:
+          - Condition
+          - Validator
+          - Function
+          - Screen
+          type: string
+        viewUrl:
+          description: The URL view path segment defined in the Connect module.
+          type: string
+      type: object
+    WorkflowTransitionRule:
+      additionalProperties: false
+      description: A workflow transition rule.
+      properties:
+        configuration:
+          description: EXPERIMENTAL. The configuration of the transition rule.
+        type:
+          description: The type of the transition rule.
+          type: string
+      required:
+      - type
+      type: object
+    WorkflowReferenceStatus:
+      additionalProperties: false
+      description: The statuses referenced in the workflow.
+      properties:
+        deprecated:
+          description: Indicates if the status is deprecated.
+          type: boolean
+        layout:
+          $ref: '#/components/schemas/WorkflowStatusLayout'
+        properties:
+          additionalProperties:
+            description: The properties associated with the status.
+            type: string
+          description: The properties associated with the status.
+          type: object
+        statusReference:
+          description: The reference of the status.
+          type: string
+      type: object
+    WorkflowCreateRequest:
+      additionalProperties: false
+      description: The create workflows payload.
+      properties:
+        scope:
+          $ref: '#/components/schemas/WorkflowScope'
+        statuses:
+          description: The statuses to associate with the workflows.
+          items:
+            $ref: '#/components/schemas/WorkflowStatusUpdate'
+          maximum: 1000
+          type: array
+        workflows:
+          description: The details of the workflows to create.
+          items:
+            $ref: '#/components/schemas/WorkflowCreate'
+          maximum: 20
+          type: array
+      required:
+      - scope
+      - statuses
+      - workflows
+      type: object
+    CreateWorkflowTransitionScreenDetails:
+      additionalProperties: false
+      description: The details of a transition screen.
+      properties:
+        id:
+          description: The ID of the screen.
+          type: string
+      required:
+      - id
+      type: object
+      writeOnly: true
+    WorkflowUpdateValidateRequestBean:
+      additionalProperties: false
+      properties:
+        payload:
+          $ref: '#/components/schemas/WorkflowUpdateRequest'
+        validationOptions:
+          $ref: '#/components/schemas/ValidationOptionsForUpdate'
+      required:
+      - payload
+      type: object
+    Workflow:
+      additionalProperties: false
+      description: Details about a workflow.
+      properties:
+        created:
+          description: The creation date of the workflow.
+          format: date-time
+          type: string
+        description:
+          description: The description of the workflow.
+          type: string
+        hasDraftWorkflow:
+          description: Whether the workflow has a draft version.
+          type: boolean
+        id:
+          $ref: '#/components/schemas/PublishedWorkflowId'
+        isDefault:
+          description: Whether this is the default workflow.
+          type: boolean
+        operations:
+          $ref: '#/components/schemas/WorkflowOperations'
+        projects:
+          description: The projects the workflow is assigned to, through workflow schemes.
+          items:
+            $ref: '#/components/schemas/ProjectDetails'
+          type: array
+        schemes:
+          description: The workflow schemes the workflow is assigned to.
+          items:
+            $ref: '#/components/schemas/WorkflowSchemeIdName'
+          type: array
+        statuses:
+          description: The statuses of the workflow.
+          items:
+            $ref: '#/components/schemas/WorkflowStatus'
+          type: array
+        transitions:
+          description: The transitions of the workflow.
+          items:
+            $ref: '#/components/schemas/Transition'
+          type: array
+        updated:
+          description: The last edited date of the workflow.
+          format: date-time
+          type: string
+      required:
+      - description
+      - id
+      type: object
+    PageBeanWorkflow:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/Workflow'
+          readOnly: true
+          type: array
+      type: object
+    WorkflowCondition:
+      additionalProperties: false
+      description: The workflow transition rule conditions tree.
+      discriminator:
+        mapping:
+          compound: '#/components/schemas/WorkflowCompoundCondition'
+          simple: '#/components/schemas/WorkflowSimpleCondition'
+        propertyName: nodeType
+      oneOf:
+      - $ref: '#/components/schemas/WorkflowSimpleCondition'
+      - $ref: '#/components/schemas/WorkflowCompoundCondition'
+      type: object
+    WorkflowReadRequest:
+      additionalProperties: false
+      properties:
+        projectAndIssueTypes:
+          description: The list of projects and issue types to query.
+          items:
+            $ref: '#/components/schemas/ProjectAndIssueTypePair'
+          type: array
+        workflowIds:
+          description: The list of workflow IDs to query.
+          items:
+            description: The list of workflow IDs to query.
+            type: string
+          type: array
+        workflowNames:
+          description: The list of workflow names to query.
+          items:
+            description: The list of workflow names to query.
+            type: string
+          type: array
+      type: object
+    WorkflowRules:
+      additionalProperties: false
+      description: A collection of transition rules.
+      properties:
+        conditionsTree:
+          $ref: '#/components/schemas/WorkflowCondition'
+        postFunctions:
+          description: The workflow post functions.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRule'
+          type: array
+        validators:
+          description: The workflow validators.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRule'
+          type: array
+      type: object
+    WorkflowStatus:
+      additionalProperties: false
+      description: Details of a workflow status.
+      properties:
+        id:
+          description: The ID of the issue status.
+          type: string
+        name:
+          description: The name of the status in the workflow.
+          type: string
+        properties:
+          additionalProperties:
+            description: Additional properties that modify the behavior of issues in this status. Supports the properties <code>jira.issue.editable</code> and <code>issueEditable</code> (deprecated) that indicate whether issues are editable.
+          description: Additional properties that modify the behavior of issues in this status. Supports the properties `jira.issue.editable` and `issueEditable` (deprecated) that indicate whether issues are editable.
+          type: object
+      required:
+      - id
+      - name
+      type: object
+    WorkflowStatusLayout:
+      additionalProperties: false
+      description: The x and y location of the status in the workflow.
+      nullable: true
+      properties:
+        x:
+          description: The x axis location.
+          format: double
+          nullable: true
+          type: number
+        y:
+          description: The y axis location.
+          format: double
+          nullable: true
+          type: number
+      type: object
+    WorkflowCreateValidateRequest:
+      additionalProperties: false
+      properties:
+        payload:
+          $ref: '#/components/schemas/WorkflowCreateRequest'
+        validationOptions:
+          $ref: '#/components/schemas/ValidationOptionsForCreate'
+      required:
+      - payload
+      type: object
+    WorkflowReadResponse:
+      additionalProperties: false
+      description: Details of workflows and related statuses.
+      properties:
+        statuses:
+          description: List of statuses.
+          items:
+            $ref: '#/components/schemas/JiraWorkflowStatus'
+          type: array
+          uniqueItems: true
+        workflows:
+          description: List of workflows.
+          items:
+            $ref: '#/components/schemas/JiraWorkflow'
+          type: array
+          uniqueItems: true
+      type: object
+    CreateWorkflowTransitionDetails:
+      additionalProperties: false
+      description: The details of a workflow transition.
+      properties:
+        description:
+          description: The description of the transition. The maximum length is 1000 characters.
+          type: string
+        from:
+          description: The statuses the transition can start from.
+          items:
+            type: string
+          type: array
+        name:
+          description: The name of the transition. The maximum length is 60 characters.
+          type: string
+        properties:
+          additionalProperties:
+            type: string
+          description: The properties of the transition.
+          type: object
+        rules:
+          allOf:
+          - $ref: '#/components/schemas/CreateWorkflowTransitionRulesDetails'
+          description: The rules of the transition.
+        screen:
+          allOf:
+          - $ref: '#/components/schemas/CreateWorkflowTransitionScreenDetails'
+          description: The screen of the transition.
+        to:
+          description: The status the transition goes to.
+          type: string
+        type:
+          description: The type of the transition.
+          enum:
+          - global
+          - initial
+          - directed
+          type: string
+      required:
+      - name
+      - to
+      - type
+      type: object
+      writeOnly: true
+    WorkflowUpdate:
+      additionalProperties: true
+      description: The details of the workflows to update.
+      maximum: 20
+      properties:
+        defaultStatusMappings:
+          description: The mapping of old to new status ID.
+          items:
+            $ref: '#/components/schemas/StatusMigration'
+          type: array
+        description:
+          description: The new description for this workflow.
+          type: string
+        id:
+          description: The ID of this workflow.
+          type: string
+        startPointLayout:
+          $ref: '#/components/schemas/WorkflowLayout'
+        statusMappings:
+          description: The mapping of old to new status ID for a specific project and issue type.
+          items:
+            $ref: '#/components/schemas/StatusMappingDTO'
+          type: array
+        statuses:
+          description: The statuses associated with this workflow.
+          items:
+            $ref: '#/components/schemas/StatusLayoutUpdate'
+          type: array
+        transitions:
+          description: The transitions of this workflow.
+          items:
+            $ref: '#/components/schemas/TransitionUpdateDTO'
+          type: array
+        version:
+          $ref: '#/components/schemas/DocumentVersion'
+      required:
+      - id
+      - statuses
+      - transitions
+      - version
+      type: object
+    WorkflowTransitions:
+      additionalProperties: false
+      description: The transitions of the workflow.
+      properties:
+        actions:
+          description: The post-functions of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+        conditions:
+          $ref: '#/components/schemas/ConditionGroupConfiguration'
+        customIssueEventId:
+          description: The custom event ID of the transition.
+          nullable: true
+          type: string
+        description:
+          description: The description of the transition.
+          type: string
+        from:
+          description: The statuses the transition can start from.
+          items:
+            $ref: '#/components/schemas/WorkflowStatusAndPort'
+          type: array
+        id:
+          description: The ID of the transition.
+          type: string
+        name:
+          description: The name of the transition.
+          type: string
+        properties:
+          additionalProperties:
+            description: The properties of the transition.
+            type: string
+          description: The properties of the transition.
+          type: object
+        to:
+          $ref: '#/components/schemas/WorkflowStatusAndPort'
+        transitionScreen:
+          $ref: '#/components/schemas/WorkflowRuleConfiguration'
+        triggers:
+          description: The triggers of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowTrigger'
+          type: array
+        type:
+          description: The transition type.
+          enum:
+          - INITIAL
+          - GLOBAL
+          - DIRECTED
+          type: string
+        validators:
+          description: The validators of the transition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+      type: object
+    WorkflowUpdateResponse:
+      additionalProperties: false
+      properties:
+        statuses:
+          description: List of updated statuses.
+          items:
+            $ref: '#/components/schemas/JiraWorkflowStatus'
+          type: array
+          uniqueItems: true
+        taskId:
+          description: If there is a [asynchronous task](#async-operations) operation, as a result of this update.
+          nullable: true
+          type: string
+        workflows:
+          description: List of updated workflows.
+          items:
+            $ref: '#/components/schemas/JiraWorkflow'
+          type: array
+          uniqueItems: true
+      type: object
+    ProjectId:
+      additionalProperties: false
+      description: Project ID details.
+      nullable: true
+      properties:
+        id:
+          description: The ID of the project.
+          type: string
+      required:
+      - id
+      type: object
+    StatusLayoutUpdate:
+      additionalProperties: true
+      description: The statuses associated with this workflow.
+      properties:
+        layout:
+          $ref: '#/components/schemas/WorkflowLayout'
+        properties:
+          additionalProperties:
+            description: The properties for this status layout.
+            type: string
+          description: The properties for this status layout.
+          type: object
+        statusReference:
+          description: A unique ID which the status will use to refer to this layout configuration.
+          type: string
+      required:
+      - properties
+      - statusReference
+      type: object
+    WorkflowValidationError:
+      additionalProperties: false
+      description: The details about a workflow validation error.
+      properties:
+        code:
+          description: An error code.
+          type: string
+        elementReference:
+          $ref: '#/components/schemas/WorkflowElementReference'
+        level:
+          description: The validation error level.
+          enum:
+          - WARNING
+          - ERROR
+          type: string
+        message:
+          description: An error message.
+          type: string
+        type:
+          description: The type of element the error or warning references.
+          enum:
+          - RULE
+          - STATUS
+          - STATUS_LAYOUT
+          - STATUS_PROPERTY
+          - WORKFLOW
+          - TRANSITION
+          - TRANSITION_PROPERTY
+          - SCOPE
+          - STATUS_MAPPING
+          - TRIGGER
+          type: string
+      type: object
+    CreateWorkflowTransitionRule:
+      additionalProperties: false
+      description: A workflow transition rule.
+      properties:
+        configuration:
+          additionalProperties:
+            description: EXPERIMENTAL. The configuration of the transition rule.
+          description: EXPERIMENTAL. The configuration of the transition rule.
+          type: object
+        type:
+          description: The type of the transition rule.
+          type: string
+      required:
+      - type
+      type: object
+    WorkflowCompoundCondition:
+      description: A compound workflow transition rule condition. This object returns `nodeType` as `compound`.
+      properties:
+        conditions:
+          description: The list of workflow conditions.
+          items:
+            $ref: '#/components/schemas/WorkflowCondition'
+          type: array
+        nodeType:
+          type: string
+        operator:
+          description: The compound condition operator.
+          enum:
+          - AND
+          - OR
+          type: string
+      required:
+      - conditions
+      - nodeType
+      - operator
+      type: object
+    WorkflowUpdateRequest:
+      additionalProperties: false
+      description: The update workflows payload.
+      properties:
+        statuses:
+          description: The statuses to associate with the workflows.
+          items:
+            $ref: '#/components/schemas/WorkflowStatusUpdate'
+          maximum: 1000
+          type: array
+        workflows:
+          description: The details of the workflows to update.
+          items:
+            $ref: '#/components/schemas/WorkflowUpdate'
+          maximum: 20
+          type: array
+      required:
+      - statuses
+      - workflows
+      type: object
+    WorkflowStatusUpdate:
+      additionalProperties: true
+      description: Details of the status being updated.
+      maximum: 1000
+      properties:
+        description:
+          description: The description of the status.
+          type: string
+        id:
+          description: The ID of the status.
+          type: string
+        name:
+          description: The name of the status.
+          type: string
+        statusCategory:
+          description: The category of the status.
+          enum:
+          - TODO
+          - IN_PROGRESS
+          - DONE
+          type: string
+        statusReference:
+          description: The reference of the status.
+          type: string
+      required:
+      - name
+      - statusCategory
+      - statusReference
+      type: object
+    StatusMigration:
+      additionalProperties: true
+      description: The mapping of old to new status ID.
+      properties:
+        newStatusReference:
+          description: The new status ID.
+          type: string
+        oldStatusReference:
+          description: The old status ID.
+          type: string
+      required:
+      - newStatusReference
+      - oldStatusReference
+      type: object
+    WorkflowStatusAndPort:
+      additionalProperties: false
+      description: The status reference and port that a transition is connected to.
+      nullable: true
+      properties:
+        port:
+          description: The port the transition is connected to this status.
+          format: int32
+          nullable: true
+          type: integer
+        statusReference:
+          description: The reference of this status.
+          type: string
+      type: object
+    ProjectIssueTypes:
+      additionalProperties: false
+      description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
+      properties:
+        issueTypes:
+          description: IDs of the issue types
+          items:
+            description: IDs of the issue types
+            nullable: true
+            type: string
+          nullable: true
+          type: array
+          uniqueItems: true
+        project:
+          $ref: '#/components/schemas/ProjectId'
+      type: object
+    WorkflowCreateResponse:
+      additionalProperties: false
+      description: Details of the created workflows and statuses.
+      properties:
+        statuses:
+          description: List of created statuses.
+          items:
+            $ref: '#/components/schemas/JiraWorkflowStatus'
+          type: array
+          uniqueItems: true
+        workflows:
+          description: List of created workflows.
+          items:
+            $ref: '#/components/schemas/JiraWorkflow'
+          type: array
+          uniqueItems: true
+      type: object
+    WorkflowSchemeIdName:
+      additionalProperties: false
+      description: The ID and the name of the workflow scheme.
+      properties:
+        id:
+          description: The ID of the workflow scheme.
+          type: string
+        name:
+          description: The name of the workflow scheme.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    WorkflowScope:
+      additionalProperties: false
+      description: The scope of the workflow.
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectId'
+        type:
+          description: The scope of the workflow. `GLOBAL` for company-managed projects and `PROJECT` for team-managed projects.
+          enum:
+          - PROJECT
+          - GLOBAL
+          type: string
+      required:
+      - type
+      type: object
+    CreateWorkflowTransitionRulesDetails:
+      additionalProperties: false
+      description: The details of a workflow transition rules.
+      properties:
+        conditions:
+          allOf:
+          - $ref: '#/components/schemas/CreateWorkflowCondition'
+          description: The workflow conditions.
+        postFunctions:
+          description: "The workflow post functions.\n\n**Note:** The default post functions are always added to the *initial* transition, as in:\n\n    \"postFunctions\": [\n        {\n            \"type\": \"IssueCreateFunction\"\n        },\n        {\n            \"type\": \"IssueReindexFunction\"\n        },\n        {\n            \"type\": \"FireIssueEventFunction\",\n            \"configuration\": {\n                \"event\": {\n                    \"id\": \"1\",\n                    \"name\": \"issue_created\"\n                }\n            }\n        }\n    ]\n\n**Note:** The default post functions are always added to the *global* and *directed* transitions, as in:\n\n    \"postFunctions\": [\n        {\n            \"type\": \"UpdateIssueStatusFunction\"\n        },\n        {\n            \"type\": \"CreateCommentFunction\"\n        },\n        {\n            \"type\": \"GenerateChangeHistoryFunction\"\n        },\n        {\n            \"type\": \"IssueReindexFunction\"\n        },\n        {\n            \"type\": \"FireIssueEventFunction\",\n            \"configuration\": {\n                \"event\": {\n                    \"id\": \"13\",\n                    \"name\": \"issue_generic\"\n                }\n            }\n        }\n    ]"
+          items:
+            $ref: '#/components/schemas/CreateWorkflowTransitionRule'
+          type: array
+        validators:
+          description: "The workflow validators.\n\n**Note:** The default permission validator is always added to the *initial* transition, as in:\n\n    \"validators\": [\n        {\n            \"type\": \"PermissionValidator\",\n            \"configuration\": {\n                \"permissionKey\": \"CREATE_ISSUES\"\n            }\n        }\n    ]"
+          items:
+            $ref: '#/components/schemas/CreateWorkflowTransitionRule'
+          type: array
+      type: object
+      writeOnly: true
+    DocumentVersion:
+      additionalProperties: false
+      description: The current version details of this workflow scheme.
+      properties:
+        id:
+          description: The version UUID.
+          type: string
+        versionNumber:
+          description: The version number.
+          format: int64
+          type: integer
+      required:
+      - id
+      - versionNumber
+      type: object
+    WorkflowCreate:
+      additionalProperties: false
+      description: The details of the workflows to create.
+      maximum: 20
+      properties:
+        description:
+          description: The description of the workflow to create.
+          type: string
+        name:
+          description: The name of the workflow to create.
+          type: string
+        startPointLayout:
+          $ref: '#/components/schemas/WorkflowLayout'
+        statuses:
+          description: The statuses associated with this workflow.
+          items:
+            $ref: '#/components/schemas/StatusLayoutUpdate'
+          type: array
+        transitions:
+          description: The transitions of this workflow.
+          items:
+            $ref: '#/components/schemas/TransitionUpdateDTO'
+          type: array
+      required:
+      - name
+      - statuses
+      - transitions
+      type: object
+    ConditionGroupUpdate:
+      additionalProperties: false
+      description: The conditions group associated with the transition.
+      nullable: true
+      properties:
+        conditionGroups:
+          description: The nested conditions of the condition group.
+          items:
+            $ref: '#/components/schemas/ConditionGroupUpdate'
+          type: array
+        conditions:
+          description: The rules for this condition.
+          items:
+            $ref: '#/components/schemas/WorkflowRuleConfiguration'
+          type: array
+        operation:
+          description: Determines how the conditions in the group are evaluated. Accepts either `ANY` or `ALL`. If `ANY` is used, at least one condition in the group must be true for the group to evaluate to true. If `ALL` is used, all conditions in the group must be true for the group to evaluate to true.
+          enum:
+          - ANY
+          - ALL
+          type: string
+      required:
+      - operation
+      type: object
+    AvailableWorkflowTriggerTypes:
+      additionalProperties: false
+      description: The list of available trigger types.
+      properties:
+        description:
+          description: The description of the trigger rule.
+          type: string
+        name:
+          description: The name of the trigger rule.
+          type: string
+        type:
+          description: The type identifier of trigger rule.
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

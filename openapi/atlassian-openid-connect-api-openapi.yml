@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Openid Connect API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Openid Connect
+paths:
+  /workspaces/{workspace}/pipelines-config/identity/oidc/.well-known/openid-configuration:
+    get:
+      tags:
+      - Openid Connect
+      summary: Atlassian Get Openid Configuration for Oidc in Pipelines
+      description: This API endpoint retrieves the OpenID Connect (OIDC) configuration for Bitbucket Pipelines within a specified workspace. It returns the well-known OpenID configuration document that contains metadata about the OIDC identity provider used by Pipelines, including supported endpoints, token signing algorithms, claims, and other OAuth 2.0 and OIDC protocol details. This configuration is essential for external services and cloud providers that need to establish trust and validate identity tokens issued by Bitbucket Pipelines when using OIDC authentication for secure, keyless deployments without storing long-lived credentials.
+      operationId: atlassianGetoidcconfiguration
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The OpenID configuration
+        '404':
+          description: The workspace was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json:
+    get:
+      tags:
+      - Openid Connect
+      summary: Atlassian Get Keys for Oidc in Pipelines
+      description: This API endpoint retrieves the JSON Web Key Set (JWKS) containing the public keys used for OpenID Connect (OIDC) authentication in Bitbucket Pipelines for a specific workspace. It accepts a GET request to the path /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json, where {workspace} is replaced with the workspace ID or slug. The endpoint returns a keys.json file that contains cryptographic keys used to verify JWT tokens issued by Bitbucket Pipelines' OIDC provider, enabling secure identity federation between Pipelines and external services that support OIDC authentication.
+      operationId: atlassianGetoidckeys
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The keys in JSON web key format
+        '404':
+          description: The workspace was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

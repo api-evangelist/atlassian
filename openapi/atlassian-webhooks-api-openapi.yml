@@ -1,0 +1,1556 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Webhooks API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Webhooks
+paths:
+  /hook_events/{subject_type}:
+    parameters:
+    - name: subject_type
+      in: path
+      description: A resource or subject type.
+      required: true
+      schema:
+        type: string
+        enum:
+        - repository
+        - workspace
+    get:
+      operationId: getHookEvents
+      tags:
+      - Webhooks
+      description: 'Returns a paginated list of all valid webhook events for the
+
+        specified entity.
+
+        **The team and user webhooks are deprecated, and you should use workspace instead.
+
+        For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).**
+
+
+        This is public data that does not require any scopes or authentication.
+
+
+        NOTE: The example response is a truncated response object for the `workspace` `subject_type`.
+
+        We return the same structure for the other `subject_type` objects.'
+      summary: Atlassian List Subscribable Webhook Types
+      responses:
+        '200':
+          description: A paginated list of webhook types available to subscribe on.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_hook_events'
+              examples:
+                response:
+                  value:
+                    page: 1
+                    pagelen: 30
+                    size: 4
+                    values:
+                    - category: Repository
+                      description: Whenever a repository push occurs
+                      event: repo:push
+                      label: Push
+                    - category: Repository
+                      description: Whenever a repository fork occurs
+                      event: repo:fork
+                      label: Fork
+                    - category: Repository
+                      description: Whenever a repository import occurs
+                      event: repo:imported
+                      label: Import
+                    - category: Pull Request
+                      label: Approved
+                      description: When someone has approved a pull request
+                      event: pullrequest:approved
+        '404':
+          description: If an invalid `{subject_type}` value was specified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/hooks:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Webhooks
+      description: The Get List Webhooks For Repository operation in the Atlassian Bitbucket Repositories API allows you to retrieve a paginated list of all webhooks configured for a specific repository within a workspace. By making a GET request to the /repositories/{workspace}/{repo_slug}/hooks endpoint, where {workspace} is the workspace ID or slug and {repo_slug} is the repository identifier, you can view all webhook subscriptions that have been set up to notify external services when specific events occur in the repository, such as push events, pull request updates, or issue changes. The response includes details about each webhook, including its unique identifier, URL endpoint, description, active status, and the events it's subscribed to, making it useful for auditing integrations, managing webhook configurations, or troubleshooting event notifications.
+      summary: Atlassian List Webhooks for Repository
+      responses:
+        '200':
+          description: The paginated list of installed webhooks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_webhook_subscriptions'
+              examples:
+                paginated-webhook-subscriptions:
+                  $ref: '#/components/examples/paginated-webhook-subscriptions'
+        '403':
+          description: If the authenticated user does not have permission to access the webhooks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: listWebhooksForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Webhooks
+      description: This API operation creates a new webhook for a specific Bitbucket repository within a workspace. When invoked via POST request to the endpoint /repositories/{workspace}/{repo_slug}/hooks, it allows you to configure automated notifications that trigger HTTP callbacks to a specified URL whenever certain events occur in the repository, such as push events, pull request updates, or issue changes. The workspace parameter identifies the Bitbucket workspace (formerly team), while repo_slug specifies the repository identifier. The request typically requires authentication and a JSON payload defining the webhook configuration, including the target URL, events to monitor, and optional settings like active status and description. Upon successful creation, the API returns the webhook details including a unique identifier that can be used for subsequent management operations like updates or deletion.
+      summary: Atlassian Create Webhook for Repository
+      responses:
+        '201':
+          description: If the webhook was registered successfully.
+          headers:
+            Location:
+              description: The URL of new newly created webhook.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription:
+                  $ref: '#/components/examples/webhook-subscription'
+        '403':
+          description: If the authenticated user does not have permission to install webhooks on the specified repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: createWebhookForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/hooks/{uid}:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: uid
+      in: path
+      description: Installed webhook's ID
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Webhooks
+      description: Deletes a specific webhook from a Bitbucket repository by removing the webhook configuration identified by its unique identifier (uid) from the specified repository within a workspace. This operation requires the workspace slug, repository slug, and the webhook's unique ID as path parameters, and upon successful execution, permanently removes the webhook so it will no longer trigger for repository events. Authentication with appropriate permissions is required to perform this destructive action, and the deletion cannot be undone through the API.
+      summary: Atlassian Delete Webhook for Repository
+      responses:
+        '204':
+          description: When the webhook was deleted successfully
+        '403':
+          description: If the authenticated user does not have permission to delete the webhook.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the webhook or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: deleteWebhookForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Webhooks
+      description: This API operation retrieves details about a specific webhook configured for a Bitbucket repository. By providing the workspace identifier, repository slug, and unique webhook ID (uid) in the endpoint path, users can fetch comprehensive information about that particular webhook including its URL, events it subscribes to, configuration settings, and current status. This GET request is useful for inspecting existing webhook configurations, verifying webhook properties, or retrieving webhook details before performing update or delete operations. The response returns a complete webhook object containing all its attributes and settings as configured for the specified repository.
+      summary: Atlassian Get Webhook for Repository
+      responses:
+        '200':
+          description: The webhook subscription object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2'
+        '404':
+          description: If the webhook or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: getWebhookForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Webhooks
+      description: Updates an existing webhook subscription for a repository in Bitbucket by modifying its configuration properties such as the URL endpoint, description, active status, and event triggers. The operation requires specifying the workspace, repository slug, and the unique identifier (uid) of the webhook to be updated. This allows repository administrators to reconfigure webhook behavior, change the destination URL where events are sent, enable or disable the webhook, or modify which repository events (such as push, pull request, or issue events) trigger the webhook notifications without needing to delete and recreate the subscription.
+      summary: Atlassian Update Webhook for Repository
+      responses:
+        '200':
+          description: The webhook subscription object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2'
+        '403':
+          description: If the authenticated user does not have permission to update the webhook.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the webhook or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: updateWebhookForRepository
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/hooks:
+    parameters:
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Webhooks
+      description: This API operation retrieves a paginated list of all webhooks that have been configured for a specific Bitbucket workspace. By making a GET request to the /workspaces/{workspace}/hooks endpoint with the workspace identifier, users can view all webhook subscriptions associated with that workspace, including details about the webhook URLs, events they're subscribed to, and their current status. This is useful for auditing, managing, or discovering existing webhook integrations that send HTTP callbacks to external services when specific events occur within the workspace, such as repository pushes, pull request updates, or other Bitbucket activities.
+      summary: Atlassian List Webhooks for a Workspace
+      responses:
+        '200':
+          description: The paginated list of installed webhooks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_webhook_subscriptions'
+              examples:
+                paginated-webhook-subscriptions:
+                  $ref: '#/components/examples/paginated-webhook-subscriptions_2'
+        '403':
+          description: If the authenticated user is not an owner on the specified workspace.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: atlassianListWebhooksForAWorkspace
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Webhooks
+      description: This API operation creates a new webhook for a specified Bitbucket workspace by sending a POST request to the /workspaces/{workspace}/hooks endpoint. Webhooks allow workspaces to receive real-time HTTP callbacks when specific events occur within the workspace, such as repository pushes, pull requests, or issue updates. The workspace is identified by the {workspace} path parameter, which represents the workspace ID or slug. The request typically requires authentication and a JSON payload containing webhook configuration details including the target URL where events should be sent, a description, and the specific events to subscribe to. Upon successful creation, the API returns the newly created webhook object with its unique identifier and configuration details, enabling automated integrations and event-driven workflows between Bitbucket and external systems or services.
+      summary: Atlassian Create a Webhook for a Workspace
+      responses:
+        '201':
+          description: If the webhook was registered successfully.
+          headers:
+            Location:
+              description: The URL of new newly created webhook.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription:
+                  $ref: '#/components/examples/webhook-subscription_3'
+        '403':
+          description: If the authenticated user does not have permission to install webhooks on the specified workspace.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: atlassianCreateAWebhookForAWorkspace
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/hooks/{uid}:
+    parameters:
+    - name: uid
+      in: path
+      description: Installed webhook's ID
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Webhooks
+      description: 'The DELETE operation on the /workspaces/{workspace}/hooks/{uid} endpoint in the Atlassian Bitbucket Workspaces API removes a specific webhook from a workspace. This endpoint requires two path parameters: the workspace identifier and the unique identifier (uid) of the webhook to be deleted. When executed successfully, it permanently removes the webhook configuration, stopping all future webhook event notifications from being sent to the previously configured URL for that workspace. This operation is typically used when a webhook is no longer needed, when cleaning up old integrations, or when reconfiguring webhook settings by removing the old webhook before creating a new one. Authentication and appropriate workspace permissions are required to perform this delete operation.'
+      summary: Atlassian Delete a Webhook for a Workspace
+      responses:
+        '204':
+          description: When the webhook was deleted successfully
+        '403':
+          description: If the authenticated user does not have permission to delete the webhook.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the webhook or workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: atlassianDeleteAWebhookForAWorkspace
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Webhooks
+      description: This API operation retrieves detailed information about a specific webhook configured for an Atlassian Bitbucket workspace. By providing the workspace identifier and the unique webhook ID (uid) in the endpoint path, you can fetch the webhook's configuration details including its URL, events it subscribes to, active status, and other metadata. This is useful for verifying webhook settings, auditing workspace integrations, or programmatically managing webhook configurations within your Bitbucket workspace.
+      summary: Atlassian Get a Webhook for a Workspace
+      responses:
+        '200':
+          description: The webhook subscription object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2_2'
+        '404':
+          description: If the webhook or workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: atlassianGetAWebhookForAWorkspace
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Webhooks
+      description: This operation updates an existing webhook configuration for a specified Bitbucket workspace by making a PUT request to the endpoint with the workspace slug and webhook unique identifier (uid) in the path. It allows you to modify webhook settings such as the URL that receives the webhook payloads, the events that trigger the webhook, whether the webhook is active or inactive, and other configuration options like description and secret tokens for payload verification. The request requires authentication with appropriate permissions to manage workspace webhooks, and upon successful execution, it returns the updated webhook object with all its current configuration details including the modified properties.
+      summary: Atlassian Update a Webhook for a Workspace
+      responses:
+        '200':
+          description: The webhook subscription object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_subscription'
+              examples:
+                webhook-subscription_2:
+                  $ref: '#/components/examples/webhook-subscription_2_2'
+        '403':
+          description: If the authenticated user does not have permission to update the webhook.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the webhook or workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - webhook
+      - basic: []
+      - api_key: []
+      operationId: atlassianUpdateAWebhookForAWorkspace
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /rest/api/3/webhook/failed:
+    get:
+      deprecated: false
+      description: Returns webhooks that have recently failed to be delivered to the requesting app after the maximum number of retries.<br><br>After 72 hours the failure may no longer be returned by this operation.<br><br>The oldest failure is returned first.<br><br>This method uses a cursor-based pagination. To request the next page use the failure time of the last webhook on the list as the `failedAfter` value or use the URL provided in `next`.<br><br>**[Permissions](#permissions) required:** Only [Connect apps](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) can use this operation.
+      operationId: atlassianGetfailedwebhooks
+      parameters:
+      - description: The maximum number of webhooks to return per page. If obeying the maxResults directive would result in records with the same failure time being split across pages, the directive is ignored and all records with the same failure time included on the page.
+        in: query
+        name: maxResults
+        schema:
+          format: int32
+          type: integer
+      - description: The time after which any webhook failure must have occurred for the record to be returned, expressed as milliseconds since the UNIX epoch.
+        in: query
+        name: after
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"values":[{"id":"1","body":"{\"data\":\"webhook data\"}","url":"https://example.com","failureTime":1573118132000},{"id":"2","url":"https://example.com","failureTime":1573540473480}],"maxResults":100,"next":"https://your-domain.atlassian.net/rest/api/3/webhook/failed?failedAfter=1573540473480&maxResults=100"}'
+              schema:
+                $ref: '#/components/schemas/FailedWebhooks'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: 400 response
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect app.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+        - manage:jira-webhook
+      summary: Atlassian Get Failed Webhooks
+      tags:
+      - Webhooks
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        - manage:jira-webhook
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-details:jira
+        - read:webhook:jira
+        - read:comment.property:jira
+        - read:group:jira
+        - read:issue-type:jira
+        - read:project-role:jira
+        - read:epic:jira-software
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/webhook/refresh:
+    put:
+      deprecated: false
+      description: Extends the life of webhook. Webhooks registered through the REST API expire after 30 days. Call this operation to keep them alive.<br><br>Unrecognized webhook IDs (those that are not found or belong to other apps) are ignored.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/#connect-apps) and [OAuth 2.0](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps) apps can use this operation.
+      operationId: atlassianRefreshwebhooks
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              webhookIds:
+              - 10000
+              - 10001
+              - 10042
+            schema:
+              $ref: '#/components/schemas/ContainerForWebhookIDs'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"expirationDate":"2019-06-01T12:42:30.000+0000"}'
+              schema:
+                $ref: '#/components/schemas/WebhooksExpirationDate'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller isn't an app.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+        - manage:jira-webhook
+      summary: Atlassian Extend Webhook Life
+      tags:
+      - Webhooks
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        - manage:jira-webhook
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:webhook:jira
+        - read:webhook:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /hook_events:
+    parameters: []
+    get:
+      tags:
+      - Webhooks
+      description: Returns the webhook resource or subject types on which webhooks can<br>be registered.<br><br>Each resource/subject type contains an `events` link that returns the<br>paginated list of specific events each individual subject type can<br>emit.<br><br>This endpoint is publicly accessible and does not require<br>authentication or scopes.
+      summary: Atlassian Get A Webhook Resource
+      responses:
+        '200':
+          description: A mapping of resource/subject types pointing to their individual event types.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subject_types'
+              examples:
+                response:
+                  value:
+                    repository:
+                      links:
+                        events:
+                          href: https://api.bitbucket.org/2.0/hook_events/repository
+                    workspace:
+                      links:
+                        events:
+                          href: https://api.bitbucket.org/2.0/hook_events/workspace
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      operationId: atlassianGetAWebhookResource
+  /rest/api/3/webhook:
+    delete:
+      deprecated: false
+      description: Removes webhooks by ID. Only webhooks registered by the calling app are removed. If webhooks created by other apps are specified, they are ignored.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/#connect-apps) and [OAuth 2.0](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps) apps can use this operation.
+      operationId: atlassianDeletewebhookbyid
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              webhookIds:
+              - 10000
+              - 10001
+              - 10042
+            schema:
+              $ref: '#/components/schemas/ContainerForWebhookIDs'
+        required: true
+      responses:
+        '202':
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the list of webhook IDs is missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller isn't an app.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+        - manage:jira-webhook
+      summary: Atlassian Delete Webhooks By Id
+      tags:
+      - Webhooks
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        - manage:jira-webhook
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:webhook:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of the webhooks registered by the calling app.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/#connect-apps) and [OAuth 2.0](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps) apps can use this operation.
+      operationId: atlassianGetdynamicwebhooksforapp
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":3,"startAt":0,"total":3,"values":[{"events":["jira:issue_updated","jira:issue_created"],"expirationDate":"2019-06-01T12:42:30.000+0000","fieldIdsFilter":["summary","customfield_10029"],"id":10000,"jqlFilter":"project = PRJ"},{"events":["jira:issue_created"],"expirationDate":"2019-06-01T12:42:30.000+0000","id":10001,"jqlFilter":"issuetype = Bug"},{"events":["issue_property_set"],"expirationDate":"2019-06-01T12:42:30.000+0000","id":10002,"issuePropertyKeysFilter":["my-issue-property-key"],"jqlFilter":"project = PRJ"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanWebhook'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller isn't an app.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+        - manage:jira-webhook
+      summary: Atlassian Get Dynamic Webhooks For App
+      tags:
+      - Webhooks
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        - manage:jira-webhook
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:webhook:jira
+        - read:jql:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Registers webhooks.<br><br>**NOTE:** for non-public OAuth apps, webhooks are delivered only if there is a match between the app owner and the user who registered a dynamic webhook.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/#connect-apps) and [OAuth 2.0](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps) apps can use this operation.
+      operationId: atlassianRegisterdynamicwebhooks
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              url: https://your-app.example.com/webhook-received
+              webhooks:
+              - events:
+                - jira:issue_created
+                - jira:issue_updated
+                fieldIdsFilter:
+                - summary
+                - customfield_10029
+                jqlFilter: project = PROJ
+              - events:
+                - jira:issue_deleted
+                jqlFilter: project IN (PROJ, EXP) AND status = done
+              - events:
+                - issue_property_set
+                issuePropertyKeysFilter:
+                - my-issue-property-key
+                jqlFilter: project = PROJ
+            schema:
+              $ref: '#/components/schemas/WebhookRegistrationDetails'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"webhookRegistrationResult":[{"createdWebhookId":1000},{"errors":["The clause watchCount is unsupported"]},{"createdWebhookId":1001}]}'
+              schema:
+                $ref: '#/components/schemas/ContainerForRegisteredWebhooks'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller isn't an app.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+        - manage:jira-webhook
+      summary: Atlassian Register Dynamic Webhooks
+      tags:
+      - Webhooks
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        - manage:jira-webhook
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        - read:project:jira
+        - write:webhook:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    subject_types:
+      type: object
+      title: Subject Types
+      description: The mapping of resource/subject types pointing to their individual event types.
+      properties:
+        repository:
+          type: object
+          properties:
+            events:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+        workspace:
+          type: object
+          properties:
+            events:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+      additionalProperties: false
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    RegisteredWebhook:
+      additionalProperties: false
+      description: ID of a registered webhook or error messages explaining why a webhook wasn't registered.
+      properties:
+        createdWebhookId:
+          description: The ID of the webhook. Returned if the webhook is created.
+          format: int64
+          type: integer
+        errors:
+          description: Error messages specifying why the webhook creation failed.
+          items:
+            description: Error messages specifying why the webhook creation failed.
+            type: string
+          type: array
+      type: object
+    FailedWebhooks:
+      additionalProperties: false
+      description: A page of failed webhooks.
+      properties:
+        maxResults:
+          description: The maximum number of items on the page. If the list of values is shorter than this number, then there are no more pages.
+          format: int32
+          type: integer
+        next:
+          description: The URL to the next page of results. Present only if the request returned at least one result.The next page may be empty at the time of receiving the response, but new failed webhooks may appear in time. You can save the URL to the next page and query for new results periodically (for example, every hour).
+          format: uri
+          type: string
+        values:
+          description: The list of webhooks.
+          items:
+            $ref: '#/components/schemas/FailedWebhook'
+          type: array
+      required:
+      - maxResults
+      - values
+      type: object
+    paginated_webhook_subscriptions:
+      type: object
+      title: Paginated Webhook Subscriptions
+      description: A paginated list of webhook subscriptions
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/webhook_subscription'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    paginated_hook_events:
+      type: object
+      title: Paginated Hook Events
+      description: A paginated list of webhook types available to subscribe on.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/hook_event'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    WebhooksExpirationDate:
+      additionalProperties: false
+      description: The date the refreshed webhooks expire.
+      properties:
+        expirationDate:
+          description: The expiration date of all the refreshed webhooks.
+          format: int64
+          readOnly: true
+          type: integer
+      required:
+      - expirationDate
+      type: object
+    hook_event:
+      type: object
+      title: Hook Event
+      description: An event, associated with a resource or subject type.
+      properties:
+        event:
+          type: string
+          description: The event identifier.
+          enum:
+          - pullrequest:comment_reopened
+          - pullrequest:approved
+          - issue:comment_created
+          - repo:push
+          - pullrequest:comment_deleted
+          - pullrequest:fulfilled
+          - pullrequest:comment_created
+          - pullrequest:comment_updated
+          - pullrequest:updated
+          - repo:commit_status_created
+          - pullrequest:unapproved
+          - repo:updated
+          - pullrequest:comment_resolved
+          - repo:transfer
+          - repo:commit_status_updated
+          - pullrequest:changes_request_created
+          - issue:updated
+          - repo:created
+          - pullrequest:changes_request_removed
+          - pullrequest:rejected
+          - pullrequest:created
+          - issue:created
+          - repo:imported
+          - repo:commit_comment_created
+          - project:updated
+          - repo:fork
+          - repo:deleted
+        category:
+          type: string
+          description: The category this event belongs to.
+        label:
+          type: string
+          description: Summary of the webhook event type.
+        description:
+          type: string
+          description: More detailed description of the webhook event type.
+      additionalProperties: false
+    PageBeanWebhook:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/Webhook'
+          readOnly: true
+          type: array
+      type: object
+    FailedWebhook:
+      additionalProperties: false
+      description: Details about a failed webhook.
+      properties:
+        body:
+          description: The webhook body.
+          type: string
+        failureTime:
+          description: The time the webhook was added to the list of failed webhooks (that is, the time of the last failed retry).
+          format: int64
+          type: integer
+        id:
+          description: The webhook ID, as sent in the `X-Atlassian-Webhook-Identifier` header with the webhook.
+          type: string
+        url:
+          description: The original webhook destination.
+          type: string
+      required:
+      - failureTime
+      - id
+      - url
+      type: object
+    ContainerForWebhookIDs:
+      additionalProperties: false
+      description: Container for a list of webhook IDs.
+      properties:
+        webhookIds:
+          description: A list of webhook IDs.
+          items:
+            description: A list of webhook IDs.
+            format: int64
+            type: integer
+          type: array
+      required:
+      - webhookIds
+      type: object
+    ContainerForRegisteredWebhooks:
+      additionalProperties: false
+      description: Container for a list of registered webhooks. Webhook details are returned in the same order as the request.
+      properties:
+        webhookRegistrationResult:
+          description: A list of registered webhooks.
+          items:
+            $ref: '#/components/schemas/RegisteredWebhook'
+          type: array
+      type: object
+    webhook_subscription:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Webhook Subscription
+        description: A Webhook subscription.
+        properties:
+          uuid:
+            type: string
+            description: The webhook's id
+          url:
+            type: string
+            description: The URL events get delivered to.
+            format: uri
+          description:
+            type: string
+            description: A user-defined description of the webhook.
+          subject_type:
+            type: string
+            description: The type of entity. Set to either `repository` or `workspace` based on where the subscription is defined.
+            enum:
+            - repository
+            - workspace
+          subject:
+            $ref: '#/components/schemas/object'
+          active:
+            type: boolean
+          created_at:
+            type: string
+            format: date-time
+          events:
+            type: array
+            description: The events this webhook is subscribed to.
+            items:
+              type: string
+              enum:
+              - pullrequest:comment_reopened
+              - pullrequest:approved
+              - issue:comment_created
+              - repo:push
+              - pullrequest:comment_deleted
+              - pullrequest:fulfilled
+              - pullrequest:comment_created
+              - pullrequest:comment_updated
+              - pullrequest:updated
+              - repo:commit_status_created
+              - pullrequest:unapproved
+              - repo:updated
+              - pullrequest:comment_resolved
+              - repo:transfer
+              - repo:commit_status_updated
+              - pullrequest:changes_request_created
+              - issue:updated
+              - repo:created
+              - pullrequest:changes_request_removed
+              - pullrequest:rejected
+              - pullrequest:created
+              - issue:created
+              - repo:imported
+              - repo:commit_comment_created
+              - project:updated
+              - repo:fork
+              - repo:deleted
+            minItems: 1
+            uniqueItems: true
+          secret_set:
+            type: boolean
+            description: Indicates whether or not the hook has an associated secret. It is not possible to see the hook's secret. This field is ignored during updates.
+          secret:
+            type: string
+            description: The secret to associate with the hook. The secret is never returned via the API. As such, this field is only used during updates. The secret can be set to `null` or "" to remove the secret (or create a hook with no secret). Leaving out the secret field during updates will leave the secret unchanged. Leaving out the secret during creation will create a hook with no secret.
+            minLength: 0
+            maxLength: 128
+        additionalProperties: true
+    WebhookRegistrationDetails:
+      additionalProperties: false
+      description: Details of webhooks to register.
+      properties:
+        url:
+          description: The URL that specifies where to send the webhooks. This URL must use the same base URL as the Connect app. Only a single URL per app is allowed to be registered.
+          type: string
+        webhooks:
+          description: A list of webhooks.
+          items:
+            $ref: '#/components/schemas/WebhookDetails'
+          type: array
+      required:
+      - url
+      - webhooks
+      type: object
+    Webhook:
+      additionalProperties: false
+      description: A webhook.
+      properties:
+        events:
+          description: The Jira events that trigger the webhook.
+          items:
+            enum:
+            - jira:issue_created
+            - jira:issue_updated
+            - jira:issue_deleted
+            - comment_created
+            - comment_updated
+            - comment_deleted
+            - issue_property_set
+            - issue_property_deleted
+            type: string
+          type: array
+        expirationDate:
+          description: The date after which the webhook is no longer sent. Use [Extend webhook life](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-webhooks/#api-rest-api-3-webhook-refresh-put) to extend the date.
+          format: int64
+          readOnly: true
+          type: integer
+        fieldIdsFilter:
+          description: A list of field IDs. When the issue changelog contains any of the fields, the webhook `jira:issue_updated` is sent. If this parameter is not present, the app is notified about all field updates.
+          items:
+            description: A list of field IDs. When the issue changelog contains any of the fields, the webhook <code>jira:issue_updated</code> is sent. If this parameter is not present, the app is notified about all field updates.
+            type: string
+          type: array
+        id:
+          description: The ID of the webhook.
+          format: int64
+          type: integer
+        issuePropertyKeysFilter:
+          description: A list of issue property keys. A change of those issue properties triggers the `issue_property_set` or `issue_property_deleted` webhooks. If this parameter is not present, the app is notified about all issue property updates.
+          items:
+            description: A list of issue property keys. A change of those issue properties triggers the <code>issue_property_set</code> or <code>issue_property_deleted</code> webhooks. If this parameter is not present, the app is notified about all issue property updates.
+            type: string
+          type: array
+        jqlFilter:
+          description: The JQL filter that specifies which issues the webhook is sent for.
+          type: string
+      required:
+      - events
+      - id
+      - jqlFilter
+      type: object
+    WebhookDetails:
+      additionalProperties: false
+      description: A list of webhooks.
+      properties:
+        events:
+          description: The Jira events that trigger the webhook.
+          items:
+            enum:
+            - jira:issue_created
+            - jira:issue_updated
+            - jira:issue_deleted
+            - comment_created
+            - comment_updated
+            - comment_deleted
+            - issue_property_set
+            - issue_property_deleted
+            type: string
+          type: array
+        fieldIdsFilter:
+          description: A list of field IDs. When the issue changelog contains any of the fields, the webhook `jira:issue_updated` is sent. If this parameter is not present, the app is notified about all field updates.
+          items:
+            description: A list of field IDs. When the issue changelog contains any of the fields, the webhook <code>jira:issue_updated</code> is sent. If this parameter is not present, the app is notified about all field updates.
+            type: string
+          type: array
+        issuePropertyKeysFilter:
+          description: A list of issue property keys. A change of those issue properties triggers the `issue_property_set` or `issue_property_deleted` webhooks. If this parameter is not present, the app is notified about all issue property updates.
+          items:
+            description: A list of issue property keys. A change of those issue properties triggers the <code>issue_property_set</code> or <code>issue_property_deleted</code> webhooks. If this parameter is not present, the app is notified about all issue property updates.
+            type: string
+          type: array
+        jqlFilter:
+          description: "The JQL filter that specifies which issues the webhook is sent for. Only a subset of JQL can be used. The supported elements are:\n\n *  Fields: `issueKey`, `project`, `issuetype`, `status`, `assignee`, `reporter`, `issue.property`, and `cf[id]`. For custom fields (`cf[id]`), only the epic label custom field is supported.\".\n *  Operators: `=`, `!=`, `IN`, and `NOT IN`."
+          type: string
+      required:
+      - events
+      - jqlFilter
+      type: object
+  examples:
+    paginated-webhook-subscriptions_2:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/webhooks?page=2
+      previous: https://api.example.com/webhooks?page=0
+      values:
+        uuid: 550e8400-e29b-41d4-a716-446655440000
+        url: https://example.com/webhook/endpoint
+        description: Webhook for monitoring pull request events
+        subject_type: repository
+        subject: {}
+        active: true
+        created_at: '2024-01-15T10:30:00Z'
+        events:
+        - pullrequest:created
+        - pullrequest:approved
+        - repo:push
+        secret_set: true
+        secret: my-webhook-secret-key
+    paginated-webhook-subscriptions:
+      size: 25
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/workspaces/my-workspace/hooks?page=2
+      previous: https://api.bitbucket.org/2.0/workspaces/my-workspace/hooks?page=0
+      values:
+        uuid: '{b3329d9d-fcb5-4c19-a5b5-4b0411dc93d1}'
+        url: https://example.com/webhooks/bitbucket
+        description: Webhook for CI/CD pipeline triggers
+        subject_type: repository
+        subject: {}
+        active: true
+        created_at: '2023-11-15T10:30:00Z'
+        events:
+        - repo:push
+        - pullrequest:created
+        - pullrequest:updated
+        - pullrequest:approved
+        - pullrequest:fulfilled
+        secret_set: true
+    webhook-subscription_2_2:
+      uuid: '{d6a8e1a7-8b5c-4f3e-9d2a-1b3c4d5e6f7a}'
+      url: https://example.com/webhook
+      description: Webhook for pull request events
+      subject_type: repository
+      subject: {}
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+      - pullrequest:created
+      - pullrequest:updated
+      - pullrequest:approved
+      - repo:push
+      secret_set: true
+      secret: my-webhook-secret-key-123
+    webhook-subscription:
+      uuid: '{d7a4e3b2-5c1f-4a8b-9e2d-3f6c8a1b4e9d}'
+      url: https://example.com/webhooks/bitbucket
+      description: Webhook for monitoring pull request and repository events
+      subject_type: repository
+      subject: {}
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+      - repo:push
+      - pullrequest:created
+      - pullrequest:approved
+      - pullrequest:fulfilled
+      - issue:created
+      secret_set: true
+      secret: my-secure-webhook-secret-123
+    webhook-subscription_2:
+      uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+      url: https://example.com/webhooks/bitbucket
+      description: Webhook for monitoring pull request events
+      subject_type: repository
+      subject:
+        type: repository
+        name: my-repo
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+      - pullrequest:created
+      - pullrequest:approved
+      - pullrequest:fulfilled
+      - repo:push
+      secret_set: true
+      secret: my-webhook-secret-key-12345
+    webhook-subscription_3:
+      uuid: '{d7bb1ebe-7e0c-4a2f-9b4a-1c8e9f0a2b3c}'
+      url: https://example.com/webhooks/bitbucket
+      description: Webhook for monitoring pull request activities
+      subject_type: repository
+      subject:
+        type: repository
+        name: my-repo
+      active: true
+      created_at: '2024-01-15T10:30:00Z'
+      events:
+      - pullrequest:created
+      - pullrequest:updated
+      - pullrequest:approved
+      - pullrequest:fulfilled
+      - repo:push
+      secret_set: true
+      secret: my-webhook-secret-key-123
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

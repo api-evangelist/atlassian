@@ -1,0 +1,298 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Events API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Events
+  description: Retrieve organization audit events.
+paths:
+  /v1/orgs/{orgId}/events:
+    get:
+      operationId: getOrganizationEvents
+      summary: Atlassian Get Organization Events
+      description: Returns a paginated list of events for the organization. Events represent audit trail entries for actions performed within the organization, such as user changes, policy updates, and access modifications.
+      tags:
+      - Events
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      - name: cursor
+        in: query
+        description: Cursor for paginated results.
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        description: Filter events from this date-time (ISO 8601 format). Returns events that occurred on or after this time.
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: Filter events up to this date-time (ISO 8601 format). Returns events that occurred on or before this time.
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: action
+        in: query
+        description: Filter events by action type.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of events.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventPage'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /v1/orgs/{orgId}/events/{eventId}:
+    get:
+      operationId: getEventById
+      summary: Atlassian Get Event by Id
+      description: Returns details of a specific organization event.
+      tags:
+      - Events
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      - name: eventId
+        in: path
+        required: true
+        description: The unique identifier of the event.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful response containing the event details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      description: The unique identifier of the organization.
+      schema:
+        type: string
+  schemas:
+    EventPage:
+      type: object
+      description: A paginated list of events.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          description: The list of events.
+          example: []
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+    ErrorResponse:
+      type: object
+      description: Standard error response.
+      properties:
+        code:
+          type: integer
+          description: The HTTP status code.
+          example: 10
+        message:
+          type: string
+          description: A human-readable error message.
+          example: example_value
+        errors:
+          type: array
+          description: Detailed error information.
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: A machine-readable error code.
+              message:
+                type: string
+                description: A human-readable description of the error.
+          example: []
+    Event:
+      type: object
+      description: Represents an audit event that occurred within the organization, capturing actions such as user changes, policy updates, and access modifications.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the event.
+          example: abc123
+        type:
+          type: string
+          description: The resource type.
+          enum:
+          - event
+          example: event
+        attributes:
+          type: object
+          description: The event attributes.
+          properties:
+            time:
+              type: string
+              format: date-time
+              description: When the event occurred.
+            action:
+              type: string
+              description: The action that was performed.
+            actor:
+              type: object
+              description: The entity that performed the action.
+              properties:
+                id:
+                  type: string
+                  description: The identifier of the actor.
+                name:
+                  type: string
+                  description: The display name of the actor.
+                type:
+                  type: string
+                  description: The type of actor.
+                  enum:
+                  - user
+                  - system
+                  - app
+                links:
+                  type: object
+                  properties:
+                    self:
+                      type: string
+                      format: uri
+            context:
+              type: array
+              description: Contextual details about the event.
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+            container:
+              type: array
+              description: Containers related to the event.
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+            location:
+              type: object
+              description: Location information for the event.
+              properties:
+                ip:
+                  type: string
+                  description: IP address from which the event originated.
+                geo:
+                  type: string
+                  description: Geographic location.
+          example: example_value
+    PaginationLinks:
+      type: object
+      description: Links for cursor-based pagination.
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link to the current page.
+          example: https://www.example.com
+        next:
+          type: string
+          format: uri
+          description: Link to the next page of results.
+          example: https://www.example.com
+        prev:
+          type: string
+          format: uri
+          description: Link to the previous page of results.
+          example: https://www.example.com
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

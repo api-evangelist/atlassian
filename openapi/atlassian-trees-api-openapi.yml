@@ -1,0 +1,134 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Trees API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Trees
+paths:
+  /wiki/rest/api/content/{id}/pageTree:
+    delete:
+      tags:
+      - Trees
+      summary: Atlassian Delete Page Tree
+      description: This API operation permanently deletes an entire page tree in Atlassian Confluence, starting from the specified page ID and including all of its child pages and descendants. When executed via a DELETE request to the endpoint, it removes not just the target page but cascades the deletion through the complete hierarchical structure beneath it, making it a powerful but potentially destructive operation that should be used with caution. The operation requires appropriate permissions and the page ID must be provided as a path parameter to identify which page tree to delete.
+      operationId: deletePageTree
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content which forms root of the page tree, to be deleted.
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Returned if the request to trash content and all its current page descendants, is successfully accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTask'
+        '400':
+          description: Returned if the content id is invalid or id does not represents a 'CURRENT' page.
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the calling user can not delete the content with specified id.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The requesting user does not have permission to trash the content or any of it''s descendant pages.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - delete:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: DELETE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    LongTask:
+      required:
+      - id
+      - links
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+          example: example_value
+        id:
+          type: string
+          description: a unique identifier for the long task
+          example: abc123
+        links:
+          type: object
+          additionalProperties: true
+          properties:
+            status:
+              type: string
+              description: The URL to retrive status of long task.
+          example: example_value
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

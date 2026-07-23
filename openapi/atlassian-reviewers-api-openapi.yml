@@ -1,0 +1,635 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Reviewers API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Reviewers
+paths:
+  /repositories/{workspace}/{repo_slug}/default-reviewers:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Reviewers
+      description: This API endpoint retrieves the list of default reviewers configured for a specific Bitbucket repository within a workspace. When called with a GET request to /repositories/{workspace}/{repo_slug}/default-reviewers, it returns information about users who are automatically added as reviewers when new pull requests are created in the specified repository. The endpoint requires the workspace identifier and repository slug as path parameters to identify the target repository, and it provides visibility into the repository's pull request review settings, helping teams understand who will be automatically notified and assigned to review code changes.
+      summary: Atlassian List Default Reviewers
+      responses:
+        '200':
+          description: The paginated list of default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_accounts'
+              examples:
+                paginated-accounts:
+                  $ref: '#/components/examples/paginated-accounts'
+        '403':
+          description: If the authenticated user does not have access to view the default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: listDefaultReviewers
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/default-reviewers/{target_username}:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: target_username
+      in: path
+      description: 'This can either be the username or the UUID of the default reviewer,
+
+        surrounded by curly-braces, for example: `{account UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    put:
+      tags:
+      - Reviewers
+      description: This API operation adds a specific user to the default reviewers list for a Bitbucket repository within a given workspace. By making a PUT request to the endpoint with the workspace identifier, repository slug, and target username, administrators can configure automatic reviewer assignments for pull requests in that repository. When a user is added as a default reviewer, they will be automatically included in the reviewer list whenever a new pull request is created in the repository, streamlining the code review process and ensuring consistent oversight from designated team members.
+      summary: Atlassian Add User to the Default Reviewers
+      responses:
+        '200':
+          description: The specified user was successfully added to the default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/account'
+              examples:
+                account_2:
+                  $ref: '#/components/examples/account_2'
+        '400':
+          description: If the authenticated user tried to add a team, bot user, or user without access to the repository to the default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the authenticated user does not have permission to modify the default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified user does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: addUserToTheDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/effective-default-reviewers:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Reviewers
+      description: This GET operation retrieves the effective default reviewers for a specific repository in Bitbucket. By calling this endpoint with the workspace and repository slug parameters, you can obtain a list of users who are automatically added as reviewers to pull requests in that repository. The "effective" designation means it returns not only the reviewers explicitly configured for this specific repository, but also includes any default reviewers inherited from workspace-level settings, providing a complete view of all users who will be automatically assigned as reviewers when new pull requests are created in the repository.
+      summary: Atlassian List Effective Default Reviewers
+      responses:
+        '200':
+          description: The paginated list of effective default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_default_reviewer_and_type'
+              examples:
+                paginated-default-reviewer-and-type:
+                  $ref: '#/components/examples/paginated-default-reviewer-and-type'
+        '403':
+          description: If the authenticated user does not have access to view the default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: listEffectiveDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/default-reviewers:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual `key` assigned
+
+        to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Reviewers
+      description: This API endpoint retrieves the list of default reviewers configured for a specific project within a Bitbucket workspace. When accessed via a GET request to `/workspaces/{workspace}/projects/{project_key}/default-reviewers`, it returns information about users who are automatically added as reviewers to new pull requests in the specified project. The endpoint requires both the workspace slug and project key as path parameters to identify the target project. Default reviewers help streamline the code review process by ensuring that designated team members are automatically notified and assigned to review pull requests, maintaining consistency in code quality oversight across the project.
+      summary: Atlassian List the Default Reviewers in a Project
+      responses:
+        '200':
+          description: The list of project default reviewers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_default_reviewer_and_type'
+              examples:
+                paginated-default-reviewer-and-type:
+                  $ref: '#/components/examples/paginated-default-reviewer-and-type'
+        '403':
+          description: If the authenticated user does not have admin access to the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the workspace or project does not exist at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: atlassianListTheDefaultReviewersInAProject
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user}:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This can either be the actual `key` assigned
+
+        to the project or the `UUID` (surrounded by curly-braces (`{}`)).
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: selected_user
+      in: path
+      description: 'This can either be the username or the UUID of the default reviewer,
+
+        surrounded by curly-braces, for example: `{account UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Reviewers
+      description: This API operation removes a specific user from the default reviewers list for a given project within a Bitbucket workspace. When invoked, it performs a DELETE request to the endpoint /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user}, where the workspace parameter identifies the workspace containing the project, project_key specifies the particular project, and selected_user indicates the user to be removed from the default reviewers. Once executed, the specified user will no longer be automatically added as a reviewer for new pull requests created in that project, though existing pull request assignments remain unaffected. This operation requires appropriate administrative permissions for the project and helps teams manage their code review workflows by controlling who is automatically involved in the review process.
+      summary: Atlassian Remove the Specific User From the Project S Default Reviewers
+      responses:
+        '204':
+          description: The specified user was removed from the list of project default reviewers
+        '400':
+          description: If the specified user is not a default reviewer for the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the authenticated user does not have admin access to the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified user, project, or workspace does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:project:bitbucket
+      operationId: atlassianRemoveTheSpecificUserFromTheProjectSDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    user_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: User Links
+        description: Links related to a User.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    paginated_default_reviewer_and_type:
+      type: object
+      title: Paginated Default Reviewer and Type
+      description: A paginated list of default reviewers with reviewer type.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/default_reviewer_and_type'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    default_reviewer_and_type:
+      type: object
+      title: Default Reviewer and Type
+      description: Object containing a user that is a default reviewer and the type of reviewer
+      properties:
+        type:
+          type: string
+          example: example_value
+        reviewer_type:
+          type: string
+          example: example_value
+        user:
+          $ref: '#/components/schemas/user'
+      required:
+      - type
+      additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    user:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: User
+        description: A user object.
+        properties:
+          links:
+            $ref: '#/components/schemas/user_links'
+          account_id:
+            type: string
+            description: The user's Atlassian account ID.
+          account_status:
+            type: string
+            description: The status of the account. Currently the only possible value is "active", but more values may be added in the future.
+          has_2fa_enabled:
+            type: boolean
+          nickname:
+            type: string
+            description: Account name defined by the owner. Should be used instead of the "username" field. Note that "nickname" cannot be used in place of "username" in URLs and queries, as "nickname" is not guaranteed to be unique.
+          is_staff:
+            type: boolean
+          website:
+            type: string
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    paginated_accounts:
+      type: object
+      title: Paginated Accounts
+      description: A paginated list of accounts.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/account'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+  examples:
+    account_2:
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/users/johndoe
+        avatar:
+          href: https://api.bitbucket.org/2.0/users/johndoe/avatar
+      created_on: '2023-01-15T14:30:00Z'
+      display_name: John Doe
+      username: johndoe
+      uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+    paginated-default-reviewer-and-type:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/repositories/default-reviewers?page=2
+      previous: https://api.example.com/repositories/default-reviewers?page=0
+      values: {}
+    paginated-accounts:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/accounts?page=2
+      previous: https://api.example.com/accounts?page=0
+      values:
+        created_on: '2023-11-15T14:30:00Z'
+        display_name: John Doe
+        username: john_doe-123
+        uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

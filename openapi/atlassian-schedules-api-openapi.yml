@@ -1,0 +1,1072 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Schedules API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Schedules
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules:
+    get:
+      tags:
+      - Schedules
+      summary: Atlassian List Schedules
+      description: This GET operation retrieves a list of all configured pipeline schedules for a specific repository within a Bitbucket workspace. By providing the workspace identifier and repository slug in the endpoint path, users can view all automated pipeline execution schedules that have been set up for that repository, including details such as schedule timing, enabled status, target branches, and schedule configuration parameters. This is useful for managing and auditing automated CI/CD workflows, allowing teams to see when pipelines are scheduled to run without manual triggering.
+      operationId: listSchedules
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of schedules.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_schedules'
+              examples:
+                paginated-pipeline-schedule:
+                  $ref: '#/components/examples/paginated-pipeline-schedule'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules/{schedule_uuid}:
+    get:
+      tags:
+      - Schedules
+      summary: Atlassian Get Schedule
+      description: This API operation retrieves the details of a specific pipeline schedule for a Bitbucket repository. By providing the workspace identifier, repository slug, and the unique UUID of the schedule, you can fetch information about an automated pipeline execution schedule, including its configuration, timing settings, enabled status, and associated branch or target. This endpoint is useful for reviewing existing pipeline automation settings and understanding when and how pipelines are configured to run automatically within a specific repository.
+      operationId: getSchedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The requested schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_schedule'
+              examples:
+                pipeline-schedule_2:
+                  $ref: '#/components/examples/pipeline-schedule_2'
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Schedules
+      summary: Atlassian Update Schedule
+      description: This PUT operation updates an existing pipeline schedule in a Bitbucket repository by modifying the configuration of a scheduled pipeline execution identified by its unique UUID. The endpoint requires the workspace name, repository slug, and schedule UUID as path parameters to locate the specific schedule to be updated. Users can modify schedule properties such as the cron expression that defines when the pipeline runs, the target branch or commit, enabled/disabled state, and any pipeline variables associated with the scheduled execution. The request body must contain the updated schedule configuration in JSON format, and upon successful execution, the API returns the modified schedule object with all its current properties. This operation is useful for adjusting automated pipeline execution times, changing target branches, or updating environment variables without needing to delete and recreate the schedule.
+      operationId: updateSchedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_schedule_put_request_body'
+            examples:
+              request-body-for-pipeline-schedule-put-request:
+                $ref: '#/components/examples/request-body-for-pipeline-schedule-put-request'
+        description: The schedule to update.
+        required: true
+      responses:
+        '200':
+          description: The schedule is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_schedule'
+              examples:
+                pipeline-schedule_2:
+                  $ref: '#/components/examples/pipeline-schedule_2'
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Schedules
+      summary: Atlassian Delete Schedule
+      description: 'The Delete Schedule operation in the Atlassian Bitbucket Repositories API allows users to remove a specific pipeline schedule from a repository by making a DELETE request to the endpoint /repositories/{workspace}/{repo_slug}/pipelines_config/schedules/{schedule_uuid}. This operation requires three path parameters: the workspace identifier, the repository slug, and the unique UUID of the schedule to be deleted. When executed successfully, it permanently removes the automated pipeline execution schedule from the specified repository, preventing any future pipeline runs that were configured under that schedule. This is useful for cleaning up outdated or no longer needed automation configurations, and typically requires appropriate permissions within the workspace and repository to execute.'
+      operationId: deleteSchedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The schedule was deleted.
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules/{schedule_uuid}/executions:
+    get:
+      tags:
+      - Schedules
+      summary: Atlassian List Executions of Schedule
+      description: This API endpoint retrieves a list of all pipeline executions that have been triggered by a specific schedule in a Bitbucket repository. By providing the workspace identifier, repository slug, and schedule UUID in the path, users can view the historical execution records for that particular scheduled pipeline. This is useful for monitoring and auditing purposes, allowing teams to track when scheduled pipelines have run, verify their execution history, and identify any patterns or issues with automated pipeline triggers. The endpoint returns execution details that help developers understand how their scheduled CI/CD processes are performing over time.
+      operationId: listExecutionsOfSchedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of executions of a schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_schedule_executions'
+              examples:
+                paginated-pipeline-schedule-executions:
+                  $ref: '#/components/examples/paginated-pipeline-schedule-executions'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    pipeline_ref_target:
+      allOf:
+      - $ref: '#/components/schemas/pipeline_target'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Ref Target
+        description: A Bitbucket Pipelines reference target.
+        properties:
+          ref_type:
+            enum:
+            - branch
+            - tag
+            - named_branch
+            - bookmark
+            type: string
+            description: The type of reference (branch/tag).
+          ref_name:
+            type: string
+            description: The name of the reference.
+          commit:
+            $ref: '#/components/schemas/commit'
+          selector:
+            $ref: '#/components/schemas/pipeline_selector'
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    pipeline_target:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Target
+        description: A representation of the target that a pipeline executes on.
+        properties: {}
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    paginated_pipeline_schedule_executions:
+      type: object
+      title: Paginated Pipeline Schedule Executions
+      description: A paged list of the executions of a schedule.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_schedule_execution'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    pipeline_schedule_put_request_body:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Request body for Pipeline Schedule PUT request
+        properties:
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    pipeline_schedule_execution:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule Execution
+        description: A Pipelines schedule execution.
+        properties: {}
+    paginated_pipeline_schedules:
+      type: object
+      title: Paginated Pipeline Schedule
+      description: A paged list of schedules
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_schedule'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    pipeline_selector:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Selector
+        description: A representation of the selector that was used to identify the pipeline in the YML file.
+        properties:
+          type:
+            enum:
+            - branches
+            - tags
+            - bookmarks
+            - default
+            - custom
+            type: string
+            description: The type of selector.
+          pattern:
+            type: string
+            description: The name of the matching pipeline definition.
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    pipeline_schedule:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule
+        description: A Pipelines schedule.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the schedule.
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+          target:
+            $ref: '#/components/schemas/pipeline_ref_target'
+          cron_pattern:
+            type: string
+            description: 'The cron expression with second precision (7 fields) that the schedule applies. For example, for expression: 0 0 12 * * ? *, will execute at 12pm UTC every day.'
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was updated.
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    pipeline-schedule_2:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      enabled: true
+      target:
+        ref_type: branch
+        ref_name: main
+      cron_pattern: 0 0 12 * * ? *
+      created_on: '2023-11-15T10:30:00Z'
+      updated_on: '2023-11-20T14:45:30Z'
+    request-body-for-pipeline-schedule-put-request:
+      enabled: true
+    paginated-pipeline-schedule:
+      page: 1
+      values:
+        uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        enabled: true
+        target:
+          ref_type: branch
+          ref_name: main
+        cron_pattern: 0 0 12 * * ? *
+        created_on: '2023-10-15T12:00:00Z'
+        updated_on: '2023-10-20T15:30:00Z'
+      size: 42
+      pagelen: 10
+      next: https://api.example.com/pipelines/schedules?page=2
+      previous: https://api.example.com/pipelines/schedules?page=0
+    paginated-pipeline-schedule-executions:
+      page: 1
+      values:
+        example_key: example_value
+      size: 50
+      pagelen: 10
+      next: https://api.example.com/pipeline-schedules/executions?page=2
+      previous: https://api.example.com/pipeline-schedules/executions?page=0
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

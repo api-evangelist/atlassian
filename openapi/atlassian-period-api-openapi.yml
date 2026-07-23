@@ -1,0 +1,314 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Period API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Period
+paths:
+  /wiki/rest/api/audit/retention:
+    get:
+      tags:
+      - Period
+      summary: Atlassian Get Retention Period
+      description: The Get Retention Period operation retrieves the current retention period configured for audit records in Atlassian Confluence. This API endpoint returns information about how long audit log entries are stored before being automatically deleted from the system. The retention period is an important compliance and storage management setting that determines the lifespan of audit trail data, which includes user actions, system events, and administrative changes within the Confluence instance. This read-only operation is typically used by administrators to verify current audit retention policies and ensure they align with organizational compliance requirements and data governance standards.
+      operationId: getRetentionPeriod
+      responses:
+        '200':
+          description: Returned if the requested retention period is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPeriod'
+              examples:
+                undefined:
+                  $ref: '#/components/examples/undefined'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Period
+      summary: Atlassian Set Retention Period
+      description: The Set Retention Period operation is a PUT request to the /wiki/rest/api/audit/retention endpoint in the Atlassian Confluence Audit API that allows administrators to configure how long audit log records are retained in the system before being automatically deleted. This operation accepts parameters defining the retention period duration, typically specified in days, and requires appropriate administrative permissions to execute. By setting a retention period, organizations can comply with data governance policies, regulatory requirements, and storage management practices while maintaining an audit trail for a specified timeframe. The operation updates the global retention settings for all audit logs, ensuring that older records beyond the configured threshold are systematically purged from the system.
+      operationId: setRetentionPeriod
+      requestBody:
+        description: The updated retention period.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionPeriod'
+            examples:
+              set-retention-period:
+                $ref: '#/components/examples/set-retention-period'
+        required: true
+      responses:
+        '200':
+          description: Returned if the retention period is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPeriod'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        ChooseTags: true
+        WriteDescription: true
+        GenerateExampleFromOperationResponseSchema: true
+        GenerateExampleFromOperationRequestSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/audit/since:
+    get:
+      tags:
+      - Period
+      summary: Atlassian Get Audit Records for Time Period
+      description: The Atlassian Confluence Audit API endpoint `/wiki/rest/api/audit/since` using the GET method retrieves audit records that have been created since a specified time period. This operation allows administrators and authorized users to query and review system audit logs within a defined timeframe, providing visibility into user actions, system changes, and security-related events that occurred after a particular timestamp. The endpoint is essential for compliance monitoring, security auditing, and tracking changes made to Confluence spaces, pages, and configuration settings over time.
+      operationId: getAuditRecordsForTimePeriod
+      parameters:
+      - name: number
+        in: query
+        description: The number of units for the time period.
+        schema:
+          type: integer
+          format: int64
+          default: 3
+      - name: units
+        in: query
+        description: The unit of time that the time period is measured in.
+        schema:
+          type: string
+          default: MONTHS
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+      - name: searchString
+        in: query
+        description: 'Filters the results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned records.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of records to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 1000
+      responses:
+        '200':
+          description: Returned if the requested records are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecordArray'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    RetentionPeriod:
+      required:
+      - number
+      - units
+      type: object
+      properties:
+        number:
+          type: integer
+          description: The number of units for the retention period.
+          format: int32
+          example: 10
+        units:
+          type: string
+          description: The unit of time that the retention period is measured in.
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+          - MILLENNIA
+          - ERAS
+          - FOREVER
+          example: NANOS
+    AuditRecordArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          example: example_value
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+  examples:
+    undefined_2:
+      _links:
+        self: https://api.example.com/resource
+        next: https://api.example.com/resource?start=10
+        base: https://api.example.com
+      limit: 10
+      results: []
+      size: 0
+      start: 0
+    undefined:
+      number: 30
+      units: DAYS
+    set-retention-period:
+      number: 30
+      units: DAYS
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

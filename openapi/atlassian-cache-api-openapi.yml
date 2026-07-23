@@ -1,0 +1,198 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Cache API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Cache
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches/{cache_uuid}:
+    delete:
+      tags:
+      - Cache
+      summary: Atlassian Delete Cache
+      description: Deletes a specific build cache from a Bitbucket repository's pipeline configuration using the cache's unique identifier. This operation removes cached dependencies, compiled artifacts, or other stored data that pipelines use to speed up build times, requiring authentication and appropriate permissions for the specified workspace and repository. Once deleted, the cache cannot be recovered and pipelines will need to rebuild the cache on subsequent runs.
+      operationId: deleteCache
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: cache_uuid
+        description: The UUID of the cache to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The cache was deleted.
+        '404':
+          description: The workspace, repository or cache_uuid with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches/{cache_uuid}/content-uri:
+    get:
+      tags:
+      - Cache
+      summary: Atlassian Get Cache Content Uri
+      description: This API operation retrieves a temporary content URI for accessing a specific pipeline cache in a Bitbucket repository. By providing the workspace ID, repository slug, and cache UUID as path parameters, you can obtain a pre-signed URL that allows direct access to download the cached content. This is useful for retrieving build artifacts, dependencies, or other cached data that was stored during previous pipeline executions, enabling faster build times by reusing previously downloaded or generated files. The returned URI is typically time-limited and provides secure, temporary access to the cache content without requiring additional authentication once generated.
+      operationId: getCacheContentUri
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: cache_uuid
+        description: The UUID of the cache.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The cache content uri.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_cache_content_uri'
+              examples:
+                pipeline-cache-content-uri:
+                  $ref: '#/components/examples/pipeline-cache-content-uri'
+        '404':
+          description: The workspace, repository or cache_uuid with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    pipeline-cache-content-uri:
+      uri: https://example.com/pipeline/cache/content/12345
+  schemas:
+    pipeline_cache_content_uri:
+      type: object
+      title: Pipeline Cache Content URI
+      description: A representation of the location of pipeline cache content.
+      properties:
+        uri:
+          type: string
+          format: uri
+          description: The uri for pipeline cache content.
+          example: https://www.example.com
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,294 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Comment Properties API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Comment Properties
+paths:
+  /rest/api/3/comment/{commentId}/properties:
+    get:
+      deprecated: false
+      description: Returns the keys of all the properties of a comment.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  If the comment has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianGetcommentpropertykeys
+      parameters:
+      - description: The ID of the comment.
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"keys":[{"key":"issue.support","self":"https://your-domain.atlassian.net/rest/api/3/issue/EX-2/properties/issue.support"}]}'
+              schema:
+                $ref: '#/components/schemas/PropertyKeys'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the comment ID is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the comment is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Comment Property Keys
+      tags:
+      - Issue Comment Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/comment/{commentId}/properties/{propertyKey}:
+    delete:
+      deprecated: false
+      description: Deletes a comment property.<br><br>**[Permissions](#permissions) required:** either of:<br><br> *  *Edit All Comments* [project permission](https://confluence.atlassian.com/x/yodKLg) to delete a property from any comment.<br> *  *Edit Own Comments* [project permission](https://confluence.atlassian.com/x/yodKLg) to delete a property from a comment created by the user.<br><br>Also, when the visibility of a comment is restricted to a role or group the user must be a member of that role or group.
+      operationId: atlassianDeletecommentproperty
+      parameters:
+      - description: The ID of the comment.
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+      - description: The key of the property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the comment or the property is not found or the user has the necessary project permissions but isn't a member of the role or group visibility of the comment is restricted to.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Comment Property
+      tags:
+      - Issue Comment Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:comment.property:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns the value of a comment property.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  If the comment has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianGetcommentproperty
+      parameters:
+      - description: The ID of the comment.
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+      - description: The key of the property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"issue.support","value":{"system.conversation.id":"b1bf38be-5e94-4b40-a3b8-9278735ee1e6","system.support.time":"1m"}}'
+              schema:
+                $ref: '#/components/schemas/EntityProperty'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the comment or the property is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Comment Property
+      tags:
+      - Issue Comment Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Creates or updates the value of a property for a comment. Use this resource to store custom data against a comment.<br><br>The value of the request body must be a [valid](http://tools.ietf.org/html/rfc4627), non-empty JSON blob. The maximum length is 32768 characters.<br><br>**[Permissions](#permissions) required:** either of:<br><br> *  *Edit All Comments* [project permission](https://confluence.atlassian.com/x/yodKLg) to create or update the value of a property on any comment.<br> *  *Edit Own Comments* [project permission](https://confluence.atlassian.com/x/yodKLg) to create or update the value of a property on a comment created by the user.<br><br>Also, when the visibility of a comment is restricted to a role or group the user must be a member of that role or group.
+      operationId: atlassianSetcommentproperty
+      parameters:
+      - description: The ID of the comment.
+        in: path
+        name: commentId
+        required: true
+        schema:
+          type: string
+      - description: The key of the property. The maximum length is 255 characters.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+        description: The value of the property. The value has to be a valid, non-empty [JSON](https://tools.ietf.org/html/rfc4627) value. The maximum length of the property value is 32768 bytes.
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the comment property is updated.
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the comment property is created.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the comment is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Set Comment Property
+      tags:
+      - Issue Comment Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:comment.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    PropertyKeys:
+      additionalProperties: false
+      description: List of property keys.
+      properties:
+        keys:
+          description: Property key details.
+          items:
+            $ref: '#/components/schemas/PropertyKey'
+          readOnly: true
+          type: array
+      type: object
+    EntityProperty:
+      additionalProperties: false
+      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+      properties:
+        key:
+          description: The key of the property. Required on create and update.
+          type: string
+        value:
+          description: The value of the property. Required on create and update.
+      type: object
+    PropertyKey:
+      additionalProperties: false
+      description: Property key details.
+      properties:
+        key:
+          description: The key of the property.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the property.
+          readOnly: true
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

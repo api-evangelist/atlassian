@@ -1,0 +1,2148 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content - Attachments API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content - Attachments
+paths:
+  /wiki/rest/api/content/{id}/child/attachment:
+    get:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Get Attachments
+      deprecated: true
+      description: 'Deprecated, use [Confluence''s v2 API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns the attachments for a piece of content.<br><br>By default, the following objects are expanded: `metadata`.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content. If the content is a blog post, ''View'' permission<br>for the space is required.'
+      operationId: atlassianGetattachments
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its attachments.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/contentExpand'
+      - name: start
+        in: query
+        description: The starting index of the returned attachments.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of attachments to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      - name: filename
+        in: query
+        description: Filter the results to attachments that match the filename.
+        schema:
+          type: string
+      - name: mediaType
+        in: query
+        description: Filter the results to attachments that match the media type.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested attachments are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '404':
+          description: 'Returned if;
+
+
+            - There is no parent content with the given ID.
+
+            - The calling user does not have permission to view the parent content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Create Or Update Attachment
+      description: 'Adds an attachment to a piece of content. If the attachment already exists<br>for the content, then the attachment is updated (i.e. a new version of the<br>attachment is created).<br><br>Note, you must set a `X-Atlassian-Token: nocheck` header on the request<br>for this method, otherwise it will be blocked. This protects against XSRF<br>attacks, which is necessary as this method accepts multipart/form-data.<br><br>The media type ''multipart/form-data'' is defined in [RFC 7578](https://www.ietf.org/rfc/rfc7578.txt).<br>Most client libraries have classes that make it easier to implement<br>multipart posts, like the [MultipartEntityBuilder](https://hc.apache.org/httpcomponents-client-5.1.x/current/httpclient5/apidocs/)<br>Java class provided by Apache HTTP Components.<br><br>Note, according to [RFC 7578](https://tools.ietf.org/html/rfc7578#section-4.5),<br>in the case where the form data is text,<br>the charset parameter for the "text/plain" Content-Type may be used to<br>indicate the character encoding used in that part. In the case of this<br>API endpoint, the `comment` body parameter should be sent with `type=text/plain`<br>and `charset=utf-8` values. This will force the charset to be UTF-8.<br><br>Example: This curl command attaches a file (''example.txt'') to a piece of<br>content (id=''123'') with a comment and `minorEdits`=true. If the ''example.txt''<br>file already exists, it will update it with a new version of the attachment.<br><br>``` bash<br>curl -D- \<br>  -u admin:admin \<br>  -X PUT \<br>  -H ''X-Atlassian-Token: nocheck'' \<br>  -F ''file=@"example.txt"'' \<br>  -F ''minorEdit="true"'' \<br>  -F ''comment="Example attachment comment"; type=text/plain; charset=utf-8'' \<br>  http://myhost/rest/api/content/123/child/attachment<br>```<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.'
+      operationId: atlassianCreateorupdateattachments
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to add the attachment to.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: 'The status of the content that the attachment is being added to.
+
+          This should always be set to ''current''.'
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - draft
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              - minorEdit
+              properties:
+                file:
+                  type: string
+                  description: 'The relative location and name of the attachment to be added to
+
+                    the content.'
+                  format: binary
+                comment:
+                  type: string
+                  description: 'The comment for the attachment that is being added.
+
+                    If you specify a comment, then every file must have a comment and
+
+                    the comments must be in the same order as the files. Alternatively,
+
+                    don''t specify any comments.'
+                  format: binary
+                minorEdit:
+                  type: string
+                  description: 'If `minorEdits` is set to ''true'', no notification email or activity stream
+
+                    will be generated when the attachment is added to the content.'
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: Returned if the attachments were added to the content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '403':
+          description: 'Returned if;
+
+
+            - Attachments are disabled.
+
+            - The calling user does not have permission to add attachments to the
+
+            content.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - The requested content is not found.
+
+            - The user does not have permission to view it.
+
+            - The attachment exceeds the maximum configured attachment size.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-file
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-file
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:attachment:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Create Attachment
+      description: 'Adds an attachment to a piece of content. This method only adds a new<br>attachment. If you want to update an existing attachment, use<br>[Create or update attachments](#api-content-id-child-attachment-put).<br><br>Note, you must set a `X-Atlassian-Token: nocheck` header on the request<br>for this method, otherwise it will be blocked. This protects against XSRF<br>attacks, which is necessary as this method accepts multipart/form-data.<br><br>The media type ''multipart/form-data'' is defined in [RFC 7578](https://www.ietf.org/rfc/rfc7578.txt).<br>Most client libraries have classes that make it easier to implement<br>multipart posts, like the [MultipartEntityBuilder](https://hc.apache.org/httpcomponents-client-5.1.x/current/httpclient5/apidocs/)<br>Java class provided by Apache HTTP Components.<br><br>Note, according to [RFC 7578](https://tools.ietf.org/html/rfc7578#section-4.5),<br>in the case where the form data is text,<br>the charset parameter for the "text/plain" Content-Type may be used to<br>indicate the character encoding used in that part. In the case of this<br>API endpoint, the `comment` body parameter should be sent with `type=text/plain`<br>and `charset=utf-8` values. This will force the charset to be UTF-8.<br><br>Example: This curl command attaches a file (''example.txt'') to a container<br>(id=''123'') with a comment and `minorEdits`=true.<br><br>``` bash<br>curl -D- \<br>  -u admin:admin \<br>  -X POST \<br>  -H ''X-Atlassian-Token: nocheck'' \<br>  -F ''file=@"example.txt"'' \<br>  -F ''minorEdit="true"'' \<br>  -F ''comment="Example attachment comment"; type=text/plain; charset=utf-8'' \<br>  http://myhost/rest/api/content/123/child/attachment<br>```<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.'
+      operationId: atlassianCreateattachment
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to add the attachment to.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: The status of the content that the attachment is being added to.
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - draft
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              - minorEdit
+              properties:
+                file:
+                  type: string
+                  description: 'The relative location and name of the attachment to be added to
+
+                    the content.'
+                  format: binary
+                comment:
+                  type: string
+                  description: 'The comment for the attachment that is being added.
+
+                    If you specify a comment, then every file must have a comment and
+
+                    the comments must be in the same order as the files. Alternatively,
+
+                    don''t specify any comments.'
+                  format: binary
+                minorEdit:
+                  type: string
+                  description: 'If `minorEdits` is set to ''true'', no notification email or activity stream
+
+                    will be generated when the attachment is added to the content.'
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: Returned if the attachments were added to the content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '400':
+          description: Returned if the content already has an attachment with the same filename.
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - Attachments are disabled in Confluence.
+
+            - The calling user does not have permission to add attachments to the
+
+            content.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - The requested content is not found.
+
+            - The user does not have permission to view it
+
+            - The attachment exceeds the maximum configured attachment size.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-file
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-file
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:attachment:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/child/attachment/{attachmentId}:
+    put:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Update Attachment Properties
+      description: Updates the attachment properties, i.e. the non-binary data of an attachment<br>like the filename, media-type, comment, and parent container.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianUpdateattachmentproperties
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the attachment is attached to.
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        description: The ID of the attachment to update.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The details of the attachment to be updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachmentPropertiesUpdateBody'
+        required: true
+      responses:
+        '200':
+          description: Returned if the attachment is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Content'
+        '400':
+          description: 'Returned if;
+
+
+            - The attachment id is invalid.
+
+            - The attachment version number is invalid.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The calling user is not permitted to update or move the attachment.
+
+            - The attachment is being moved to an invalid content type.'
+          content: {}
+        '404':
+          description: Returned if no attachment is found for the attachment ID.
+          content: {}
+        '409':
+          description: 'Returned if the version of the supplied attachment does not match
+
+            the version of the attachment stored in the database.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-file
+        - write:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-file
+        - write:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:attachment:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/child/attachment/{attachmentId}/data:
+    post:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Update Attachment Data
+      description: 'Updates the binary data of an attachment, given the attachment ID, and<br>optionally the comment and the minor edit field.<br><br>This method is essentially the same as [Create or update attachments](#api-content-id-child-attachment-put),<br>except that it matches the attachment ID rather than the name.<br><br>Note, you must set a `X-Atlassian-Token: nocheck` header on the request<br>for this method, otherwise it will be blocked. This protects against XSRF<br>attacks, which is necessary as this method accepts multipart/form-data.<br><br>The media type ''multipart/form-data'' is defined in [RFC 7578](https://www.ietf.org/rfc/rfc7578.txt).<br>Most client libraries have classes that make it easier to implement<br>multipart posts, like the [MultipartEntityBuilder](https://hc.apache.org/httpcomponents-client-5.1.x/current/httpclient5/apidocs/)<br>Java class provided by Apache HTTP Components.<br><br>Note, according to [RFC 7578](https://tools.ietf.org/html/rfc7578#section-4.5),<br>in the case where the form data is text,<br>the charset parameter for the "text/plain" Content-Type may be used to<br>indicate the character encoding used in that part. In the case of this<br>API endpoint, the `comment` body parameter should be sent with `type=text/plain`<br>and `charset=utf-8` values. This will force the charset to be UTF-8.<br><br>Example: This curl command updates an attachment (id=''att456'') that is attached<br>to a piece of content (id=''123'') with a comment and `minorEdits`=true.<br><br>``` bash<br>curl -D- \<br>  -u admin:admin \<br>  -X POST \<br>  -H ''X-Atlassian-Token: nocheck'' \<br>  -F ''file=@"example.txt"'' \<br>  -F ''minorEdit="true"'' \<br>  -F ''comment="Example attachment comment"; type=text/plain; charset=utf-8'' \<br>  http://myhost/rest/api/content/123/child/attachment/att456/data<br>```<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.'
+      operationId: atlassianUpdateattachmentdata
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the attachment is attached to.
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        description: The ID of the attachment to update.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              - minorEdit
+              properties:
+                file:
+                  type: string
+                  description: 'The relative location and name of the attachment to be added to
+
+                    the content.'
+                  format: binary
+                comment:
+                  type: string
+                  description: 'The comment for the attachment that is being added.
+
+                    If you specify a comment, then every file must have a comment and
+
+                    the comments must be in the same order as the files. Alternatively,
+
+                    don''t specify any comments.'
+                  format: binary
+                minorEdit:
+                  type: string
+                  description: 'If `minorEdits` is set to ''true'', no notification email or activity stream
+
+                    will be generated when the attachment is added to the content.'
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: Returned if the attachment is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Content'
+        '400':
+          description: Returned if the attachment id is invalid.
+          content: {}
+        '404':
+          description: Returned if no attachment is found for the attachment ID.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-file
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-file
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:attachment:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/child/attachment/{attachmentId}/download:
+    get:
+      tags:
+      - Content - Attachments
+      summary: Atlassian Get Uri To Download Attachment
+      description: Redirects the client to a URL that serves an attachment's binary data.
+      operationId: atlassianDownloadattatchment
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the attachment is attached to.
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        description: The ID of the attachment to download.
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        description: The version of the attachment. If this parameter is absent, the redirect URI will download the latest version of the attachment.
+        schema:
+          type: integer
+      responses:
+        '302':
+          description: Returned if download URL is found.
+        '400':
+          description: Returned if version number is greater than attachment's latest version number or an invalid value.
+        '401':
+          description: Returned if there are authentication issues in request.
+        '404':
+          description: 'Returned if;
+
+
+            - No content is found with the specified content ID.
+
+            - The specified content does not contain an attachment with the specified attachment ID.
+
+            - The calling user does not have permission to view the attachment.'
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - readonly:content.attachment:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - readonly:content.attachment:confluence
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:attachment:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Space:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
+      - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content'
+        type:
+          type: string
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ButtonLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    UsersUserKeys:
+      required:
+      - userAccountIds
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        userKeys:
+          type: array
+          items:
+            type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    AttachmentPropertiesUpdateBody:
+      required:
+      - id
+      - type
+      - version
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Set this to "attachment"
+        status:
+          type: string
+        title:
+          type: string
+        container:
+          $ref: '#/components/schemas/Container'
+        metadata:
+          type: object
+          properties:
+            mediaType:
+              type: string
+        extensions:
+          type: object
+        version:
+          $ref: '#/components/schemas/Version'
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type: object
+      nullable: true
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        padding:
+          type: string
+        borderRadius:
+          type: string
+    ContentChildType:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    MenusLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+        color:
+          type: string
+    ContentHistory:
+      required:
+      - latest
+      type: object
+      nullable: true
+      properties:
+        latest:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/User'
+        ownedBy:
+          $ref: '#/components/schemas/User'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User'
+        createdDate:
+          type: string
+          format: date-time
+        lastUpdated:
+          $ref: '#/components/schemas/Version'
+        previousVersion:
+          $ref: '#/components/schemas/Version'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys'
+        nextVersion:
+          $ref: '#/components/schemas/Version'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+    ScreenLookAndFeel:
+      required:
+      - background
+      type: object
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        layer:
+          type: object
+          properties:
+            width:
+              type: string
+            height:
+              type: string
+          nullable: true
+        gutterTop:
+          type: string
+          nullable: true
+        gutterRight:
+          type: string
+          nullable: true
+        gutterBottom:
+          type: string
+          nullable: true
+        gutterLeft:
+          type: string
+          nullable: true
+    TopNavigationLookAndFeel:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+        highlightColor:
+          type: string
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    HeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    Group:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+        name:
+          type: string
+        id:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    UserArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    SpaceDescription:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ContentMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label'
+      description: Metadata object for page, blogpost, comment content
+    ContentChildren:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray'
+        comment:
+          $ref: '#/components/schemas/ContentArray'
+        page:
+          $ref: '#/components/schemas/ContentArray'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        spaceReference:
+          type: object
+          nullable: true
+    Container:
+      type: object
+      nullable: true
+      additionalProperties: true
+      description: 'Container for content. This can be either a space (containing a page or blogpost)
+
+        or a page/blog post (containing an attachment or comment)'
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+      description: An operation and the target entity that it applies to, e.g. create page.
+    User:
+      required:
+      - type
+      type: object
+      additionalProperties: true
+      nullable: true
+      properties:
+        type:
+          type: string
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+        email:
+          nullable: true
+          type: string
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          nullable: true
+          type: string
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+        timeZone:
+          nullable: true
+          type: string
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        operations:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        personalSpace:
+          $ref: '#/components/schemas/Space'
+        _expandable:
+          type: object
+          properties:
+            operations:
+              type: string
+            details:
+              type: string
+            personalSpace:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpacePermission:
+      required:
+      - anonymousAccess
+      - operation
+      - unlicensedAccess
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subjects:
+          type: object
+          properties:
+            user:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            group:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          description: The users and/or groups that the permission applies to.
+        operation:
+          $ref: '#/components/schemas/OperationCheckResult'
+        anonymousAccess:
+          type: boolean
+          description: Grant anonymous users permission to use the operation.
+          default: false
+        unlicensedAccess:
+          type: boolean
+          description: 'Grants access to unlicensed users from JIRA Service Desk when used
+
+            with the ''read space'' operation.'
+          default: false
+      description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    ContentArray:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    NavigationLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      nullable: true
+      properties:
+        color:
+          type: string
+        highlightColor:
+          type: string
+          nullable: true
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    GroupArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    ContentRestriction:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray'
+            group:
+              $ref: '#/components/schemas/GroupArray'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+        content:
+          $ref: '#/components/schemas/Content'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Content:
+      required:
+      - status
+      - type
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Can be "page", "blogpost", "attachment" or "content"
+        status:
+          type: string
+        title:
+          type: string
+        space:
+          $ref: '#/components/schemas/Space'
+        history:
+          $ref: '#/components/schemas/ContentHistory'
+        version:
+          $ref: '#/components/schemas/Version'
+        ancestors:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        children:
+          $ref: '#/components/schemas/ContentChildren'
+        childTypes:
+          $ref: '#/components/schemas/ContentChildType'
+        descendants:
+          $ref: '#/components/schemas/ContentChildren'
+        container:
+          $ref: '#/components/schemas/Container'
+        body:
+          type: object
+          properties:
+            view:
+              $ref: '#/components/schemas/ContentBody'
+            export_view:
+              $ref: '#/components/schemas/ContentBody'
+            styled_view:
+              $ref: '#/components/schemas/ContentBody'
+            storage:
+              $ref: '#/components/schemas/ContentBody'
+            wiki:
+              $ref: '#/components/schemas/ContentBody'
+            editor:
+              $ref: '#/components/schemas/ContentBody'
+            editor2:
+              $ref: '#/components/schemas/ContentBody'
+            anonymous_export_view:
+              $ref: '#/components/schemas/ContentBody'
+            atlas_doc_format:
+              $ref: '#/components/schemas/ContentBody'
+            dynamic:
+              $ref: '#/components/schemas/ContentBody'
+            raw:
+              $ref: '#/components/schemas/ContentBody'
+            _expandable:
+              type: object
+              properties:
+                editor:
+                  type: string
+                view:
+                  type: string
+                export_view:
+                  type: string
+                styled_view:
+                  type: string
+                storage:
+                  type: string
+                editor2:
+                  type: string
+                anonymous_export_view:
+                  type: string
+                atlas_doc_format:
+                  type: string
+                wiki:
+                  type: string
+                dynamic:
+                  type: string
+                raw:
+                  type: string
+        restrictions:
+          type: object
+          properties:
+            read:
+              $ref: '#/components/schemas/ContentRestriction'
+            update:
+              $ref: '#/components/schemas/ContentRestriction'
+            _expandable:
+              type: object
+              properties:
+                read:
+                  type: string
+                update:
+                  type: string
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        metadata:
+          $ref: '#/components/schemas/ContentMetadata'
+        macroRenderedOutput:
+          type: object
+          additionalProperties:
+            type: object
+        extensions:
+          type: object
+        _expandable:
+          type: object
+          properties:
+            childTypes:
+              type: string
+            container:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            children:
+              type: string
+            restrictions:
+              type: string
+            history:
+              type: string
+            ancestors:
+              type: string
+            body:
+              type: string
+            version:
+              type: string
+            descendants:
+              type: string
+            space:
+              type: string
+            extensions:
+              type: string
+            schedulePublishDate:
+              type: string
+            schedulePublishInfo:
+              type: string
+            macroRenderedOutput:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: Base object for all content types.
+    Version:
+      required:
+      - minorEdit
+      - number
+      - when
+      type: object
+      nullable: true
+      additionalProperties: true
+      properties:
+        by:
+          $ref: '#/components/schemas/User'
+        when:
+          type: string
+          format: date-time
+          nullable: true
+        friendlyWhen:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+        content:
+          $ref: '#/components/schemas/Content'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+        confRev:
+          type: string
+          nullable: true
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+        syncRev:
+          type: string
+          nullable: true
+          description: The revision id provided by Synchrony
+        syncRevSource:
+          type: string
+          nullable: true
+          description: Source of the synchrony revision
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    Embeddable:
+      type: object
+      additionalProperties: true
+    SpaceSettings:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+        spaceKey:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+  parameters:
+    contentExpand:
+      name: expand
+      in: query
+      description: 'A multi-value parameter indicating which properties of the content to expand.
+
+
+        - `childTypes.all` returns whether the content has attachments, comments, or child pages/whiteboards.
+
+        Use this if you only need to check whether the content has children of a particular type.
+
+        - `childTypes.attachment` returns whether the content has attachments.
+
+        - `childTypes.comment` returns whether the content has comments.
+
+        - `childTypes.page` returns whether the content has child pages.
+
+        - `container` returns the space that the content is in. This is the same as the information
+
+        returned by [Get space](#api-space-spaceKey-get).
+
+        - `metadata.currentuser` returns information about the current user in relation to the content,
+
+        including when they last viewed it, modified it, contributed to it, or added it as a favorite.
+
+        - `metadata.properties` returns content properties that have been set via the Confluence REST API.
+
+        - `metadata.labels` returns the labels that have been added to the content.
+
+        - `metadata.frontend` this property is only used by Atlassian.
+
+        - `operations` returns the operations for the content, which are used when setting permissions.
+
+        - `children.page` returns pages that are descendants at the level immediately below the content.
+
+        - `children.attachment` returns all attachments for the content.
+
+        - `children.comment` returns all comments on the content.
+
+        - `restrictions.read.restrictions.user` returns the users that have permission to read the content.
+
+        - `restrictions.read.restrictions.group` returns the groups that have permission to read the content. Note that
+
+        this may return deleted groups, because deleting a group doesn''t remove associated restrictions.
+
+        - `restrictions.update.restrictions.user` returns the users that have permission to update the content.
+
+        - `restrictions.update.restrictions.group` returns the groups that have permission to update the content. Note that
+
+        this may return deleted groups because deleting a group doesn''t remove associated restrictions.
+
+        - `history` returns the history of the content, including the date it was created.
+
+        - `history.lastUpdated` returns information about the most recent update of the content, including
+
+        who updated it and when it was updated.
+
+        - `history.previousVersion` returns information about the update prior to the current content update.
+
+        - `history.contributors` returns all of the users who have contributed to the content.
+
+        - `history.nextVersion` returns information about the update after to the current content update.
+
+        - `ancestors` returns the parent content, if the content is a page or whiteboard.
+
+        - `body` returns the body of the content in different formats, including the editor format,
+
+        view format, and export format.
+
+        - `body.storage` returns the body of content in storage format.
+
+        - `body.view` returns the body of content in view format.
+
+        - `version` returns information about the most recent update of the content, including who updated it
+
+        and when it was updated.
+
+        - `descendants.page` returns pages that are descendants at any level below the content.
+
+        - `descendants.attachment` returns all attachments for the content, same as `children.attachment`.
+
+        - `descendants.comment` returns all comments on the content, same as `children.comment`.
+
+        - `space` returns the space that the content is in. This is the same as the information returned by
+
+        [Get space](#api-space-spaceKey-get).
+
+
+        In addition, the following comment-specific expansions can be used:
+
+        - `extensions.inlineProperties` returns inline comment-specific properties.
+
+        - `extensions.resolution` returns the resolution status of each comment.'
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

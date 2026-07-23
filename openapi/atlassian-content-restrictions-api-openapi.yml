@@ -1,0 +1,2771 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content Restrictions API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content Restrictions
+paths:
+  /wiki/rest/api/content/{id}/restriction:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Restrictions
+      description: Returns the restrictions on a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetrestrictions
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its restrictions.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions to expand. By default, the following objects are expanded:
+
+          `restrictions.user`, `restrictions.group`.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - read.restrictions.user
+            - update.restrictions.user
+            - restrictions.group
+            - read.restrictions.group
+            - update.restrictions.group
+            - content
+      - name: start
+        in: query
+        description: The starting index of the users and groups in the returned restrictions.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of users and the maximum number of groups, in the
+
+          returned restrictions, to return per page. Note, this may be restricted
+
+          by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        '200':
+          description: Returned if the requested restrictions are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRestrictionArray'
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Update Restrictions
+      description: 'Updates restrictions for a piece of content. For each operation specified in the request, it removes<br>any existing restrictions on the content for that operation, and replaces them with the restrictions in the request.<br>Note: Not specifying an operation will ignore restrictions of that type, and passing an empty list for an operation<br>will remove all existing restrictions of that type.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.'
+      operationId: atlassianUpdaterestrictions
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to update restrictions for.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions (returned in response) to expand.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - read.restrictions.user
+            - update.restrictions.user
+            - restrictions.group
+            - read.restrictions.group
+            - update.restrictions.group
+            - content
+      requestBody:
+        description: The updated restrictions for the content.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentRestrictionAddOrUpdateArray'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested restrictions are updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRestrictionArray'
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to update restrictions
+
+            for the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Add Restrictions
+      description: Adds restrictions to a piece of content. Note, this does not change any<br>existing restrictions on the content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianAddrestrictions
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to add restrictions to.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions (returned in response) to expand.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - read.restrictions.user
+            - update.restrictions.user
+            - restrictions.group
+            - read.restrictions.group
+            - update.restrictions.group
+            - content
+      requestBody:
+        description: The restrictions to be added to the content.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentRestrictionAddOrUpdateArray'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested restrictions are added.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRestrictionArray'
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to add restrictions to
+
+            the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Delete Restrictions
+      description: Removes all restrictions (read and update) on a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianDeleterestrictions
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to remove restrictions from.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions (returned in response) to expand.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - read.restrictions.user
+            - update.restrictions.user
+            - restrictions.group
+            - read.restrictions.group
+            - update.restrictions.group
+            - content
+      responses:
+        '200':
+          description: Returned if the restrictions are removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRestrictionArray'
+        '400':
+          description: Returned if any of the above validation rules are violated
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to alter the
+
+            restrictions on the content.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: DELETE
+  /wiki/rest/api/content/{id}/restriction/byOperation:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Restrictions By Operation
+      description: Returns restrictions on a piece of content by operation. This method is<br>similar to [Get restrictions](#api-content-id-restriction-get) except that<br>the operations are properties of the return object, rather than items in<br>a results array.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetrestrictionsbyoperation
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its restrictions.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions to expand.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - restrictions.group
+            - content
+      responses:
+        '200':
+          description: Returned if the requested restrictions are returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  properties:
+                    operationType:
+                      $ref: '#/components/schemas/ContentRestriction'
+                    _links:
+                      $ref: '#/components/schemas/GenericLinks'
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Restrictions For Operation
+      description: Returns the restictions on a piece of content for a given operation (read<br>or update).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetrestrictionsforoperation
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its restrictions.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation type of the restrictions to be returned.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content
+
+          restrictions to expand.
+
+
+          - `restrictions.user` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `restrictions.group` returns the piece of content that the restrictions are
+
+          applied to. Expanded by default.
+
+          - `content` returns the piece of content that the restrictions are
+
+          applied to.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - restrictions.user
+            - restrictions.group
+            - content
+      - name: start
+        in: query
+        description: The starting index of the users and groups in the returned restrictions.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of users and the maximum number of groups, in the
+
+          returned restrictions, to return per page. Note, this may be restricted
+
+          by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        '200':
+          description: Returned if the requested restrictions are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRestriction'
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/group/{groupName}:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Content Restriction Status For Group
+      deprecated: true
+      description: Deprecated, use [Get content restriction status for group via groupId](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-restrictions/#api-wiki-rest-api-content-id-restriction-byoperation-operationkey-bygroupid-groupid-get).<br>Returns whether the specified content restriction applies to a group.<br>For example, if a page with `id=123` has a `read` restriction for the `admins` group,<br>the following request will return `true`:<br><br>`/wiki/rest/api/content/123/restriction/byOperation/read/group/admins`<br><br>Note that a response of `true` does not guarantee that the group can view the page, as it does not account for<br>account-inherited restrictions, space permissions, or even product access. For more<br>information, see [Confluence permissions](https://confluence.atlassian.com/x/_AozKw).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetcontentrestrictionstatusforgroup
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupName
+        in: path
+        description: 'The name of the group to be queried for whether the content restriction
+
+          applies to it.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returns true if the content restriction applies to the group. The response
+
+            will not return a response body.'
+          content: {}
+        '400':
+          description: 'Returned if;
+
+
+            - Group name is missing'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Add Group To Content Restriction
+      deprecated: true
+      description: Deprecated, use [Add group to content restriction via groupId](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-restrictions/#api-wiki-rest-api-content-id-restriction-byoperation-operationkey-bygroupid-groupid-put).<br>Adds a group to a content restriction. That is, grant read or update<br>permission to the group for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianAddgrouptocontentrestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupName
+        in: path
+        description: The name of the group to add to the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is added to the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Remove Group From Content Restriction
+      deprecated: true
+      description: Deprecated, use [Remove group from content restriction by groupId](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-content-restrictions/#api-wiki-rest-api-content-id-restriction-byoperation-operationkey-user-delete).<br>Removes a group from a content restriction. That is, remove read or update<br>permission for the group for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianRemovegroupfromcontentrestrictionbyid
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupName
+        in: path
+        description: The name of the group to remove from the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The restriction to be deleted does not exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/byGroupId/{groupId}:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Content Restriction Status For Group
+      description: Returns whether the specified content restriction applies to a group.<br>For example, if a page with `id=123` has a `read` restriction for the `123456` group id,<br>the following request will return `true`:<br><br>`/wiki/rest/api/content/123/restriction/byOperation/read/byGroupId/123456`<br><br>Note that a response of `true` does not guarantee that the group can view the page, as it does not account for<br>account-inherited restrictions, space permissions, or even product access. For more<br>information, see [Confluence permissions](https://confluence.atlassian.com/x/_AozKw).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetindividualgrouprestrictionstatusbygroupid
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupId
+        in: path
+        description: 'The id of the group to be queried for whether the content restriction
+
+          applies to it.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returns true if the content restriction applies to the group. The response
+
+            will not return a response body.'
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to view the
+
+            content.'
+          content: {}
+        '404':
+          description: 'Returned if
+
+            - There is no content with the given ID.
+
+            - An invalid operation or group is specified.
+
+            - Given groupId is blank or has invalid characters'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Add Group To Content Restriction
+      description: Adds a group to a content restriction by Group Id. That is, grant read or update<br>permission to the group for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianAddgrouptocontentrestrictionbygroupid
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupId
+        in: path
+        description: The groupId of the group to add to the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is added to the content restriction by Group Id. The response
+
+            body will be empty.'
+          content: {}
+        '400':
+          description: 'Returned if;
+
+            - Group Id is not valid'
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to update the
+
+            content.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group id is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Remove Group From Content Restriction
+      description: Removes a group from a content restriction. That is, remove read or update<br>permission for the group for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianRemovegroupfromcontentrestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupId
+        in: path
+        description: The id of the group to remove from the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '400':
+          description: Returned if given group id is blank
+          content: {}
+        '403':
+          description: Returned if the calling user does not have permission to view the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The restriction to be deleted does not exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/user:
+    get:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Get Content Restriction Status For User
+      description: Returns whether the specified content restriction applies to a user.<br>For example, if a page with `id=123` has a `read` restriction for a user with an account ID of<br>`384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`, the following request will return `true`:<br><br>`/wiki/rest/api/content/123/restriction/byOperation/read/user?accountId=384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`<br><br>Note that a response of `true` does not guarantee that the user can view the page, as it does not account for<br>account-inherited restrictions, space permissions, or even product access. For more<br>information, see [Confluence permissions](https://confluence.atlassian.com/x/_AozKw).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content.
+      operationId: atlassianGetcontentrestrictionstatusforuser
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that is restricted.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: 'Return true if the content restriction applies to the user. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or user is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Add User To Content Restriction
+      description: Adds a user to a content restriction. That is, grant read or update<br>permission to the user for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianAddusertocontentrestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: 'Returned if the user is added to the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '400':
+          description: 'Returned if;
+
+
+            - Provided restrictions are invalid'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Restrictions
+      summary: Atlassian Remove User From Content Restriction
+      description: Removes a group from a content restriction. That is, remove read or update<br>permission for the group for a piece of content.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to edit the content.
+      operationId: atlassianRemoveuserfromcontentrestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: 'Returned if the user is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Space:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
+      - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content'
+        type:
+          type: string
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ContentRestrictionArray:
+      required:
+      - _links
+      - limit
+      - restrictionsHash
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentRestriction'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        restrictionsHash:
+          type: string
+          description: 'This property is used by the UI to figure out whether a set of restrictions
+
+            has changed.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ButtonLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    UsersUserKeys:
+      required:
+      - userAccountIds
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        userKeys:
+          type: array
+          items:
+            type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type: object
+      nullable: true
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        padding:
+          type: string
+        borderRadius:
+          type: string
+    ContentChildType:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    MenusLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+        color:
+          type: string
+    ContentHistory:
+      required:
+      - latest
+      type: object
+      nullable: true
+      properties:
+        latest:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/User'
+        ownedBy:
+          $ref: '#/components/schemas/User'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User'
+        createdDate:
+          type: string
+          format: date-time
+        lastUpdated:
+          $ref: '#/components/schemas/Version'
+        previousVersion:
+          $ref: '#/components/schemas/Version'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys'
+        nextVersion:
+          $ref: '#/components/schemas/Version'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+    ScreenLookAndFeel:
+      required:
+      - background
+      type: object
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type: string
+          nullable: true
+        backgroundBlendMode:
+          type: string
+          nullable: true
+        backgroundClip:
+          type: string
+          nullable: true
+        backgroundColor:
+          type: string
+          nullable: true
+        backgroundImage:
+          type: string
+          nullable: true
+        backgroundOrigin:
+          type: string
+          nullable: true
+        backgroundPosition:
+          type: string
+          nullable: true
+        backgroundRepeat:
+          type: string
+          nullable: true
+        backgroundSize:
+          type: string
+          nullable: true
+        layer:
+          type: object
+          properties:
+            width:
+              type: string
+            height:
+              type: string
+          nullable: true
+        gutterTop:
+          type: string
+          nullable: true
+        gutterRight:
+          type: string
+          nullable: true
+        gutterBottom:
+          type: string
+          nullable: true
+        gutterLeft:
+          type: string
+          nullable: true
+    TopNavigationLookAndFeel:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+        highlightColor:
+          type: string
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    HeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    Group:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+        name:
+          type: string
+        id:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    UserArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    SpaceDescription:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ContentRestrictionAddOrUpdateArray:
+      oneOf:
+      - type: object
+        required:
+        - results
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/ContentRestrictionUpdate'
+          start:
+            type: integer
+            format: int32
+          limit:
+            type: integer
+            format: int32
+          size:
+            type: integer
+            format: int32
+          restrictionsHash:
+            type: string
+            description: 'This property is used by the UI to figure out whether a set of restrictions
+
+              has changed.'
+          _links:
+            $ref: '#/components/schemas/GenericLinks'
+      - type: array
+        items:
+          $ref: '#/components/schemas/ContentRestrictionUpdate'
+    ContentChildren:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray'
+        comment:
+          $ref: '#/components/schemas/ContentArray'
+        page:
+          $ref: '#/components/schemas/ContentArray'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label'
+      description: Metadata object for page, blogpost, comment content
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        spaceReference:
+          type: object
+          nullable: true
+    Container:
+      type: object
+      nullable: true
+      additionalProperties: true
+      description: 'Container for content. This can be either a space (containing a page or blogpost)
+
+        or a page/blog post (containing an attachment or comment)'
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+      description: An operation and the target entity that it applies to, e.g. create page.
+    User:
+      required:
+      - type
+      type: object
+      additionalProperties: true
+      nullable: true
+      properties:
+        type:
+          type: string
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+        email:
+          nullable: true
+          type: string
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          nullable: true
+          type: string
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+        timeZone:
+          nullable: true
+          type: string
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        operations:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        personalSpace:
+          $ref: '#/components/schemas/Space'
+        _expandable:
+          type: object
+          properties:
+            operations:
+              type: string
+            details:
+              type: string
+            personalSpace:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpacePermission:
+      required:
+      - anonymousAccess
+      - operation
+      - unlicensedAccess
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subjects:
+          type: object
+          properties:
+            user:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            group:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          description: The users and/or groups that the permission applies to.
+        operation:
+          $ref: '#/components/schemas/OperationCheckResult'
+        anonymousAccess:
+          type: boolean
+          description: Grant anonymous users permission to use the operation.
+          default: false
+        unlicensedAccess:
+          type: boolean
+          description: 'Grants access to unlicensed users from JIRA Service Desk when used
+
+            with the ''read space'' operation.'
+          default: false
+      description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    ContentArray:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    NavigationLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      nullable: true
+      properties:
+        color:
+          type: string
+        highlightColor:
+          type: string
+          nullable: true
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    GroupArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    ContentRestriction:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray'
+            group:
+              $ref: '#/components/schemas/GroupArray'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+        content:
+          $ref: '#/components/schemas/Content'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Content:
+      required:
+      - status
+      - type
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Can be "page", "blogpost", "attachment" or "content"
+        status:
+          type: string
+        title:
+          type: string
+        space:
+          $ref: '#/components/schemas/Space'
+        history:
+          $ref: '#/components/schemas/ContentHistory'
+        version:
+          $ref: '#/components/schemas/Version'
+        ancestors:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        children:
+          $ref: '#/components/schemas/ContentChildren'
+        childTypes:
+          $ref: '#/components/schemas/ContentChildType'
+        descendants:
+          $ref: '#/components/schemas/ContentChildren'
+        container:
+          $ref: '#/components/schemas/Container'
+        body:
+          type: object
+          properties:
+            view:
+              $ref: '#/components/schemas/ContentBody'
+            export_view:
+              $ref: '#/components/schemas/ContentBody'
+            styled_view:
+              $ref: '#/components/schemas/ContentBody'
+            storage:
+              $ref: '#/components/schemas/ContentBody'
+            wiki:
+              $ref: '#/components/schemas/ContentBody'
+            editor:
+              $ref: '#/components/schemas/ContentBody'
+            editor2:
+              $ref: '#/components/schemas/ContentBody'
+            anonymous_export_view:
+              $ref: '#/components/schemas/ContentBody'
+            atlas_doc_format:
+              $ref: '#/components/schemas/ContentBody'
+            dynamic:
+              $ref: '#/components/schemas/ContentBody'
+            raw:
+              $ref: '#/components/schemas/ContentBody'
+            _expandable:
+              type: object
+              properties:
+                editor:
+                  type: string
+                view:
+                  type: string
+                export_view:
+                  type: string
+                styled_view:
+                  type: string
+                storage:
+                  type: string
+                editor2:
+                  type: string
+                anonymous_export_view:
+                  type: string
+                atlas_doc_format:
+                  type: string
+                wiki:
+                  type: string
+                dynamic:
+                  type: string
+                raw:
+                  type: string
+        restrictions:
+          type: object
+          properties:
+            read:
+              $ref: '#/components/schemas/ContentRestriction'
+            update:
+              $ref: '#/components/schemas/ContentRestriction'
+            _expandable:
+              type: object
+              properties:
+                read:
+                  type: string
+                update:
+                  type: string
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        metadata:
+          $ref: '#/components/schemas/ContentMetadata'
+        macroRenderedOutput:
+          type: object
+          additionalProperties:
+            type: object
+        extensions:
+          type: object
+        _expandable:
+          type: object
+          properties:
+            childTypes:
+              type: string
+            container:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            children:
+              type: string
+            restrictions:
+              type: string
+            history:
+              type: string
+            ancestors:
+              type: string
+            body:
+              type: string
+            version:
+              type: string
+            descendants:
+              type: string
+            space:
+              type: string
+            extensions:
+              type: string
+            schedulePublishDate:
+              type: string
+            schedulePublishInfo:
+              type: string
+            macroRenderedOutput:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: Base object for all content types.
+    Version:
+      required:
+      - minorEdit
+      - number
+      - when
+      type: object
+      nullable: true
+      additionalProperties: true
+      properties:
+        by:
+          $ref: '#/components/schemas/User'
+        when:
+          type: string
+          format: date-time
+          nullable: true
+        friendlyWhen:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+        content:
+          $ref: '#/components/schemas/Content'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+        confRev:
+          type: string
+          nullable: true
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+        syncRev:
+          type: string
+          nullable: true
+          description: The revision id provided by Synchrony
+        syncRevSource:
+          type: string
+          nullable: true
+          description: Source of the synchrony revision
+    ContentRestrictionUpdate:
+      required:
+      - operation
+      - restrictions
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The restriction operation applied to content.
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            group:
+              type: array
+              description: 'The groups that the restrictions will be applied to. This array must
+
+                have at least one item, otherwise it should be omitted. At least one of `name` or `id` is required,
+
+                and `id` should be used where possible in advance of the `name` deprecation.'
+              items:
+                required:
+                - type
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: Set to 'group'.
+                    enum:
+                    - group
+                  name:
+                    type: string
+                    description: The name of the group.
+                    deprecated: true
+                  id:
+                    type: string
+                    description: The id of the group.
+                description: A group that the restriction will be applied to.
+            user:
+              oneOf:
+              - type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              - $ref: '#/components/schemas/UserArray'
+          description: 'The users/groups that the restrictions will be applied to. At least one of
+
+            `user` or `group` must be specified for this object.'
+        content:
+          $ref: '#/components/schemas/Content'
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    Embeddable:
+      type: object
+      additionalProperties: true
+    SpaceSettings:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+        spaceKey:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+  parameters:
+    userLookupAccountId:
+      name: accountId
+      in: query
+      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+      schema:
+        type: string
+    userLookupUsername:
+      name: username
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
+    userLookupKey:
+      name: key
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

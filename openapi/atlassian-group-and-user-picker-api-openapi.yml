@@ -1,0 +1,276 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Group and User Picker API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Group and User Picker
+paths:
+  /rest/api/3/groupuserpicker:
+    get:
+      deprecated: false
+      description: Returns a list of users and groups matching a string. The string is used:<br><br> *  for users, to find a case-insensitive match with display name and e-mail address. Note that if a user has hidden their email address in their user profile, partial matches of the email address will not find the user. An exact match is required.<br> *  for groups, to find a case-sensitive match with group name.<br><br>For example, if the string *tin* is used, records with the display name *Tina*, email address *sarah@tinplatetraining.com*, and the group *accounting* would be returned.<br><br>Optionally, the search can be refined to:<br><br> *  the projects and issue types associated with a custom field, such as a user picker. The search can then be further refined to return only users and groups that have permission to view specific:<br>    <br>     *  projects.<br>     *  issue types.<br>    <br>    If multiple projects or issue types are specified, they must be a subset of those enabled for the custom field or no results are returned. For example, if a field is enabled for projects A, B, and C then the search could be limited to projects B and C. However, if the search is limited to projects B and D, nothing is returned.<br> *  not return Connect app users and groups.<br> *  return groups that have a case-insensitive match with the query.<br><br>The primary use case for this resource is to populate a picker field suggestion list with users or groups. To this end, the returned object includes an `html` field for each list. This field highlights the matched query term in the item name with the HTML strong tag. Also, each list is wrapped in a response object that contains a header for use in a picker, specifically *Showing X of Y matching groups*.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/yodKLg).
+      operationId: atlassianFindusersandgroups
+      parameters:
+      - description: The search string.
+        in: query
+        name: query
+        required: true
+        schema:
+          type: string
+      - description: The maximum number of items to return in each list.
+        in: query
+        name: maxResults
+        schema:
+          default: 50
+          format: int32
+          type: integer
+      - description: Whether the user avatar should be returned. If an invalid value is provided, the default value is used.
+        in: query
+        name: showAvatar
+        schema:
+          default: false
+          type: boolean
+      - description: The custom field ID of the field this request is for.
+        in: query
+        name: fieldId
+        schema:
+          type: string
+      - description: The ID of a project that returned users and groups must have permission to view. To include multiple projects, provide an ampersand-separated list. For example, `projectId=10000&projectId=10001`. This parameter is only used when `fieldId` is present.
+        in: query
+        name: projectId
+        schema:
+          items:
+            type: string
+          type: array
+      - description: The ID of an issue type that returned users and groups must have permission to view. To include multiple issue types, provide an ampersand-separated list. For example, `issueTypeId=10000&issueTypeId=10001`. Special values, such as `-1` (all standard issue types) and `-2` (all subtask issue types), are supported. This parameter is only used when `fieldId` is present.
+        in: query
+        name: issueTypeId
+        schema:
+          items:
+            type: string
+          type: array
+      - description: The size of the avatar to return. If an invalid value is provided, the default value is used.
+        in: query
+        name: avatarSize
+        schema:
+          default: xsmall
+          enum:
+          - xsmall
+          - xsmall@2x
+          - xsmall@3x
+          - small
+          - small@2x
+          - small@3x
+          - medium
+          - medium@2x
+          - medium@3x
+          - large
+          - large@2x
+          - large@3x
+          - xlarge
+          - xlarge@2x
+          - xlarge@3x
+          - xxlarge
+          - xxlarge@2x
+          - xxlarge@3x
+          - xxxlarge
+          - xxxlarge@2x
+          - xxxlarge@3x
+          type: string
+      - description: Whether the search for groups should be case insensitive.
+        in: query
+        name: caseInsensitive
+        schema:
+          default: false
+          type: boolean
+      - description: Whether Connect app users and groups should be excluded from the search results. If an invalid value is provided, the default value is used.
+        in: query
+        name: excludeConnectAddons
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"groups":{"groups":[{"groupId":"276f955c-63d7-42c8-9520-92d01dca0625","html":"<b>j</b>dog-developers","name":"jdog-developers"},{"groupId":"6e87dc72-4f1f-421f-9382-2fee8b652487","html":"<b>j</b>uvenal-bot","name":"juvenal-bot"}],"header":"Showing 20 of 25 matching groups","total":25},"users":{"header":"Showing 20 of 25 matching groups","total":25,"users":[{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","avatarUrl":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","displayName":"Mia Krystof","html":"<strong>Mi</strong>a Krystof - <strong>mi</strong>a@example.com (<strong>mi</strong>a)","key":"mia","name":"mia"}]}}'
+              schema:
+                $ref: '#/components/schemas/FoundUsersAndGroups'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the query parameter is not provided.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '429':
+          description: Returned if the rate limit is exceeded. User search endpoints share a collective rate limit for the tenant, in addition to Jira's normal rate limiting you may receive a rate limit for user search. Please respect the Retry-After header.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Find Users And Groups
+      tags:
+      - Group and User Picker
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:group:jira
+        - read:user:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    FoundGroups:
+      additionalProperties: false
+      description: The list of groups found in a search, including header text (Showing X of Y matching groups) and total of matched groups.
+      properties:
+        groups:
+          items:
+            $ref: '#/components/schemas/FoundGroup'
+          type: array
+        header:
+          description: Header text indicating the number of groups in the response and the total number of groups found in the search.
+          type: string
+        total:
+          description: The total number of groups found in the search.
+          format: int32
+          type: integer
+      type: object
+      xml:
+        name: groupsuggestions
+    FoundGroup:
+      additionalProperties: false
+      description: A group found in a search.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type: string
+        html:
+          description: The group name with the matched query string highlighted with the HTML bold tag.
+          type: string
+        labels:
+          items:
+            $ref: '#/components/schemas/GroupLabel'
+          type: array
+        name:
+          description: The name of the group. The name of a group is mutable, to reliably identify a group use ``groupId`.`
+          type: string
+      type: object
+      xml:
+        name: group
+    UserPickerUser:
+      additionalProperties: false
+      description: A user found in a search.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          type: string
+        avatarUrl:
+          description: The avatar URL of the user.
+          format: uri
+          type: string
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may be returned as null.
+          type: string
+        html:
+          description: The display name, email address, and key of the user with the matched query string highlighted with the HTML bold tag.
+          type: string
+        key:
+          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        name:
+          description: This property is no longer available . See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+      type: object
+    FoundUsers:
+      additionalProperties: false
+      description: The list of users found in a search, including header text (Showing X of Y matching users) and total of matched users.
+      properties:
+        header:
+          description: Header text indicating the number of users in the response and the total number of users found in the search.
+          type: string
+        total:
+          description: The total number of users found in the search.
+          format: int32
+          type: integer
+        users:
+          items:
+            $ref: '#/components/schemas/UserPickerUser'
+          type: array
+      type: object
+    GroupLabel:
+      additionalProperties: false
+      description: A group label.
+      properties:
+        text:
+          description: The group label name.
+          type: string
+        title:
+          description: The title of the group label.
+          type: string
+        type:
+          description: The type of the group label.
+          enum:
+          - ADMIN
+          - SINGLE
+          - MULTIPLE
+          type: string
+      type: object
+      xml:
+        name: grouplabel
+    FoundUsersAndGroups:
+      additionalProperties: false
+      description: List of users and groups found in a search.
+      properties:
+        groups:
+          $ref: '#/components/schemas/FoundGroups'
+        users:
+          $ref: '#/components/schemas/FoundUsers'
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

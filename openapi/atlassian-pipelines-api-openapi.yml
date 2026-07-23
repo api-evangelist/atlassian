@@ -1,0 +1,4175 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Pipelines API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Pipelines
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Pipelines
+      description: This API operation retrieves a paginated list of all pipelines executed for a specific Bitbucket repository within a workspace. By making a GET request to the endpoint with the workspace identifier and repository slug as path parameters, users can access comprehensive information about their repository's CI/CD pipeline runs, including pipeline execution status, build numbers, creation dates, and associated commit details. The response returns pipeline objects in reverse chronological order, making it useful for monitoring build history, tracking deployment workflows, and analyzing CI/CD pipeline performance across the repository.
+      operationId: listPipelines
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The matching pipelines.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipelines'
+              examples:
+                paginated-pipelines:
+                  $ref: '#/components/examples/paginated-pipelines'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Run A Pipeline
+      description: 'Endpoint to create and initiate a pipeline.<br>There are a couple of different options to initiate a pipeline, where the payload of the request will determine which type of pipeline will be instantiated.<br># Trigger a Pipeline for a branch<br>One way to trigger pipelines is by specifying the branch for which you want to trigger a pipeline.<br>The specified branch will be used to determine which pipeline definition from the `bitbucket-pipelines.yml` file will be applied to initiate the pipeline. The pipeline will then do a clone of the repository and checkout the latest revision of the specified branch.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br>  -d ''<br>  {<br>    "target": {<br>      "ref_type": "branch",<br>      "type": "pipeline_ref_target",<br>      "ref_name": "master"<br>    }<br>  }''<br>```<br># Trigger a Pipeline for a commit on a branch or tag<br>You can initiate a pipeline for a specific commit and in the context of a specified reference (e.g. a branch, tag or bookmark).<br>The specified reference will be used to determine which pipeline definition from the bitbucket-pipelines.yml file will be applied to initiate the pipeline. The pipeline will clone the repository and then do a checkout the specified reference.<br><br>The following reference types are supported:<br><br>* `branch`<br>* `named_branch`<br>* `bookmark`<br> * `tag`<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br>  https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br>  -d ''<br>  {<br>    "target": {<br>      "commit": {<br>        "type": "commit",<br>        "hash": "ce5b7431602f7cbba007062eeb55225c6e18e956"<br>      },<br>      "ref_type": "branch",<br>      "type": "pipeline_ref_target",<br>      "ref_name": "master"<br>    }<br>  }''<br>```<br># Trigger a specific pipeline definition for a commit<br>You can trigger a specific pipeline that is defined in your `bitbucket-pipelines.yml` file for a specific commit.<br>In addition to the commit revision, you specify the type and pattern of the selector that identifies the pipeline definition. The resulting pipeline will then clone the repository and checkout the specified revision.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br> -d ''<br>  {<br>     "target": {<br>      "commit": {<br>         "hash":"a3c4e02c9a3755eccdc3764e6ea13facdf30f923",<br>         "type":"commit"<br>       },<br>        "selector": {<br>           "type":"custom",<br>              "pattern":"Deploy to production"<br>          },<br>        "type":"pipeline_commit_target"<br>   }<br>  }''<br>```<br># Trigger a specific pipeline definition for a commit on a branch or tag<br>You can trigger a specific pipeline that is defined in your `bitbucket-pipelines.yml` file for a specific commit in the context of a specified reference.<br>In addition to the commit revision, you specify the type and pattern of the selector that identifies the pipeline definition, as well as the reference information. The resulting pipeline will then clone the repository a checkout the specified reference.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br> -d ''<br>  {<br>     "target": {<br>      "commit": {<br>         "hash":"a3c4e02c9a3755eccdc3764e6ea13facdf30f923",<br>         "type":"commit"<br>       },<br>       "selector": {<br>          "type": "custom",<br>          "pattern": "Deploy to production"<br>       },<br>       "type": "pipeline_ref_target",<br>       "ref_name": "master",<br>       "ref_type": "branch"<br>     }<br>  }''<br>```<br><br><br># Trigger a custom pipeline with variables<br>In addition to triggering a custom pipeline that is defined in your `bitbucket-pipelines.yml` file as shown in the examples above, you can specify variables that will be available for your build. In the request, provide a list of variables, specifying the following for each variable: key, value, and whether it should be secured or not (this field is optional and defaults to not secured).<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pipelines/ \<br> -d ''<br>  {<br>    "target": {<br>      "type": "pipeline_ref_target",<br>      "ref_type": "branch",<br>      "ref_name": "master",<br>      "selector": {<br>        "type": "custom",<br>        "pattern": "Deploy to production"<br>      }<br>    },<br>    "variables": [<br>      {<br>        "key": "var1key",<br>        "value": "var1value",<br>        "secured": true<br>      },<br>      {<br>        "key": "var2key",<br>        "value": "var2value"<br>      }<br>    ]<br>  }''<br>```<br><br># Trigger a pull request pipeline<br><br>You can also initiate a pipeline for a specific pull request.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pipelines/ \<br> -d ''<br>  {<br>    "target": {<br>      "type": "pipeline_pullrequest_target",<br>      "source": "pull-request-branch",<br>      "destination": "master",<br>      "destination_commit": {<br>        "hash": "9f848b7"<br>      },<br>      "commit": {<br>        "hash": "1a372fc"<br>      },<br>      "pullrequest": {<br>        "id": "3"<br>      },<br>      "selector": {<br>        "type": "pull-requests",<br>        "pattern": "**"<br>      }<br>    }<br>  }''<br>```<br>'
+      operationId: atlassianCreatepipelineforrepository
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline'
+        description: The pipeline to initiate.
+        required: true
+      responses:
+        '201':
+          description: The initiated pipeline.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline'
+        '400':
+          description: The account or repository is not enabled, the yml file does not exist in the repository for the given revision, or the request body contained invalid properties.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Pipeline
+      description: Retrieves detailed information about a specific pipeline execution in a Bitbucket repository. This endpoint requires the workspace slug, repository slug, and the unique pipeline UUID to fetch comprehensive data about a particular pipeline run, including its current status, configuration, build number, duration, creator information, and associated commit details. The response provides insights into the pipeline's execution history and can be used to monitor CI/CD processes, track build progress, or integrate pipeline status into external tools and dashboards.
+      operationId: getPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The pipeline UUID.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The pipeline.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline'
+              examples:
+                pipeline_2:
+                  $ref: '#/components/examples/pipeline_2'
+        '404':
+          description: No account, repository or pipeline with the UUID provided exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Steps for Pipeline
+      description: Retrieves a paginated list of all build steps that belong to a specific pipeline execution in a Bitbucket repository. This endpoint requires the workspace identifier, repository slug, and pipeline UUID as path parameters to locate the target pipeline, then returns detailed information about each step in the pipeline's execution sequence including their status, duration, commands executed, and any associated logs or artifacts. The response provides visibility into the individual stages of a CI/CD pipeline run, allowing developers and DevOps teams to monitor progress, debug failures, and analyze the execution flow of their automated builds and deployments.
+      operationId: listStepsForPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The steps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_steps'
+              examples:
+                paginated-pipeline-steps:
+                  $ref: '#/components/examples/paginated-pipeline-steps'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Step of Pipeline
+      description: This API operation retrieves detailed information about a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, you can fetch comprehensive data about an individual step's status, configuration, duration, logs reference, and execution details within the context of a Bitbucket Pipelines build process. This endpoint is useful for monitoring pipeline progress, debugging failed builds, or integrating pipeline step information into external tools and dashboards.
+      operationId: getStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The step.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_step'
+              examples:
+                pipeline-step:
+                  $ref: '#/components/examples/pipeline-step'
+        '404':
+          description: No account, repository, pipeline or step with the UUID provided exists for the pipeline with the UUID provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/logs/{log_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get the Logs for the Build Container or Service Container for Given Step of Pipeline.
+      description: This API endpoint retrieves the logs for a specific build or service container associated with a particular step in a Bitbucket pipeline execution. By providing the workspace identifier, repository slug, pipeline UUID, step UUID, and log UUID, developers can access detailed log information that captures the output and execution details of containers running during the pipeline process. This is particularly useful for debugging pipeline failures, monitoring build processes, and tracking the behavior of services or builds within a specific pipeline step, enabling teams to troubleshoot issues and optimize their CI/CD workflows effectively.
+      operationId: getTheLogsForTheBuildContainerOrServiceContainerForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: log_uuid
+        description: For the main build container specify the step UUID; for a service container specify the service container UUID
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for the build container or service container.
+        '404':
+          description: No account, repository, pipeline, step or log exist for the provided path.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+      operationId: getSummaryOfTestReportsForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A summary of test reports for this pipeline step.
+        '404':
+          description: No account, repository, pipeline, step or test reports exist for the provided path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API endpoint retrieves a comprehensive summary of test reports for a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, users can access aggregated test results including passed, failed, and skipped tests, along with detailed metrics and statistics generated during that particular pipeline step's test execution phase.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports/test_cases:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Test Cases for Given Step of Pipeline.
+      operationId: getTestCasesForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Test cases for this pipeline step.
+        '404':
+          description: No account, repository, pipeline, step or test reports exist for the provided path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API operation retrieves test case results for a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, developers can access detailed information about individual test cases that were executed during that particular pipeline step, including test names, status (passed, failed, skipped), execution time, and any associated error messages or stack traces. This endpoint is particularly useful for analyzing test failures, generating custom reports, or integrating Bitbucket pipeline test results into external monitoring and quality assurance tools.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  ? /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports/test_cases/{test_case_uuid}/test_case_reasons
+  : get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Test Case Reasons (output) for Given Test Case in Step of Pipeline.
+      operationId: getTestCaseReasonsOutputForGivenTestCaseInStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: test_case_uuid
+        description: The UUID of the test case.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Test case reasons (output).
+        '404':
+          description: No account, repository, pipeline, step or test case with the UUID provided exists for the pipeline with the UUID provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API endpoint retrieves the test case reasons (output) for a specific test case within a pipeline step in Atlassian Bitbucket. It requires authentication and accepts path parameters including the workspace identifier, repository slug, pipeline UUID, step UUID, and test case UUID to uniquely identify the test case whose reasons or failure details you want to access. The GET operation returns information about why a particular test case passed, failed, or was skipped during the execution of that specific pipeline step, providing detailed diagnostic information useful for debugging automated test failures in your CI/CD pipeline.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/stopPipeline:
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Stop Pipeline
+      description: This API operation allows you to stop a currently running pipeline in a Bitbucket repository by sending a POST request to the endpoint with the workspace identifier, repository slug, and the unique UUID of the pipeline you want to terminate. When executed, it immediately halts the execution of the specified pipeline, canceling any in-progress steps or builds. This is useful for scenarios where you need to abort a pipeline that was triggered by mistake, is taking too long, or is no longer needed due to subsequent code changes. The operation requires appropriate authentication and permissions to manage pipelines within the specified workspace and repository.
+      operationId: stopPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The pipeline has been signaled to stop.
+        '400':
+          description: The specified pipeline has already completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Either the account, repository or pipeline with the given UUID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/pipelines-config/identity/oidc/.well-known/openid-configuration:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Openid Configuration for Oidc in Pipelines
+      description: This API endpoint retrieves the OpenID Connect (OIDC) configuration for Bitbucket Pipelines within a specified workspace. It returns the well-known OpenID configuration document that contains metadata about the OIDC identity provider used by Pipelines, including supported endpoints, token signing algorithms, claims, and other OAuth 2.0 and OIDC protocol details. This configuration is essential for external services and cloud providers that need to establish trust and validate identity tokens issued by Bitbucket Pipelines when using OIDC authentication for secure, keyless deployments without storing long-lived credentials.
+      operationId: atlassianGetoidcconfiguration
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The OpenID configuration
+        '404':
+          description: The workspace was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Keys for Oidc in Pipelines
+      description: This API endpoint retrieves the JSON Web Key Set (JWKS) containing the public keys used for OpenID Connect (OIDC) authentication in Bitbucket Pipelines for a specific workspace. It accepts a GET request to the path /workspaces/{workspace}/pipelines-config/identity/oidc/keys.json, where {workspace} is replaced with the workspace ID or slug. The endpoint returns a keys.json file that contains cryptographic keys used to verify JWT tokens issued by Bitbucket Pipelines' OIDC provider, enabling secure identity federation between Pipelines and external services that support OIDC authentication.
+      operationId: atlassianGetoidckeys
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The keys in JSON web key format
+        '404':
+          description: The workspace was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2: []
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables:
+    get:
+      tags:
+      - Pipelines
+      description: Find deployment environment level variables.
+      summary: Atlassian List Variables For An Environment
+      operationId: atlassianGetdeploymentvariables
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The retrieved deployment variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_deployment_variable'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      description: Create a deployment environment level variable.
+      summary: Atlassian Create A Variable For An Environment
+      operationId: atlassianCreatedeploymentvariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment_variable'
+        description: The variable to create
+        required: true
+      responses:
+        '201':
+          description: The variable was created.
+          headers:
+            Location:
+              description: The URL of the newly created variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_variable'
+        '404':
+          description: The account, repository, environment or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables/{variable_uuid}:
+    put:
+      tags:
+      - Pipelines
+      description: Update a deployment environment level variable.
+      summary: Atlassian Update A Variable For An Environment
+      operationId: atlassianUpdatedeploymentvariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to update.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment_variable'
+        description: The updated deployment variable.
+        required: true
+      responses:
+        '200':
+          description: The deployment variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_variable'
+        '404':
+          description: The account, repository, environment or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      description: Delete a deployment environment level variable.
+      summary: Atlassian Delete A Variable For An Environment
+      operationId: atlassianDeletedeploymentvariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted.
+        '404':
+          description: The account, repository, environment or variable with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Caches
+      description: Retrieve the repository pipelines caches.
+      operationId: atlassianGetrepositorypipelinecaches
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of caches for the given repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_caches'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete Caches
+      description: Delete repository cache versions by name.
+      operationId: atlassianDeleterepositorypipelinecaches
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: name
+        description: The cache name.
+        required: true
+        in: query
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The caches were deleted.
+        '404':
+          description: The workspace, repository or cache name was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches/{cache_uuid}:
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete A Cache
+      description: Delete a repository cache.
+      operationId: atlassianDeleterepositorypipelinecache
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: cache_uuid
+        description: The UUID of the cache to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The cache was deleted.
+        '404':
+          description: The workspace, repository or cache_uuid with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches/{cache_uuid}/content-uri:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Cache Content Uri
+      description: Retrieve the URI of the content of the specified cache.
+      operationId: atlassianGetrepositorypipelinecachecontenturi
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: cache_uuid
+        description: The UUID of the cache.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The cache content uri.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_cache_content_uri'
+        '404':
+          description: The workspace, repository or cache_uuid with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/log:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Log File For A Step
+      description: Retrieve the log file for a given step of a pipeline.<br><br>This endpoint supports (and encourages!) the use of [HTTP Range requests](https://tools.ietf.org/html/rfc7233) to deal with potentially very large log files.
+      operationId: atlassianGetpipelinesteplogforrepository
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for this pipeline step.
+        '304':
+          description: The log has the same etag as the provided If-None-Match header.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '404':
+          description: A pipeline with the given UUID does not exist, a step with the given UUID does not exist in the pipeline or a log file does not exist for the given step.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '416':
+          description: The requested range does not exist for requests that specified the [HTTP Range header](https://tools.ietf.org/html/rfc7233#section-3.1).
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Configuration
+      description: Retrieve the repository pipelines configuration.
+      operationId: atlassianGetrepositorypipelineconfig
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The repository pipelines configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipelines_config'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update Configuration
+      description: Update the pipelines configuration for a repository.
+      operationId: atlassianUpdaterepositorypipelineconfig
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipelines_config'
+        description: The updated repository pipelines configuration.
+        required: true
+      responses:
+        '200':
+          description: The repository pipelines configuration was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipelines_config'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/build_number:
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update The Next Build Number
+      description: Update the next build number that should be assigned to a pipeline. The next build number that will be configured has to be strictly higher than the current latest build number for this repository.
+      operationId: atlassianUpdaterepositorybuildnumber
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_build_number'
+        description: The build number to update.
+        required: true
+      responses:
+        '200':
+          description: The build number has been configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_build_number'
+        '400':
+          description: The update failed because the next number was invalid (it should be higher than the current number).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules:
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Create A Schedule
+      description: Create a schedule for the given repository.
+      operationId: atlassianCreaterepositorypipelineschedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_schedule_post_request_body'
+        description: The schedule to create.
+        required: true
+      responses:
+        '201':
+          description: The created schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_schedule'
+        '400':
+          description: There were errors validating the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '401':
+          description: The maximum limit of schedules for this repository was reached.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Schedules
+      description: Retrieve the configured schedules for the given repository.
+      operationId: atlassianGetrepositorypipelineschedules
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of schedules.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_schedules'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules/{schedule_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get A Schedule
+      description: Retrieve a schedule by its UUID.
+      operationId: atlassianGetrepositorypipelineschedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The requested schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_schedule'
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update A Schedule
+      description: Update a schedule.
+      operationId: atlassianUpdaterepositorypipelineschedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_schedule_put_request_body'
+        description: The schedule to update.
+        required: true
+      responses:
+        '200':
+          description: The schedule is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_schedule'
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete A Schedule
+      description: Delete a schedule.
+      operationId: atlassianDeleterepositorypipelineschedule
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The schedule was deleted.
+        '404':
+          description: The account, repository or schedule was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/schedules/{schedule_uuid}/executions:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Executions Of A Schedule
+      description: Retrieve the executions of a given schedule.
+      operationId: atlassianGetrepositorypipelinescheduleexecutions
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: schedule_uuid
+        description: The uuid of the schedule.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of executions of a schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_schedule_executions'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/ssh/key_pair:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Ssh Key Pair
+      description: Retrieve the repository SSH key pair excluding the SSH private key. The private key is a write only field and will never be exposed in the logs or the REST API.
+      operationId: atlassianGetrepositorypipelinesshkeypair
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The SSH key pair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_ssh_key_pair'
+        '404':
+          description: The account, repository or SSH key pair was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update Ssh Key Pair
+      description: Create or update the repository SSH key pair. The private key will be set as a default SSH identity in your build container.
+      operationId: atlassianUpdaterepositorypipelinekeypair
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_ssh_key_pair'
+        description: The created or updated SSH key pair.
+        required: true
+      responses:
+        '200':
+          description: The SSH key pair was created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_ssh_key_pair'
+        '404':
+          description: The account, repository or SSH key pair was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete Ssh Key Pair
+      description: Delete the repository SSH key pair.
+      operationId: atlassianDeleterepositorypipelinekeypair
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The SSH key pair was deleted.
+        '404':
+          description: The account, repository or SSH key pair was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/ssh/known_hosts:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Known Hosts
+      description: Find repository level known hosts.
+      operationId: atlassianGetrepositorypipelineknownhosts
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The retrieved known hosts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_known_hosts'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Create A Known Host
+      description: Create a repository level known host.
+      operationId: atlassianCreaterepositorypipelineknownhost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_known_host'
+        description: The known host to create.
+        required: true
+      responses:
+        '201':
+          description: The known host was created.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline known host.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+        '404':
+          description: The account or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '409':
+          description: A known host with the provided hostname already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/ssh/known_hosts/{known_host_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get A Known Host
+      description: Retrieve a repository level known host.
+      operationId: atlassianGetrepositorypipelineknownhost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The known host.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+        '404':
+          description: The account, repository or known host with the specified UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update A Known Host
+      description: Update a repository level known host.
+      operationId: atlassianUpdaterepositorypipelineknownhost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to update.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_known_host'
+        description: The updated known host.
+        required: true
+      responses:
+        '200':
+          description: The known host was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_known_host'
+        '404':
+          description: The account, repository or known host with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete A Known Host
+      description: Delete a repository level known host.
+      operationId: atlassianDeleterepositorypipelineknownhost
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: known_host_uuid
+        description: The UUID of the known host to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The known host was deleted.
+        '404':
+          description: The account, repository or known host with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/variables:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Variables For A Repository
+      description: Find repository level variables.
+      operationId: atlassianGetrepositorypipelinevariables
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The retrieved variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_variables'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Create A Variable For A Repository
+      description: Create a repository level variable.
+      operationId: atlassianCreaterepositorypipelinevariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_variable'
+        description: The variable to create.
+        required: true
+      responses:
+        '201':
+          description: The variable was created.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/pipelines_config/variables/{variable_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get A Variable For A Repository
+      description: Retrieve a repository level variable.
+      operationId: atlassianGetrepositorypipelinevariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The variable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account, repository or variable with the specified UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update A Variable For A Repository
+      description: Update a repository level variable.
+      operationId: atlassianUpdaterepositorypipelinevariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to update.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_variable'
+        description: The updated variable
+        required: true
+      responses:
+        '200':
+          description: The variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account, repository or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete A Variable For A Repository
+      description: Delete a repository level variable.
+      operationId: atlassianDeleterepositorypipelinevariable
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted.
+        '404':
+          description: The account, repository or variable with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_2'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /teams/{username}/pipelines_config/variables:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Variables For An Account
+      deprecated: true
+      description: Find account level variables.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianGetpipelinevariablesforteam
+      parameters:
+      - name: username
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The found account level variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_variables'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Create A Variable For A User
+      description: Create an account level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianCreatepipelinevariableforteam
+      parameters:
+      - name: username
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable2'
+      responses:
+        '201':
+          description: The created variable.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /teams/{username}/pipelines_config/variables/{variable_uuid}:
+    get:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Get A Variable For A Team
+      description: Retrieve a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianGetpipelinevariableforteam
+      parameters:
+      - name: username
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The variable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Update A Variable For A Team
+      description: Update a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianUpdatepipelinevariableforteam
+      parameters:
+      - name: username
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable'
+      responses:
+        '200':
+          description: The variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account or the variable was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Delete A Variable For A Team
+      description: Delete a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianDeletepipelinevariableforteam
+      parameters:
+      - name: username
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted
+        '404':
+          description: The account or the variable with the provided UUID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /users/{selected_user}/pipelines_config/variables:
+    get:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian List Variables For A User
+      description: Find user level variables.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianGetpipelinevariablesforuser
+      parameters:
+      - name: selected_user
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The found user level variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_variables'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Create A Variable For A User
+      description: Create a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianCreatepipelinevariableforuser
+      parameters:
+      - name: selected_user
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable2'
+      responses:
+        '201':
+          description: The created variable.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_4'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_4'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /users/{selected_user}/pipelines_config/variables/{variable_uuid}:
+    get:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Get A Variable For A User
+      description: Retrieve a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianGetpipelinevariableforuser
+      parameters:
+      - name: selected_user
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The variable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_4'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Update A Variable For A User
+      description: Update a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianUpdatepipelinevariableforuser
+      parameters:
+      - name: selected_user
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable'
+      responses:
+        '200':
+          description: The variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The account or the variable was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_4'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      deprecated: true
+      summary: Atlassian Delete A Variable For A User
+      description: Delete an account level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      operationId: atlassianDeletepipelinevariableforuser
+      parameters:
+      - name: selected_user
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted
+        '404':
+          description: The account or the variable with the provided UUID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_4'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /workspaces/{workspace}/pipelines-config/variables:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian List Variables For A Workspace
+      description: Find workspace level variables.
+      operationId: atlassianGetpipelinevariablesforworkspace
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The found workspace level variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_variables'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Pipelines
+      summary: Atlassian Create A Variable For A Workspace
+      description: Create a workspace level variable.
+      operationId: atlassianCreatepipelinevariableforworkspace
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable2'
+      responses:
+        '201':
+          description: The created variable.
+          headers:
+            Location:
+              description: The URL of the newly created pipeline variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The workspace does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_5'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_5'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+  /workspaces/{workspace}/pipelines-config/variables/{variable_uuid}:
+    get:
+      tags:
+      - Pipelines
+      summary: Atlassian Get Variable For A Workspace
+      description: Retrieve a workspace level variable.
+      operationId: atlassianGetpipelinevariableforworkspace
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to retrieve.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The variable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The workspace or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_5'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Pipelines
+      summary: Atlassian Update Variable For A Workspace
+      description: Update a workspace level variable.
+      operationId: atlassianUpdatepipelinevariableforworkspace
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/pipeline_variable'
+      responses:
+        '200':
+          description: The variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_variable'
+        '404':
+          description: The workspace or the variable was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_5'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Pipelines
+      summary: Atlassian Delete A Variable For A Workspace
+      description: Delete a workspace level variable.
+      operationId: atlassianDeletepipelinevariableforworkspace
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted
+        '404':
+          description: The workspace or the variable with the provided UUID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_5'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+components:
+  schemas:
+    pipeline:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline
+        description: A Bitbucket Pipeline. This represents an actual pipeline result.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the pipeline.
+          build_number:
+            type: integer
+            description: The build number of the pipeline.
+          creator:
+            $ref: '#/components/schemas/account'
+          repository:
+            $ref: '#/components/schemas/repository'
+          target:
+            $ref: '#/components/schemas/pipeline_target'
+          trigger:
+            $ref: '#/components/schemas/pipeline_trigger'
+          state:
+            $ref: '#/components/schemas/pipeline_state'
+          variables:
+            type: array
+            minItems: 0
+            items:
+              $ref: '#/components/schemas/pipeline_variable'
+            description: The variables for the pipeline.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the pipeline was created.
+          completed_on:
+            type: string
+            format: date-time
+            description: The timestamp when the Pipeline was completed. This is not set if the pipeline is still in progress.
+          build_seconds_used:
+            type: integer
+            description: The number of build seconds used by this pipeline.
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    pipeline_ref_target:
+      allOf:
+      - $ref: '#/components/schemas/pipeline_target'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Ref Target
+        description: A Bitbucket Pipelines reference target.
+        properties:
+          ref_type:
+            enum:
+            - branch
+            - tag
+            - named_branch
+            - bookmark
+            type: string
+            description: The type of reference (branch/tag).
+          ref_name:
+            type: string
+            description: The name of the reference.
+          commit:
+            $ref: '#/components/schemas/commit'
+          selector:
+            $ref: '#/components/schemas/pipeline_selector'
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    paginated_pipeline_variables:
+      type: object
+      title: Paginated Pipeline Variables
+      description: A paged list of variables.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_variable'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    pipelines_config:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipelines Configuration
+        description: The Pipelines configuration for a repository.
+        properties:
+          enabled:
+            type: boolean
+            description: Whether Pipelines is enabled for the repository.
+          repository:
+            $ref: '#/components/schemas/repository'
+    pipeline_image:
+      type: object
+      title: Pipeline Image
+      description: The definition of a Docker image that can be used for a Bitbucket Pipelines step execution context.
+      properties:
+        name:
+          type: string
+          description: The name of the image. If the image is hosted on DockerHub the short name can be used, otherwise the fully qualified name is required here.
+          example: Example Title
+        username:
+          type: string
+          description: The username needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        password:
+          type: string
+          description: The password needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        email:
+          type: string
+          description: The email needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: user@example.com
+    pipeline_target:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Target
+        description: A representation of the target that a pipeline executes on.
+        properties: {}
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    paginated_pipeline_schedule_executions:
+      type: object
+      title: Paginated Pipeline Schedule Executions
+      description: A paged list of the executions of a schedule.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_schedule_execution'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    pipeline_step_state:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step State
+        description: The representation of the progress state of a pipeline step.
+        properties: {}
+    pipeline_cache:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Cache
+        description: A representation of metadata for a pipeline cache for given repository.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the pipeline cache.
+          pipeline_uuid:
+            type: string
+            description: The UUID of the pipeline that created the cache.
+          step_uuid:
+            type: string
+            description: The uuid of the step that created the cache.
+          name:
+            type: string
+            description: The name of the cache.
+          key_hash:
+            type: string
+            description: The key hash of the cache version.
+          path:
+            type: string
+            description: The path where the cache contents were retrieved from.
+          file_size_bytes:
+            type: integer
+            description: The size of the file containing the archive of the cache.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the cache was created.
+    deployment_variable:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Deployment Variable
+        description: A Pipelines deployment variable.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the variable.
+          key:
+            type: string
+            description: The unique name of the variable.
+          value:
+            type: string
+            description: The value of the variable. If the variable is secured, this will be empty.
+          secured:
+            type: boolean
+            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+    error_5:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+      required:
+      - type
+      additionalProperties: true
+    error_4:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+      required:
+      - type
+      additionalProperties: true
+    pipeline_trigger:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Trigger
+        description: A representation of the trigger used for a pipeline.
+        properties: {}
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    pipeline_schedule_post_request_body:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Request body for Pipeline Schedule POST request
+        properties:
+          target:
+            type: object
+            description: The target on which the schedule will be executed.
+            properties:
+              selector:
+                $ref: '#/components/schemas/pipeline_selector'
+              ref_name:
+                type: string
+                description: The name of the reference.
+              ref_type:
+                type: string
+                description: The type of reference (branch only).
+                enum:
+                - branch
+            required:
+            - selector
+            - ref_name
+            - ref_type
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+          cron_pattern:
+            type: string
+            description: 'The cron expression with second precision (7 fields) that the schedule applies. For example, for expression: 0 0 12 * * ? *, will execute at 12pm UTC every day.'
+        required:
+        - target
+        - cron_pattern
+    paginated_pipelines:
+      type: object
+      title: Paginated Pipelines
+      description: A paged list of pipelines
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    paginated_pipeline_caches:
+      type: object
+      title: Paginated Pipeline Cache
+      description: A paged list of pipeline caches
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_cache'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    pipeline_schedule_put_request_body:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Request body for Pipeline Schedule PUT request
+        properties:
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    pipeline_ssh_key_pair:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline SSH Key Pair
+        description: A Pipelines SSH key pair.
+        properties:
+          private_key:
+            type: string
+            description: The SSH private key. This value will be empty when retrieving the SSH key pair.
+          public_key:
+            type: string
+            description: The SSH public key.
+    pipeline_known_host:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Known Host
+        description: A Pipelines known host.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the known host.
+          hostname:
+            type: string
+            description: The hostname of the known host.
+          public_key:
+            $ref: '#/components/schemas/pipeline_ssh_public_key'
+    object_2:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    pipeline_step:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step
+        description: A step of a Bitbucket pipeline. This represents the actual result of the step execution.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the step.
+          started_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was started. This is not set when the step hasn't executed yet.
+          completed_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was completed. This is not set if the step is still in progress.
+          state:
+            $ref: '#/components/schemas/pipeline_step_state'
+          image:
+            $ref: '#/components/schemas/pipeline_image'
+          setup_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of commands that are executed as part of the setup phase of the build. These commands are executed outside the build container.
+          script_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of build commands. These commands are executed in the build container.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/{pipeline.uuid}/steps/{uuid}
+      x-bb-batch-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/steps_batch
+      x-bb-batch-max-size: 100
+    paginated_pipeline_known_hosts:
+      type: object
+      title: Paginated Pipeline Known Hosts
+      description: A paged list of known hosts.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_known_host'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    error_2:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+      required:
+      - type
+      additionalProperties: true
+    pipeline_command:
+      type: object
+      title: Pipeline Command
+      description: An executable pipeline command.
+      properties:
+        name:
+          type: string
+          description: The name of the command.
+          example: Example Title
+        command:
+          type: string
+          description: The executable command.
+          example: example_value
+    pipeline_variable:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Variable
+        description: A Pipelines variable.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the variable.
+          key:
+            type: string
+            description: The unique name of the variable.
+          value:
+            type: string
+            description: The value of the variable. If the variable is secured, this will be empty.
+          secured:
+            type: boolean
+            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    pipeline_cache_content_uri:
+      type: object
+      title: Pipeline Cache Content URI
+      description: A representation of the location of pipeline cache content.
+      properties:
+        uri:
+          type: string
+          format: uri
+          description: The uri for pipeline cache content.
+    pipeline_schedule_execution:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule Execution
+        description: A Pipelines schedule execution.
+        properties: {}
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    pipeline_selector:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Selector
+        description: A representation of the selector that was used to identify the pipeline in the YML file.
+        properties:
+          type:
+            enum:
+            - branches
+            - tags
+            - bookmarks
+            - default
+            - custom
+            type: string
+            description: The type of selector.
+          pattern:
+            type: string
+            description: The name of the matching pipeline definition.
+    paginated_deployment_variable:
+      type: object
+      title: Paginated Deployment Variables
+      description: A paged list of deployment variables.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/deployment_variable'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    paginated_pipeline_schedules:
+      type: object
+      title: Paginated Pipeline Schedule
+      description: A paged list of schedules
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_schedule'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    pipeline_ssh_public_key:
+      allOf:
+      - $ref: '#/components/schemas/object_2'
+      - additionalProperties: true
+        type: object
+        title: Pipeline SSH Public Key
+        description: A Pipelines known host public key.
+        properties:
+          key_type:
+            type: string
+            description: The type of the public key.
+          key:
+            type: string
+            description: The base64 encoded public key.
+          md5_fingerprint:
+            type: string
+            description: The MD5 fingerprint of the public key.
+          sha256_fingerprint:
+            type: string
+            description: The SHA-256 fingerprint of the public key.
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    pipeline_build_number:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Build Number
+        description: A Pipelines build number.
+        properties:
+          next:
+            type: integer
+            description: The next number that will be used as build number.
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    pipeline_schedule:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule
+        description: A Pipelines schedule.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the schedule.
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+          target:
+            $ref: '#/components/schemas/pipeline_ref_target'
+          cron_pattern:
+            type: string
+            description: 'The cron expression with second precision (7 fields) that the schedule applies. For example, for expression: 0 0 12 * * ? *, will execute at 12pm UTC every day.'
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was updated.
+    paginated_pipeline_steps:
+      type: object
+      title: Paginated Pipeline Steps
+      description: A paged list of pipeline steps.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_step'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    pipeline_state:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline State
+        description: The representation of the progress state of a pipeline.
+        properties: {}
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    pipeline_2:
+      uuid: '{9af25a37-e228-4eca-a964-08f8e8a4f3dc}'
+      build_number: 42
+      creator:
+        type: account
+        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+        display_name: John Doe
+        account_id: 5d5e6f7g8h9i0j1k
+        nickname: johndoe
+      repository:
+        type: repository
+        uuid: '{b2c3d4e5-f6a7-8901-bcde-f12345678901}'
+        full_name: myworkspace/myrepo
+        name: myrepo
+      target:
+        type: pipeline_target
+        ref_type: branch
+        ref_name: main
+        commit:
+          type: commit
+          hash: a1b2c3d4e5f6
+      trigger:
+        type: pipeline_trigger
+        trigger_type: push
+      state:
+        type: pipeline_state
+        name: COMPLETED
+        result:
+          type: pipeline_state_completed_successful
+          name: SUCCESSFUL
+      variables:
+        uuid: '{c3d4e5f6-a7b8-9012-cdef-123456789012}'
+        key: DATABASE_URL
+        value: postgres://localhost:5432/mydb
+        secured: false
+      created_on: '2024-01-15T10:30:00.000Z'
+      completed_on: '2024-01-15T10:45:30.000Z'
+      build_seconds_used: 930
+    paginated-pipelines:
+      page: 1
+      values:
+        uuid: '{1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p}'
+        build_number: 42
+        creator:
+          uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+          display_name: John Doe
+          nickname: johndoe
+          account_id: 5d1234567890abcdef123456
+        repository:
+          uuid: '{b2c3d4e5-f6a7-8901-bcde-f12345678901}'
+          name: my-repo
+          full_name: myworkspace/my-repo
+        target:
+          ref_type: branch
+          ref_name: main
+          commit:
+            hash: a1b2c3d4e5f6
+        trigger:
+          type: push
+        state:
+          name: COMPLETED
+          type: pipeline_state
+          result:
+            name: SUCCESSFUL
+        variables:
+        - key: ENVIRONMENT
+          value: production
+          secured: false
+        created_on: '2024-01-15T10:30:00.000Z'
+        completed_on: '2024-01-15T10:45:30.000Z'
+        build_seconds_used: 930
+      size: 150
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/myworkspace/my-repo/pipelines?page=2
+      previous: null
+    paginated-pipeline-steps:
+      page: 1
+      values:
+        uuid: 3c7a5e2f-4b8d-4e9a-a1c3-6f2d8b4e9a1c
+        started_on: '2024-01-15T10:30:00Z'
+        completed_on: '2024-01-15T10:35:30Z'
+        state:
+          name: COMPLETED
+          type: pipeline_step_state
+        image:
+          name: atlassian/default-image:latest
+        setup_commands:
+        - name: setup-environment
+          command: export ENV_VAR=value
+        script_commands:
+        - name: build
+          command: npm install
+        - name: test
+          command: npm test
+      size: 50
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines/123/steps?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines/123/steps?page=0
+    pipeline-step:
+      uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      started_on: '2024-01-15T10:30:00Z'
+      completed_on: '2024-01-15T10:35:00Z'
+      state: {}
+      image: {}
+      setup_commands: []
+      script_commands: []
+  requestBodies:
+    pipeline_variable:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/pipeline_variable'
+      description: The updated variable.
+      required: true
+    pipeline_variable2:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/pipeline_variable'
+      description: The variable to create.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

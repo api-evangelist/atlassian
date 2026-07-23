@@ -1,0 +1,147 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Classification Levels API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Classification Levels
+paths:
+  /rest/api/3/classification-levels:
+    get:
+      deprecated: false
+      description: Returns all classification levels.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetalluserdataclassificationlevels
+      parameters:
+      - description: Optional set of statuses to filter by.
+        in: query
+        name: status
+        schema:
+          items:
+            default: ''
+            description: The status of the project classification.
+            enum:
+            - PUBLISHED
+            - ARCHIVED
+            - DRAFT
+            type: string
+          type: array
+          uniqueItems: true
+      - description: Ordering of the results by a given field. If not provided, values will not be sorted.
+        in: query
+        name: orderBy
+        schema:
+          enum:
+          - rank
+          - -rank
+          - +rank
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"classifications":[{"id":"ari:cloud:platform::classification-tag/5bfa70f7-4af1-44f5-9e12-1ce185f15a38","status":"published","name":"Restricted","rank":1,"description":"Data we hold that would be very damaging and would cause loss of trust with customers and present legal risk to Atlassian and/or customers if mishandled","guideline":"Access to data must be restricted to only individuals who need access in order to perform their job duties.","color":"RED"},{"id":"ari:cloud:platform::classification-tag/bd58e74c-c31b-41a7-ba69-9673ebd9dae9","status":"archived","name":"Protected","rank":2,"description":"Data we hold that could cause loss of trust with customers or present legal risk to Atlassian if mishandled","guideline":"Access to systems or APIs mapping data to other identifiers must be carefully controlled.","color":"ORANGE"},{"id":"ari:cloud:platform::classification-tag/a82d653e-1035-4aa2-b9de-4265511fd487","status":"published","name":"Confidential","rank":3,"description":"Data we hold that would likely be damaging and could cause loss of trust with our customers if mishandled","guideline":"Data should be encrypted at rest and in transit.","color":"BLUE"},{"id":"ari:cloud:platform::classification-tag/a82d653e-1035-4aa2-b9de-4265511fd487","status":"published","name":"system-tag"}]}'
+              schema:
+                $ref: '#/components/schemas/DataClassificationLevelsBean'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get All Classification Levels
+      tags:
+      - Classification Levels
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:project:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    DataClassificationTagBean:
+      additionalProperties: false
+      description: The data classification.
+      properties:
+        color:
+          description: The color of the data classification object.
+          type: string
+        description:
+          description: The description of the data classification object.
+          type: string
+        guideline:
+          description: The guideline of the data classification object.
+          type: string
+        id:
+          description: The ID of the data classification object.
+          type: string
+        name:
+          description: The name of the data classification object.
+          type: string
+        rank:
+          description: The rank of the data classification object.
+          format: int32
+          type: integer
+        status:
+          description: The status of the data classification object.
+          type: string
+      required:
+      - id
+      - status
+      type: object
+    DataClassificationLevelsBean:
+      additionalProperties: false
+      description: The data classification.
+      properties:
+        classifications:
+          description: The data classifications.
+          items:
+            $ref: '#/components/schemas/DataClassificationTagBean'
+          type: array
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

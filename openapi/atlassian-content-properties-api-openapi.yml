@@ -1,0 +1,691 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content Properties API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content Properties
+paths:
+  /wiki/rest/api/content/{id}/property:
+    get:
+      tags:
+      - Content Properties
+      summary: Atlassian Get Content Properties
+      deprecated: true
+      description: Returns the properties for a piece of content. For more information<br>about content properties, see [Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space, and permission to view the content if it is a page.
+      operationId: atlassianGetcontentproperties
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its properties.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: query
+        description: The key of the content property.
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content to
+
+          expand. By default, the `version` object is expanded.
+
+
+          - `content` returns the content that the property is stored against.
+
+          - `version` returns information about the version of the property, such
+
+          as the version number, when it was created, etc.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - content
+            - version
+      - name: start
+        in: query
+        description: The starting index of the returned properties.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of properties to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Returned if the requested properties are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentPropertyArray'
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+      - Content Properties
+      summary: Atlassian Create Content Property
+      deprecated: true
+      description: Creates a property for an existing piece of content. For more information<br>about content properties, see [Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>This is the same as [Create content property for key](#api-content-id-property-key-post)<br>except that the key is specified in the request body instead of as a<br>path parameter.<br><br>Content properties can also be added when creating a new piece of content<br>by including them in the `metadata.properties` of the request.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianCreatecontentproperty
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to add the property to.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The content property to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentPropertyCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the content property is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProperty'
+        '400':
+          description: 'Returned if;
+
+
+            - The content already has a property with the given key.
+
+            - The key is too long.
+
+            - The key is empty.'
+          content: {}
+        '403':
+          description: 'Returned if the user does not have permission to edit the content
+
+            with the given ID.'
+          content: {}
+        '413':
+          description: Returned if the value is too long.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.property:confluence
+        - write:content.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/content/{id}/property/{key}:
+    get:
+      tags:
+      - Content Properties
+      summary: Atlassian Get Content Property
+      deprecated: true
+      description: Returns a content property for a piece of content. For more information, see<br>[Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space, and permission to view the content if it is a page.
+      operationId: atlassianGetcontentproperty
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for the property.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the content property.
+        required: true
+        schema:
+          type: string
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the content to
+
+          expand. By default, the `version` object is expanded.
+
+
+          - `content` returns the content that the property is stored against.
+
+          - `version` returns information about the version of the property, such
+
+          as the version number, when it was created, etc.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - content
+            - version
+      - name: status
+        in: query
+        description: 'Filter the results to a set of content based on their status. If set to `any`,
+
+          content with any status is returned. By default it will fetch current and archived statuses `?status=current&status=archived`.
+
+          All supported statuses
+
+
+          - any
+
+          - archived
+
+          - current
+
+          - deleted
+
+          - draft
+
+          - trashed'
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+          - current
+          - archived
+          enum:
+          - any
+          - archived
+          - current
+          - deleted
+          - draft
+          - trashed
+      responses:
+        '200':
+          description: Returned if the content property is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProperty'
+        '404':
+          description: 'Returned if;
+
+
+            - The calling user does not have permission to view the content.
+
+            - There is no content with the given ID.
+
+            - There is no property with the given key.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    put:
+      tags:
+      - Content Properties
+      summary: Atlassian Update Content Property
+      deprecated: true
+      description: Updates an existing content property. This method will also create a new<br>property for a piece of content, if the property key does not exist and<br>the property version is 1. For more information about content properties, see<br>[Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianUpdatecontentproperty
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the property belongs to.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the property.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The content property being updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentPropertyUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the content property is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProperty'
+        '400':
+          description: 'Returned if;
+
+
+            - The content already a property with the given key.
+
+            - The key is too long.
+
+            - The key is empty.'
+          content: {}
+        '403':
+          description: 'Returned if the user does not have permission to edit the content
+
+            with the given ID.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - There is no property with the given key and the version number is not 1.'
+          content: {}
+        '409':
+          description: Returned if the property version is not correctly incremented.
+          content: {}
+        '413':
+          description: Returned if the value is too long.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.property:confluence
+        - write:content.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+      - Content Properties
+      summary: Atlassian Create Content Property For Key
+      deprecated: true
+      description: Creates a property for an existing piece of content. For more information<br>about content properties, see [Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>This is the same as [Create content property](#api-content-id-property-post)<br>except that the key is specified as a path parameter instead of in the<br>request body.<br><br>Content properties can also be added when creating a new piece of content<br>by including them in the `metadata.properties` of the request.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianCreatecontentpropertyforkey
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to add the property to.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the content property. Required.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The content property to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentPropertyCreateNoKey'
+        required: true
+      responses:
+        '200':
+          description: Returned if the content property is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProperty'
+        '400':
+          description: 'Returned if;
+
+
+            - The content already has a property with the given key.
+
+            - The key is too long.
+
+            - The key is empty.'
+          content: {}
+        '403':
+          description: 'Returned if the user does not have permission to edit the content
+
+            with the given ID.'
+          content: {}
+        '413':
+          description: Returned if the value is too long.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.property:confluence
+        - write:content.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Properties
+      summary: Atlassian Delete Content Property
+      deprecated: true
+      description: Deletes a content property. For more information about content properties, see<br>[Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianDeletecontentproperty
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the property belongs to.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the property.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the content property is deleted.
+          content: {}
+        '403':
+          description: 'Returned if the user does not have permission to delete content
+
+            with the given ID.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-props
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-props
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ContentPropertyUpdate:
+      required:
+      - value
+      - version
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
+        version:
+          required:
+          - number
+          type: object
+          nullable: true
+          additionalProperties: true
+          properties:
+            number:
+              oneOf:
+              - type: integer
+              - type: string
+              description: 'The new version for the updated content property. Set this to the
+
+                current version number incremented by one. To get the current
+
+                version number, use ''Get content property'' and retrieve
+
+                `version.number`.'
+              format: int32
+            minorEdit:
+              type: boolean
+              description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+                stream will be generated for the change.'
+              default: true
+          description: The version number of the property.
+    ContentPropertyCreate:
+      required:
+      - key
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        key:
+          maxLength: 255
+          type: string
+          description: The key of the new property.
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
+    ContentPropertyArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProperty'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentProperty:
+      required:
+      - _links
+      - id
+      - key
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
+        version:
+          required:
+          - message
+          - minorEdit
+          - number
+          - when
+          type: object
+          additionalProperties: true
+          properties:
+            when:
+              type: string
+              format: date-time
+            message:
+              type: string
+            number:
+              type: integer
+              format: int32
+            minorEdit:
+              type: boolean
+            contentTypeModified:
+              type: boolean
+              description: True if content type is modifed in this version (e.g. page to blog)
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            additionalProperties:
+              type: string
+    ContentPropertyCreateNoKey:
+      required:
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

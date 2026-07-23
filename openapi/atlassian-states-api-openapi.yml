@@ -1,0 +1,145 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account States API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: States
+paths:
+  /wiki/rest/api/content/{id}/state/available:
+    get:
+      tags:
+      - States
+      summary: Atlassian Gets Available Content States for Content
+      description: This API endpoint retrieves all available content states that can be applied to a specific piece of content in Atlassian Confluence. By providing the content ID in the path parameter, users can query which workflow states or status options are accessible for that particular content item, helping them understand what state transitions are possible. This is useful for managing content workflows, determining valid state changes, and building integrations that need to programmatically manage content lifecycle states within Confluence spaces.
+      operationId: getsAvailableContentStatesForContent
+      parameters:
+      - name: id
+        in: path
+        description: id of content to get available states for
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the content is found and permission is valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableContentStates'
+        '400':
+          description: Invalid status for content. Must be in [current,draft,archived].
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    ContentState:
+      required:
+      - id
+      - name
+      - color
+      type: object
+      properties:
+        id:
+          type: integer
+          description: identifier of content state. If 0, 1, or 2, this is a default space state
+          format: int64
+          example: abc123
+        name:
+          type: string
+          description: name of content state.
+          example: Example Title
+        color:
+          type: string
+          description: hex string representing color of state
+          example: example_value
+    AvailableContentStates:
+      required:
+      - spaceContentStates
+      - customContentStates
+      type: object
+      properties:
+        spaceContentStates:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/ContentState'
+          description: 'Space suggested content states that can be used in the space. This can be null if space content states are disabled in the space.
+
+            This list can be empty if there are no space content states defined in the space.
+
+            All spaces start with 3 default space content states, and this can be modified in the UI under space settings.'
+          example: []
+        customContentStates:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/ContentState'
+          description: "Custom content states that can be used by the user on the content of this call.\nThis can be null if custom content states are disabled in the space of the content.\nThis list can be empty if there are no custom content states defined by the user.\nThis will at most have 3 of the most recently published content states. \nOnly the calling user has access to place these states on content, but all users can see these states once they are placed."
+          example: []
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

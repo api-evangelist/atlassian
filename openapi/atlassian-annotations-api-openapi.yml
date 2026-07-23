@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Annotations API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Annotations
+paths:
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations:
+    get:
+      tags:
+      - Annotations
+      description: Returns a paginated list of Annotations for a specific report associated with a commit in a Bitbucket repository. This endpoint allows you to retrieve all annotations that were added to a particular report, which typically includes details about code quality issues, security vulnerabilities, or other automated checks performed on the commit. The annotations provide granular feedback on specific lines or sections of code, including severity levels, paths, line numbers, and descriptive messages. You must specify the workspace, repository slug, commit hash, and report ID to access the annotations, and the results are returned in a paginated format to handle large sets of annotation data efficiently.
+      summary: Atlassian List Annotations
+      operationId: listAnnotations
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Uuid or external-if of the report for which to get annotations for.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_annotations'
+              examples:
+                paginated-annotations:
+                  $ref: '#/components/examples/paginated-annotations'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Annotations
+      description: Creates or updates individual annotation objects within a specified commit report in a Bitbucket repository, allowing developers to programmatically add code analysis findings, linting errors, test results, or other automated feedback directly to a specific commit. The operation requires the workspace ID, repository slug, commit hash, and report ID as path parameters, and accepts an array of annotation objects in the request body, each containing details such as line number, severity, annotation type, summary, and optional description. This bulk operation enables CI/CD pipelines and development tools to efficiently attach multiple code quality insights to a single commit, making review feedback immediately visible within the Bitbucket interface and helping teams maintain code standards through automated checks.
+      operationId: bulkCreateOrUpdateAnnotations
+      summary: Atlassian Bulk Create or Update Annotations
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Uuid or external-if of the report for which to get annotations for.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/report_annotation'
+              minItems: 1
+              maxItems: 100
+            examples:
+              bulk-create-or-update-annotations_2:
+                $ref: '#/components/examples/bulk-create-or-update-annotations_2'
+        description: The annotations to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/report_annotation'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations/{annotationId}:
+    get:
+      tags:
+      - Annotations
+      description: This API operation retrieves a specific annotation associated with a code insights report for a particular commit in a Bitbucket repository. By providing the workspace identifier, repository slug, commit hash, report ID, and annotation ID in the URL path, users can fetch detailed information about a single annotation that was previously created for code quality, security findings, or other automated analysis results. The annotation typically contains metadata such as the file path, line number, severity level, and description of an issue or finding detected in the code at that specific commit point.
+      summary: Atlassian Get an Annotation
+      operationId: getAnAnnotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report_annotation'
+              examples:
+                report-annotation:
+                  $ref: '#/components/examples/report-annotation'
+        '404':
+          description: The annotation with the given ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Annotations
+      description: This PUT operation allows users to create or update a specific annotation for a code report associated with a particular commit in a Bitbucket repository. By providing the workspace identifier, repository slug, commit hash, report ID, and annotation ID in the URL path, developers can add detailed feedback or metadata about specific lines or sections of code within that commit's report. Annotations are typically used in CI/CD pipelines or code analysis tools to highlight issues, warnings, or suggestions directly within the Bitbucket interface, enabling better code review workflows and automated quality checks. If an annotation with the specified ID already exists, this operation updates it with the new information provided in the request body; otherwise, it creates a new annotation with that ID.
+      operationId: createOrUpdateAnAnnotation
+      summary: Atlassian Create or Update an Annotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report_annotation'
+            examples:
+              report-annotation_2:
+                $ref: '#/components/examples/report-annotation_2'
+        description: The annotation to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report_annotation'
+              examples:
+                report-annotation_2:
+                  $ref: '#/components/examples/report-annotation_2'
+        '400':
+          description: The provided Annotation object is malformed or incomplete.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Annotations
+      description: Deletes a specific annotation from a report associated with a commit in a Bitbucket repository. This operation removes an individual annotation identified by its unique annotationId from a report (specified by reportId) that was previously attached to a particular commit. The annotation could represent various code analysis findings such as linting errors, security vulnerabilities, or test failures that were previously reported through Bitbucket's commit insights feature. Once deleted, the annotation will no longer appear in the commit's report overview or affect the overall report status, allowing teams to clean up outdated or incorrect analysis results while maintaining the integrity of their code review and CI/CD workflows.
+      summary: Atlassian Delete an Annotation
+      operationId: deleteAnAnnotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the annotation belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No content
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    report_annotation:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Report Annotation
+        description: A report for a commit.
+        properties:
+          external_id:
+            type: string
+            description: ID of the annotation provided by the annotation creator. It can be used to identify the annotation as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the annotation creator for updating or deleting this specific annotation. Needs to be unique.
+          uuid:
+            type: string
+            description: The UUID that can be used to identify the annotation.
+          annotation_type:
+            enum:
+            - VULNERABILITY
+            - CODE_SMELL
+            - BUG
+            type: string
+            description: The type of the report.
+          path:
+            type: string
+            description: The path of the file on which this annotation should be placed. This is the path of the file relative to the git repository. If no path is provided, then it will appear in the overview modal on all pull requests where the tip of the branch is the given commit, regardless of which files were modified.
+          line:
+            type: integer
+            description: The line number that the annotation should belong to. If no line number is provided, then it will default to 0 and in a pull request it will appear at the top of the file specified by the path field.
+            minimum: 1
+          summary:
+            type: string
+            description: The message to display to users.
+          details:
+            type: string
+            description: The details to show to users when clicking on the annotation.
+          result:
+            enum:
+            - PASSED
+            - FAILED
+            - SKIPPED
+            - IGNORED
+            type: string
+            description: The state of the report. May be set to PENDING and later updated.
+          severity:
+            enum:
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+            type: string
+            description: The severity of the annotation.
+          link:
+            type: string
+            format: uri
+            description: A URL linking to the annotation in an external tool.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was updated.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commit.hash}/reports/{reportUuid}/annotations/{uuid}
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_annotations:
+      type: object
+      title: Paginated Annotations
+      description: A paginated list of annotations.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/report_annotation'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+  examples:
+    report-annotation:
+      external_id: VULN-2024-001
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      annotation_type: VULNERABILITY
+      path: src/main/java/com/example/Application.java
+      line: 42
+      summary: SQL injection vulnerability detected
+      details: User input is directly concatenated into SQL query without proper sanitization. This could allow an attacker to execute arbitrary SQL commands.
+      result: FAILED
+      severity: HIGH
+      link: https://security-scanner.example.com/reports/VULN-2024-001
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T14:45:00Z'
+    undefined_2:
+    - id: annotation_123
+      report_id: report_456
+      user_id: user_789
+      text: This section needs clarification
+      start_position: 150
+      end_position: 200
+      created_at: '2024-01-15T10:30:00Z'
+      updated_at: '2024-01-15T10:30:00Z'
+    - id: annotation_124
+      report_id: report_456
+      user_id: user_790
+      text: Data looks accurate
+      start_position: 350
+      end_position: 400
+      created_at: '2024-01-15T11:45:00Z'
+      updated_at: '2024-01-15T11:45:00Z'
+    bulk-create-or-update-annotations_2:
+    - report_annotation: Example annotation text
+    paginated-annotations:
+      page: 1
+      values:
+        external_id: annotation-12345
+        uuid: 550e8400-e29b-41d4-a716-446655440000
+        annotation_type: VULNERABILITY
+        path: src/main/java/com/example/Application.java
+        line: 42
+        summary: Potential SQL injection vulnerability detected
+        details: User input is being concatenated directly into SQL query without sanitization. Consider using parameterized queries to prevent SQL injection attacks.
+        result: FAILED
+        severity: HIGH
+        link: https://security-scanner.example.com/reports/12345
+        created_on: '2024-01-15T10:30:00Z'
+        updated_on: '2024-01-15T14:45:00Z'
+      size: 50
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/example/repo/commit/abc123/annotations?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/example/repo/commit/abc123/annotations?page=0
+    report-annotation_2:
+      external_id: VULN-12345
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      annotation_type: VULNERABILITY
+      path: src/main/java/com/example/Application.java
+      line: 42
+      summary: SQL Injection vulnerability detected
+      details: User input is directly concatenated into SQL query without proper sanitization. This could allow an attacker to execute arbitrary SQL commands.
+      result: FAILED
+      severity: HIGH
+      link: https://security-tool.example.com/reports/VULN-12345
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T14:45:30Z'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

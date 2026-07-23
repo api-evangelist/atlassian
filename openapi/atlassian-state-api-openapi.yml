@@ -1,0 +1,1466 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account State API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: State
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/changes:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - State
+      description: 'This POST operation allows you to modify the state of a specific issue within a Bitbucket repository by submitting change requests to the issue''s change log. The endpoint requires three path parameters: the workspace identifier, the repository slug, and the issue ID you want to update. When called, it creates a new change entry that can update various issue properties such as status, priority, assignee, or other configurable fields depending on your repository''s issue tracker settings. This operation is particularly useful for programmatically managing issue workflows, automating state transitions, or integrating external tools with Bitbucket''s issue tracking system. The API expects the change data in the request body and returns the updated change record upon successful execution, making it essential for teams that want to maintain issue histories and track modifications across their development lifecycle.'
+      summary: Atlassian Modify the State of an Issue
+      responses:
+        '201':
+          description: The newly created issue change.
+          headers:
+            Location:
+              description: The (absolute) URL of the newly created issue change.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_change'
+              examples:
+                issue-change_2:
+                  $ref: '#/components/examples/issue-change_2'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user isn't authorized to modify the issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified repository or issue does not exist or does not have the issue tracker enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/issue_change'
+            examples:
+              issue-change:
+                $ref: '#/components/examples/issue-change'
+        description: The new issue state change. The only required elements are `changes.[].new`. All other elements can be omitted from the body.
+        required: true
+      security:
+      - oauth2:
+        - issue:write
+      - basic: []
+      - api_key: []
+      operationId: modifyTheStateOfAnIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/override-settings:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - State
+      description: This API operation retrieves the inheritance state configuration for settings within a specific Bitbucket repository. By making a GET request to the endpoint with the workspace identifier and repository slug, you can determine which repository settings are being inherited from the project level versus those that have been explicitly overridden at the repository level. This is particularly useful for administrators who need to understand the configuration hierarchy and manage settings inheritance across their Bitbucket workspace, allowing them to see which settings are using default project values and which have custom repository-specific configurations applied.
+      summary: Atlassian Retrieve the Inheritance State for Repository Settings
+      responses:
+        '200':
+          description: The repository setting inheritance state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_inheritance_state'
+              examples:
+                repository-inheritance-state:
+                  $ref: '#/components/examples/repository-inheritance-state'
+        '404':
+          description: If no repository exists at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: retrieveTheInheritanceStateForRepositorySettings
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - State
+      description: This API operation allows administrators to configure the inheritance behavior of settings for a specific Bitbucket repository within a workspace. By making a PUT request to this endpoint, users can control whether repository settings should inherit values from the project or workspace level, or use custom overrides specific to that repository. This is particularly useful in organizations that want to enforce certain settings across multiple repositories while allowing selective customization for specific repos. The operation requires specification of both the workspace identifier and the repository slug in the URL path, and the request body typically contains the inheritance configuration that determines which settings should be inherited and which should be overridden at the repository level.
+      summary: Atlassian Set the Inheritance State for Repository Settings
+      responses:
+        '204':
+          description: The repository setting inheritance state was set and no content returned
+        '404':
+          description: If no repository exists at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: setTheInheritanceStateForRepositorySettings
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/state:
+    get:
+      tags:
+      - State
+      summary: Atlassian Get Content State
+      description: This API operation retrieves the current state of a specific Confluence content item by its unique identifier. When called, it returns information about the content's workflow state, including details such as the state name, color coding, and any associated metadata that indicates where the content sits within its defined lifecycle or approval process. This is particularly useful for tracking content through editorial workflows, publication processes, or custom state management systems configured within Confluence, allowing developers and administrators to programmatically monitor and respond to content status changes.
+      operationId: getContentState
+      parameters:
+      - name: id
+        in: path
+        description: The id of the content whose content state is of interest.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: Set status to one of [current,draft,archived]. Default value is current.
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - draft
+          - archived
+      responses:
+        '200':
+          description: Returned if permission allows viewing of content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content view permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - State
+      summary: Atlassian Set the Content State of Content and Publishes New Version of the Content
+      description: This API operation allows you to set or update the content state of a specific Confluence page or blog post by its ID, which triggers the creation and publication of a new version of that content. When invoked via a PUT request to the endpoint, it accepts the content ID as a path parameter and the desired state information in the request body, then applies that state to the content item while automatically incrementing its version number. This is particularly useful for implementing workflow states, approval processes, or status tracking within Confluence content, as it not only changes the state metadata but also ensures the change is captured as a new version in the content's history, maintaining a complete audit trail of state transitions.
+      operationId: setTheContentStateOfContentAndPublishesNewVersionOfTheContent
+      requestBody:
+        description: Content state fields for state. Pass in id for an existing state, or new name and color for best matching existing state, or new state if allowed in space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentStateRestInput'
+        required: true
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the content whose content state is to be set.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: 'Status of content onto which state will be placed. If draft, then draft state will change.
+
+          If current, state will be placed onto a new version of the content with same body as previous version.'
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      responses:
+        '200':
+          description: Returned if content state is set successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '400':
+          description: 'Invalid Name/Color, non-existent id of content state, or type of state desired is not allowed.
+
+            Name must be less than or exactly 20 characters. Color must be a valid hex string.
+
+            Status must be in [draft,current].'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - State
+      summary: Atlassian Removes the Content State of Content and Publishes New Version
+      description: This API operation removes the current content state from a specified Confluence page or blog post and automatically publishes a new version of that content. By sending a DELETE request to the endpoint with the content ID, the system clears any workflow or review state that was previously applied to the content item, essentially resetting it to a stateless condition. This action is irreversible and creates a new version in the content's history, allowing teams to track when state information was removed while ensuring the content returns to a neutral status that can be freely edited or assigned a new state as needed.
+      operationId: removesTheContentStateOfContentAndPublishesNewVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the content whose content state is to be set.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: status of content state from which to delete state. Can be draft or archived
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      responses:
+        '200':
+          description: Returned if content state is removed from content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    issue:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Issue
+        description: An issue.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              comments:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              attachments:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watch:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              vote:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          id:
+            type: integer
+          repository:
+            $ref: '#/components/schemas/repository'
+          title:
+            type: string
+          reporter:
+            $ref: '#/components/schemas/account'
+          assignee:
+            $ref: '#/components/schemas/account'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          edited_on:
+            type: string
+            format: date-time
+          state:
+            type: string
+            enum:
+            - submitted
+            - new
+            - open
+            - resolved
+            - on hold
+            - invalid
+            - duplicate
+            - wontfix
+            - closed
+          kind:
+            type: string
+            enum:
+            - bug
+            - enhancement
+            - proposal
+            - task
+          priority:
+            type: string
+            enum:
+            - trivial
+            - minor
+            - major
+            - critical
+            - blocker
+          milestone:
+            $ref: '#/components/schemas/milestone'
+          version:
+            $ref: '#/components/schemas/version'
+          component:
+            $ref: '#/components/schemas/component'
+          votes:
+            type: integer
+          content:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+        additionalProperties: true
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    component:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Component
+        description: A component as defined in a repository's issue tracker.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          name:
+            type: string
+          id:
+            type: integer
+        additionalProperties: true
+    version:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Version
+        description: A version as defined in a repository's issue tracker.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          name:
+            type: string
+          id:
+            type: integer
+        additionalProperties: true
+    ContentStateRestInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of content state. Maximum 20 characters.
+          example: Example Title
+        color:
+          type: string
+          description: "Color of state. Must be in 6 digit hex form (#FFFFFF). The default colors offered in the UI are:\n #ff7452 (red),\n #2684ff (blue),\n #ffc400 (yellow),\n #57d9a3 (green), and\n #8777d9 (purple)"
+          example: example_value
+        id:
+          type: integer
+          description: id of state. This can be 0,1, or 2 if you wish to specify a default space state.
+          format: int64
+          example: abc123
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    ContentState:
+      required:
+      - id
+      - name
+      - color
+      type: object
+      properties:
+        id:
+          type: integer
+          description: identifier of content state. If 0, 1, or 2, this is a default space state
+          format: int64
+          example: abc123
+        name:
+          type: string
+          description: name of content state.
+          example: Example Title
+        color:
+          type: string
+          description: hex string representing color of state
+          example: example_value
+    issue_change:
+      type: object
+      title: Issue Change
+      description: An issue change.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            issue:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        created_on:
+          type: string
+          format: date-time
+          example: '2026-01-15T10:30:00Z'
+        user:
+          $ref: '#/components/schemas/account'
+        issue:
+          $ref: '#/components/schemas/issue'
+        changes:
+          type: object
+          properties:
+            assignee:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            state:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            title:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            kind:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            milestone:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            component:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            priority:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            version:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+            content:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        message:
+          type: object
+          properties:
+            raw:
+              type: string
+              description: The text as it was typed by a user.
+            markup:
+              type: string
+              description: The type of markup language the raw content is to be interpreted in.
+              enum:
+              - markdown
+              - creole
+              - plaintext
+            html:
+              type: string
+              description: The user's content rendered as HTML.
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    milestone:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Milestone
+        description: A milestone as defined in a repository's issue tracker.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          name:
+            type: string
+          id:
+            type: integer
+        additionalProperties: true
+    repository_inheritance_state:
+      type: object
+      title: Repository Inheritance State
+      description: A json object representing the repository's inheritance state values
+      properties:
+        type:
+          type: string
+          example: example_value
+        override_settings:
+          type: object
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    ContentStateResponse:
+      type: object
+      properties:
+        contentState:
+          $ref: '#/components/schemas/ContentState'
+          description: Null or content state
+        lastUpdated:
+          type: string
+          description: Timestamp of last publish event where content state changed
+          example: example_value
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    issue-change_2:
+      type: issue_change
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/example/repo/issues/42/changes/1
+          name: 'Issue Change #1'
+        issue:
+          href: https://api.bitbucket.org/2.0/repositories/example/repo/issues/42
+          name: 'Issue #42'
+      name: Status update
+      created_on: '2024-01-15T10:30:00Z'
+      user:
+        type: user
+        uuid: '{abc123}'
+        display_name: John Doe
+        username: johndoe
+      issue:
+        type: issue
+        id: 42
+        title: Example issue title
+      changes:
+        state:
+          old: new
+          new: open
+        assignee:
+          old: janedoe
+          new: johndoe
+        priority:
+          old: minor
+          new: major
+      message:
+        raw: Changed priority and assigned to myself
+        markup: markdown
+        html: <p>Changed priority and assigned to myself</p>
+    issue-change:
+      type: issue_change
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/issues/123/changes/456
+          name: 'Issue Change #456'
+        issue:
+          href: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/issues/123
+          name: 'Issue #123'
+      name: State changed to resolved
+      created_on: '2023-11-15T14:30:00Z'
+      user:
+        type: user
+        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+        username: john_doe
+        display_name: John Doe
+      issue:
+        type: issue
+        id: 123
+        title: Bug in authentication module
+      changes:
+        state:
+          old: open
+          new: resolved
+        assignee:
+          old: jane_smith
+          new: john_doe
+        priority:
+          old: minor
+          new: major
+      message:
+        raw: Fixed the authentication bug and updated tests.
+        markup: markdown
+        html: <p>Fixed the authentication bug and updated tests.</p>
+    repository-inheritance-state:
+      type: enabled
+      override_settings:
+        branch_protection: true
+        security_scanning: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,1261 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Deploy API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Deploy
+paths:
+  /repositories/{workspace}/{repo_slug}/deploy-keys:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Deploy
+      description: This API operation retrieves a paginated list of all deploy keys that have been configured for a specific Bitbucket repository within a workspace. Deploy keys are SSH keys that grant read-only or read-write access to a single repository, commonly used for automated deployment processes or CI/CD pipelines. By sending a GET request to this endpoint with the appropriate workspace identifier and repository slug, authenticated users can view all deploy keys associated with that repository, including details such as the key's label, public key value, creation date, and access permissions, enabling repository administrators to audit and manage automated access to their codebase.
+      summary: Atlassian List Repository Deploy Keys
+      responses:
+        '200':
+          description: Deploy keys matching the repository
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_deploy_keys'
+              examples:
+                paginated-deploy-keys:
+                  $ref: '#/components/examples/paginated-deploy-keys'
+        '403':
+          description: If the specified user or repository is not accessible to the current user
+        '404':
+          description: If the specified user or repository does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: listRepositoryDeployKeys
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Deploy
+      description: This API operation allows you to add a new deploy key to a specific Bitbucket repository within a workspace. Deploy keys are SSH keys that grant read-only or read-write access to a repository, typically used for automated deployment processes or CI/CD pipelines. By making a POST request to this endpoint with the workspace identifier and repository slug, along with the required key details in the request body (such as the SSH public key and an optional label), you can programmatically register a new deploy key that will enable secure, automated access to the repository without requiring user credentials.
+      summary: Atlassian Add Repository Deploy Key
+      responses:
+        '200':
+          description: The deploy key that was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deploy_key'
+              examples:
+                deploy-key:
+                  $ref: '#/components/examples/deploy-key'
+        '400':
+          description: Invalid deploy key inputs
+        '403':
+          description: If the specified user or repository is not accessible to the current user
+        '404':
+          description: If the specified user or repository does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: addRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/deploy-keys/{key_id}:
+    parameters:
+    - name: key_id
+      in: path
+      description: The key ID matching the deploy key.
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Deploy
+      description: This API operation removes a specific deploy key from a Bitbucket repository by sending a DELETE request to the endpoint with the workspace identifier, repository slug, and deploy key ID as path parameters. Deploy keys are SSH keys that grant read-only or read-write access to a repository, typically used for automated deployment processes or CI/CD pipelines. When this operation is executed successfully, it permanently deletes the specified deploy key from the repository, revoking any access that was previously granted through that key. This is useful for security management, such as when rotating keys, removing access for deprecated deployment systems, or cleaning up unused authentication credentials. The operation requires appropriate permissions on the repository to manage deploy keys.
+      summary: Atlassian Delete Repository Deploy Key
+      responses:
+        '204':
+          description: The key has been deleted
+        '403':
+          description: If the current user does not have permission to delete a key for the specified user
+        '404':
+          description: If the specified user, repository, or deploy key does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: deleteRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Deploy
+      description: This API operation retrieves detailed information about a specific deploy key that has been added to a Bitbucket repository. By providing the workspace identifier, repository slug, and the unique key ID, you can fetch the complete configuration and metadata associated with that particular SSH deploy key, including its label, the actual public key content, creation timestamp, and access permissions. Deploy keys are typically used to grant read-only or read-write access to repositories for automated deployment systems and CI/CD pipelines without requiring a user account, and this endpoint allows administrators to verify and audit the deploy keys currently configured for their repository.
+      summary: Atlassian Get Repository Deploy Key
+      responses:
+        '200':
+          description: Deploy key matching the key ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deploy_key'
+              examples:
+                deploy-key_2:
+                  $ref: '#/components/examples/deploy-key_2'
+        '403':
+          description: If the specified user or repository is not accessible to the current user
+        '404':
+          description: If the specified user or repository does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: getRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Deploy
+      description: This API operation updates an existing deploy key for a specific repository in Bitbucket by making a PUT request to the endpoint with the workspace ID, repository slug, and deploy key ID as path parameters. Deploy keys are SSH keys that provide read-only or read-write access to a single repository, commonly used for automated deployment processes or CI/CD pipelines. The operation allows you to modify properties of an existing deploy key such as its label, the actual key value, or access permissions, enabling administrators to maintain and update deployment credentials without having to delete and recreate them. Authentication is required to perform this operation, and the user must have administrative permissions on the repository to successfully update deploy key configurations.
+      summary: Atlassian Update Repository Deploy Key
+      responses:
+        '200':
+          description: The newly updated deploy key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deploy_key'
+              examples:
+                deploy-key_2:
+                  $ref: '#/components/examples/deploy-key_2'
+        '400':
+          description: If the submitted key or related value is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the current user does not have permission to add a key for the specified user
+        '404':
+          description: If the specified user, repository, or deploy key does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: updateRepositoryDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/deploy-keys:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual `key` assigned
+
+        to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Deploy
+      description: This GET operation retrieves a paginated list of all deploy keys configured for a specific project within a Bitbucket workspace. Deploy keys are SSH keys that grant read-only or read-write access to project repositories, commonly used for automated deployments and CI/CD pipelines. The endpoint requires both the workspace slug and project key as path parameters to identify the target project, and returns an array of deploy key objects containing details such as the key ID, label, public key value, creation date, and associated permissions. This allows administrators and developers to audit which deploy keys have access to their project's repositories and manage authentication credentials programmatically.
+      summary: Atlassian List Project Deploy Keys
+      responses:
+        '200':
+          description: Deploy keys matching the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_project_deploy_keys'
+              examples:
+                paginated-project-deploy-keys:
+                  $ref: '#/components/examples/paginated-project-deploy-keys'
+        '403':
+          description: If the specified workspace or project is not accessible to the current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified workspace or project does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project
+        - project:admin
+      - basic: []
+      - api_key: []
+      operationId: atlassianListProjectDeployKeys
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Deploy
+      description: This API operation creates a new deploy key for a specific project within a Bitbucket workspace, allowing secure, read-only SSH access to repositories within that project. By making a POST request to the endpoint with the workspace slug and project key as path parameters, users can generate an SSH key that can be used for automated deployments or CI/CD pipelines without requiring personal credentials. The deploy key is scoped to the project level, meaning it can access all repositories within the specified project, and the request body typically includes the SSH public key content and an optional label for identification purposes. This is particularly useful for granting automated systems or external services controlled access to project repositories for deployment purposes while maintaining security best practices by avoiding the use of user account credentials.
+      summary: Atlassian Create a Project Deploy Key
+      responses:
+        '200':
+          description: The project deploy key that was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_deploy_key'
+              examples:
+                project-deploy-key:
+                  $ref: '#/components/examples/project-deploy-key'
+        '400':
+          description: Invalid deploy key inputs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the specified workspace or project is not accessible to the current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified workspace or project does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project
+        - project:admin
+      - basic: []
+      - api_key: []
+      operationId: atlassianCreateAProjectDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/deploy-keys/{key_id}:
+    parameters:
+    - name: key_id
+      in: path
+      description: The key ID matching the project deploy key.
+      required: true
+      schema:
+        type: string
+    - name: project_key
+      in: path
+      description: 'The project in question. This is the actual `key` assigned
+
+        to the project.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Deploy
+      description: This API operation retrieves detailed information about a specific deploy key that has been added to a project within a Bitbucket workspace. By providing the workspace identifier, project key, and the unique key ID, you can fetch the deploy key's properties including its public SSH key content, label, creation date, and associated permissions. Deploy keys are SSH keys that grant read-only or read-write access to repositories within a project, commonly used for automated deployments and CI/CD pipelines to securely access repository code without requiring user credentials.
+      summary: Atlassian Get a Project Deploy Key
+      responses:
+        '200':
+          description: Project deploy key matching the key ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/project_deploy_key'
+              examples:
+                project-deploy-key_2:
+                  $ref: '#/components/examples/project-deploy-key_2'
+        '403':
+          description: If the specified workspace or project is not accessible to the current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified workspace or project does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project
+        - project:admin
+      - basic: []
+      - api_key: []
+      operationId: atlassianGetAProjectDeployKey
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    paginated_deploy_keys:
+      type: object
+      title: Paginated Deploy Keys
+      description: A paginated list of deploy keys.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/deploy_key'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    project_deploy_key:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project Deploy Key
+        description: Represents deploy key for a project.
+        properties:
+          key:
+            type: string
+            description: The deploy key value.
+          project:
+            $ref: '#/components/schemas/project'
+          comment:
+            type: string
+            description: The comment parsed from the deploy key (if present)
+          label:
+            type: string
+            description: The user-defined label for the deploy key
+          added_on:
+            type: string
+            format: date-time
+          last_used:
+            type: string
+            format: date-time
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          created_by:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    paginated_project_deploy_keys:
+      type: object
+      title: Paginated Project Deploy Keys
+      description: A paginated list of project deploy keys.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+          example: 10
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+          example: 10
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+          example: https://www.example.com
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/project_deploy_key'
+          minItems: 0
+          uniqueItems: true
+          example: []
+      additionalProperties: false
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    deploy_key:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Deploy Key
+        description: Represents deploy key for a repository.
+        properties:
+          key:
+            type: string
+            description: The deploy key value.
+          repository:
+            $ref: '#/components/schemas/repository'
+          comment:
+            type: string
+            description: The comment parsed from the deploy key (if present)
+          label:
+            type: string
+            description: The user-defined label for the deploy key
+          added_on:
+            type: string
+            format: date-time
+          last_used:
+            type: string
+            format: date-time
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          owner:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    project-deploy-key_2:
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
+      project:
+        key: PROJ
+        name: My Project
+      comment: deploy@example.com
+      label: Production Deploy Key
+      added_on: '2023-11-15T10:30:00Z'
+      last_used: '2024-01-20T14:45:30Z'
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
+          name: Production Deploy Key
+      created_by:
+        username: johndoe
+        display_name: John Doe
+        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+    deploy-key_2:
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDak9i...
+      repository:
+        uuid: '{1234abcd-5678-efgh-9012-ijklmnopqrst}'
+        name: my-repository
+        full_name: myworkspace/my-repository
+      comment: deploy@example.com
+      label: Production Deploy Key
+      added_on: '2024-01-15T10:30:00Z'
+      last_used: '2024-01-20T14:45:00Z'
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/myworkspace/my-repository/deploy-keys/123
+          name: Production Deploy Key
+      owner:
+        uuid: '{abcd1234-efgh-5678-ijkl-9012mnopqrst}'
+        username: myworkspace
+        display_name: My Workspace
+    project-deploy-key:
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
+      project:
+        key: PROJ
+        name: My Project
+      comment: deploy@server
+      label: Production Server Deploy Key
+      added_on: '2024-01-15T10:30:00Z'
+      last_used: '2024-01-20T14:45:30Z'
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
+          name: Production Deploy Key
+      created_by:
+        uuid: '{a1b2c3d4-e5f6-7890-abcd-ef1234567890}'
+        username: john_doe
+        display_name: John Doe
+    paginated-deploy-keys:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.example.com/deploy-keys?page=2
+      previous: https://api.example.com/deploy-keys?page=0
+      values:
+        key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
+        repository: {}
+        comment: Deploy key for production server
+        label: production-server-01
+        added_on: '2023-10-15T14:30:00Z'
+        last_used: '2024-01-20T09:15:30Z'
+        links:
+          self:
+            href: https://api.example.com/deploy-keys/123
+            name: production-deploy-key
+        owner: {}
+    paginated-project-deploy-keys:
+      size: 42
+      page: 1
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys?page=2
+      previous: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys?page=0
+      values:
+        key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDak...
+        comment: Deploy key for production server
+        label: Production Deploy Key
+        added_on: '2023-11-15T10:30:00Z'
+        last_used: '2024-01-20T14:45:30Z'
+        links:
+          self:
+            href: https://api.bitbucket.org/2.0/projects/PROJ/deploy-keys/123
+            name: Production Deploy Key
+    deploy-key:
+      key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...
+      repository:
+        uuid: '{12345678-1234-1234-1234-123456789012}'
+        name: my-repository
+        full_name: myworkspace/my-repository
+      comment: deploy@server.example.com
+      label: Production Server Deploy Key
+      added_on: '2023-11-15T14:30:00Z'
+      last_used: '2024-01-20T09:15:00Z'
+      links:
+        self:
+          href: https://api.bitbucket.org/2.0/repositories/myworkspace/my-repository/deploy-keys/123
+          name: Production Deploy Key
+      owner:
+        uuid: '{87654321-4321-4321-4321-210987654321}'
+        username: myworkspace
+        display_name: My Workspace
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

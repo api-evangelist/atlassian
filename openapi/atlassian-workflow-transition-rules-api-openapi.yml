@@ -1,0 +1,523 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Workflow Transition Rules API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Workflow Transition Rules
+paths:
+  /rest/api/3/workflow/rule/config:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of workflows with transition rules. The workflows can be filtered to return only those containing workflow transition rules:<br><br> *  of one or more transition rule types, such as [workflow post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/).<br> *  matching one or more transition rule keys.<br><br>Only workflows containing transition rules created by the calling [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) or [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps) app are returned.<br><br>Due to server-side optimizations, workflows with an empty list of rules may be returned; these workflows can be ignored.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) or [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps) apps can use this operation.
+      operationId: atlassianGetworkflowtransitionruleconfigurations
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 10
+          format: int32
+          maximum: 50
+          type: integer
+      - description: The types of the transition rules to return.
+        in: query
+        name: types
+        required: true
+        schema:
+          items:
+            default: ''
+            enum:
+            - postfunction
+            - condition
+            - validator
+            type: string
+          type: array
+          uniqueItems: true
+      - description: The transition rule class keys, as defined in the Connect or the Forge app descriptor, of the transition rules to return.
+        in: query
+        name: keys
+        schema:
+          items:
+            default: ''
+            type: string
+          type: array
+          uniqueItems: true
+      - description: The list of workflow names to filter by.
+        in: query
+        name: workflowNames
+        schema:
+          items:
+            default: ''
+            maxLength: 50
+            type: string
+          maxLength: 50
+          type: array
+          uniqueItems: true
+      - description: The list of `tags` to filter by.
+        in: query
+        name: withTags
+        schema:
+          items:
+            default: ''
+            maxLength: 20
+            type: string
+          maxLength: 20
+          type: array
+          uniqueItems: true
+      - description: Whether draft or published workflows are returned. If not provided, both workflow types are returned.
+        in: query
+        name: draft
+        schema:
+          type: boolean
+      - description: Use [expand](#expansion) to include additional information in the response. This parameter accepts `transition`, which, for each rule, returns information about the transition the rule is assigned to.
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":10,"startAt":0,"total":1,"values":[{"workflowId":{"name":"My Workflow name","draft":false},"postFunctions":[{"id":"b4d6cbdc-59f5-11e9-8647-d663bd873d93","key":"postfunction-key","configuration":{"value":"{ \"color\": \"red\" }","disabled":false,"tag":"Sample tag"},"transition":{"id":1,"name":"Open"}}],"conditions":[{"id":"d663bd873d93-59f5-11e9-8647-b4d6cbdc","key":"condition-key","configuration":{"value":"{ \"size\": \"medium\" }","disabled":false,"tag":"Another tag"},"transition":{"id":1,"name":"Open"}}],"validators":[{"id":"11e9-59f5-b4d6cbdc-8647-d663bd873d93","key":"validator-key","configuration":{"value":"\"{ \\\"shape\\\": \\\"square\\\" }\"","disabled":false},"transition":{"id":1,"name":"Open"}}]}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanWorkflowTransitionRules'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect or Forge app.
+        '404':
+          description: Returned if any transition rule type is not supported.
+        '503':
+          description: Returned if we encounter a problem while trying to access the required data.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Workflow Transition Rule Configurations
+      tags:
+      - Workflow Transition Rules
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Updates configuration of workflow transition rules. The following rule types are supported:<br><br> *  [post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/)<br> *  [conditions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-condition/)<br> *  [validators](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-validator/)<br><br>Only rules created by the calling [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) or [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps) app can be updated.<br><br>To assist with app migration, this operation can be used to:<br><br> *  Disable a rule.<br> *  Add a `tag`. Use this to filter rules in the [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).<br><br>Rules are enabled if the `disabled` parameter is not provided.<br><br>**[Permissions](#permissions) required:** Only [Connect](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) or [Forge](https://developer.atlassian.com/cloud/jira/platform/index/#forge-apps) apps can use this operation.
+      operationId: atlassianUpdateworkflowtransitionruleconfigurations
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              workflows:
+              - conditions:
+                - configuration:
+                    disabled: false
+                    tag: Another tag
+                    value: '{ "size": "medium" }'
+                  id: d663bd873d93-59f5-11e9-8647-b4d6cbdc
+                postFunctions:
+                - configuration:
+                    disabled: false
+                    tag: Sample tag
+                    value: '{ "color": "red" }'
+                  id: b4d6cbdc-59f5-11e9-8647-d663bd873d93
+                validators:
+                - configuration:
+                    disabled: false
+                    value: '{ "shape": "square" }'
+                  id: 11e9-59f5-b4d6cbdc-8647-d663bd873d93
+                workflowId:
+                  draft: false
+                  name: My Workflow name
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionRulesUpdate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"updateResults":[{"workflowId":{"name":"Workflow with one rule not updated","draft":false},"ruleUpdateErrors":{"example-rule-id":["The rule with this id does not exist: example-rule-id"]},"updateErrors":[]},{"workflowId":{"name":"Workflow with all rules successfully updated","draft":true},"ruleUpdateErrors":{},"updateErrors":[]},{"workflowId":{"name":"Non-existing workflow","draft":false},"ruleUpdateErrors":{},"updateErrors":["Workflow not found: WorkflowIdBean{name=Non-existing workflow, draft=false}"]}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrors'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect or Forge app.
+        '503':
+          description: Returned if we encounter a problem while trying to access the required data.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Workflow Transition Rule Configurations
+      tags:
+      - Workflow Transition Rules
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/workflow/rule/config/delete:
+    put:
+      deprecated: false
+      description: Deletes workflow transition rules from one or more workflows. These rule types are supported:<br><br> *  [post functions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-post-function/)<br> *  [conditions](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-condition/)<br> *  [validators](https://developer.atlassian.com/cloud/jira/platform/modules/workflow-validator/)<br><br>Only rules created by the calling Connect app can be deleted.<br><br>**[Permissions](#permissions) required:** Only Connect apps can use this operation.
+      operationId: atlassianDeleteworkflowtransitionruleconfigurations
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              workflows:
+              - workflowId:
+                  draft: false
+                  name: Internal support workflow
+                workflowRuleIds:
+                - b4d6cbdc-59f5-11e9-8647-d663bd873d93
+                - d663bd873d93-59f5-11e9-8647-b4d6cbdc
+                - 11e9-59f5-b4d6cbdc-8647-d663bd873d93
+            schema:
+              $ref: '#/components/schemas/WorkflowsWithTransitionRulesDetails'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"updateResults":[{"workflowId":{"name":"Workflow with one rule not updated","draft":false},"ruleUpdateErrors":{"example-rule-id":["The rule with this id does not exist: example-rule-id"]},"updateErrors":[]},{"workflowId":{"name":"Workflow with all rules successfully updated","draft":true},"ruleUpdateErrors":{},"updateErrors":[]},{"workflowId":{"name":"Non-existing workflow","draft":false},"ruleUpdateErrors":{},"updateErrors":["Workflow not found: WorkflowIdBean{name=Non-existing workflow, draft=false}"]}]}'
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrors'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["Jira Administration permission is required to access workflow configuration."],"errors":{},"httpStatusCode":{"empty":false,"present":true}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the caller is not a Connect app.
+      security:
+      - basicAuth: []
+      summary: Atlassian Delete Workflow Transition Rule Configurations
+      tags:
+      - Workflow Transition Rules
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    WorkflowTransitionRulesUpdate:
+      additionalProperties: false
+      description: Details about a workflow configuration update request.
+      properties:
+        workflows:
+          description: The list of workflows with transition rules to update.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          type: array
+      required:
+      - workflows
+      type: object
+    WorkflowsWithTransitionRulesDetails:
+      additionalProperties: false
+      description: Details of workflows and their transition rules to delete.
+      properties:
+        workflows:
+          description: The list of workflows with transition rules to delete.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRulesDetails'
+          type: array
+      required:
+      - workflows
+      type: object
+    WorkflowTransitionRulesUpdateErrorDetails:
+      additionalProperties: false
+      description: Details of any errors encountered while updating workflow transition rules for a workflow.
+      properties:
+        ruleUpdateErrors:
+          additionalProperties:
+            description: A list of transition rule update errors, indexed by the transition rule ID. Any transition rule that appears here wasn't updated.
+            items:
+              description: A list of transition rule update errors, indexed by the transition rule ID. Any transition rule that appears here wasn't updated.
+              type: string
+            type: array
+            uniqueItems: true
+          description: A list of transition rule update errors, indexed by the transition rule ID. Any transition rule that appears here wasn't updated.
+          type: object
+        updateErrors:
+          description: The list of errors that specify why the workflow update failed. The workflow was not updated if the list contains any entries.
+          items:
+            description: An error specifying why the workflow update failed.
+            type: string
+          type: array
+          uniqueItems: true
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+      required:
+      - ruleUpdateErrors
+      - updateErrors
+      - workflowId
+      type: object
+    RuleConfiguration:
+      additionalProperties: false
+      description: A rule configuration.
+      properties:
+        disabled:
+          default: false
+          description: Whether the rule is disabled.
+          type: boolean
+        tag:
+          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
+          maxLength: 255
+          type: string
+        value:
+          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
+          type: string
+      required:
+      - value
+      type: object
+    WorkflowId:
+      additionalProperties: false
+      description: Properties that identify a workflow.
+      properties:
+        draft:
+          description: Whether the workflow is in the draft state.
+          type: boolean
+        name:
+          description: The name of the workflow.
+          type: string
+      required:
+      - draft
+      - name
+      type: object
+    PageBeanWorkflowTransitionRules:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          readOnly: true
+          type: array
+      type: object
+    WorkflowTransitionRulesDetails:
+      additionalProperties: false
+      description: Details about a workflow configuration update request.
+      properties:
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+        workflowRuleIds:
+          description: The list of connect workflow rule IDs.
+          items:
+            description: The list of connect workflow rule IDs.
+            type: string
+          type: array
+          uniqueItems: true
+      required:
+      - workflowId
+      - workflowRuleIds
+      type: object
+    AppWorkflowTransitionRule:
+      additionalProperties: false
+      description: A workflow transition rule.
+      properties:
+        configuration:
+          $ref: '#/components/schemas/RuleConfiguration'
+        id:
+          description: The ID of the transition rule.
+          type: string
+        key:
+          description: The key of the rule, as defined in the Connect or the Forge app descriptor.
+          readOnly: true
+          type: string
+        transition:
+          allOf:
+          - $ref: '#/components/schemas/WorkflowTransition'
+          readOnly: true
+      required:
+      - configuration
+      - id
+      - key
+      type: object
+    WorkflowTransition:
+      additionalProperties: false
+      description: A workflow transition.
+      properties:
+        id:
+          description: The transition ID.
+          format: int32
+          type: integer
+        name:
+          description: The transition name.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    WorkflowTransitionRules:
+      additionalProperties: false
+      description: A workflow with transition rules.
+      properties:
+        conditions:
+          description: The list of conditions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        postFunctions:
+          description: The list of post functions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        validators:
+          description: The list of validators within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+      required:
+      - workflowId
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    WorkflowTransitionRulesUpdateErrors:
+      additionalProperties: false
+      description: Details of any errors encountered while updating workflow transition rules.
+      properties:
+        updateResults:
+          description: A list of workflows.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRulesUpdateErrorDetails'
+          type: array
+      required:
+      - updateResults
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

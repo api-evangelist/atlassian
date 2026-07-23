@@ -1,0 +1,416 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Themes API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Themes
+paths:
+  /wiki/rest/api/settings/theme:
+    get:
+      tags:
+      - Themes
+      summary: Atlassian Get Themes
+      description: 'Returns all themes, not including the default theme.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**: None'
+      operationId: atlassianGetthemes
+      parameters:
+      - name: start
+        in: query
+        description: The starting index of the returned themes.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of themes to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        '200':
+          description: Returned if the requested themes are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeArray'
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - manage:confluence-configuration
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - manage:confluence-configuration
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:configuration:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/settings/theme/selected:
+    get:
+      tags:
+      - Themes
+      summary: Atlassian Get Global Theme
+      description: 'Returns the globally assigned theme.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**: None'
+      operationId: atlassianGetglobaltheme
+      responses:
+        '200':
+          description: Returned if the global theme is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          description: 'Returned if Confluence does not have a global theme assigned, i.e.
+
+            the default theme is used.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - manage:confluence-configuration
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - manage:confluence-configuration
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:configuration:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/settings/theme/{themeKey}:
+    get:
+      tags:
+      - Themes
+      summary: Atlassian Get Theme
+      description: 'Returns a theme. This includes information about the theme name,<br>description, and icon.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**: None'
+      operationId: atlassianGettheme
+      parameters:
+      - name: themeKey
+        in: path
+        description: The key of the theme to be returned.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested theme is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          description: Returned if there is no theme with the given key.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - manage:confluence-configuration
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - manage:confluence-configuration
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:configuration:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/theme:
+    get:
+      tags:
+      - Themes
+      summary: Atlassian Get Space Theme
+      description: 'Returns the theme selected for a space, if one is set. If no space<br>theme is set, this means that the space is inheriting the global look<br>and feel settings.<br><br>**[Permissions required](https://confluence.atlassian.com/x/_AozKw)**: ‘View’ permission for the space.'
+      operationId: atlassianGetspacetheme
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its theme.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested theme is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          description: 'Returned if any of the following is true:
+
+
+            - There is no space with the given key.
+
+            - The space does not have a theme assigned to it.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Themes
+      summary: Atlassian Set Space Theme
+      description: Sets the theme for a space. Note, if you want to reset the space theme to<br>the default Confluence theme, use the 'Reset space theme' method instead<br>of this method.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space.
+      operationId: atlassianSetspacetheme
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to set the theme for.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThemeUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the theme was set for the space.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '403':
+          description: Returned if the theme key is invalid.
+          content: {}
+        '404':
+          description: Returned if there is no space with the given key.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-space
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-space
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+        - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Themes
+      summary: Atlassian Reset Space Theme
+      description: Resets the space theme. This means that the space will inherit the<br>global look and feel settings<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space.
+      operationId: atlassianResetspacetheme
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to reset the theme for.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the theme was reset for the space.
+          content: {}
+        '404':
+          description: Returned if there is no space with the given key.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-space
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-space
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: DELETE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ThemeNoLinks:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+      description: Theme object without links. Used in ThemeArray.
+    ThemeArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThemeNoLinks'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        description:
+          type: string
+          example: A sample description.
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ThemeUpdate:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+          description: The key of the theme to be set as the space theme.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

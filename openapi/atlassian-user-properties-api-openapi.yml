@@ -1,0 +1,770 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account User Properties API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: User Properties
+paths:
+  /wiki/rest/api/user/{userId}/property:
+    get:
+      tags:
+      - User Properties
+      summary: Atlassian Get User Properties
+      description: Returns the properties for a user as list of property keys. For more information<br>about user properties, see [Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br>`Note`, these properties stored against a user are on a Confluence site level and not space/content level.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianGetuserproperties
+      parameters:
+      - name: userId
+        in: path
+        description: The account ID of the user to be queried for its properties.
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned properties.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of properties to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          maximum: 25
+          type: integer
+          format: int32
+          default: 5
+      responses:
+        '200':
+          description: Returned if the requested properties are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPropertyKeyArray'
+        '400':
+          description: Returned if request has malformed syntax or userId is not a valid user id.
+          content: {}
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have the correct permissions.
+          content: {}
+        '404':
+          description: Returned if there is no user with the given user ID.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/user/{userId}/property/{key}:
+    get:
+      tags:
+      - User Properties
+      summary: Atlassian Get User Property
+      description: Returns the property corresponding to `key` for a user. For more information<br>about user properties, see [Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br>`Note`, these properties stored against a user are on a Confluence site level and not space/content level.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianGetuserproperty
+      parameters:
+      - name: userId
+        in: path
+        description: The account ID of the user to be queried for its properties.
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the user property.
+        required: true
+        schema:
+          type: string
+          pattern: ^[-_a-zA-Z0-9]+$
+      responses:
+        '200':
+          description: Returned if the requested properties are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProperty'
+        '400':
+          description: 'Returned if;
+
+
+            - The key is too long.
+
+            - Request has malformed syntax or userId is not a valid user id.'
+          content: {}
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have the correct permissions.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no user with the given user ID
+
+            - There is no user property with the given key'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - User Properties
+      summary: Atlassian Update User Property
+      description: Updates a property for the given user. Note, you cannot update the key of a user property, only the value.<br>For more information about user properties, see<br>[Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br>`Note`, these properties stored against a user are on a Confluence site level and not space/content level.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianUpdateuserproperty
+      parameters:
+      - name: userId
+        in: path
+        description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian
+
+          products. For example, 384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192'
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the user property.
+        required: true
+        schema:
+          type: string
+          pattern: ^[-_a-zA-Z0-9]+$
+      requestBody:
+        description: The user property to be updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPropertyUpdate'
+        required: true
+      responses:
+        '204':
+          description: Returned if the user property is updated.
+        '400':
+          description: 'Returned if;
+
+
+            - The key is too long.
+
+            - The value is empty.
+
+            - The value is too long.
+
+            - Request has malformed syntax or userId is not a valid user id.'
+          content: {}
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have the correct permissions.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no user property with the given key.
+
+            - There is no user with the given user id.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - User Properties
+      summary: Atlassian Create User Property by Key
+      description: Creates a property for a user. For more information  about user properties, see [Confluence entity properties]<br>(https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br>`Note`, these properties stored against a user are on a Confluence site level and not space/content level.<br><br>`Note:` the number of properties which could be created per app in a tenant for each user might be<br>restricted by fixed system limits.<br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianCreateuserproperty
+      parameters:
+      - name: userId
+        in: path
+        description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian
+
+          products. For example, 384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192'
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the user property.
+        required: true
+        schema:
+          type: string
+          pattern: ^[-_a-zA-Z0-9]+$
+      requestBody:
+        description: The user property to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPropertyCreate'
+        required: true
+      responses:
+        '201':
+          description: Returned if the user property is created.
+        '400':
+          description: 'Returned if;
+
+
+            - The key is too long.
+
+            - The value is empty.
+
+            - The value is too long.
+
+            - Request has malformed syntax or userId is not a valid user id.'
+          content: {}
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have the correct permissions.
+          content: {}
+        '404':
+          description: Returned if there is no user with the given user id.
+          content: {}
+        '409':
+          description: Returned if the key already exists for the user.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - User Properties
+      summary: Atlassian Delete User Property
+      description: Deletes a property for the given user.<br>For more information about user properties, see<br>[Confluence entity properties](https://developer.atlassian.com/cloud/confluence/confluence-entity-properties/).<br>`Note`, these properties stored against a user are on a Confluence site level and not space/content level.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).
+      operationId: atlassianDeleteuserproperty
+      parameters:
+      - name: userId
+        in: path
+        description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian
+
+          products. For example, 384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192'
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        description: The key of the user property.
+        required: true
+        schema:
+          type: string
+          pattern: ^[-_a-zA-Z0-9]+$
+      responses:
+        '204':
+          description: Returned if the user property is deleted.
+        '400':
+          description: 'Returned if;
+
+
+            - The key is too long.
+
+            - Request has malformed syntax or userId is not a valid user id.'
+          content: {}
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+          content: {}
+        '403':
+          description: Returned if the user does not have the correct permissions.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no user property with the given key
+
+            - There is no user with the given user id'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:user.property:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:user.property:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /rest/api/3/user/properties:
+    get:
+      deprecated: false
+      description: 'Returns the keys of all properties for a user.<br><br>Note: This operation does not access the [user properties](https://confluence.atlassian.com/x/8YxjL) created and maintained in Jira.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg), to access the property keys on any user.<br> *  Access to Jira, to access the calling user''s property keys.'
+      operationId: atlassianGetuserpropertykeys
+      parameters:
+      - description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+        in: query
+        name: accountId
+        schema:
+          example: 5b10ac8d82e05b22cc7d4ef5
+          maxLength: 128
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: userKey
+        schema:
+          type: string
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"keys":[{"key":"issue.support","self":"https://your-domain.atlassian.net/rest/api/3/issue/EX-2/properties/issue.support"}]}'
+              schema:
+                $ref: '#/components/schemas/PropertyKeys'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if `accountId` is missing.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission or is not accessing their user record.
+        '404':
+          description: Returned if the user is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Get User Property Keys
+      tags:
+      - User Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/user/properties/{propertyKey}:
+    delete:
+      deprecated: false
+      description: 'Deletes a property from a user.<br><br>Note: This operation does not access the [user properties](https://confluence.atlassian.com/x/8YxjL) created and maintained in Jira.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg), to delete a property from any user.<br> *  Access to Jira, to delete a property from the calling user''s record.'
+      operationId: atlassianDeleteuserproperty
+      parameters:
+      - description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+        in: query
+        name: accountId
+        schema:
+          example: 5b10ac8d82e05b22cc7d4ef5
+          maxLength: 128
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: userKey
+        schema:
+          type: string
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: The key of the user's property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the user property is deleted.
+        '400':
+          description: Returned if `accountId` is missing.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission or is not accessing their user record.
+        '404':
+          description: Returned if the user or the property is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Delete User Property
+      tags:
+      - User Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:user.property:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: 'Returns the value of a user''s property. If no property key is provided [Get user property keys](#api-rest-api-3-user-properties-get) is called.<br><br>Note: This operation does not access the [user properties](https://confluence.atlassian.com/x/8YxjL) created and maintained in Jira.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg), to get a property from any user.<br> *  Access to Jira, to get a property from the calling user''s record.'
+      operationId: atlassianGetuserproperty
+      parameters:
+      - description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+        in: query
+        name: accountId
+        schema:
+          example: 5b10ac8d82e05b22cc7d4ef5
+          maxLength: 128
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: userKey
+        schema:
+          type: string
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: The key of the user's property.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"issue.support","value":{"system.conversation.id":"b1bf38be-5e94-4b40-a3b8-9278735ee1e6","system.support.time":"1m"}}'
+              schema:
+                $ref: '#/components/schemas/EntityProperty'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if `accountId` is missing.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission or is not accessing their user record.
+        '404':
+          description: Returned if the user is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Get User Property
+      tags:
+      - User Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: 'Sets the value of a user''s property. Use this resource to store custom data against a user.<br><br>Note: This operation does not access the [user properties](https://confluence.atlassian.com/x/8YxjL) created and maintained in Jira.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg), to set a property on any user.<br> *  Access to Jira, to set a property on the calling user''s record.'
+      operationId: atlassianSetuserproperty
+      parameters:
+      - description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+        in: query
+        name: accountId
+        schema:
+          example: 5b10ac8d82e05b22cc7d4ef5
+          maxLength: 128
+          type: string
+        x-showInExample: 'true'
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: userKey
+        schema:
+          type: string
+      - description: This parameter is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+        in: query
+        name: username
+        schema:
+          type: string
+      - description: The key of the user's property. The maximum length is 255 characters.
+        in: path
+        name: propertyKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+        description: The value of the property. The value has to be a valid, non-empty [JSON](https://tools.ietf.org/html/rfc4627) value. The maximum length of the property value is 32768 bytes.
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the user property is updated.
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the user property is created.
+        '400':
+          description: Returned if `accountId` is missing.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission or is not accessing their user record.
+        '404':
+          description: Returned if the user is not found.
+        '405':
+          description: Returned if the property key is not specified.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      summary: Atlassian Set User Property
+      tags:
+      - User Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:user.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    UserPropertyCreate:
+      required:
+      - value
+      type: object
+      additionalProperties: false
+      properties:
+        value:
+          type: object
+          additionalProperties: true
+          properties: {}
+          description: The value of the user property.
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    PropertyKey:
+      additionalProperties: false
+      description: Property key details.
+      properties:
+        key:
+          description: The key of the property.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the property.
+          readOnly: true
+          type: string
+      type: object
+    UserPropertyUpdate:
+      required:
+      - value
+      type: object
+      additionalProperties: false
+      properties:
+        value:
+          type: object
+          additionalProperties: true
+          properties: {}
+          description: The value of the user property.
+    UserProperty:
+      required:
+      - key
+      - value
+      - id
+      - lastModifiedDate
+      - createdDate
+      type: object
+      properties:
+        key:
+          type: string
+          example: example_value
+        value:
+          type: object
+          additionalProperties: true
+          properties: {}
+          description: The value of the content property.
+          example: example_value
+        id:
+          type: string
+          description: a unique identifier for the user property
+          example: abc123
+        lastModifiedDate:
+          type: string
+          format: date-time
+          description: datetime when the property was last modified such as `2022-02-01T12:00:00.111Z`
+          example: '2026-01-15T10:30:00Z'
+        createdDate:
+          type: string
+          format: date-time
+          description: datetime when the property was created such as `2022-01-01T12:00:00.111Z`
+          example: '2026-01-15T10:30:00Z'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserPropertyKeyArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    PropertyKeys:
+      additionalProperties: false
+      description: List of property keys.
+      properties:
+        keys:
+          description: Property key details.
+          items:
+            $ref: '#/components/schemas/PropertyKey'
+          readOnly: true
+          type: array
+      type: object
+    EntityProperty:
+      additionalProperties: false
+      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+      properties:
+        key:
+          description: The key of the property. Required on create and update.
+          type: string
+        value:
+          description: The value of the property. Required on create and update.
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

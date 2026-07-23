@@ -1,0 +1,556 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Reports API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Reports
+paths:
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports:
+    get:
+      tags:
+      - Reports
+      description: This API operation retrieves a paginated list of all reports associated with a specific commit in a Bitbucket repository. By making a GET request to this endpoint with the workspace identifier, repository slug, and commit hash, you can view all reports that have been created for that particular commit, such as code quality analysis results, security scan findings, test coverage reports, or custom build reports. The response includes metadata about each report, allowing developers and CI/CD systems to track and review various automated checks and analyses that have been run against the code changes in that commit.
+      summary: Atlassian List Reports
+      operationId: listReports
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_reports'
+              examples:
+                paginated-reports:
+                  $ref: '#/components/examples/paginated-reports'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}:
+    put:
+      tags:
+      - Reports
+      description: This PUT operation creates or updates a report for a specific commit in a Bitbucket repository, identified by the workspace, repository slug, commit SHA, and report ID. Reports are typically used to provide additional build, test, or code quality information about a commit, such as code coverage, security scans, or custom analysis results. The operation requires authentication and appropriate permissions to the repository, and accepts a JSON payload containing the report details including its title, reporter, result status (PASSED, FAILED, or PENDING), and optional metadata like links and data fields. If a report with the specified ID already exists for the commit, it will be updated; otherwise, a new report will be created. This endpoint is commonly used by CI/CD tools and third-party integrations to display supplementary commit status information directly within the Bitbucket interface, allowing teams to view comprehensive build and quality metrics alongside their code changes.
+      operationId: createOrUpdateReport
+      summary: Atlassian Create or Update Report
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report'
+            examples:
+              commit-report:
+                $ref: '#/components/examples/commit-report'
+        description: The report to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report'
+              examples:
+                commit-report_2:
+                  $ref: '#/components/examples/commit-report_2'
+        '400':
+          description: The provided Report object is malformed or incomplete.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Reports
+      description: The Get Report operation in the Atlassian Bitbucket Repositories API retrieves details of a specific report associated with a commit in a repository. By providing the workspace identifier, repository slug, commit hash, and report ID as path parameters, this endpoint returns comprehensive information about a particular report that has been created for the specified commit. Reports are typically used to provide feedback on code quality, test results, security scans, or other automated checks that run as part of a CI/CD pipeline. The response includes the report's status, title, description, reporter details, result summary, and any additional metadata associated with the report, allowing developers and automated systems to programmatically access and review commit-level analysis results within their Bitbucket workflows.
+      summary: Atlassian Get Report
+      operationId: getReport
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report'
+              examples:
+                commit-report_2:
+                  $ref: '#/components/examples/commit-report_2'
+        '404':
+          description: The report with the given ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Reports
+      description: This API operation removes a specific code insights report that was previously created for a particular commit in a Bitbucket repository. By sending a DELETE request to this endpoint with the workspace identifier, repository slug, commit hash, and report ID, you can permanently delete the associated report and all its data, including any annotations or results that were attached to it. This is useful when you want to clean up outdated or erroneous reports, or when a CI/CD pipeline needs to remove reports from previous analysis runs before creating new ones.
+      summary: Atlassian Delete Report
+      operationId: deleteReport
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No content
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/test_reports:
+    get:
+      tags:
+      - Reports
+      summary: Atlassian Get Summary of Test Reports for Given Step of Pipeline.
+      operationId: getSummaryOfTestReportsForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A summary of test reports for this pipeline step.
+        '404':
+          description: No account, repository, pipeline, step or test reports exist for the provided path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      description: This API endpoint retrieves a comprehensive summary of test reports for a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, users can access aggregated test results including passed, failed, and skipped tests, along with detailed metrics and statistics generated during that particular pipeline step's test execution phase.
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    paginated_reports:
+      type: object
+      title: Paginated Reports
+      description: A paginated list of reports.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/report'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    report_data:
+      type: object
+      title: Report Data
+      description: A key-value element that will be displayed along with the report.
+      properties:
+        type:
+          enum:
+          - BOOLEAN
+          - DATE
+          - DURATION
+          - LINK
+          - NUMBER
+          - PERCENTAGE
+          - TEXT
+          type: string
+          description: The type of data contained in the value field. If not provided, then the value will be detected as a boolean, number or string.
+          example: BOOLEAN
+        title:
+          type: string
+          description: A string describing what this data field represents.
+          example: Example Title
+        value:
+          type: object
+          description: The value of the data element.
+          example: example_value
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    report:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Commit Report
+        description: A report for a commit.
+        properties:
+          uuid:
+            type: string
+            description: The UUID that can be used to identify the report.
+          title:
+            type: string
+            description: The title of the report.
+          details:
+            type: string
+            description: A string to describe the purpose of the report.
+          external_id:
+            type: string
+            description: ID of the report provided by the report creator. It can be used to identify the report as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the report creator for updating or deleting this specific report. Needs to be unique.
+          reporter:
+            type: string
+            description: A string to describe the tool or company who created the report.
+          link:
+            type: string
+            format: uri
+            description: A URL linking to the results of the report in an external tool.
+          remote_link_enabled:
+            type: boolean
+            description: If enabled, a remote link is created in Jira for the issue associated with the commit the report belongs to.
+          logo_url:
+            type: string
+            format: uri
+            description: A URL to the report logo. If none is provided, the default insights logo will be used.
+          report_type:
+            enum:
+            - SECURITY
+            - COVERAGE
+            - TEST
+            - BUG
+            type: string
+            description: The type of the report.
+          result:
+            enum:
+            - PASSED
+            - FAILED
+            - PENDING
+            type: string
+            description: The state of the report. May be set to PENDING and later updated.
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/report_data'
+            description: An array of data fields to display information on the report. Maximum 10.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was updated.
+      x-bb-default-fields:
+      - uuid
+      - commitHash
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commitHash}/reports/{uuid}
+  examples:
+    commit-report:
+      uuid: 3c1f4b7e-9a2d-4f6c-8b5e-1a2b3c4d5e6f
+      title: Security Scan Report
+      details: Automated security vulnerability scan for commit dependencies and code patterns
+      external_id: security-scan-12345
+      reporter: SecureCode Scanner v2.1
+      link: https://example.com/reports/security-scan-12345
+      remote_link_enabled: true
+      logo_url: https://example.com/logos/securecode.png
+      report_type: SECURITY
+      result: PASSED
+      data:
+        vulnerabilities_found: 0
+        scanned_files: 142
+        scan_duration: 45s
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T10:30:45Z'
+    paginated-reports:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        title: Security Scan Report
+        details: Automated security vulnerability scan for commit abc123
+        external_id: security-scan-2024-001
+        reporter: SecureCode Scanner v2.1
+        link: https://example.com/reports/security-scan-2024-001
+        remote_link_enabled: true
+        logo_url: https://example.com/logos/securecodescanner.png
+        report_type: SECURITY
+        result: PASSED
+        data: []
+        created_on: '2024-01-15T10:30:00Z'
+        updated_on: '2024-01-15T10:35:00Z'
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/commit/abc123/reports?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/commit/abc123/reports?page=0
+    commit-report_2:
+      uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      title: Security Scan Report
+      details: Automated security vulnerability scan for commit
+      external_id: security-scan-12345
+      reporter: SecureCode Scanner v2.1
+      link: https://example.com/reports/security-scan-12345
+      remote_link_enabled: true
+      logo_url: https://example.com/logos/securecode.png
+      report_type: SECURITY
+      result: PASSED
+      data:
+        vulnerabilities_found: 0
+        scanned_files: 42
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T10:35:00Z'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

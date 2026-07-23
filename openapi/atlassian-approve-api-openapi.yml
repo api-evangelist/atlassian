@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Approve API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Approve
+paths:
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - Approve
+      description: This API operation allows an authenticated user to approve a specific pull request in a Bitbucket repository by sending a POST request to the endpoint with the workspace identifier, repository slug, and pull request ID as path parameters. When executed, it registers the user's approval for the proposed code changes, which is typically used in code review workflows to indicate that the changes meet quality standards and can proceed toward merging. The approval is associated with the authenticated user's account and contributes to the pull request's approval count, which may be required to satisfy merge criteria or organizational policies before the pull request can be merged into the target branch.
+      summary: Atlassian Approve Pull Request
+      responses:
+        '200':
+          description: The `participant` object recording that the authenticated user approved the pull request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/participant'
+              examples:
+                undefined:
+                  $ref: '#/components/examples/undefined'
+        '401':
+          description: The request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified pull request or the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+        - write:pullrequest:bitbucket
+      operationId: approvePullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/approve:
+    parameters:
+    - name: commit
+      in: path
+      description: The Commits SHA1.
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - Approve
+      description: This API operation allows authenticated users to approve a specific commit in a Bitbucket repository by sending a POST request to the endpoint with the workspace identifier, repository slug, and commit hash as path parameters. When executed, it records the user's approval of the changes introduced in that particular commit, which is useful for code review workflows and tracking which team members have endorsed specific changes. The approval is associated with the authenticated user making the request and can be used as part of merge requirements or quality gates in the development process. This operation is idempotent, meaning multiple calls with the same parameters will have the same effect as a single call, and it returns information about the approval that was created or already exists.
+      summary: Atlassian Approve Commit
+      responses:
+        '200':
+          description: The `participant` object recording that the authenticated user approved the commit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/participant'
+              examples:
+                participant:
+                  $ref: '#/components/examples/participant'
+        '404':
+          description: If the specified commit, or the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+        - write:repository:bitbucket
+      operationId: approveCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+  examples:
+    participant:
+      user:
+        type: user
+        username: johndoe
+        display_name: John Doe
+        uuid: '{12345678-1234-1234-1234-123456789abc}'
+        links:
+          self:
+            href: https://api.bitbucket.org/2.0/users/johndoe
+          avatar:
+            href: https://avatar-management.services.bitbucket.org/avatar/123456789
+      role: REVIEWER
+      approved: true
+      state: approved
+      participated_on: '2024-01-15T14:30:00.000Z'
+    undefined:
+      id: 12345
+      created_on: '2023-10-15T14:30:00.000000+00:00'
+      updated_on: '2023-10-15T15:45:00.000000+00:00'
+      content:
+        raw: This looks good to me!
+        markup: markdown
+        html: <p>This looks good to me!</p>
+      user:
+        display_name: John Doe
+        uuid: '{a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6}'
+        username: johndoe
+        type: user
+      deleted: false
+      parent:
+        id: 12340
+      inline:
+        to: 15
+        from: 10
+        path: src/main.py
+      type: pullrequest_comment
+      pullrequest:
+        id: 789
+        title: Add new feature
+        type: pullrequest
+      resolution:
+        status: resolved
+        timestamp: '2023-10-15T16:00:00.000000+00:00'
+      pending: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

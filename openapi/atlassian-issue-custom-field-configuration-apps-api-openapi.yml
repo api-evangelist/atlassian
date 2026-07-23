@@ -1,0 +1,284 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Custom Field Configuration (Apps) API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Custom Field Configuration (Apps)
+paths:
+  /rest/api/3/app/field/{fieldIdOrKey}/context/configuration:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of configurations for a custom field of a [type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field-type/) created by a [Forge app](https://developer.atlassian.com/platform/forge/).<br><br>The result can be filtered by one of these criteria:<br><br> *  `id`.<br> *  `fieldContextId`.<br> *  `issueId`.<br> *  `projectKeyOrId` and `issueTypeId`.<br><br>Otherwise, all configurations are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg). Jira permissions are not required for the Forge app that provided the custom field type.
+      operationId: atlassianGetcustomfieldconfiguration
+      parameters:
+      - description: The ID or key of the custom field, for example `customfield_10000`.
+        in: path
+        name: fieldIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: 'The list of configuration IDs. To include multiple configurations, separate IDs with an ampersand: `id=10000&id=10001`. Can''t be provided with `fieldContextId`, `issueId`, `projectKeyOrId`, or `issueTypeId`.'
+        in: query
+        name: id
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      - description: 'The list of field context IDs. To include multiple field contexts, separate IDs with an ampersand: `fieldContextId=10000&fieldContextId=10001`. Can''t be provided with `id`, `issueId`, `projectKeyOrId`, or `issueTypeId`.'
+        in: query
+        name: fieldContextId
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      - description: The ID of the issue to filter results by. If the issue doesn't exist, an empty list is returned. Can't be provided with `projectKeyOrId`, or `issueTypeId`.
+        in: query
+        name: issueId
+        schema:
+          format: int64
+          type: integer
+      - description: The ID or key of the project to filter results by. Must be provided with `issueTypeId`. Can't be provided with `issueId`.
+        in: query
+        name: projectKeyOrId
+        schema:
+          type: string
+      - description: The ID of the issue type to filter results by. Must be provided with `projectKeyOrId`. Can't be provided with `issueId`.
+        in: query
+        name: issueTypeId
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":1000,"startAt":0,"total":2,"values":[{"id":"10000","fieldContextId":"10010"},{"id":"10001","fieldContextId":"10011","configuration":{"minValue":0,"maxValue":10000},"schema":{"properties":{"amount":{"type":"number"},"currency":{"type":"string"}},"required":["amount","currency"]}}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanContextualConfiguration'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user is not a Jira admin or the request is not authenticated as from the app that provided the field.
+        '404':
+          description: Returned if the custom field is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Custom Field Configurations
+      tags:
+      - Issue Custom Field Configuration (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:custom-field-contextual-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Update the configuration for contexts of a custom field of a [type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field-type/) created by a [Forge app](https://developer.atlassian.com/platform/forge/).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg). Jira permissions are not required for the Forge app that created the custom field type.
+      operationId: atlassianUpdatecustomfieldconfiguration
+      parameters:
+      - description: The ID or key of the custom field, for example `customfield_10000`.
+        in: path
+        name: fieldIdOrKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              configurations:
+              - id: '10000'
+              - configuration:
+                  maxValue: 10000
+                  minValue: 0
+                id: '10001'
+                schema:
+                  properties:
+                    amount:
+                      type: number
+                    currency:
+                      type: string
+                  required:
+                  - amount
+                  - currency
+            schema:
+              $ref: '#/components/schemas/CustomFieldConfigurations'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user is not a Jira admin or the request is not authenticated as from the app that provided the field.
+        '404':
+          description: Returned if the custom field is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Custom Field Configurations
+      tags:
+      - Issue Custom Field Configuration (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:custom-field-contextual-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    ContextualConfiguration:
+      additionalProperties: false
+      description: Details of the contextual configuration for a custom field.
+      properties:
+        configuration:
+          description: The field configuration.
+        fieldContextId:
+          description: The ID of the field context the configuration is associated with.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the configuration.
+          type: string
+        schema:
+          description: The field value schema.
+      required:
+      - fieldContextId
+      - id
+      type: object
+    CustomFieldConfigurations:
+      additionalProperties: false
+      description: Details of configurations for a custom field.
+      properties:
+        configurations:
+          description: The list of custom field configuration details.
+          items:
+            $ref: '#/components/schemas/ContextualConfiguration'
+          maxItems: 1000
+          minItems: 1
+          type: array
+          uniqueItems: true
+      required:
+      - configurations
+      type: object
+      writeOnly: true
+    PageBeanContextualConfiguration:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/ContextualConfiguration'
+          readOnly: true
+          type: array
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

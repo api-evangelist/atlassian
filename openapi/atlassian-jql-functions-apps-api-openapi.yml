@@ -1,0 +1,285 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account JQL Functions (Apps) API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: JQL Functions (Apps)
+paths:
+  /rest/api/3/jql/function/computation:
+    get:
+      deprecated: false
+      description: Returns the list of a function's precomputations along with information about when they were created, updated, and last used. Each precomputation has a `value` \- the JQL fragment to replace the custom function clause with.<br><br>**[Permissions](#permissions) required:** This API is only accessible to apps and apps can only inspect their own functions.
+      operationId: atlassianGetprecomputations
+      parameters:
+      - description: "The function key in format:\n\n *  Forge: `ari:cloud:ecosystem::extension/[App ID]/[Environment ID]/static/[Function key from manifest]`\n *  Connect: `[App key]__[Module key]`"
+        in: query
+        name: functionKey
+        schema:
+          items:
+            default: ''
+            type: string
+          type: array
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      - description: "[Order](#ordering) the results by a field:\n\n *  `functionKey` Sorts by the functionKey.\n *  `used` Sorts by the used timestamp.\n *  `created` Sorts by the created timestamp.\n *  `updated` Sorts by the updated timestamp."
+        in: query
+        name: orderBy
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":1,"values":[{"id":"cf75a1b0-4ac6-4bd8-8a50-29a465a96520","value":"issue in (TEST-1, TEST-2, TEST-3)","functionKey":"ari:cloud:ecosystem::extension/00000000-1111-2222-3333-4444444/111111-2222-3333-4444-55555/static/issuesWithText","field":"issue","operator":"in","functionName":"issuesWithText","arguments":["Test"],"created":"2023-10-14T05:25:20.000+0000","updated":"2023-10-14T05:25:20.000+0000","used":"2023-10-14T05:25:20.000+0000"},{"id":"2a854f11-d0e1-4260-aea8-64a562a7062a","error":"Error message to be displayed to the user","functionKey":"ari:cloud:ecosystem::extension/00000000-1111-2222-3333-4444444/111111-2222-3333-4444-55555/static/issuesWithText","field":"issue","operator":"=","functionName":"issuesWithText","arguments":["10001"],"created":"2023-10-14T05:25:20.000+0000","updated":"2023-10-14T05:25:20.000+0000","used":"2023-10-14T05:25:20.000+0000"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanJqlFunctionPrecomputationBean'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the request is not authenticated as the app that provided the function.
+        '404':
+          description: Returned if the function is not found.
+      security:
+      - basicAuth: []
+      - OAuth2: []
+      summary: Atlassian Get Precomputations Apps
+      tags:
+      - JQL Functions (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes: []
+        state: Current
+      - scheme: OAuth2
+        scopes: []
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Update the precomputation value of a function created by a Forge/Connect app.<br><br>**[Permissions](#permissions) required:** An API for apps to update their own precomputations.
+      operationId: atlassianUpdateprecomputations
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              values:
+              - id: f2ef228b-367f-4c6b-bd9d-0d0e96b5bd7b
+                value: issue in (TEST-1, TEST-2, TEST-3)
+              - error: Error message to be displayed to the user
+                id: 2a854f11-d0e1-4260-aea8-64a562a7062a
+            schema:
+              $ref: '#/components/schemas/JqlFunctionPrecomputationUpdateRequestBean'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '403':
+          description: Returned if the request is not authenticated as the app that provided the function.
+        '404':
+          description: Returned if the function is not found.
+      security:
+      - basicAuth: []
+      - OAuth2: []
+      summary: Atlassian Update Precomputations Apps
+      tags:
+      - JQL Functions (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes: []
+        state: Current
+      - scheme: OAuth2
+        scopes: []
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    JqlFunctionPrecomputationUpdateRequestBean:
+      additionalProperties: false
+      description: List of pairs (id and value) for precomputation updates.
+      properties:
+        values:
+          items:
+            $ref: '#/components/schemas/JqlFunctionPrecomputationUpdateBean'
+          type: array
+      type: object
+      writeOnly: true
+    PageBeanJqlFunctionPrecomputationBean:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/JqlFunctionPrecomputationBean'
+          readOnly: true
+          type: array
+      type: object
+    JqlFunctionPrecomputationUpdateBean:
+      additionalProperties: false
+      description: Precomputation id and its new value.
+      properties:
+        error:
+          description: The error message to be displayed to the user if the given function clause is no longer valid during recalculation of the precomputation.
+          type: string
+          writeOnly: true
+        id:
+          description: The id of the precomputation to update.
+          type: string
+          writeOnly: true
+        value:
+          description: The new value of the precomputation.
+          type: string
+          writeOnly: true
+      required:
+      - id
+      type: object
+      writeOnly: true
+    JqlFunctionPrecomputationBean:
+      additionalProperties: false
+      description: Jql function precomputation.
+      properties:
+        arguments:
+          description: The list of arguments function was invoked with.
+          items:
+            readOnly: true
+            type: string
+          readOnly: true
+          type: array
+        created:
+          description: The timestamp of the precomputation creation.
+          format: date-time
+          readOnly: true
+          type: string
+        error:
+          description: The error message to be displayed to the user.
+          readOnly: true
+          type: string
+        field:
+          description: The field the function was executed against.
+          readOnly: true
+          type: string
+        functionKey:
+          description: The function key.
+          readOnly: true
+          type: string
+        functionName:
+          description: The name of the function.
+          readOnly: true
+          type: string
+        id:
+          description: The id of the precomputation.
+          readOnly: true
+          type: string
+        operator:
+          description: The operator in context of which function was executed.
+          readOnly: true
+          type: string
+        updated:
+          description: The timestamp of the precomputation last update.
+          format: date-time
+          readOnly: true
+          type: string
+        used:
+          description: The timestamp of the precomputation last usage.
+          format: date-time
+          readOnly: true
+          type: string
+        value:
+          description: The JQL fragment stored as the precomputation.
+          readOnly: true
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

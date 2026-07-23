@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Announcement Banner API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Announcement Banner
+paths:
+  /rest/api/3/announcementBanner:
+    get:
+      deprecated: false
+      description: Returns the current announcement banner configuration.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetbanner
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"hashId":"9HN2FJK9DM8BHRWERVW3RRTGDJ4G4D5C","isDismissible":false,"isEnabled":true,"message":"This is a public, enabled, non-dismissible banner, set using the API","visibility":"public"}'
+              schema:
+                $ref: '#/components/schemas/AnnouncementBannerConfiguration'
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '"Only admins can read banner configuration."'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Announcement Banner Configuration
+      tags:
+      - Announcement Banner
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates the announcement banner configuration.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSetbanner
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              isDismissible: false
+              isEnabled: true
+              message: This is a public, enabled, non-dismissible banner, set using the API
+              visibility: public
+            schema:
+              $ref: '#/components/schemas/AnnouncementBannerConfigurationUpdate'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '"Banner message cannot be null."'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if an invalid parameter is passed.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '"Only admins can update banner configuration."'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Announcement Banner Configuration
+      tags:
+      - Announcement Banner
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    AnnouncementBannerConfigurationUpdate:
+      additionalProperties: false
+      description: Configuration of the announcement banner.
+      properties:
+        isDismissible:
+          description: Flag indicating if the announcement banner can be dismissed by the user.
+          type: boolean
+        isEnabled:
+          description: Flag indicating if the announcement banner is enabled or not.
+          type: boolean
+        message:
+          description: The text on the announcement banner.
+          type: string
+        visibility:
+          description: Visibility of the announcement banner. Can be public or private.
+          type: string
+      type: object
+      writeOnly: true
+    AnnouncementBannerConfiguration:
+      additionalProperties: false
+      description: Announcement banner configuration.
+      properties:
+        hashId:
+          description: Hash of the banner data. The client detects updates by comparing hash IDs.
+          readOnly: true
+          type: string
+        isDismissible:
+          description: Flag indicating if the announcement banner can be dismissed by the user.
+          readOnly: true
+          type: boolean
+        isEnabled:
+          description: Flag indicating if the announcement banner is enabled or not.
+          readOnly: true
+          type: boolean
+        message:
+          description: The text on the announcement banner.
+          readOnly: true
+          type: string
+        visibility:
+          description: Visibility of the announcement banner.
+          enum:
+          - PUBLIC
+          - PRIVATE
+          readOnly: true
+          type: string
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

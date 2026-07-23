@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Containers API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Containers
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/logs/{log_uuid}:
+    get:
+      tags:
+      - Containers
+      summary: Atlassian Get the Logs for the Build Container or Service Container for Given Step of Pipeline.
+      description: This API endpoint retrieves the logs for a specific build or service container associated with a particular step in a Bitbucket pipeline execution. By providing the workspace identifier, repository slug, pipeline UUID, step UUID, and log UUID, developers can access detailed log information that captures the output and execution details of containers running during the pipeline process. This is particularly useful for debugging pipeline failures, monitoring build processes, and tracking the behavior of services or builds within a specific pipeline step, enabling teams to troubleshoot issues and optimize their CI/CD workflows effectively.
+      operationId: getTheLogsForTheBuildContainerOrServiceContainerForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: log_uuid
+        description: For the main build container specify the step UUID; for a service container specify the service container UUID
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for the build container or service container.
+        '404':
+          description: No account, repository, pipeline, step or log exist for the provided path.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

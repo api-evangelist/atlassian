@@ -1,0 +1,632 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Checks API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Checks
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/export/{repo_name}-issues-{task_id}.zip:
+    parameters:
+    - name: repo_name
+      in: path
+      description: The name of the repo
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: task_id
+      in: path
+      description: The ID of the export task
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Checks
+      description: This GET operation checks the status of a previously initiated issue export request for a specific Bitbucket repository by polling the export endpoint using the provided task ID. When called, it queries the export job identified by the workspace, repository slug, repository name, and unique task identifier to determine whether the export process is still running, has completed successfully, or has failed. If the export is complete, the endpoint returns the ZIP file containing the exported issues data; otherwise, it provides status information about the ongoing export process. This allows users to monitor long-running export operations and retrieve the results once processing is finished without blocking or timing out during the initial export request.
+      summary: Atlassian Check Issue Export Status
+      responses:
+        '202':
+          description: Export job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                response:
+                  value:
+                    type: issue_job_status
+                    status: ACCEPTED
+                    phase: Initializing
+                    total: 0
+                    count: 0
+                    pct: 0
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No export job has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: checkIssueExportStatus
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/issues/import:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Checks
+      description: This API endpoint allows you to check the status of a bulk issue import operation for a specific Bitbucket repository. By making a GET request to `/repositories/{workspace}/{repo_slug}/issues/import`, you can retrieve information about a previously initiated issue import process, including whether it's still in progress, completed successfully, or encountered any errors. The endpoint requires you to specify both the workspace identifier and the repository slug in the URL path, and it returns details about the import job such as its current state, the number of issues processed, and any relevant metadata associated with the import operation.
+      summary: Atlassian Check Issue Import Status
+      responses:
+        '200':
+          description: Import job complete with either FAILURE or SUCCESS status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                issue-job-status:
+                  $ref: '#/components/examples/issue-job-status'
+        '202':
+          description: Import job started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                response:
+                  value:
+                    type: issue_job_status
+                    status: ACCEPTED
+                    phase: Attachments
+                    total: 15
+                    count: 0
+                    percent: 0
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No export job has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue:write
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: checkIssueImportStatus
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/vote:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Checks
+      description: This GET endpoint checks whether the currently authenticated user has voted for a specific issue in a Bitbucket repository. By providing the workspace identifier, repository slug, and issue ID in the URL path, the API returns the voting status of the authenticated user for that particular issue. This operation is useful for applications that need to display voting state or manage user interactions with repository issues, allowing developers to determine if a user has already cast their vote before presenting voting options or updating the UI accordingly.
+      summary: Atlassian Check if Current User Voted for an Issue
+      responses:
+        '204':
+          description: If the authenticated user has not voted for this issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the authenticated user has not voted for this issue, or when the repo does not exist, or does not have an issue tracker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account
+        - issue
+      - basic: []
+      - api_key: []
+      operationId: checkIfCurrentUserVotedForAnIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/watch:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Checks
+      description: This GET endpoint allows you to check whether the currently authenticated user is watching a specific issue in a Bitbucket repository. By making a request to this endpoint with the workspace ID, repository slug, and issue ID, you'll receive a response indicating the watch status of the authenticated user for that particular issue. This is useful for applications that need to determine if a user has subscribed to receive notifications about updates, comments, or changes to a specific issue, enabling features like watch/unwatch toggles or displaying watch status indicators in the user interface.
+      summary: Atlassian Check if Current User Is Watching Issue
+      responses:
+        '204':
+          description: If the authenticated user is watching this issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: When the request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the authenticated user is not watching this issue, or when the repo does not exist, or does not have an issue tracker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account
+        - issue
+      - basic: []
+      - api_key: []
+      operationId: checkIfCurrentUserIsWatchingIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/watch:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Checks
+      description: Used to check whether the authenticated user is watching a specific code snippet in a Bitbucket workspace. This endpoint accepts the workspace identifier and the encoded snippet ID as path parameters, returning the watch status for the current user. When called, it indicates if the user has subscribed to notifications for changes or updates to that particular snippet, helping users manage their snippet subscriptions and stay informed about modifications to code snippets they're interested in tracking.
+      summary: Atlassian Check if the Current User Is Watching Snippet
+      responses:
+        '204':
+          description: If the authenticated user is watching the snippet.
+        '404':
+          description: If the snippet does not exist, or if the authenticated user is not watching the snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: checkIfTheCurrentUserIsWatchingSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/permission/check:
+    post:
+      tags:
+      - Checks
+      summary: Atlassian Check Content Permissions
+      description: Check if a user or a group can perform an operation to the specified content. The `operation` to check<br>must be provided. The user’s account ID or the ID of the group can be provided in the `subject` to check<br>permissions against a specified user or group. The following permission checks are done to make sure that the<br>user or group has the proper access:<br><br>- site permissions<br>- space permissions<br>- content restrictions<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission) if checking permission for self,<br>otherwise 'Confluence Administrator' global permission is required.
+      operationId: checkContentPermissions
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to check permissions against.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The content permission request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentPermissionRequest'
+        required: true
+      responses:
+        '200':
+          description: Returned if the permission check completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckResponse'
+        '400':
+          description: 'Returned if;
+
+
+            - If any of the required fields are missing.
+
+            - If specified `subject` or `operation` is invalid.'
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the user does not have permission perform the check.
+          content: {}
+        '404':
+          description: Returned if there is no content with the given ID.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.permission
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.permission
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.permission:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    ContentPermissionRequest:
+      required:
+      - operation
+      - subject
+      type: object
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
+        operation:
+          type: string
+          description: The content permission operation to check.
+          enum:
+          - read
+          - update
+          - delete
+          example: read
+      description: This object represents the request for the content permission check API.
+    Message:
+      required:
+      - args
+      type: object
+      additionalProperties: true
+      properties:
+        translation:
+          type: string
+          example: example_value
+        args:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+          example: []
+    PermissionSubjectWithGroupId:
+      required:
+      - identifier
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - user
+          - group
+          example: user
+        identifier:
+          type: string
+          description: 'for `type=user`, identifier should be user''s accountId or `anonymous` for anonymous users
+
+
+            for `type=group`, identifier should be ID of the group'
+          example: example_value
+      description: The user or group that the permission applies to.
+    PermissionCheckResponse:
+      required:
+      - hasPermission
+      type: object
+      properties:
+        hasPermission:
+          type: boolean
+          example: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          example: []
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: 'This object represents the response for the content permission check API. If the user or group does not have
+
+        permissions, the following errors may be returned:
+
+
+        - Group does not have permission to the space
+
+        - Group does not have permission to the content
+
+        - User is not allowed to use Confluence
+
+        - User does not have permission to the space
+
+        - User does not have permission to the content
+
+        - Anonymous users are not allowed to use Confluence
+
+        - Anonymous user does not have permission to the space
+
+        - Anonymous user does not have permission to the content'
+    issue_job_status:
+      type: object
+      title: Issue Job Status
+      description: The status of an import or export job
+      properties:
+        type:
+          type: string
+          example: example_value
+        status:
+          type: string
+          description: The status of the import/export job
+          enum:
+          - ACCEPTED
+          - STARTED
+          - RUNNING
+          - FAILURE
+          example: ACCEPTED
+        phase:
+          type: string
+          description: The phase of the import/export job
+          example: example_value
+        total:
+          type: integer
+          description: The total number of issues being imported/exported
+          example: 10
+        count:
+          type: integer
+          description: The total number of issues already imported/exported
+          example: 10
+        pct:
+          type: number
+          description: The percentage of issues already imported/exported
+          minimum: 0
+          maximum: 100
+          example: 42.5
+      additionalProperties: false
+  examples:
+    issue-job-status:
+      type: export
+      status: RUNNING
+      phase: Processing issues
+      total: 1000
+      count: 450
+      pct: 45
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,759 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Reports - Commits API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Reports - Commits
+paths:
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports:
+    get:
+      tags:
+      - Reports - Commits
+      description: Returns a paginated list of Reports linked to this commit.
+      summary: Atlassian List Reports
+      operationId: atlassianGetreportsforcommit
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_reports'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}:
+    put:
+      tags:
+      - Reports - Commits
+      description: "Creates or updates a report for the specified commit.<br>To upload a report, make sure to generate an ID that is unique across all reports for that commit. If you want to use an existing id from your own system, we recommend prefixing it with your system's name to avoid collisions, for example, mySystem-001.<br><br>### Sample cURL request:<br>```<br>curl --request PUT 'https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001' \\<br>--header 'Content-Type: application/json' \\<br>--data-raw '{<br>    \"title\": \"Security scan report\",<br>    \"details\": \"This pull request introduces 10 new dependency vulnerabilities.\",<br>    \"report_type\": \"SECURITY\",<br>    \"reporter\": \"mySystem\",<br>    \"link\": \"http://www.mysystem.com/reports/001\",<br>    \"result\": \"FAILED\",<br>    \"data\": [<br>        {<br>            \"title\": \"Duration (seconds)\",<br>            \"type\": \"DURATION\",<br>            \"value\": 14<br>        },<br>        {<br>            \"title\": \"Safe to merge?\",<br>            \"type\": \"BOOLEAN\",<br>            \"value\": false<br>        }<br>    ]<br>}'<br>```<br><br>### Possible field values:<br>report_type: SECURITY, COVERAGE, TEST, BUG<br>result: PASSED, FAILED, PENDING<br>data.type: BOOLEAN, DATE, DURATION, LINK, NUMBER, PERCENTAGE, TEXT<br><br>#### Data field formats<br>| Type  Field   | Value Field Type  | Value Field Display |<br>|:--|:|:--|<br>| None/ Omitted | Number, String or Boolean (not an array or object) | Plain text |<br>| BOOLEAN\t| Boolean | The value will be read as a JSON boolean and displayed as 'Yes' or 'No'. |<br>| DATE  | Number | The value will be read as a JSON number in the form of a Unix timestamp (milliseconds) and will be displayed as a relative date if the date is less than one week ago, otherwise  it will be displayed as an absolute date. |<br>| DURATION | Number | The value will be read as a JSON number in milliseconds and will be displayed in a human readable duration format. |<br>| LINK | Object: `{\"text\": \"Link text here\", \"href\": \"https://link.to.annotation/in/external/tool\"}` | The value will be read as a JSON object containing the fields \"text\" and \"href\" and will be displayed as a clickable link on the report. |<br>| NUMBER | Number | The value will be read as a JSON number and large numbers will be  displayed in a human readable format (e.g. 14.3k). |<br>| PERCENTAGE | Number (between 0 and 100) | The value will be read as a JSON number between 0 and 100 and will be displayed with a percentage sign. |<br>| TEXT | String | The value will be read as a JSON string and will be displayed as-is |<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>"
+      operationId: atlassianCreateorupdatereport
+      summary: Atlassian Create Or Update A Report
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report'
+        description: The report to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report'
+        '400':
+          description: The provided Report object is malformed or incomplete.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+    get:
+      tags:
+      - Reports - Commits
+      description: Returns a single Report matching the provided ID.
+      summary: Atlassian Get A Report
+      operationId: atlassianGetreport
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report'
+        '404':
+          description: The report with the given ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Reports - Commits
+      description: Deletes a single Report matching the provided ID.
+      summary: Atlassian Delete A Report
+      operationId: atlassianDeletereport
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No content
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations:
+    get:
+      tags:
+      - Reports - Commits
+      description: Returns a paginated list of Annotations for a specified report.
+      summary: Atlassian List Annotations
+      operationId: atlassianGetannotationsforreport
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Uuid or external-if of the report for which to get annotations for.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_annotations'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+    post:
+      tags:
+      - Reports - Commits
+      description: 'Bulk upload of annotations.<br>Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.<br><br>Add the annotations you want to upload as objects in a JSON array and make sure each annotation has the external_id field set to a unique value. If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001. The external id can later be used to identify the report as an alternative to the generated [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid). You can upload up to 100 annotations per POST request.<br><br>### Sample cURL request:<br>```<br>curl --location ''https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001/annotations'' \<br>--header ''Content-Type: application/json'' \<br>--data-raw ''[<br>  {<br>        "external_id": "mysystem-annotation001",<br>        "title": "Security scan report",<br>        "annotation_type": "VULNERABILITY",<br>        "summary": "This line represents a security threat.",<br>        "severity": "HIGH",<br>      "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",<br>        "line": 42<br>  },<br>  {<br>        "external_id": "mySystem-annotation002",<br>        "title": "Bug report",<br>        "annotation_type": "BUG",<br>        "result": "FAILED",<br>        "summary": "This line might introduce a bug.",<br>        "severity": "MEDIUM",<br>      "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Helper.java",<br>        "line": 13<br>  }<br>]''<br>```<br><br>### Possible field values:<br>annotation_type: VULNERABILITY, CODE_SMELL, BUG<br>result: PASSED, FAILED, IGNORED, SKIPPED<br>severity: HIGH, MEDIUM, LOW, CRITICAL<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>'
+      operationId: atlassianBulkcreateorupdateannotations
+      summary: Atlassian Bulk Create Or Update Annotations
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Uuid or external-if of the report for which to get annotations for.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/report_annotation'
+              minItems: 1
+              maxItems: 100
+        description: The annotations to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/report_annotation'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations/{annotationId}:
+    get:
+      tags:
+      - Reports - Commits
+      description: Returns a single Annotation matching the provided ID.
+      summary: Atlassian Get An Annotation
+      operationId: atlassianGetannotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report_annotation'
+        '404':
+          description: The annotation with the given ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+    put:
+      tags:
+      - Reports - Commits
+      description: 'Creates or updates an individual annotation for the specified report.<br>Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.<br><br>Just as reports, annotation needs to be uploaded with a unique ID that can later be used to identify the report as an alternative to the generated [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid). If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001.<br><br>### Sample cURL request:<br>```<br>curl --request PUT ''https://api.bitbucket.org/2.0/repositories///commit//reports/mySystem-001/annotations/mysystem-annotation001'' \<br>--header ''Content-Type: application/json'' \<br>--data-raw ''{<br>    "title": "Security scan report",<br>    "annotation_type": "VULNERABILITY",<br>    "summary": "This line represents a security thread.",<br>    "severity": "HIGH",<br>    "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",<br>    "line": 42<br>}''<br>```<br><br>### Possible field values:<br>annotation_type: VULNERABILITY, CODE_SMELL, BUG<br>result: PASSED, FAILED, IGNORED, SKIPPED<br>severity: HIGH, MEDIUM, LOW, CRITICAL<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>'
+      operationId: atlassianCreateorupdateannotation
+      summary: Atlassian Create Or Update An Annotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the report belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the report.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report_annotation'
+        description: The annotation to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report_annotation'
+        '400':
+          description: The provided Annotation object is malformed or incomplete.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+    delete:
+      tags:
+      - Reports - Commits
+      description: Deletes a single Annotation matching the provided ID.
+      summary: Atlassian Delete An Annotation
+      operationId: atlassianDeleteannotation
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit the annotation belongs to.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: annotationId
+        description: Either the uuid or external-id of the annotation.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No content
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+components:
+  schemas:
+    paginated_reports:
+      type: object
+      title: Paginated Reports
+      description: A paginated list of reports.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/report'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    report_data:
+      type: object
+      title: Report Data
+      description: A key-value element that will be displayed along with the report.
+      properties:
+        type:
+          enum:
+          - BOOLEAN
+          - DATE
+          - DURATION
+          - LINK
+          - NUMBER
+          - PERCENTAGE
+          - TEXT
+          type: string
+          description: The type of data contained in the value field. If not provided, then the value will be detected as a boolean, number or string.
+        title:
+          type: string
+          description: A string describing what this data field represents.
+        value:
+          type: object
+          description: The value of the data element.
+    report_annotation:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Report Annotation
+        description: A report for a commit.
+        properties:
+          external_id:
+            type: string
+            description: ID of the annotation provided by the annotation creator. It can be used to identify the annotation as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the annotation creator for updating or deleting this specific annotation. Needs to be unique.
+          uuid:
+            type: string
+            description: The UUID that can be used to identify the annotation.
+          annotation_type:
+            enum:
+            - VULNERABILITY
+            - CODE_SMELL
+            - BUG
+            type: string
+            description: The type of the report.
+          path:
+            type: string
+            description: The path of the file on which this annotation should be placed. This is the path of the file relative to the git repository. If no path is provided, then it will appear in the overview modal on all pull requests where the tip of the branch is the given commit, regardless of which files were modified.
+          line:
+            type: integer
+            description: The line number that the annotation should belong to. If no line number is provided, then it will default to 0 and in a pull request it will appear at the top of the file specified by the path field.
+            minimum: 1
+          summary:
+            type: string
+            description: The message to display to users.
+          details:
+            type: string
+            description: The details to show to users when clicking on the annotation.
+          result:
+            enum:
+            - PASSED
+            - FAILED
+            - SKIPPED
+            - IGNORED
+            type: string
+            description: The state of the report. May be set to PENDING and later updated.
+          severity:
+            enum:
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+            type: string
+            description: The severity of the annotation.
+          link:
+            type: string
+            format: uri
+            description: A URL linking to the annotation in an external tool.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was updated.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commit.hash}/reports/{reportUuid}/annotations/{uuid}
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    report:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Commit Report
+        description: A report for a commit.
+        properties:
+          uuid:
+            type: string
+            description: The UUID that can be used to identify the report.
+          title:
+            type: string
+            description: The title of the report.
+          details:
+            type: string
+            description: A string to describe the purpose of the report.
+          external_id:
+            type: string
+            description: ID of the report provided by the report creator. It can be used to identify the report as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the report creator for updating or deleting this specific report. Needs to be unique.
+          reporter:
+            type: string
+            description: A string to describe the tool or company who created the report.
+          link:
+            type: string
+            format: uri
+            description: A URL linking to the results of the report in an external tool.
+          remote_link_enabled:
+            type: boolean
+            description: If enabled, a remote link is created in Jira for the issue associated with the commit the report belongs to.
+          logo_url:
+            type: string
+            format: uri
+            description: A URL to the report logo. If none is provided, the default insights logo will be used.
+          report_type:
+            enum:
+            - SECURITY
+            - COVERAGE
+            - TEST
+            - BUG
+            type: string
+            description: The type of the report.
+          result:
+            enum:
+            - PASSED
+            - FAILED
+            - PENDING
+            type: string
+            description: The state of the report. May be set to PENDING and later updated.
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/report_data'
+            description: An array of data fields to display information on the report. Maximum 10.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was updated.
+      x-bb-default-fields:
+      - uuid
+      - commitHash
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commitHash}/reports/{uuid}
+    paginated_annotations:
+      type: object
+      title: Paginated Annotations
+      description: A paginated list of annotations.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/report_annotation'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

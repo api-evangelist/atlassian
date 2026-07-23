@@ -1,0 +1,506 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Labels API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Labels
+paths:
+  /wiki/rest/api/content/{id}/label:
+    get:
+      tags:
+      - Labels
+      summary: Atlassian Get Labels for Content
+      deprecated: true
+      description: This API operation retrieves all labels that have been applied to a specific piece of Confluence content identified by its unique ID. When you make a GET request to this endpoint, it returns a collection of labels associated with the specified content, which can include both user-created labels and system-generated ones. Labels in Confluence are used for categorization, organization, and searchability of content such as pages, blog posts, and attachments. The response typically includes details about each label such as its name, prefix (if applicable), and ID, allowing developers to programmatically access and manage the tagging metadata of content within a Confluence space.
+      operationId: getLabelsForContent
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its labels.
+        required: true
+        schema:
+          type: string
+      - name: prefix
+        in: query
+        description: 'Filters the results to labels with the specified prefix. If this parameter
+
+          is not specified, then labels with any prefix will be returned.
+
+
+          - `global` prefix is used by default when a user adds a label
+
+          via the UI.
+
+          - `my` prefix can be explicitly added by a user when adding a label
+
+          via the UI, e.g. ''my:example-label''. Also, when a page is selected as
+
+          a favourite, the ''my:favourite'' label is automatically added.
+
+          - `team` can used when adding labels via [Add labels to content](#api-content-id-label-post)
+
+          but is not used in the UI.'
+        schema:
+          type: string
+          enum:
+          - global
+          - my
+          - team
+      - name: start
+        in: query
+        description: The starting index of the returned labels.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of labels to return per page. Note,
+
+          this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: Returned if the requested labels are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Labels
+      summary: Atlassian Add Labels to Content
+      description: This API operation allows you to add one or more labels to a specific piece of Confluence content by making a POST request to the endpoint with the content's unique identifier. Labels are metadata tags that help organize, categorize, and improve the discoverability of pages, blog posts, and other content within Confluence. When calling this endpoint, you must provide the content ID in the URL path and include an array of label objects in the request body, specifying properties such as the label prefix (typically 'global') and the label name. The operation requires appropriate permissions to modify the target content, and upon successful execution, it returns the newly added labels along with their metadata. This functionality is commonly used for bulk tagging operations, automated content categorization workflows, or integrating external systems that need to apply consistent labeling schemes across Confluence spaces.
+      operationId: addLabelsToContent
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that will have labels added to it.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The labels to add to the content.
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/LabelCreateArray'
+              - $ref: '#/components/schemas/LabelCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the labels are added to the content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '400':
+          description: 'Returned if;
+
+
+            - The body contains labels with invalid characters or too many characters.
+
+            - The body contains too many labels.
+
+            - The target content would contain too many labels after the operation.
+
+            - The calling user does not have permission to edit labels.'
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:label:confluence
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Labels
+      summary: Atlassian Remove Label From Content Using Query Parameter
+      description: This API operation removes a label from a specific piece of Confluence content by specifying the content ID in the URL path and the label name as a query parameter. When executed with a DELETE HTTP method, it allows users to untag or dissociate a previously applied label from a page, blog post, or other content item in Confluence. The operation requires appropriate permissions to modify labels on the target content and will return a success response once the label has been successfully removed from the specified content item.
+      operationId: removeLabelFromContentUsingQueryParameter
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the label will be removed from.
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: The name of the label to be removed.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the label is removed. The response body will be empty.
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/label/{label}:
+    delete:
+      tags:
+      - Labels
+      summary: Atlassian Remove Label From Content
+      description: Removes a specific label from a Confluence content item identified by its content ID. This DELETE operation targets the endpoint /wiki/rest/api/content/{id}/label/{label} where {id} represents the unique identifier of the content (such as a page or blog post) and {label} is the name of the label to be removed. When executed successfully, the API removes the association between the specified label and the content, effectively unlabeling that content item. This operation is useful for content management workflows where labels are used for categorization, organization, or search purposes and need to be dynamically updated or removed. The operation requires appropriate permissions to modify labels on the target content and returns a success response when the label is successfully removed from the content item.
+      operationId: removeLabelFromContent
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the label will be removed from.
+        required: true
+        schema:
+          type: string
+      - name: label
+        in: path
+        description: The name of the label to be removed.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the label is removed. The response body will be empty.
+          content: {}
+        '400':
+          description: Returned if the label name has a "/" character.
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /rest/api/3/label:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of labels.
+      operationId: atlassianGetalllabels
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 1000
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":false,"maxResults":2,"startAt":0,"total":100,"values":["performance","security"]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanString'
+          description: Returned if the request is successful.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get All Labels
+      tags:
+      - Labels
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:label:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    LabelCreate:
+      required:
+      - name
+      - prefix
+      type: object
+      additionalProperties: true
+      properties:
+        prefix:
+          type: string
+          description: The prefix for the label. `global`, `my` `team`, etc.
+          example: example_value
+        name:
+          type: string
+          description: The name of the label, which will be shown in the UI.
+          example: Example Title
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        id:
+          type: string
+          example: abc123
+        label:
+          type: string
+          example: Example Title
+    LabelCreateArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/LabelCreate'
+    PageBeanString:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            readOnly: true
+            type: string
+          readOnly: true
+          type: array
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

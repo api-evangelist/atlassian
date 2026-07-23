@@ -1,0 +1,263 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Artifacts API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Artifacts
+paths:
+  /repositories/{workspace}/{repo_slug}/downloads:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Artifacts
+      description: This API operation retrieves a paginated list of download artifacts that have been uploaded to a specific Bitbucket repository. By making a GET request to the endpoint with the appropriate workspace and repository slug parameters, users can view all files that are available for download from the repository's downloads section. These artifacts are typically release binaries, compiled packages, or other distributable files that repository maintainers want to make available to users separately from the source code. The response includes metadata about each download artifact such as filename, size, upload date, and download URL, allowing developers and automated systems to programmatically access and manage repository downloads.
+      summary: Atlassian List Download Artifacts
+      responses:
+        '200':
+          description: Returns a paginated list of the downloads associated with the repository.
+        '403':
+          description: User is not authorized to read from the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      operationId: listDownloadArtifacts
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Artifacts
+      description: This API operation allows you to upload a download artifact to a specific Bitbucket repository within a workspace. By sending a POST request to the endpoint with the workspace ID and repository slug as path parameters, you can attach files that will be made available as downloads for the repository. These artifacts are typically binary files, releases, or other distributable assets that you want to make accessible to users who have access to the repository. The uploaded files are stored separately from the repository's version control system and can be downloaded directly through Bitbucket's download interface, making this useful for sharing compiled binaries, documentation packages, or other supplementary materials related to your project.
+      summary: Atlassian Upload Download Artifact
+      responses:
+        '201':
+          description: The artifact was uploaded sucessfully.
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: User is not authorized to write to the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '406':
+          description: Unsupported Content-Type. Use multiplart/form-data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:write
+      - basic: []
+      - api_key: []
+      operationId: uploadDownloadArtifact
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/downloads/{filename}:
+    parameters:
+    - name: filename
+      in: path
+      description: Name of the file.
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Artifacts
+      description: 'The Delete Download Artifact operation in the Atlassian Bitbucket Repositories API allows users to remove a specific download artifact from a repository by making a DELETE request to the endpoint /repositories/{workspace}/{repo_slug}/downloads/{filename}. This operation requires three path parameters: the workspace identifier, the repository slug, and the exact filename of the artifact to be deleted. When executed successfully, it permanently removes the specified file from the repository''s downloads section, which is typically used for storing release artifacts, binaries, or other distributable files associated with the repository. This operation is useful for managing repository storage, removing outdated releases, or cleaning up unnecessary files from the downloads area.'
+      summary: Atlassian Delete Download Artifact
+      responses:
+        '204':
+          description: The specified download artifact was deleted.
+        '403':
+          description: User is not authorized to write to the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified download does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:repository:bitbucket
+      operationId: deleteDownloadArtifact
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Artifacts
+      description: 'The Atlassian Bitbucket Repositories API endpoint `/repositories/{workspace}/{repo_slug}/downloads/{filename}` using the GET method retrieves a redirect link to download a specific file artifact that has been uploaded to a repository''s downloads section. This operation requires three path parameters: the workspace ID or slug that owns the repository, the repository slug identifier, and the exact filename of the download artifact you want to access. When called, instead of returning the file content directly, the API responds with a 302 redirect to the actual download URL where the file is stored, allowing clients to fetch the artifact from Bitbucket''s storage infrastructure. This is particularly useful for accessing release binaries, documentation archives, or other supplementary files associated with a repository that aren''t part of the source code itself.'
+      summary: Atlassian Get Download Artifact Link
+      responses:
+        '302':
+          description: Redirects to the url of the specified download artifact.
+        '403':
+          description: User is not authorized to read from the repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified download artifact does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      operationId: getDownloadArtifactLink
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

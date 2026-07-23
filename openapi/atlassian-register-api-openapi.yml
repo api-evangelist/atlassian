@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Register API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Register
+paths:
+  /atlassian-connect/1/app/module/dynamic:
+    post:
+      tags:
+      - Register
+      summary: Atlassian Register Modules
+      description: This API operation allows Atlassian Connect apps to dynamically register new modules with a Confluence instance at runtime, extending the app's functionality without requiring a full app descriptor update. By sending a POST request to the /atlassian-connect/1/app/module/dynamic endpoint, developers can add new web items, web panels, dialogs, or other supported module types on-the-fly, enabling more flexible and responsive app behavior based on user actions, configuration changes, or external events. The operation requires authentication via JWT and the module definitions must conform to the Atlassian Connect module schema, with the registered modules persisting until explicitly removed or the app is uninstalled.
+      operationId: registerModules
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ConnectModules'
+        required: true
+      responses:
+        '200':
+          description: Returned if the request is successful.
+          content: {}
+        '400':
+          description: 'Returned if:
+
+            * any of the provided modules is invalid. For example, required properties are missing.
+
+            * any of the modules conflict with registered dynamic modules or modules defined in the app descriptor. For example, there are duplicate keys.
+
+
+            Details of the issues encountered are included in the error message.'
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: 'Installation failed. The app com.example.app.key has duplicate module keys: [module-key]. Please contact the app vendor.'
+        '401':
+          description: Returned if the call is not from a Connect app.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: The request is not from a Connect app.
+      deprecated: false
+      x-experimental: true
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+      security:
+      - bearerHttpAuthentication: []
+      x-api-evangelist-processing:
+        AddBearerAuthtoOperations: true
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

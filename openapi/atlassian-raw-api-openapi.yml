@@ -1,0 +1,211 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Raw API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Raw
+paths:
+  /snippets/{workspace}/{encoded_id}/files/{path}:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: path
+      in: path
+      description: Path to the file.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Raw
+      description: Retrieves the raw, unrendered content of a specific file from a snippet at its latest HEAD revision in Atlassian Bitbucket. This endpoint requires specifying the workspace identifier, the encoded snippet ID, and the full path to the file within the snippet's file structure. The operation returns the file's content in its original format without any Bitbucket rendering or formatting applied, making it useful for programmatically accessing snippet files for download, processing, or display in external applications. Authentication is typically required based on the snippet's visibility settings, with private snippets requiring appropriate permissions to access the raw file content.
+      summary: Atlassian Get Snippets Raw File at Head
+      responses:
+        '302':
+          description: A redirect to the most recent revision of the specified file.
+          headers:
+            Location:
+              description: The URL of the most recent file revision.
+              schema:
+                type: string
+        '403':
+          description: If the authenticated user does not have access to the snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: getSnippetsRawFileAtHead
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /snippets/{workspace}/{encoded_id}/{node_id}/files/{path}:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: node_id
+      in: path
+      description: A commit revision (SHA1).
+      required: true
+      schema:
+        type: string
+    - name: path
+      in: path
+      description: Path to the file.
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Raw
+      description: This API operation retrieves the raw content of a specific file within a particular revision of a Bitbucket snippet. By providing the workspace identifier, the encoded snippet ID, a specific node ID (representing a commit or revision), and the file path, you can access the unprocessed file content directly. This is particularly useful when you need to programmatically fetch the exact contents of a snippet file at a specific point in its version history, whether for display purposes, downloading, or further processing in your application.
+      summary: Atlassian Get Snippets Raw File
+      responses:
+        '200':
+          description: Returns the contents of the specified file.
+          headers:
+            Content-Type:
+              description: The mime type as derived from the filename
+              schema:
+                type: string
+            Content-Disposition:
+              description: attachment
+              schema:
+                type: string
+        '403':
+          description: If the authenticated user does not have access to the snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the file or snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: getSnippetsRawFile
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

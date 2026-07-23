@@ -1,0 +1,349 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Sets API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Sets
+paths:
+  /repositories/{workspace}/{repo_slug}/override-settings:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    put:
+      tags:
+      - Sets
+      description: This API operation allows administrators to configure the inheritance behavior of settings for a specific Bitbucket repository within a workspace. By making a PUT request to this endpoint, users can control whether repository settings should inherit values from the project or workspace level, or use custom overrides specific to that repository. This is particularly useful in organizations that want to enforce certain settings across multiple repositories while allowing selective customization for specific repos. The operation requires specification of both the workspace identifier and the repository slug in the URL path, and the request body typically contains the inheritance configuration that determines which settings should be inherited and which should be overridden at the repository level.
+      summary: Atlassian Set the Inheritance State for Repository Settings
+      responses:
+        '204':
+          description: The repository setting inheritance state was set and no content returned
+        '404':
+          description: If no repository exists at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: setTheInheritanceStateForRepositorySettings
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/audit/retention:
+    put:
+      tags:
+      - Sets
+      summary: Atlassian Set Retention Period
+      description: The Set Retention Period operation is a PUT request to the /wiki/rest/api/audit/retention endpoint in the Atlassian Confluence Audit API that allows administrators to configure how long audit log records are retained in the system before being automatically deleted. This operation accepts parameters defining the retention period duration, typically specified in days, and requires appropriate administrative permissions to execute. By setting a retention period, organizations can comply with data governance policies, regulatory requirements, and storage management practices while maintaining an audit trail for a specified timeframe. The operation updates the global retention settings for all audit logs, ensuring that older records beyond the configured threshold are systematically purged from the system.
+      operationId: setRetentionPeriod
+      requestBody:
+        description: The updated retention period.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionPeriod'
+            examples:
+              set-retention-period:
+                $ref: '#/components/examples/set-retention-period'
+        required: true
+      responses:
+        '200':
+          description: Returned if the retention period is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionPeriod'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        ChooseTags: true
+        WriteDescription: true
+        GenerateExampleFromOperationResponseSchema: true
+        GenerateExampleFromOperationRequestSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/state:
+    put:
+      tags:
+      - Sets
+      summary: Atlassian Set the Content State of Content and Publishes New Version of the Content
+      description: This API operation allows you to set or update the content state of a specific Confluence page or blog post by its ID, which triggers the creation and publication of a new version of that content. When invoked via a PUT request to the endpoint, it accepts the content ID as a path parameter and the desired state information in the request body, then applies that state to the content item while automatically incrementing its version number. This is particularly useful for implementing workflow states, approval processes, or status tracking within Confluence content, as it not only changes the state metadata but also ensures the change is captured as a new version in the content's history, maintaining a complete audit trail of state transitions.
+      operationId: setTheContentStateOfContentAndPublishesNewVersionOfTheContent
+      requestBody:
+        description: Content state fields for state. Pass in id for an existing state, or new name and color for best matching existing state, or new state if allowed in space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentStateRestInput'
+        required: true
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the content whose content state is to be set.
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: 'Status of content onto which state will be placed. If draft, then draft state will change.
+
+          If current, state will be placed onto a new version of the content with same body as previous version.'
+        schema:
+          type: string
+          enum:
+          - current
+          - draft
+      responses:
+        '200':
+          description: Returned if content state is set successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentStateResponse'
+        '400':
+          description: 'Invalid Name/Color, non-existent id of content state, or type of state desired is not allowed.
+
+            Name must be less than or exactly 20 characters. Color must be a valid hex string.
+
+            Status must be in [draft,current].'
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing from the request.
+        '403':
+          description: Returned if user does not have content edit permission.
+        '404':
+          description: Returned if the content with given id can not be found.
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    RetentionPeriod:
+      required:
+      - number
+      - units
+      type: object
+      properties:
+        number:
+          type: integer
+          description: The number of units for the retention period.
+          format: int32
+          example: 10
+        units:
+          type: string
+          description: The unit of time that the retention period is measured in.
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+          - MILLENNIA
+          - ERAS
+          - FOREVER
+          example: NANOS
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    ContentStateRestInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of content state. Maximum 20 characters.
+          example: Example Title
+        color:
+          type: string
+          description: "Color of state. Must be in 6 digit hex form (#FFFFFF). The default colors offered in the UI are:\n #ff7452 (red),\n #2684ff (blue),\n #ffc400 (yellow),\n #57d9a3 (green), and\n #8777d9 (purple)"
+          example: example_value
+        id:
+          type: integer
+          description: id of state. This can be 0,1, or 2 if you wish to specify a default space state.
+          format: int64
+          example: abc123
+    ContentStateResponse:
+      type: object
+      properties:
+        contentState:
+          $ref: '#/components/schemas/ContentState'
+          description: Null or content state
+        lastUpdated:
+          type: string
+          description: Timestamp of last publish event where content state changed
+          example: example_value
+    ContentState:
+      required:
+      - id
+      - name
+      - color
+      type: object
+      properties:
+        id:
+          type: integer
+          description: identifier of content state. If 0, 1, or 2, this is a default space state
+          format: int64
+          example: abc123
+        name:
+          type: string
+          description: name of content state.
+          example: Example Title
+        color:
+          type: string
+          description: hex string representing color of state
+          example: example_value
+  examples:
+    undefined_2:
+      _links:
+        self: https://api.example.com/resource
+        next: https://api.example.com/resource?start=10
+        base: https://api.example.com
+      limit: 10
+      results: []
+      size: 0
+      start: 0
+    set-retention-period:
+      number: 30
+      units: DAYS
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Server Info API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- description: This resource provides information about the Jira instance.
+  name: Server Info
+paths:
+  /rest/api/3/serverInfo:
+    get:
+      deprecated: false
+      description: Returns information about the Jira instance.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetserverinfo
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"baseUrl":"https://your-domain.atlassian.net","buildDate":"2020-03-26T22:20:59.000+0000","buildNumber":582,"defaultLocale":{"locale":"en_AU"},"displayUrl":"https://instance.jira.your-domain.com","displayUrlServicedeskHelpCenter":"https://instance.help.your-domain.com","scmInfo":"1f51473f5c7b75c1a69a0090f4832cdc5053702a","serverTime":"2020-03-31T16:43:50.000+0000","serverTimeZone":"Australia/Sydney","serverTitle":"My Jira instance","version":"1001.0.0-SNAPSHOT","versionNumbers":[5,0,0]}'
+              schema:
+                $ref: '#/components/schemas/ServerInformation'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2: []
+      - {}
+      summary: Atlassian Get Jira Instance Info
+      tags:
+      - Server Info
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes: []
+        state: Current
+      - scheme: OAuth2
+        scopes: []
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    HealthCheckResult:
+      additionalProperties: false
+      description: Jira instance health check results. Deprecated and no longer returned.
+      properties:
+        description:
+          description: The description of the Jira health check item.
+          type: string
+        name:
+          description: The name of the Jira health check item.
+          type: string
+        passed:
+          description: Whether the Jira health check item passed or failed.
+          type: boolean
+      type: object
+    ServerInformation:
+      additionalProperties: false
+      description: Details about the Jira instance.
+      properties:
+        baseUrl:
+          description: The base URL of the Jira instance.
+          type: string
+        buildDate:
+          description: The timestamp when the Jira version was built.
+          format: date-time
+          type: string
+        buildNumber:
+          description: The build number of the Jira version.
+          format: int32
+          type: integer
+        deploymentType:
+          description: The type of server deployment. This is always returned as *Cloud*.
+          type: string
+        displayUrl:
+          description: The display URL of the Jira instance.
+          type: string
+        displayUrlServicedeskHelpCenter:
+          description: The display URL of the Servicedesk Help Center.
+          type: string
+        healthChecks:
+          description: Jira instance health check results. Deprecated and no longer returned.
+          items:
+            $ref: '#/components/schemas/HealthCheckResult'
+          type: array
+        scmInfo:
+          description: The unique identifier of the Jira version.
+          type: string
+        serverTime:
+          description: The time in Jira when this request was responded to.
+          format: date-time
+          type: string
+        serverTimeZone:
+          description: The default timezone of the Jira server. In a format known as Olson Time Zones, IANA Time Zones or TZ Database Time Zones.
+          properties:
+            displayName:
+              type: string
+            dstsavings:
+              format: int32
+              type: integer
+            id:
+              type: string
+            rawOffset:
+              format: int32
+              type: integer
+          type: object
+        serverTitle:
+          description: The name of the Jira instance.
+          type: string
+        version:
+          description: The version of Jira.
+          type: string
+        versionNumbers:
+          description: The major, minor, and revision version numbers of the Jira version.
+          items:
+            format: int32
+            type: integer
+          type: array
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

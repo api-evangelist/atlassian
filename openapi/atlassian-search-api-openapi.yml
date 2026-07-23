@@ -1,0 +1,4573 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Search API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Search
+paths:
+  /teams/{username}/search/code:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search for Code in Teams Repositories
+      description: This API operation allows you to search for code across all repositories belonging to a specific team in Bitbucket. By making a GET request to the endpoint with the team's username as a path parameter, you can perform code searches within the team's repository collection. The operation returns matching code snippets and their locations across the team's codebase, making it useful for finding specific code patterns, function definitions, or text strings across multiple repositories owned by the team. This is particularly valuable for organizations that need to audit code, find usage examples, or track specific implementations across their team's projects.
+      operationId: searchForCodeInTeamsRepositories
+      parameters:
+      - name: username
+        in: path
+        description: The account to search in; either the username or the UUID in curly braces
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined:
+                  $ref: '#/components/examples/undefined'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested team, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /users/{selected_user}/search/code:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search for Code in Users Repositories
+      description: The Atlassian Bitbucket User API endpoint `/users/{selected_user}/search/code` accessed via GET method enables developers to perform code searches across all repositories belonging to a specific user. By providing a username in the `{selected_user}` path parameter along with search query parameters, this operation scans through the code content within that user's repositories and returns matching results. This is particularly useful for finding specific code snippets, function names, variables, or any text patterns across a user's entire codebase without needing to search individual repositories separately. The endpoint helps developers quickly locate where certain code elements are used, identify duplicated code, or conduct code audits across a user's portfolio of repositories.
+      operationId: searchForCodeInUsersRepositories
+      parameters:
+      - name: selected_user
+        in: path
+        description: Either the UUID of the account surrounded by curly-braces, for example `{account UUID}`, OR an Atlassian Account ID.
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested user, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/search/code:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search for Code in a Workspace
+      description: This GET endpoint allows you to search for code across repositories within a specified Atlassian Bitbucket workspace. By providing the workspace identifier in the path parameter, you can perform code searches using query parameters to find specific strings, patterns, or code snippets across all accessible repositories in that workspace. The operation returns matching results that include file paths, repository information, and code context where the search terms appear, making it useful for developers who need to locate specific code implementations, function definitions, or configuration settings across multiple repositories within their workspace.
+      operationId: atlassianSearchworkspace
+      parameters:
+      - name: workspace
+        in: path
+        description: The workspace to search in; either the slug or the UUID in curly braces
+        required: true
+        schema:
+          type: string
+      - name: search_query
+        in: query
+        description: The search query
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Which page of the search results to retrieve
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: pagelen
+        in: query
+        description: How many search results to retrieve per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: Successful search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/search_result_page'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+        '400':
+          description: 'If the search request was invalid due to one of the
+
+            following reasons:
+
+
+            * the specified type of target account doesn''''t match the actual
+
+            account type;
+
+
+            * malformed pagination properties;
+
+
+            * missing or malformed search query, in the latter case an error
+
+            key will be returned in `error.data.key` property.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Search is not enabled for the requested workspace, navigate to [https://bitbucket.org/search](https://bitbucket.org/search) to turn it on
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '429':
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:repository:bitbucket
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/search:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search Content by Cql
+      description: This API operation allows you to search for Confluence content using the Confluence Query Language (CQL), providing a powerful and flexible way to retrieve pages, blog posts, attachments, and other content types based on specific criteria. By sending a GET request to the /wiki/rest/api/content/search endpoint with a CQL query string parameter, you can filter content by various attributes such as type, space, creator, creation date, labels, title text, or any combination of these conditions. The operation returns a paginated list of content objects matching your search criteria, including metadata like content IDs, titles, types, and links, making it useful for building custom dashboards, reports, or integrations that need to locate and retrieve specific Confluence content programmatically.
+      operationId: searchContentByCql
+      parameters:
+      - name: cql
+        in: query
+        description: The CQL string that is used to find the requested content.
+        required: true
+        schema:
+          type: string
+      - name: cqlcontext
+        in: query
+        description: 'The space, content, and content status to execute the search against.
+
+          Specify this as an object with the following properties:
+
+
+          - `spaceKey` Key of the space to search against. Optional.
+
+          - `contentId` ID of the content to search against. Optional. Must
+
+          be in the space spacified by `spaceKey`.
+
+          - `contentStatuses` Content statuses to search against. Optional.'
+        schema:
+          type: string
+      - $ref: '#/components/parameters/contentExpand'
+      - name: cursor
+        in: query
+        description: Pointer to a set of search results, returned as part of the `next` or `prev` URL from the previous search call.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: 'The maximum number of content objects to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      responses:
+        '200':
+          description: Returned if the requested list of content is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentArray'
+        '400':
+          description: Returned if the CQL is invalid or missing.
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - search:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - search:confluence
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/search/user:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search Users
+      description: 'Searches for users using user-specific queries from the<br>[Confluence Query Language (CQL)](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).<br><br>Note that CQL input queries submitted through the `/wiki/rest/api/search/user` endpoint only support user-specific fields like `user`, `user.fullname`, `user.accountid`, and `user.userkey`.<br><br>Note that some user fields may be set to null depending on the user''s privacy settings.<br>These are: email, profilePicture, displayName, and timeZone.'
+      operationId: atlassianSearchuser
+      parameters:
+      - name: cql
+        in: query
+        description: "The CQL query to be used for the search. See\n[Advanced Searching using CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/)\nfor instructions on how to build a CQL query.\n\nExample queries:\n          cql=type=user will return all users\n          cql=user=\"1234\" will return user with accountId \"1234\"\n          You can also use IN, NOT IN, != operators\n          cql=user IN (\"12\", \"34\") will return users with accountids \"12\" and \"34\"\n          cql=user.fullname~jo will return users with nickname/full name starting with \"jo\"\n          cql=user.accountid=\"123\" will return user with accountId \"123\""
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned users.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of user objects to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the user to expand.
+
+
+          - `operations` returns the operations for the user, which are used
+
+          when setting permissions.
+
+          - `personalSpace` returns the personal space of the user.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: sitePermissionTypeFilter
+        in: query
+        description: 'Filters users by permission type. Use `none` to default to licensed users, `externalCollaborator`
+
+          for external/guest users, and `all` to include all permission types.'
+        schema:
+          type: string
+          default: none
+          enum:
+          - all
+          - externalCollaborator
+          - none
+      responses:
+        '200':
+          description: Returned if the requested results are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPageResponseSearchResult'
+        '400':
+          description: Returned if the CQL query cannot be parsed.
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to access
+
+            Confluence.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:content-details:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/search:
+    get:
+      tags:
+      - Search
+      summary: Atlassian Search Content
+      description: 'Searches for content using the<br>[Confluence Query Language (CQL)](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).<br><br>**Note that CQL input queries submitted through the `/wiki/rest/api/search` endpoint no longer support user-specific fields like `user`, `user.fullname`, `user.accountid`, and `user.userkey`.** <br>See this [deprecation notice](https://developer.atlassian.com/cloud/confluence/deprecation-notice-search-api/) for more details.<br><br>Example initial call:<br>```<br>/wiki/rest/api/search?cql=type=page&limit=25<br>```<br><br>Example response:<br>```<br>{<br>  "results": [<br>    { ... },<br>    { ... },<br>    ...<br>    { ... }<br>  ],<br>  "limit": 25,<br>  "size": 25,<br>  ...<br>  "_links": {<br>    "base": "",<br>    "context": "",<br>    "next": "/rest/api/search?cql=type=page&limit=25&cursor=raNDoMsTRiNg",<br>    "self": ""<br>  }<br>}<br>```<br><br>When additional results are available, returns `next` and `prev` URLs to retrieve them in subsequent calls. The URLs each contain a cursor that points to the appropriate set of results. Use `limit` to specify the number of results returned in each call.<br><br>Example subsequent call (taken from example response):<br>```<br>/wiki/rest/api/search?cql=type=page&limit=25&cursor=raNDoMsTRiNg<br>```<br>The response to this will have a `prev` URL similar to the `next` in the example response.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the entities. Note, only entities that the user has<br>permission to view will be returned.'
+      operationId: atlassianSearchbycql
+      parameters:
+      - name: cql
+        in: query
+        description: 'The CQL query to be used for the search. See
+
+          [Advanced Searching using CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/)
+
+          for instructions on how to build a CQL query.'
+        required: true
+        schema:
+          type: string
+      - name: cqlcontext
+        in: query
+        description: 'The space, content, and content status to execute the search
+
+          against.
+
+
+          - `spaceKey` Key of the space to search against. Optional.
+
+          - `contentId` ID of the content to search against. Optional. Must be
+
+          in the space specified by `spaceKey`.
+
+          - `contentStatuses` Content statuses to search against. Optional.
+
+
+          Specify these values in an object. For example,
+
+          `cqlcontext={%22spaceKey%22:%22TEST%22, %22contentId%22:%22123%22}`'
+        schema:
+          type: string
+      - name: cursor
+        in: query
+        description: Pointer to a set of search results, returned as part of the `next` or `prev` URL from the previous search call.
+        schema:
+          type: string
+      - name: next
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - name: prev
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        in: query
+        description: 'The maximum number of content objects to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      - name: start
+        in: query
+        description: The start point of the collection to return
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: includeArchivedSpaces
+        in: query
+        description: Whether to include content from archived spaces in the results.
+        schema:
+          type: boolean
+          default: false
+      - name: excludeCurrentSpaces
+        in: query
+        description: Whether to exclude current spaces and only show archived spaces.
+        schema:
+          type: boolean
+          default: false
+      - name: excerpt
+        in: query
+        description: The excerpt strategy to apply to the result
+        schema:
+          type: string
+          default: highlight
+          enum:
+          - highlight
+          - indexed
+          - none
+          - highlight_unescaped
+          - indexed_unescaped
+      - name: sitePermissionTypeFilter
+        in: query
+        description: 'Filters users by permission type. Use `none` to default to licensed users, `externalCollaborator`
+
+          for external/guest users, and `all` to include all permission types.'
+        schema:
+          type: string
+          default: none
+          enum:
+          - all
+          - externalCollaborator
+          - none
+      - name: _
+        in: query
+        schema:
+          type: integer
+          format: int64
+      - name: expand
+        in: query
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '200':
+          description: Returned if the requested results are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPageResponseSearchResult_3'
+        '400':
+          description: Returned if the CQL query cannot be parsed.
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to access
+
+            Confluence.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - search:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - search:confluence
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    NavigationLookAndFeel_2:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      nullable: true
+      properties:
+        color:
+          type: string
+        highlightColor:
+          type: string
+          nullable: true
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    Content_2:
+      required:
+      - status
+      - type
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Can be "page", "blogpost", "attachment" or "content"
+        status:
+          type: string
+        title:
+          type: string
+        space:
+          $ref: '#/components/schemas/Space_2'
+        history:
+          $ref: '#/components/schemas/ContentHistory_2'
+        version:
+          $ref: '#/components/schemas/Version_2'
+        ancestors:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Content_2'
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult_2'
+        children:
+          $ref: '#/components/schemas/ContentChildren_2'
+        childTypes:
+          $ref: '#/components/schemas/ContentChildType_2'
+        descendants:
+          $ref: '#/components/schemas/ContentChildren_2'
+        container:
+          $ref: '#/components/schemas/Container'
+        body:
+          type: object
+          properties:
+            view:
+              $ref: '#/components/schemas/ContentBody_2'
+            export_view:
+              $ref: '#/components/schemas/ContentBody_2'
+            styled_view:
+              $ref: '#/components/schemas/ContentBody_2'
+            storage:
+              $ref: '#/components/schemas/ContentBody_2'
+            wiki:
+              $ref: '#/components/schemas/ContentBody_2'
+            editor:
+              $ref: '#/components/schemas/ContentBody_2'
+            editor2:
+              $ref: '#/components/schemas/ContentBody_2'
+            anonymous_export_view:
+              $ref: '#/components/schemas/ContentBody_2'
+            atlas_doc_format:
+              $ref: '#/components/schemas/ContentBody_2'
+            dynamic:
+              $ref: '#/components/schemas/ContentBody_2'
+            raw:
+              $ref: '#/components/schemas/ContentBody_2'
+            _expandable:
+              type: object
+              properties:
+                editor:
+                  type: string
+                view:
+                  type: string
+                export_view:
+                  type: string
+                styled_view:
+                  type: string
+                storage:
+                  type: string
+                editor2:
+                  type: string
+                anonymous_export_view:
+                  type: string
+                atlas_doc_format:
+                  type: string
+                wiki:
+                  type: string
+                dynamic:
+                  type: string
+                raw:
+                  type: string
+        restrictions:
+          type: object
+          properties:
+            read:
+              $ref: '#/components/schemas/ContentRestriction_2'
+            update:
+              $ref: '#/components/schemas/ContentRestriction_2'
+            _expandable:
+              type: object
+              properties:
+                read:
+                  type: string
+                update:
+                  type: string
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        metadata:
+          $ref: '#/components/schemas/ContentMetadata_2'
+        macroRenderedOutput:
+          type: object
+          additionalProperties:
+            type: object
+        extensions:
+          type: object
+        _expandable:
+          type: object
+          properties:
+            childTypes:
+              type: string
+            container:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            children:
+              type: string
+            restrictions:
+              type: string
+            history:
+              type: string
+            ancestors:
+              type: string
+            body:
+              type: string
+            version:
+              type: string
+            descendants:
+              type: string
+            space:
+              type: string
+            extensions:
+              type: string
+            schedulePublishDate:
+              type: string
+            schedulePublishInfo:
+              type: string
+            macroRenderedOutput:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: Base object for all content types.
+    ContentRestriction_2:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray_2'
+            group:
+              $ref: '#/components/schemas/GroupArray_2'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+        content:
+          $ref: '#/components/schemas/Content_2'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UsersUserKeys:
+      required:
+      - userAccountIds
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          example: []
+        userKeys:
+          type: array
+          items:
+            type: string
+          example: []
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails_2:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+    ContainerSummary:
+      required:
+      - displayUrl
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        displayUrl:
+          type: string
+    User_2:
+      required:
+      - type
+      type: object
+      additionalProperties: true
+      nullable: true
+      properties:
+        type:
+          type: string
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+        email:
+          nullable: true
+          type: string
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+        profilePicture:
+          $ref: '#/components/schemas/Icon_2'
+        displayName:
+          nullable: true
+          type: string
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+        timeZone:
+          nullable: true
+          type: string
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        operations:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult_2'
+        details:
+          $ref: '#/components/schemas/UserDetails_2'
+        personalSpace:
+          $ref: '#/components/schemas/Space_2'
+        _expandable:
+          type: object
+          properties:
+            operations:
+              type: string
+            details:
+              type: string
+            personalSpace:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    TopNavigationLookAndFeel:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+          example: example_value
+        highlightColor:
+          type: string
+          example: example_value
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+          example: example_value
+    HeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+          example: example_value
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+          example: example_value
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+          example: example_value
+        metatags:
+          type: string
+          example: example_value
+        _expandable:
+          type: object
+          additionalProperties: true
+          example: example_value
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    ContentArray_2:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content_2'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpaceSettings_2:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+        spaceKey:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpaceDescription:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+          example: example_value
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+          example: plain
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+          example: []
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    WebResourceDependencies_2:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources_2'
+    ContentMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+          example: example_value
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+          example: example_value
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label'
+          example: example_value
+      description: Metadata object for page, blogpost, comment content
+    HorizontalHeaderLookAndFeel_2:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel_2'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel_2'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel_2'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel_2'
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+          example: https://www.example.com
+        name:
+          type: string
+          example: Example Title
+      additionalProperties: false
+    SpacePermission:
+      required:
+      - anonymousAccess
+      - operation
+      - unlicensedAccess
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: abc123
+        subjects:
+          type: object
+          properties:
+            user:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            group:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          description: The users and/or groups that the permission applies to.
+          example: example_value
+        operation:
+          $ref: '#/components/schemas/OperationCheckResult'
+        anonymousAccess:
+          type: boolean
+          description: Grant anonymous users permission to use the operation.
+          default: false
+          example: true
+        unlicensedAccess:
+          type: boolean
+          description: 'Grants access to unlicensed users from JIRA Service Desk when used
+
+            with the ''read space'' operation.'
+          default: false
+          example: true
+      description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
+    ContentArray:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentChildType_2:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    ContentRestriction:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+          example: administer
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray'
+            group:
+              $ref: '#/components/schemas/GroupArray'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          example: example_value
+        content:
+          $ref: '#/components/schemas/Content'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    Embeddable:
+      type: object
+      additionalProperties: true
+    SearchResult:
+      required:
+      - breadcrumbs
+      - entityType
+      - excerpt
+      - iconCssClass
+      - lastModified
+      - title
+      - url
+      type: object
+      properties:
+        content:
+          $ref: '#/components/schemas/Content_2'
+        user:
+          $ref: '#/components/schemas/User_2'
+        space:
+          $ref: '#/components/schemas/Space_2'
+        title:
+          type: string
+        excerpt:
+          type: string
+        url:
+          type: string
+        resultParentContainer:
+          $ref: '#/components/schemas/ContainerSummary'
+        resultGlobalContainer:
+          $ref: '#/components/schemas/ContainerSummary'
+        breadcrumbs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Breadcrumb'
+        entityType:
+          type: string
+        iconCssClass:
+          type: string
+        lastModified:
+          type: string
+          format: date-time
+        friendlyLastModified:
+          type: string
+        score:
+          type: number
+    UserArray_2:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User_2'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon_2:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    SpaceDescription_2:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type: object
+      nullable: true
+      properties:
+        background:
+          type: string
+          example: example_value
+        backgroundAttachment:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundBlendMode:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundClip:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundColor:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundImage:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundOrigin:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundPosition:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundRepeat:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundSize:
+          type: string
+          nullable: true
+          example: example_value
+        padding:
+          type: string
+          example: example_value
+        borderRadius:
+          type: string
+          example: example_value
+    GroupArray_2:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group_2'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    MenusLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+          example: example_value
+        color:
+          type: string
+          example: example_value
+    ButtonLookAndFeel_2:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    MenusLookAndFeel_2:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+        color:
+          type: string
+    search_code_search_result:
+      type: object
+      properties:
+        type:
+          type: string
+          readOnly: true
+          example: example_value
+        content_match_count:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 10
+        content_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_content_match'
+          example: []
+        path_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+          example: []
+        file:
+          $ref: '#/components/schemas/commit_file'
+    SpacePermission_2:
+      required:
+      - anonymousAccess
+      - operation
+      - unlicensedAccess
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        subjects:
+          type: object
+          properties:
+            user:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User_2'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            group:
+              required:
+              - results
+              - size
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group_2'
+                size:
+                  type: integer
+                  format: int32
+                start:
+                  type: integer
+                  format: int32
+                limit:
+                  type: integer
+                  format: int32
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+          description: The users and/or groups that the permission applies to.
+        operation:
+          $ref: '#/components/schemas/OperationCheckResult_2'
+        anonymousAccess:
+          type: boolean
+          description: Grant anonymous users permission to use the operation.
+          default: false
+        unlicensedAccess:
+          type: boolean
+          description: 'Grants access to unlicensed users from JIRA Service Desk when used
+
+            with the ''read space'' operation.'
+          default: false
+      description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
+    Version_2:
+      required:
+      - minorEdit
+      - number
+      - when
+      type: object
+      nullable: true
+      additionalProperties: true
+      properties:
+        by:
+          $ref: '#/components/schemas/User_2'
+        when:
+          type: string
+          format: date-time
+          nullable: true
+        friendlyWhen:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+        content:
+          $ref: '#/components/schemas/Content_2'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys_2'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+        confRev:
+          type: string
+          nullable: true
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+        syncRev:
+          type: string
+          nullable: true
+          description: The revision id provided by Synchrony
+        syncRevSource:
+          type: string
+          nullable: true
+          description: Source of the synchrony revision
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+          example: example_value
+        width:
+          type: integer
+          format: int32
+          example: 10
+        height:
+          type: integer
+          format: int32
+          example: 10
+        isDefault:
+          type: boolean
+          example: true
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    repository:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Repository
+        description: A Bitbucket repository.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              pullrequests:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              commits:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              forks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              watchers:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              downloads:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              clone:
+                type: array
+                items:
+                  type: object
+                  title: Link
+                  description: A link to a resource related to this object.
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+                    name:
+                      type: string
+                  additionalProperties: false
+              hooks:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The repository's immutable id. This can be used as a substitute for the slug segment in URLs. Doing this guarantees your URLs will survive renaming of the repository by its owner, or even transfer of the repository to a different user.
+          full_name:
+            type: string
+            description: The concatenation of the repository owner's username and the slugified name, e.g. "evzijst/interruptingcow". This is the same string used in Bitbucket URLs.
+          is_private:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/repository'
+          scm:
+            type: string
+            enum:
+            - git
+          owner:
+            $ref: '#/components/schemas/account'
+          name:
+            type: string
+          description:
+            type: string
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          size:
+            type: integer
+          language:
+            type: string
+          has_issues:
+            type: boolean
+            description: '
+
+              The issue tracker for this repository is enabled. Issue Tracker
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          has_wiki:
+            type: boolean
+            description: '
+
+              The wiki for this repository is enabled. Wiki
+
+              features are not supported for repositories in workspaces
+
+              administered through admin.atlassian.com.
+
+              '
+          fork_policy:
+            type: string
+            description: "\nControls the rules for forking this repository.\n\n* **allow_forks**: unrestricted forking\n* **no_public_forks**: restrict forking to private forks (forks cannot\n  be made public later)\n* **no_forks**: deny all forking\n"
+            enum:
+            - allow_forks
+            - no_public_forks
+            - no_forks
+          project:
+            $ref: '#/components/schemas/project'
+          mainbranch:
+            $ref: '#/components/schemas/branch'
+        additionalProperties: true
+    commit_file:
+      type: object
+      title: Commit File
+      description: A file object, representing a file at a commit in a repository
+      properties:
+        type:
+          type: string
+          example: example_value
+        path:
+          type: string
+          description: The path in the repository
+          example: example_value
+        commit:
+          $ref: '#/components/schemas/commit'
+        attributes:
+          type: string
+          enum:
+          - link
+          - executable
+          - subrepository
+          - binary
+          - lfs
+          example: link
+        escaped_path:
+          type: string
+          description: The escaped version of the path as it appears in a diff. If the path does not require escaping this will be the same as path.
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    search_content_match:
+      type: object
+      properties:
+        lines:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_line'
+          example: []
+    UsersUserKeys_2:
+      required:
+      - userAccountIds
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User_2'
+        userKeys:
+          type: array
+          items:
+            type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+          example: example_value
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+          example: view
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+          example: []
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+          example: example_value
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SuperBatchWebResources_2:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    EmbeddedContent_2:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    Version:
+      required:
+      - minorEdit
+      - number
+      - when
+      type: object
+      nullable: true
+      additionalProperties: true
+      properties:
+        by:
+          $ref: '#/components/schemas/User'
+        when:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-01-15T10:30:00Z'
+        friendlyWhen:
+          type: string
+          nullable: true
+          example: example_value
+        message:
+          type: string
+          nullable: true
+          example: example_value
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+          example: 10
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+          example: true
+        content:
+          $ref: '#/components/schemas/Content'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+          example: true
+        confRev:
+          type: string
+          nullable: true
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+          example: example_value
+        syncRev:
+          type: string
+          nullable: true
+          description: The revision id provided by Synchrony
+          example: example_value
+        syncRevSource:
+          type: string
+          nullable: true
+          description: Source of the synchrony revision
+          example: example_value
+    Theme_2:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon_2'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+          example: example_value
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+          example: example_value
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+          example: example_value
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    ButtonLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+          example: example_value
+        color:
+          type: string
+          example: example_value
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    HeaderLookAndFeel_2:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel_2'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel_2'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel_2'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel_2'
+    ContentMetadata_2:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version_2'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray_2'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label_2'
+      description: Metadata object for page, blogpost, comment content
+    ContentChildType:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+          example: example_value
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+          example: example_value
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+          example: example_value
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+          example: example_value
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    ContentHistory:
+      required:
+      - latest
+      type: object
+      nullable: true
+      properties:
+        latest:
+          type: boolean
+          example: true
+        createdBy:
+          $ref: '#/components/schemas/User'
+        ownedBy:
+          $ref: '#/components/schemas/User'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User'
+        createdDate:
+          type: string
+          format: date-time
+          example: '2026-01-15T10:30:00Z'
+        lastUpdated:
+          $ref: '#/components/schemas/Version'
+        previousVersion:
+          $ref: '#/components/schemas/Version'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys'
+          example: example_value
+        nextVersion:
+          $ref: '#/components/schemas/Version'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Group_2:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+        name:
+          type: string
+        id:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ScreenLookAndFeel:
+      required:
+      - background
+      type: object
+      properties:
+        background:
+          type: string
+          example: example_value
+        backgroundAttachment:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundBlendMode:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundClip:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundColor:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundImage:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundOrigin:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundPosition:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundRepeat:
+          type: string
+          nullable: true
+          example: example_value
+        backgroundSize:
+          type: string
+          nullable: true
+          example: example_value
+        layer:
+          type: object
+          properties:
+            width:
+              type: string
+            height:
+              type: string
+          nullable: true
+          example: example_value
+        gutterTop:
+          type: string
+          nullable: true
+          example: example_value
+        gutterRight:
+          type: string
+          nullable: true
+          example: example_value
+        gutterBottom:
+          type: string
+          nullable: true
+          example: example_value
+        gutterLeft:
+          type: string
+          nullable: true
+          example: example_value
+    Group:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+          example: group
+        name:
+          type: string
+          example: Example Title
+        id:
+          type: string
+          example: abc123
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    OperationCheckResult_2:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+      description: An operation and the target entity that it applies to, e.g. create page.
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        id:
+          type: string
+          example: abc123
+        label:
+          type: string
+          example: Example Title
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    ContentBody_2:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent_2'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies_2'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentChildren:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray'
+        comment:
+          $ref: '#/components/schemas/ContentArray'
+        page:
+          $ref: '#/components/schemas/ContentArray'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+          example: example_value
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+          example: example_value
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+          example: example_value
+        spaceReference:
+          type: object
+          nullable: true
+          example: example_value
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+          example: administer
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+          example: example_value
+      description: An operation and the target entity that it applies to, e.g. create page.
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    NavigationLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      nullable: true
+      properties:
+        color:
+          type: string
+          example: example_value
+        highlightColor:
+          type: string
+          nullable: true
+          example: example_value
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+          example: example_value
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    Breadcrumb:
+      required:
+      - label
+      - separator
+      - url
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+        separator:
+          type: string
+    ContentChildren_2:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray_2'
+        comment:
+          $ref: '#/components/schemas/ContentArray_2'
+        page:
+          $ref: '#/components/schemas/ContentArray_2'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+          example: example_value
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+          example: example_value
+        name:
+          type: string
+          description: The name of the ref.
+          example: Example Title
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Space:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
+      - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: abc123
+        key:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+          example: A sample description.
+        homepage:
+          $ref: '#/components/schemas/Content'
+        type:
+          type: string
+          example: example_value
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
+          example: example_value
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+          example: []
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+          example: []
+        status:
+          type: string
+          example: example_value
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
+          example: example_value
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SearchPageResponseSearchResult_3:
+      required:
+      - _links
+      - cqlQuery
+      - limit
+      - results
+      - searchDuration
+      - size
+      - start
+      - totalSize
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int32
+        cqlQuery:
+          type: string
+        searchDuration:
+          type: integer
+          format: int32
+        archivedResultCount:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    SearchFieldLookAndFeel_2:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type: object
+      nullable: true
+      properties:
+        backgroundColor:
+          type: string
+          example: example_value
+        color:
+          type: string
+          example: example_value
+    search_result_page:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 10
+        page:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        pagelen:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        query_substituted:
+          type: boolean
+          readOnly: true
+          example: true
+        next:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://www.example.com
+        values:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_code_search_result'
+          example: []
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+          example: '500123'
+        entityType:
+          type: string
+          example: example_value
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+          example: example_value
+        keys:
+          type: array
+          items:
+            type: string
+          example: []
+        contexts:
+          type: array
+          items:
+            type: string
+          example: []
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+          example: example_value
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+          example: example_value
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    LookAndFeel_2:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel_2'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel_2'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel_2'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        spaceReference:
+          type: object
+          nullable: true
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        description:
+          type: string
+          example: A sample description.
+        icon:
+          $ref: '#/components/schemas/Icon'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    TopNavigationLookAndFeel_2:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type: string
+          nullable: true
+        highlightColor:
+          type: string
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    Space_2:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
+      - type
+      nullable: true
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon_2'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription_2'
+            view:
+              $ref: '#/components/schemas/SpaceDescription_2'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content_2'
+        type:
+          type: string
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray_2'
+            _expandable:
+              type: object
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult_2'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission_2'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings_2'
+        theme:
+          $ref: '#/components/schemas/Theme_2'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel_2'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User_2'
+        _expandable:
+          type: object
+          properties:
+            settings:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            lookAndFeel:
+              type: string
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    LabelArray_2:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label_2'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Container:
+      type: object
+      nullable: true
+      additionalProperties: true
+      description: 'Container for content. This can be either a space (containing a page or blogpost)
+
+        or a page/blog post (containing an attachment or comment)'
+    search_line:
+      type: object
+      properties:
+        line:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 10
+        segments:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+          example: []
+    User:
+      required:
+      - type
+      type: object
+      additionalProperties: true
+      nullable: true
+      properties:
+        type:
+          type: string
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+          example: known
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+          example: atlassian
+        email:
+          nullable: true
+          type: string
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+          example: user@example.com
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+          example: example_value
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          nullable: true
+          type: string
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+          example: example_value
+        timeZone:
+          nullable: true
+          type: string
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+          example: example_value
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+          example: true
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+          example: true
+        operations:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+          example: []
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        personalSpace:
+          $ref: '#/components/schemas/Space'
+        _expandable:
+          type: object
+          properties:
+            operations:
+              type: string
+            details:
+              type: string
+            personalSpace:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentHistory_2:
+      required:
+      - latest
+      type: object
+      nullable: true
+      properties:
+        latest:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/User_2'
+        ownedBy:
+          $ref: '#/components/schemas/User_2'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User_2'
+        createdDate:
+          type: string
+          format: date-time
+        lastUpdated:
+          $ref: '#/components/schemas/Version_2'
+        previousVersion:
+          $ref: '#/components/schemas/Version_2'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys_2'
+        nextVersion:
+          $ref: '#/components/schemas/Version_2'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    search_segment:
+      type: object
+      properties:
+        text:
+          type: string
+          readOnly: true
+          example: example_value
+        match:
+          type: boolean
+          readOnly: true
+          example: true
+    GroupArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+    Content:
+      required:
+      - status
+      - type
+      nullable: true
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+          example: abc123
+        type:
+          type: string
+          description: Can be "page", "blogpost", "attachment" or "content"
+          example: example_value
+        status:
+          type: string
+          example: example_value
+        title:
+          type: string
+          example: Example Title
+        space:
+          $ref: '#/components/schemas/Space'
+        history:
+          $ref: '#/components/schemas/ContentHistory'
+        version:
+          $ref: '#/components/schemas/Version'
+        ancestors:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+          example: []
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+          example: []
+        children:
+          $ref: '#/components/schemas/ContentChildren'
+        childTypes:
+          $ref: '#/components/schemas/ContentChildType'
+        descendants:
+          $ref: '#/components/schemas/ContentChildren'
+        container:
+          $ref: '#/components/schemas/Container'
+        body:
+          type: object
+          properties:
+            view:
+              $ref: '#/components/schemas/ContentBody'
+            export_view:
+              $ref: '#/components/schemas/ContentBody'
+            styled_view:
+              $ref: '#/components/schemas/ContentBody'
+            storage:
+              $ref: '#/components/schemas/ContentBody'
+            wiki:
+              $ref: '#/components/schemas/ContentBody'
+            editor:
+              $ref: '#/components/schemas/ContentBody'
+            editor2:
+              $ref: '#/components/schemas/ContentBody'
+            anonymous_export_view:
+              $ref: '#/components/schemas/ContentBody'
+            atlas_doc_format:
+              $ref: '#/components/schemas/ContentBody'
+            dynamic:
+              $ref: '#/components/schemas/ContentBody'
+            raw:
+              $ref: '#/components/schemas/ContentBody'
+            _expandable:
+              type: object
+              properties:
+                editor:
+                  type: string
+                view:
+                  type: string
+                export_view:
+                  type: string
+                styled_view:
+                  type: string
+                storage:
+                  type: string
+                editor2:
+                  type: string
+                anonymous_export_view:
+                  type: string
+                atlas_doc_format:
+                  type: string
+                wiki:
+                  type: string
+                dynamic:
+                  type: string
+                raw:
+                  type: string
+          example: example_value
+        restrictions:
+          type: object
+          properties:
+            read:
+              $ref: '#/components/schemas/ContentRestriction'
+            update:
+              $ref: '#/components/schemas/ContentRestriction'
+            _expandable:
+              type: object
+              properties:
+                read:
+                  type: string
+                update:
+                  type: string
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+          example: example_value
+        metadata:
+          $ref: '#/components/schemas/ContentMetadata'
+        macroRenderedOutput:
+          type: object
+          additionalProperties:
+            type: object
+          example: example_value
+        extensions:
+          type: object
+          example: example_value
+        _expandable:
+          type: object
+          properties:
+            childTypes:
+              type: string
+            container:
+              type: string
+            metadata:
+              type: string
+            operations:
+              type: string
+            children:
+              type: string
+            restrictions:
+              type: string
+            history:
+              type: string
+            ancestors:
+              type: string
+            body:
+              type: string
+            version:
+              type: string
+            descendants:
+              type: string
+            space:
+              type: string
+            extensions:
+              type: string
+            schedulePublishDate:
+              type: string
+            schedulePublishInfo:
+              type: string
+            macroRenderedOutput:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: Base object for all content types.
+    Label_2:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    SearchPageResponseSearchResult:
+      required:
+      - _links
+      - cqlQuery
+      - limit
+      - results
+      - searchDuration
+      - size
+      - start
+      - totalSize
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        totalSize:
+          type: integer
+          format: int32
+          example: 10
+        cqlQuery:
+          type: string
+          example: example_value
+        searchDuration:
+          type: integer
+          format: int32
+          example: 10
+        archivedResultCount:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    SpaceSettings:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+          example: true
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+          example: example_value
+        spaceKey:
+          type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+  examples:
+    undefined:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
+    undefined_2:
+      size: 100
+      page: 1
+      pagelen: 10
+      query_substituted: false
+      next: https://api.example.com/resource?page=2
+      previous: https://api.example.com/resource?page=0
+      values: {}
+  parameters:
+    contentExpand:
+      name: expand
+      in: query
+      description: 'A multi-value parameter indicating which properties of the content to expand.
+
+
+        - `childTypes.all` returns whether the content has attachments, comments, or child pages/whiteboards.
+
+        Use this if you only need to check whether the content has children of a particular type.
+
+        - `childTypes.attachment` returns whether the content has attachments.
+
+        - `childTypes.comment` returns whether the content has comments.
+
+        - `childTypes.page` returns whether the content has child pages.
+
+        - `container` returns the space that the content is in. This is the same as the information
+
+        returned by [Get space](#api-space-spaceKey-get).
+
+        - `metadata.currentuser` returns information about the current user in relation to the content,
+
+        including when they last viewed it, modified it, contributed to it, or added it as a favorite.
+
+        - `metadata.properties` returns content properties that have been set via the Confluence REST API.
+
+        - `metadata.labels` returns the labels that have been added to the content.
+
+        - `metadata.frontend` this property is only used by Atlassian.
+
+        - `operations` returns the operations for the content, which are used when setting permissions.
+
+        - `children.page` returns pages that are descendants at the level immediately below the content.
+
+        - `children.attachment` returns all attachments for the content.
+
+        - `children.comment` returns all comments on the content.
+
+        - `restrictions.read.restrictions.user` returns the users that have permission to read the content.
+
+        - `restrictions.read.restrictions.group` returns the groups that have permission to read the content. Note that
+
+        this may return deleted groups, because deleting a group doesn''t remove associated restrictions.
+
+        - `restrictions.update.restrictions.user` returns the users that have permission to update the content.
+
+        - `restrictions.update.restrictions.group` returns the groups that have permission to update the content. Note that
+
+        this may return deleted groups because deleting a group doesn''t remove associated restrictions.
+
+        - `history` returns the history of the content, including the date it was created.
+
+        - `history.lastUpdated` returns information about the most recent update of the content, including
+
+        who updated it and when it was updated.
+
+        - `history.previousVersion` returns information about the update prior to the current content update.
+
+        - `history.contributors` returns all of the users who have contributed to the content.
+
+        - `history.nextVersion` returns information about the update after to the current content update.
+
+        - `ancestors` returns the parent content, if the content is a page or whiteboard.
+
+        - `body` returns the body of the content in different formats, including the editor format,
+
+        view format, and export format.
+
+        - `body.storage` returns the body of content in storage format.
+
+        - `body.view` returns the body of content in view format.
+
+        - `version` returns information about the most recent update of the content, including who updated it
+
+        and when it was updated.
+
+        - `descendants.page` returns pages that are descendants at any level below the content.
+
+        - `descendants.attachment` returns all attachments for the content, same as `children.attachment`.
+
+        - `descendants.comment` returns all comments on the content, same as `children.comment`.
+
+        - `space` returns the space that the content is in. This is the same as the information returned by
+
+        [Get space](#api-space-spaceKey-get).
+
+
+        In addition, the following comment-specific expansions can be used:
+
+        - `extensions.inlineProperties` returns inline comment-specific properties.
+
+        - `extensions.resolution` returns the resolution status of each comment.'
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Exports API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Exports
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/export:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - Exports
+      description: The Export Issues endpoint allows users to trigger an export of all issues from a specific repository in Bitbucket. This POST operation is accessed via the path /repositories/{workspace}/{repo_slug}/issues/export, where workspace identifies the Bitbucket workspace and repo_slug specifies the repository containing the issues to be exported. When invoked, this API initiates an asynchronous export process that generates a downloadable file containing issue data from the repository, which can be useful for backup purposes, migration to other systems, reporting, or offline analysis. The exported data typically includes issue details such as titles, descriptions, status, priority, assignees, comments, and other metadata associated with the repository's issue tracker.
+      summary: Atlassian Export Issues
+      responses:
+        '202':
+          description: The export job has been accepted
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The repo does not exist or does not have an issue tracker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/export_options'
+            examples:
+              export-options:
+                $ref: '#/components/examples/export-options'
+        description: The options to apply to the export. Available options include `project_key` and `project_name` which, if specified, are used as the project key and name in the exported Jira json format. Option `send_email` specifies whether an email should be sent upon export result. Option `include_attachments` specifies whether attachments are included in the export.
+      security:
+      - oauth2:
+        - issue
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: exportIssues
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/issues/export/{repo_name}-issues-{task_id}.zip:
+    parameters:
+    - name: repo_name
+      in: path
+      description: The name of the repo
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: task_id
+      in: path
+      description: The ID of the export task
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Exports
+      description: This GET operation checks the status of a previously initiated issue export request for a specific Bitbucket repository by polling the export endpoint using the provided task ID. When called, it queries the export job identified by the workspace, repository slug, repository name, and unique task identifier to determine whether the export process is still running, has completed successfully, or has failed. If the export is complete, the endpoint returns the ZIP file containing the exported issues data; otherwise, it provides status information about the ongoing export process. This allows users to monitor long-running export operations and retrieve the results once processing is finished without blocking or timing out during the initial export request.
+      summary: Atlassian Check Issue Export Status
+      responses:
+        '202':
+          description: Export job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                response:
+                  value:
+                    type: issue_job_status
+                    status: ACCEPTED
+                    phase: Initializing
+                    total: 0
+                    count: 0
+                    pct: 0
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No export job has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: checkIssueExportStatus
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/audit/export:
+    get:
+      tags:
+      - Exports
+      summary: Atlassian Export Audit Records
+      description: The Export Audit Records operation is a GET endpoint in the Atlassian Confluence Audit API accessible via `/wiki/rest/api/audit/export` that allows administrators to retrieve and download audit log data from their Confluence instance. This endpoint enables users to export audit records in a structured format for compliance, security analysis, archival purposes, or integration with external monitoring and SIEM systems. The operation typically supports filtering parameters to narrow down the audit records by date range, event type, user, or affected content, and returns the data in a downloadable format such as CSV or JSON. This functionality is essential for organizations that need to maintain comprehensive audit trails of user activities, content changes, permission modifications, and system events within their Confluence workspace for regulatory compliance and security auditing requirements.
+      operationId: exportAuditRecords
+      parameters:
+      - name: startDate
+        in: query
+        description: 'Filters the exported results to the records on or after the `startDate`.
+
+          The `startDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        description: 'Filters the exported results to the records on or before the `endDate`.
+
+          The `endDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: searchString
+        in: query
+        description: 'Filters the exported results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: format
+        in: query
+        description: The format of the export file for the audit records.
+        schema:
+          type: string
+          default: csv
+          enum:
+          - csv
+          - zip
+      responses:
+        '200':
+          description: Returned if the requested export of the audit records is returned.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    export_options:
+      type: object
+      title: Export Options
+      description: Options for issue export.
+      properties:
+        type:
+          type: string
+          example: example_value
+        project_key:
+          type: string
+          example: example_value
+        project_name:
+          type: string
+          example: example_value
+        send_email:
+          type: boolean
+          example: user@example.com
+        include_attachments:
+          type: boolean
+          example: true
+      required:
+      - type
+      additionalProperties: true
+    issue_job_status:
+      type: object
+      title: Issue Job Status
+      description: The status of an import or export job
+      properties:
+        type:
+          type: string
+          example: example_value
+        status:
+          type: string
+          description: The status of the import/export job
+          enum:
+          - ACCEPTED
+          - STARTED
+          - RUNNING
+          - FAILURE
+          example: ACCEPTED
+        phase:
+          type: string
+          description: The phase of the import/export job
+          example: example_value
+        total:
+          type: integer
+          description: The total number of issues being imported/exported
+          example: 10
+        count:
+          type: integer
+          description: The total number of issues already imported/exported
+          example: 10
+        pct:
+          type: number
+          description: The percentage of issues already imported/exported
+          minimum: 0
+          maximum: 100
+          example: 42.5
+      additionalProperties: false
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    export-options:
+      type: pdf
+      project_key: PROJ-123
+      project_name: Sample Project
+      send_email: true
+      include_attachments: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

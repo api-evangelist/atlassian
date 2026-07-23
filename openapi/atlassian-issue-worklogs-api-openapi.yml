@@ -1,0 +1,904 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Worklogs API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Worklogs
+paths:
+  /rest/api/3/issue/{issueIdOrKey}/worklog:
+    get:
+      deprecated: false
+      description: Returns worklogs for an issue, starting from the oldest worklog or from the worklog started on or after a date and time.<br><br>Time tracking must be enabled in Jira, otherwise this operation returns an error. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** Workloads are only returned where the user has:<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  If the worklog has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianGetissueworklog
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 5000
+          format: int32
+          type: integer
+      - description: The worklog start date and time, as a UNIX timestamp in milliseconds, after which worklogs are returned.
+        in: query
+        name: startedAfter
+        schema:
+          format: int64
+          type: integer
+      - description: The worklog start date and time, as a UNIX timestamp in milliseconds, before which worklogs are returned.
+        in: query
+        name: startedBefore
+        schema:
+          format: int64
+          type: integer
+      - description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter accepts`properties`, which returns worklog properties.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"maxResults":1,"startAt":0,"total":1,"worklogs":[{"author":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"comment":{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"I did some work here."}]}]},"id":"100028","issueId":"10002","self":"https://your-domain.atlassian.net/rest/api/3/issue/10010/worklog/10000","started":"2021-01-17T12:34:00.000+0000","timeSpent":"3h 20m","timeSpentSeconds":12000,"updateAuthor":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"updated":"2021-01-18T23:45:00.000+0000","visibility":{"identifier":"276f955c-63d7-42c8-9520-92d01dca0625","type":"group","value":"jira-developers"}}]}'
+              schema:
+                $ref: '#/components/schemas/PageOfWorklogs'
+          description: Returned if the request is successful
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: "Returned if:\n\n *  the issue is not found or the user does not have permission to view the issue.\n *  `startAt` or `maxResults` has non-numeric values.\n *  time tracking is disabled."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Issue Worklogs
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:group:jira
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Adds a worklog to an issue.<br><br>Time tracking must be enabled in Jira, otherwise this operation returns an error. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Work on issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianAddworklog
+      parameters:
+      - description: The ID or key the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: Whether users watching the issue are notified by email.
+        in: query
+        name: notifyUsers
+        schema:
+          default: true
+          type: boolean
+      - description: "Defines how to update the issue's time estimate, the options are:\n\n *  `new` Sets the estimate to a specific value, defined in `newEstimate`.\n *  `leave` Leaves the estimate unchanged.\n *  `manual` Reduces the estimate by amount specified in `reduceBy`.\n *  `auto` Reduces the estimate by the value of `timeSpent` in the worklog."
+        in: query
+        name: adjustEstimate
+        schema:
+          default: auto
+          enum:
+          - new
+          - leave
+          - manual
+          - auto
+          type: string
+      - description: The value to set as the issue's remaining time estimate, as days (\#d), hours (\#h), or minutes (\#m or \#). For example, *2d*. Required when `adjustEstimate` is `new`.
+        in: query
+        name: newEstimate
+        schema:
+          type: string
+      - description: The amount to reduce the issue's remaining estimate by, as days (\#d), hours (\#h), or minutes (\#m). For example, *2d*. Required when `adjustEstimate` is `manual`.
+        in: query
+        name: reduceBy
+        schema:
+          type: string
+      - description: Use [expand](#expansion) to include additional information about work logs in the response. This parameter accepts `properties`, which returns worklog properties.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      - description: Whether the worklog entry should be added to the issue even if the issue is not editable, because jira.issue.editable set to false or missing. For example, the issue is closed. Connect and Forge app users with *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg) can use this flag.
+        in: query
+        name: overrideEditableFlag
+        schema:
+          default: false
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            example:
+              comment:
+                content:
+                - content:
+                  - text: I did some work here.
+                    type: text
+                  type: paragraph
+                type: doc
+                version: 1
+              started: 2021-01-17T12:34:00.000+0000
+              timeSpentSeconds: 12000
+              visibility:
+                identifier: 276f955c-63d7-42c8-9520-92d01dca0625
+                type: group
+            schema:
+              $ref: '#/components/schemas/Worklog'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Worklog'
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `adjustEstimate` is set to `new` but `newEstimate` is not provided or is invalid.\n *  `adjustEstimate` is set to `manual` but `reduceBy` is not provided or is invalid.\n *  the user does not have permission to add the worklog.\n *  the request JSON is malformed."
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '404':
+          description: Returned if the issue is not found or the user does not have permission to view it.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Add Worklog
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue-worklog:jira
+        - write:issue-worklog.property:jira
+        - read:avatar:jira
+        - read:group:jira
+        - read:issue-worklog:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:issue-worklog.property:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/issue/{issueIdOrKey}/worklog/{id}:
+    delete:
+      deprecated: false
+      description: Deletes a worklog from an issue.<br><br>Time tracking must be enabled in Jira, otherwise this operation returns an error. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  *Delete all worklogs*[ project permission](https://confluence.atlassian.com/x/yodKLg) to delete any worklog or *Delete own worklogs* to delete worklogs created by the user,<br> *  If the worklog has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianDeleteworklog
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The ID of the worklog.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Whether users watching the issue are notified by email.
+        in: query
+        name: notifyUsers
+        schema:
+          default: true
+          type: boolean
+      - description: "Defines how to update the issue's time estimate, the options are:\n\n *  `new` Sets the estimate to a specific value, defined in `newEstimate`.\n *  `leave` Leaves the estimate unchanged.\n *  `manual` Increases the estimate by amount specified in `increaseBy`.\n *  `auto` Reduces the estimate by the value of `timeSpent` in the worklog."
+        in: query
+        name: adjustEstimate
+        schema:
+          default: auto
+          enum:
+          - new
+          - leave
+          - manual
+          - auto
+          type: string
+      - description: The value to set as the issue's remaining time estimate, as days (\#d), hours (\#h), or minutes (\#m or \#). For example, *2d*. Required when `adjustEstimate` is `new`.
+        in: query
+        name: newEstimate
+        schema:
+          type: string
+      - description: The amount to increase the issue's remaining estimate by, as days (\#d), hours (\#h), or minutes (\#m or \#). For example, *2d*. Required when `adjustEstimate` is `manual`.
+        in: query
+        name: increaseBy
+        schema:
+          type: string
+      - description: Whether the work log entry should be added to the issue even if the issue is not editable, because jira.issue.editable set to false or missing. For example, the issue is closed. Connect and Forge app users with admin permission can use this flag.
+        in: query
+        name: overrideEditableFlag
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  `adjustEstimate` is set to `new` but `newEstimate` is not provided or is invalid.\n *  `adjustEstimate` is set to `manual` but `reduceBy` is not provided or is invalid.\n *  the user does not have permission to delete the worklog."
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '404':
+          description: "Returned if:\n\n *  the issue is not found or user does not have permission to view the issue.\n *  the worklog is not found or the user does not have permission to view it.\n *  time tracking is disabled."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Worklog
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue-worklog:jira
+        - delete:issue-worklog.property:jira
+        - write:issue.time-tracking:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns a worklog.<br><br>Time tracking must be enabled in Jira, otherwise this operation returns an error. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  If the worklog has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianGetworklog
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The ID of the worklog.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: 'Use [expand](#expansion) to include additional information about work logs in the response. This parameter accepts
+
+
+          `properties`, which returns worklog properties.'
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"author":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"comment":{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"I did some work here."}]}]},"id":"100028","issueId":"10002","self":"https://your-domain.atlassian.net/rest/api/3/issue/10010/worklog/10000","started":"2021-01-17T12:34:00.000+0000","timeSpent":"3h 20m","timeSpentSeconds":12000,"updateAuthor":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"updated":"2021-01-18T23:45:00.000+0000","visibility":{"identifier":"276f955c-63d7-42c8-9520-92d01dca0625","type":"group","value":"jira-developers"}}'
+              schema:
+                $ref: '#/components/schemas/Worklog'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '404':
+          description: "Returned if:\n\n *  the issue is not found or the user does not have permission to view it.\n *  the worklog is not found or the user does not have permission to view it.\n *  time tracking is disabled.\n\n."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Worklog
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment:jira
+        - read:group:jira
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: Updates a worklog.<br><br>Time tracking must be enabled in Jira, otherwise this operation returns an error. For more information, see [Configuring time tracking](https://confluence.atlassian.com/x/qoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.<br> *  *Edit all worklogs*[ project permission](https://confluence.atlassian.com/x/yodKLg) to update any worklog or *Edit own worklogs* to update worklogs created by the user.<br> *  If the worklog has visibility restrictions, belongs to the group or has the role visibility is restricted to.
+      operationId: atlassianUpdateworklog
+      parameters:
+      - description: The ID or key the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The ID of the worklog.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Whether users watching the issue are notified by email.
+        in: query
+        name: notifyUsers
+        schema:
+          default: true
+          type: boolean
+      - description: "Defines how to update the issue's time estimate, the options are:\n\n *  `new` Sets the estimate to a specific value, defined in `newEstimate`.\n *  `leave` Leaves the estimate unchanged.\n *  `auto` Updates the estimate by the difference between the original and updated value of `timeSpent` or `timeSpentSeconds`."
+        in: query
+        name: adjustEstimate
+        schema:
+          default: auto
+          enum:
+          - new
+          - leave
+          - manual
+          - auto
+          type: string
+      - description: The value to set as the issue's remaining time estimate, as days (\#d), hours (\#h), or minutes (\#m or \#). For example, *2d*. Required when `adjustEstimate` is `new`.
+        in: query
+        name: newEstimate
+        schema:
+          type: string
+      - description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter accepts `properties`, which returns worklog properties.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      - description: Whether the worklog should be added to the issue even if the issue is not editable. For example, because the issue is closed. Connect and Forge app users with *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg) can use this flag.
+        in: query
+        name: overrideEditableFlag
+        schema:
+          default: false
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            example:
+              comment:
+                content:
+                - content:
+                  - text: I did some work here.
+                    type: text
+                  type: paragraph
+                type: doc
+                version: 1
+              started: 2021-01-17T12:34:00.000+0000
+              timeSpentSeconds: 12000
+              visibility:
+                identifier: 276f955c-63d7-42c8-9520-92d01dca0625
+                type: group
+            schema:
+              $ref: '#/components/schemas/Worklog'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"author":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"comment":{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"I did some work here."}]}]},"id":"100028","issueId":"10002","self":"https://your-domain.atlassian.net/rest/api/3/issue/10010/worklog/10000","started":"2021-01-17T12:34:00.000+0000","timeSpent":"3h 20m","timeSpentSeconds":12000,"updateAuthor":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"updated":"2021-01-18T23:45:00.000+0000","visibility":{"identifier":"276f955c-63d7-42c8-9520-92d01dca0625","type":"group","value":"jira-developers"}}'
+              schema:
+                $ref: '#/components/schemas/Worklog'
+          description: Returned if the request is successful
+        '400':
+          description: "Returned if:\n\n *  `adjustEstimate` is set to `new` but `newEstimate` is not provided or is invalid.\n *  the user does not have permission to update the worklog.\n *  the request JSON is malformed."
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '404':
+          description: "Returned if:\n\n *  the issue is not found or user does not have permission to view the issue.\n *  the worklog is not found or the user does not have permission to view it.\n *  time tracking is disabled."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Update Worklog
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment:jira
+        - read:group:jira
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        - read:project-role:jira
+        - read:user:jira
+        - write:comment:jira
+        - write:issue-worklog:jira
+        - write:issue-worklog.property:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/worklog/deleted:
+    get:
+      deprecated: false
+      description: Returns a list of IDs and delete timestamps for worklogs deleted after a date and time.<br><br>This resource is paginated, with a limit of 1000 worklogs per page. Each page lists worklogs from oldest to youngest. If the number of items in the date range exceeds 1000, `until` indicates the timestamp of the youngest item on the page. Also, `nextPage` provides the URL for the next page of worklogs. The `lastPage` parameter is set to true on the last page of worklogs.<br><br>This resource does not return worklogs deleted during the minute preceding the request.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetidsofworklogsdeletedsince
+      parameters:
+      - description: The date and time, as a UNIX timestamp in milliseconds, after which deleted worklogs are returned.
+        in: query
+        name: since
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"lastPage":true,"nextPage":"https://your-domain.atlassian.net/api/~ver~/worklog/deleted?since=1438013693136","self":"https://your-domain.atlassian.net/api/~ver~/worklog/deleted?since=1438013671562","since":1438013671562,"until":1438013693136,"values":[{"properties":[],"updatedTime":1438013671562,"worklogId":103},{"properties":[],"updatedTime":1438013672165,"worklogId":104},{"properties":[],"updatedTime":1438013693136,"worklogId":105}]}'
+              schema:
+                $ref: '#/components/schemas/ChangedWorklogs'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Ids Of Deleted Worklogs
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/worklog/list:
+    post:
+      deprecated: false
+      description: Returns worklog details for a list of worklog IDs.<br><br>The returned list of worklogs is limited to 1000 items.<br><br>**[Permissions](#permissions) required:** Permission to access Jira, however, worklogs are only returned where either of the following is true:<br><br> *  the worklog is set as *Viewable by All Users*.<br> *  the user is a member of a project role or group with permission to view the worklog.
+      operationId: atlassianGetworklogsforids
+      parameters:
+      - description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter accepts `properties` that returns the properties of each worklog.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              ids:
+              - 1
+              - 2
+              - 5
+              - 10
+            schema:
+              $ref: '#/components/schemas/WorklogIdsRequestBean'
+        description: A JSON object containing a list of worklog IDs.
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"author":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"comment":{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"I did some work here."}]}]},"id":"100028","issueId":"10002","self":"https://your-domain.atlassian.net/rest/api/3/issue/10010/worklog/10000","started":"2021-01-17T12:34:00.000+0000","timeSpent":"3h 20m","timeSpentSeconds":12000,"updateAuthor":{"accountId":"5b10a2844c20165700ede21g","active":false,"displayName":"Mia Krystof","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g"},"updated":"2021-01-18T23:45:00.000+0000","visibility":{"identifier":"276f955c-63d7-42c8-9520-92d01dca0625","type":"group","value":"jira-developers"}}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/Worklog'
+                type: array
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request contains more than 1000 worklog IDs or is empty.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Worklogs
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:comment:jira
+        - read:group:jira
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        - read:project-role:jira
+        - read:user:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/worklog/updated:
+    get:
+      deprecated: false
+      description: Returns a list of IDs and update timestamps for worklogs updated after a date and time.<br><br>This resource is paginated, with a limit of 1000 worklogs per page. Each page lists worklogs from oldest to youngest. If the number of items in the date range exceeds 1000, `until` indicates the timestamp of the youngest item on the page. Also, `nextPage` provides the URL for the next page of worklogs. The `lastPage` parameter is set to true on the last page of worklogs.<br><br>This resource does not return worklogs updated during the minute preceding the request.<br><br>**[Permissions](#permissions) required:** Permission to access Jira, however, worklogs are only returned where either of the following is true:<br><br> *  the worklog is set as *Viewable by All Users*.<br> *  the user is a member of a project role or group with permission to view the worklog.
+      operationId: atlassianGetidsofworklogsmodifiedsince
+      parameters:
+      - description: The date and time, as a UNIX timestamp in milliseconds, after which updated worklogs are returned.
+        in: query
+        name: since
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: Use [expand](#expansion) to include additional information about worklogs in the response. This parameter accepts `properties` that returns the properties of each worklog.
+        in: query
+        name: expand
+        schema:
+          default: ''
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"lastPage":true,"nextPage":"https://your-domain.atlassian.net/api/~ver~/worklog/updated?since=1438013693136","self":"https://your-domain.atlassian.net/api/~ver~/worklog/updated?since=1438013671562","since":1438013671562,"until":1438013693136,"values":[{"properties":[],"updatedTime":1438013671562,"worklogId":103},{"properties":[],"updatedTime":1438013672165,"worklogId":104},{"properties":[],"updatedTime":1438013693136,"worklogId":105}]}'
+              schema:
+                $ref: '#/components/schemas/ChangedWorklogs'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Ids Of Updated Worklogs
+      tags:
+      - Issue Worklogs
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-worklog:jira
+        - read:issue-worklog.property:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    WorklogIdsRequestBean:
+      additionalProperties: false
+      properties:
+        ids:
+          description: A list of worklog IDs.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      required:
+      - ids
+      type: object
+    Visibility:
+      additionalProperties: true
+      description: The group or role to which this item is visible.
+      properties:
+        identifier:
+          description: The ID of the group or the name of the role that visibility of this item is restricted to.
+          nullable: true
+          type: string
+        type:
+          description: Whether visibility of this item is restricted to a group or role.
+          enum:
+          - group
+          - role
+          type: string
+        value:
+          description: The name of the group or role that visibility of this item is restricted to. Please note that the name of a group is mutable, to reliably identify a group use `identifier`.
+          type: string
+      type: object
+    ChangedWorklog:
+      additionalProperties: false
+      description: Details of a changed worklog.
+      properties:
+        properties:
+          description: Details of properties associated with the change.
+          items:
+            $ref: '#/components/schemas/EntityProperty'
+          readOnly: true
+          type: array
+        updatedTime:
+          description: The datetime of the change.
+          format: int64
+          readOnly: true
+          type: integer
+        worklogId:
+          description: The ID of the worklog.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    Worklog:
+      additionalProperties: true
+      description: Details of a worklog.
+      properties:
+        author:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          description: Details of the user who created the worklog.
+          readOnly: true
+        comment:
+          description: A comment about the worklog in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/). Optional when creating or updating a worklog.
+        created:
+          description: The datetime on which the worklog was created.
+          format: date-time
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the worklog record.
+          readOnly: true
+          type: string
+        issueId:
+          description: The ID of the issue this worklog is for.
+          readOnly: true
+          type: string
+        properties:
+          description: Details of properties for the worklog. Optional when creating or updating a worklog.
+          items:
+            $ref: '#/components/schemas/EntityProperty'
+          type: array
+        self:
+          description: The URL of the worklog item.
+          format: uri
+          readOnly: true
+          type: string
+        started:
+          description: The datetime on which the worklog effort was started. Required when creating a worklog. Optional when updating a worklog.
+          format: date-time
+          type: string
+        timeSpent:
+          description: The time spent working on the issue as days (\#d), hours (\#h), or minutes (\#m or \#). Required when creating a worklog if `timeSpentSeconds` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpentSecond` is provided.
+          type: string
+        timeSpentSeconds:
+          description: The time in seconds spent working on the issue. Required when creating a worklog if `timeSpent` isn't provided. Optional when updating a worklog. Cannot be provided if `timeSpent` is provided.
+          format: int64
+          type: integer
+        updateAuthor:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          description: Details of the user who last updated the worklog.
+          readOnly: true
+        updated:
+          description: The datetime on which the worklog was last updated.
+          format: date-time
+          readOnly: true
+          type: string
+        visibility:
+          allOf:
+          - $ref: '#/components/schemas/Visibility'
+          description: Details about any restrictions in the visibility of the worklog. Optional when creating or updating a worklog.
+      type: object
+      xml:
+        name: worklog
+    ChangedWorklogs:
+      additionalProperties: false
+      description: List of changed worklogs.
+      properties:
+        lastPage:
+          type: boolean
+        nextPage:
+          description: The URL of the next list of changed worklogs.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of this changed worklogs list.
+          format: uri
+          readOnly: true
+          type: string
+        since:
+          description: The datetime of the first worklog item in the list.
+          format: int64
+          readOnly: true
+          type: integer
+        until:
+          description: The datetime of the last worklog item in the list.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: Changed worklog list.
+          items:
+            $ref: '#/components/schemas/ChangedWorklog'
+          readOnly: true
+          type: array
+      type: object
+    PageOfWorklogs:
+      additionalProperties: true
+      description: Paginated list of worklog details
+      properties:
+        maxResults:
+          description: The maximum number of results that could be on the page.
+          format: int32
+          readOnly: true
+          type: integer
+        startAt:
+          description: The index of the first item returned on the page.
+          format: int32
+          readOnly: true
+          type: integer
+        total:
+          description: The number of results on the page.
+          format: int32
+          readOnly: true
+          type: integer
+        worklogs:
+          description: List of worklogs.
+          items:
+            $ref: '#/components/schemas/Worklog'
+          readOnly: true
+          type: array
+      type: object
+    EntityProperty:
+      additionalProperties: false
+      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+      properties:
+        key:
+          description: The key of the property. Required on create and update.
+          type: string
+        value:
+          description: The value of the property. Required on create and update.
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    UserDetails:
+      additionalProperties: false
+      description: "User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
+          type: string
+        accountType:
+          description: The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy settings, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
+          type: string
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the user.
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

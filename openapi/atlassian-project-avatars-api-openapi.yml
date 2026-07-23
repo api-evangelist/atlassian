@@ -1,0 +1,323 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Project Avatars API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Project Avatars
+paths:
+  /rest/api/3/project/{projectIdOrKey}/avatar:
+    put:
+      deprecated: false
+      description: Sets the avatar displayed for a project.<br><br>Use [Load project avatar](#api-rest-api-3-project-projectIdOrKey-avatar2-post) to store avatars against the project, before using this operation to set the displayed avatar.<br><br>**[Permissions](#permissions) required:** *Administer projects* [project permission](https://confluence.atlassian.com/x/yodKLg).
+      operationId: atlassianUpdateprojectavatar
+      parameters:
+      - description: The ID or (case-sensitive) key of the project.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              id: '10010'
+            schema:
+              $ref: '#/components/schemas/Avatar'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to administer the project.
+        '404':
+          description: Returned if the project or avatar is not found or the user does not have permission to view the project.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Set Project Avatar
+      tags:
+      - Project Avatars
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:project.avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: PROJECT_ADMIN
+  /rest/api/3/project/{projectIdOrKey}/avatar/{id}:
+    delete:
+      deprecated: false
+      description: Deletes a custom avatar from a project. Note that system avatars cannot be deleted.<br><br>**[Permissions](#permissions) required:** *Administer projects* [project permission](https://confluence.atlassian.com/x/yodKLg).
+      operationId: atlassianDeleteprojectavatar
+      parameters:
+      - description: The project ID or (case-sensitive) key.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The ID of the avatar.
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the avatar is a system avatar or the user does not have permission to administer the project.
+        '404':
+          description: Returned if the project or avatar is not found or the user does not have permission to view the project.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Delete Project Avatar
+      tags:
+      - Project Avatars
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:project.avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: PROJECT_ADMIN
+  /rest/api/3/project/{projectIdOrKey}/avatar2:
+    post:
+      deprecated: false
+      description: 'Loads an avatar for a project.<br><br>Specify the avatar''s local file location in the body of the request. Also, include the following headers:<br><br> *  `X-Atlassian-Token: no-check` To prevent XSRF protection blocking the request, for more information see [Special Headers](#special-request-headers).<br> *  `Content-Type: image/image type` Valid image types are JPEG, GIF, or PNG.<br><br>For example:  <br>`curl --request POST `<br><br>`--user email@example.com: `<br><br>`--header ''X-Atlassian-Token: no-check'' `<br><br>`--header ''Content-Type: image/'' `<br><br>`--data-binary "" `<br><br>`--url ''https://your-domain.atlassian.net/rest/api/3/project/{projectIdOrKey}/avatar2''`<br><br>The avatar is cropped to a square. If no crop parameters are specified, the square originates at the top left of the image. The length of the square''s sides is set to the smaller of the height or width of the image.<br><br>The cropped image is then used to create avatars of 16x16, 24x24, 32x32, and 48x48 in size.<br><br>After creating the avatar use [Set project avatar](#api-rest-api-3-project-projectIdOrKey-avatar-put) to set it as the project''s displayed avatar.<br><br>**[Permissions](#permissions) required:** *Administer projects* [project permission](https://confluence.atlassian.com/x/yodKLg).'
+      operationId: atlassianCreateprojectavatar
+      parameters:
+      - description: The ID or (case-sensitive) key of the project.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The X coordinate of the top-left corner of the crop region.
+        in: query
+        name: x
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The Y coordinate of the top-left corner of the crop region.
+        in: query
+        name: y
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      - description: The length of each side of the crop region.
+        in: query
+        name: size
+        schema:
+          default: 0
+          format: int32
+          type: integer
+      requestBody:
+        content:
+          '*/*':
+            schema: {}
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"id":"1010","isDeletable":true,"isSelected":false,"isSystemAvatar":false}'
+              schema:
+                $ref: '#/components/schemas/Avatar'
+          description: Returned if the request is successful.
+        '400':
+          description: "Returned if:\n\n *  an image isn't included in the request.\n *  the image type is unsupported.\n *  the crop parameters extend the crop area beyond the edge of the image."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to administer the project or an anonymous call is made to the operation.
+        '404':
+          description: Returned if the project is not found or the user does not have permission to view the project.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      - {}
+      summary: Atlassian Load Project Avatar
+      tags:
+      - Project Avatars
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:project.avatar:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: PROJECT_ADMIN
+  /rest/api/3/project/{projectIdOrKey}/avatars:
+    get:
+      deprecated: false
+      description: Returns all project avatars, grouped by system and custom avatars.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project.
+      operationId: atlassianGetallprojectavatars
+      parameters:
+      - description: The ID or (case-sensitive) key of the project.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"custom":[{"id":"1010","isDeletable":true,"isSelected":false,"isSystemAvatar":false,"urls":{"16x16":"https://your-domain.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10080&avatarType=project","24x24":"https://your-domain.atlassian.net/secure/viewavatar?size=small&avatarId=10080&avatarType=project","32x32":"https://your-domain.atlassian.net/secure/viewavatar?size=medium&avatarId=10080&avatarType=project","48x48":"https://your-domain.atlassian.net/secure/viewavatar?avatarId=10080&avatarType=project"}}],"system":[{"id":"1000","isDeletable":false,"isSelected":false,"isSystemAvatar":true,"urls":{"16x16":"https://your-domain.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10040&avatarType=project","24x24":"https://your-domain.atlassian.net/secure/viewavatar?size=small&avatarId=10040&avatarType=project","32x32":"https://your-domain.atlassian.net/secure/viewavatar?size=medium&avatarId=10040&avatarType=project","48x48":"https://your-domain.atlassian.net/secure/viewavatar?avatarId=10040&avatarType=project"}}]}'
+              schema:
+                $ref: '#/components/schemas/ProjectAvatars'
+          description: Returned if request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the project is not found or the user does not have permission to view the project.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get All Project Avatars
+      tags:
+      - Project Avatars
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:project.avatar:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    ProjectAvatars:
+      additionalProperties: false
+      description: List of project avatars.
+      properties:
+        custom:
+          description: List of avatars added to Jira. These avatars may be deleted.
+          items:
+            $ref: '#/components/schemas/Avatar'
+          readOnly: true
+          type: array
+        system:
+          description: List of avatars included with Jira. These avatars cannot be deleted.
+          items:
+            $ref: '#/components/schemas/Avatar'
+          readOnly: true
+          type: array
+      type: object
+    Avatar:
+      additionalProperties: true
+      description: Details of an avatar.
+      properties:
+        fileName:
+          description: The file name of the avatar icon. Returned for system avatars.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the avatar.
+          type: string
+        isDeletable:
+          description: Whether the avatar can be deleted.
+          readOnly: true
+          type: boolean
+        isSelected:
+          description: Whether the avatar is used in Jira. For example, shown as a project's avatar.
+          readOnly: true
+          type: boolean
+        isSystemAvatar:
+          description: Whether the avatar is a system avatar.
+          readOnly: true
+          type: boolean
+        owner:
+          description: The owner of the avatar. For a system avatar the owner is null (and nothing is returned). For non-system avatars this is the appropriate identifier, such as the ID for a project or the account ID for a user.
+          readOnly: true
+          type: string
+        urls:
+          additionalProperties:
+            format: uri
+            readOnly: true
+            type: string
+          description: The list of avatar icon URLs.
+          readOnly: true
+          type: object
+      required:
+      - id
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

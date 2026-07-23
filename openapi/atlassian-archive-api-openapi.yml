@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Archive API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Archive
+paths:
+  /wiki/rest/api/content/archive:
+    post:
+      tags:
+      - Archive
+      summary: Atlassian Archive Pages
+      description: Archives one or more pages in Confluence, which removes them from normal view and search results while preserving the content for potential future restoration. This operation requires appropriate permissions and accepts a list of page IDs to be archived simultaneously. When pages are archived, they become inaccessible to most users but can be managed by administrators through the archive interface. The operation helps maintain workspace organization by allowing teams to hide outdated or irrelevant content without permanently deleting it, supporting content lifecycle management and compliance requirements while maintaining the ability to recover information if needed.
+      operationId: archivePages
+      requestBody:
+        description: The pages to be archived.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pages:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - id
+                    properties:
+                      id:
+                        type: integer
+                        format: int64
+                        description: The `id` of the page to be archived.
+      responses:
+        '202':
+          description: Returned if the archive request has been submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTask'
+        '400':
+          description: "Returned if:\n- there is an archival job already running for the tenant.\n- the number of pages to archive is larger than the limit of 300.\n- any of the content IDs specified in the array do not resolve to pages.\n- any of the specified pages are already archived.\n- the request is coming from a free edition tenant.\n- the request is coming from a non premium edition tenant with more than 1 page ID\n  in the archive request."
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+        - write:page:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-experimental: true
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    LongTask:
+      required:
+      - id
+      - links
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+          example: example_value
+        id:
+          type: string
+          description: a unique identifier for the long task
+          example: abc123
+        links:
+          type: object
+          additionalProperties: true
+          properties:
+            status:
+              type: string
+              description: The URL to retrive status of long task.
+          example: example_value
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

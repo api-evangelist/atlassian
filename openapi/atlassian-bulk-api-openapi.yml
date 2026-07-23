@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Bulk API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Bulk
+paths:
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations:
+    post:
+      tags:
+      - Bulk
+      description: Creates or updates individual annotation objects within a specified commit report in a Bitbucket repository, allowing developers to programmatically add code analysis findings, linting errors, test results, or other automated feedback directly to a specific commit. The operation requires the workspace ID, repository slug, commit hash, and report ID as path parameters, and accepts an array of annotation objects in the request body, each containing details such as line number, severity, annotation type, summary, and optional description. This bulk operation enables CI/CD pipelines and development tools to efficiently attach multiple code quality insights to a single commit, making review feedback immediately visible within the Bitbucket interface and helping teams maintain code standards through automated checks.
+      operationId: bulkCreateOrUpdateAnnotations
+      summary: Atlassian Bulk Create or Update Annotations
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: commit
+        description: The commit for which to retrieve reports.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: reportId
+        description: Uuid or external-if of the report for which to get annotations for.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/report_annotation'
+              minItems: 1
+              maxItems: 100
+            examples:
+              bulk-create-or-update-annotations_2:
+                $ref: '#/components/examples/bulk-create-or-update-annotations_2'
+        description: The annotations to create or update
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/report_annotation'
+              examples:
+                undefined_2:
+                  $ref: '#/components/examples/undefined_2'
+      security:
+      - oauth2:
+        - repository
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    bulk-create-or-update-annotations_2:
+    - report_annotation: Example annotation text
+    undefined_2:
+    - id: annotation_123
+      report_id: report_456
+      user_id: user_789
+      text: This section needs clarification
+      start_position: 150
+      end_position: 200
+      created_at: '2024-01-15T10:30:00Z'
+      updated_at: '2024-01-15T10:30:00Z'
+    - id: annotation_124
+      report_id: report_456
+      user_id: user_790
+      text: Data looks accurate
+      start_position: 350
+      end_position: 400
+      created_at: '2024-01-15T11:45:00Z'
+      updated_at: '2024-01-15T11:45:00Z'
+  schemas:
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    report_annotation:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Report Annotation
+        description: A report for a commit.
+        properties:
+          external_id:
+            type: string
+            description: ID of the annotation provided by the annotation creator. It can be used to identify the annotation as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the annotation creator for updating or deleting this specific annotation. Needs to be unique.
+          uuid:
+            type: string
+            description: The UUID that can be used to identify the annotation.
+          annotation_type:
+            enum:
+            - VULNERABILITY
+            - CODE_SMELL
+            - BUG
+            type: string
+            description: The type of the report.
+          path:
+            type: string
+            description: The path of the file on which this annotation should be placed. This is the path of the file relative to the git repository. If no path is provided, then it will appear in the overview modal on all pull requests where the tip of the branch is the given commit, regardless of which files were modified.
+          line:
+            type: integer
+            description: The line number that the annotation should belong to. If no line number is provided, then it will default to 0 and in a pull request it will appear at the top of the file specified by the path field.
+            minimum: 1
+          summary:
+            type: string
+            description: The message to display to users.
+          details:
+            type: string
+            description: The details to show to users when clicking on the annotation.
+          result:
+            enum:
+            - PASSED
+            - FAILED
+            - SKIPPED
+            - IGNORED
+            type: string
+            description: The state of the report. May be set to PENDING and later updated.
+          severity:
+            enum:
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+            type: string
+            description: The severity of the annotation.
+          link:
+            type: string
+            format: uri
+            description: A URL linking to the annotation in an external tool.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the report was updated.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commit.hash}/reports/{reportUuid}/annotations/{uuid}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

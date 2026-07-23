@@ -1,0 +1,653 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Custom Field Options API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Custom Field Options
+paths:
+  /rest/api/3/customFieldOption/{id}:
+    get:
+      deprecated: false
+      description: Returns a custom field option. For example, an option in a select list.<br><br>Note that this operation **only works for issue field select list options created in Jira or using operations from the [Issue custom field options](#api-group-Issue-custom-field-options) resource**, it cannot be used with issue field select list options created by Connect apps.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** The custom field option is returned as follows:<br><br> *  if the user has the *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).<br> *  if the user has the *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for at least one project the custom field is used in, and the field is visible in at least one layout the user has permission to view.
+      operationId: atlassianGetcustomfieldoption
+      parameters:
+      - description: The ID of the custom field option.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"self":"https://your-domain.atlassian.net/rest/api/3/customFieldOption/10000","value":"To Do"}'
+              schema:
+                $ref: '#/components/schemas/CustomFieldOption'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: "Returned if:\n\n *  the custom field option is not found.\n *  the user does not have permission to view the custom field."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Custom Field Option
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        - read:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/field/{fieldId}/context/{contextId}/option:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of all custom field option for a context. Options are returned first then cascading options, in the order they display in Jira.<br><br>This operation works for custom field options created in Jira or the operations from this resource. **To work with issue field select list options created for Connect apps use the [Issue custom field options (apps)](#api-group-issue-custom-field-options--apps-) operations.**<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetoptionsforcontext
+      parameters:
+      - description: The ID of the custom field.
+        in: path
+        name: fieldId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the context.
+        in: path
+        name: contextId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the option.
+        in: query
+        name: optionId
+        schema:
+          format: int64
+          type: integer
+      - description: Whether only options are returned.
+        in: query
+        name: onlyOptions
+        schema:
+          default: false
+          type: boolean
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: 0
+          format: int64
+          type: integer
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: 100
+          format: int32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":4,"values":[{"id":"10001","value":"New York"},{"id":"10002","value":"Boston","disabled":true},{"id":"10004","value":"Denver"},{"id":"10003","value":"Brooklyn","optionId":"10001"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanCustomFieldContextOption'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field doesn''t support options."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can manage custom field options."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field was not found."],"errors":{}}'
+          description: Returned if the custom field is not found or the context doesn't match the custom field.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Custom Field Options Context
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Creates options and, where the custom select field is of the type Select List (cascading), cascading options for a custom select field. The options are added to a context of the field.<br><br>The maximum number of options that can be created per request is 1000 and each field can have a maximum of 10000 options.<br><br>This operation works for custom field options created in Jira or the operations from this resource. **To work with issue field select list options created for Connect apps use the [Issue custom field options (apps)](#api-group-issue-custom-field-options--apps-) operations.**<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreatecustomfieldoption
+      parameters:
+      - description: The ID of the custom field.
+        in: path
+        name: fieldId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the context.
+        in: path
+        name: contextId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              options:
+              - disabled: false
+                value: Scranton
+              - disabled: true
+                optionId: '10000'
+                value: Manhattan
+              - disabled: false
+                value: The Electric City
+            schema:
+              $ref: '#/components/schemas/BulkCustomFieldOptionCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"options":[{"disabled":false,"id":"10001","value":"Scranton"},{"disabled":true,"id":"10002","optionId":"10000","value":"Manhattan"},{"disabled":false,"id":"10003","value":"The Electric City"}]}'
+              schema:
+                $ref: '#/components/schemas/CustomFieldCreatedContextOptionsList'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field doesn''t support options."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can manage custom field options."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field was not found."],"errors":{}}'
+          description: Returned if the custom field is not found or the context doesn't match the custom field.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Custom Field Options Context
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field.option:jira
+        - write:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates the options of a custom field.<br><br>If any of the options are not found, no options are updated. Options where the values in the request match the current values aren't updated and aren't reported in the response.<br><br>Note that this operation **only works for issue field select list options created in Jira or using operations from the [Issue custom field options](#api-group-Issue-custom-field-options) resource**, it cannot be used with issue field select list options created by Connect apps.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdatecustomfieldoption
+      parameters:
+      - description: The ID of the custom field.
+        in: path
+        name: fieldId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the context.
+        in: path
+        name: contextId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              options:
+              - disabled: false
+                id: '10001'
+                value: Scranton
+              - disabled: true
+                id: '10002'
+                value: Manhattan
+              - disabled: false
+                id: '10003'
+                value: The Electric City
+            schema:
+              $ref: '#/components/schemas/BulkCustomFieldOptionUpdateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"options":[{"disabled":false,"id":"10001","value":"Scranton"},{"disabled":true,"id":"10002","value":"Manhattan"},{"disabled":false,"id":"10003","value":"The Electric City"}]}'
+              schema:
+                $ref: '#/components/schemas/CustomFieldUpdatedContextOptionsList'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field doesn''t support options."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can manage custom field options."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field was not found."],"errors":{}}'
+          description: Returned if the field, context, or one or more options is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Custom Field Options Context
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field.option:jira
+        - write:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/field/{fieldId}/context/{contextId}/option/move:
+    put:
+      deprecated: false
+      description: Changes the order of custom field options or cascading options in a context.<br><br>This operation works for custom field options created in Jira or the operations from this resource. **To work with issue field select list options created for Connect apps use the [Issue custom field options (apps)](#api-group-issue-custom-field-options--apps-) operations.**<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianReordercustomfieldoptions
+      parameters:
+      - description: The ID of the custom field.
+        in: path
+        name: fieldId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the context.
+        in: path
+        name: contextId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              customFieldOptionIds:
+              - '10001'
+              - '10002'
+              position: First
+            schema:
+              $ref: '#/components/schemas/OrderOfCustomFieldOptions'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if options are reordered.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["''after'' and ''position'' were provided. Only ''after'' or ''position'' can be specified."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can manage custom field options."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field was not found."],"errors":{}}'
+          description: Returned if the field, the context, or one or more of the options is not found..
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Reorder Custom Field Options Context
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/field/{fieldId}/context/{contextId}/option/{optionId}:
+    delete:
+      deprecated: false
+      description: Deletes a custom field option.<br><br>Options with cascading options cannot be deleted without deleting the cascading options first.<br><br>This operation works for custom field options created in Jira or the operations from this resource. **To work with issue field select list options created for Connect apps use the [Issue custom field options (apps)](#api-group-issue-custom-field-options--apps-) operations.**<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeletecustomfieldoption
+      parameters:
+      - description: The ID of the custom field.
+        in: path
+        name: fieldId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the context from which an option should be deleted.
+        in: path
+        name: contextId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The ID of the option to delete.
+        in: path
+        name: optionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: Returned if the option is deleted.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field doesn''t support options."],"errors":{}}'
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can manage custom field options."],"errors":{}}'
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["The custom field was not found."],"errors":{}}'
+          description: Returned if the field, the context, or the option is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Custom Field Options Context
+      tags:
+      - Issue Custom Field Options
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:field.option:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    PageBeanCustomFieldContextOption:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/CustomFieldContextOption'
+          readOnly: true
+          type: array
+      type: object
+    CustomFieldOptionUpdate:
+      additionalProperties: false
+      description: Details of a custom field option for a context.
+      properties:
+        disabled:
+          description: Whether the option is disabled.
+          type: boolean
+        id:
+          description: The ID of the custom field option.
+          type: string
+        value:
+          description: The value of the custom field option.
+          type: string
+      required:
+      - id
+      type: object
+    BulkCustomFieldOptionCreateRequest:
+      additionalProperties: false
+      description: Details of the options to create for a custom field.
+      properties:
+        options:
+          description: Details of options to create.
+          items:
+            $ref: '#/components/schemas/CustomFieldOptionCreate'
+          type: array
+      type: object
+      writeOnly: true
+    CustomFieldOption:
+      additionalProperties: false
+      description: Details of a custom option for a field.
+      properties:
+        self:
+          description: The URL of these custom field option details.
+          format: uri
+          readOnly: true
+          type: string
+        value:
+          description: The value of the custom field option.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: customFieldOption
+    CustomFieldContextOption:
+      additionalProperties: false
+      description: Details of the custom field options for a context.
+      properties:
+        disabled:
+          description: Whether the option is disabled.
+          type: boolean
+        id:
+          description: The ID of the custom field option.
+          type: string
+        optionId:
+          description: For cascading options, the ID of the custom field option containing the cascading option.
+          type: string
+        value:
+          description: The value of the custom field option.
+          type: string
+      required:
+      - disabled
+      - id
+      - value
+      type: object
+    CustomFieldUpdatedContextOptionsList:
+      additionalProperties: false
+      description: A list of custom field options for a context.
+      properties:
+        options:
+          description: The updated custom field options.
+          items:
+            $ref: '#/components/schemas/CustomFieldOptionUpdate'
+          type: array
+      type: object
+    OrderOfCustomFieldOptions:
+      additionalProperties: false
+      description: An ordered list of custom field option IDs and information on where to move them.
+      properties:
+        after:
+          description: The ID of the custom field option or cascading option to place the moved options after. Required if `position` isn't provided.
+          type: string
+          writeOnly: true
+        customFieldOptionIds:
+          description: A list of IDs of custom field options to move. The order of the custom field option IDs in the list is the order they are given after the move. The list must contain custom field options or cascading options, but not both.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position the custom field options should be moved to. Required if `after` isn't provided.
+          enum:
+          - First
+          - Last
+          type: string
+          writeOnly: true
+      required:
+      - customFieldOptionIds
+      type: object
+    CustomFieldOptionCreate:
+      additionalProperties: false
+      description: Details of a custom field option to create.
+      properties:
+        disabled:
+          description: Whether the option is disabled.
+          type: boolean
+        optionId:
+          description: For cascading options, the ID of the custom field object containing the cascading option.
+          type: string
+        value:
+          description: The value of the custom field option.
+          type: string
+      required:
+      - value
+      type: object
+    CustomFieldCreatedContextOptionsList:
+      additionalProperties: false
+      description: A list of custom field options for a context.
+      properties:
+        options:
+          description: The created custom field options.
+          items:
+            $ref: '#/components/schemas/CustomFieldContextOption'
+          type: array
+      type: object
+    BulkCustomFieldOptionUpdateRequest:
+      additionalProperties: false
+      description: Details of the options to update for a custom field.
+      properties:
+        options:
+          description: Details of the options to update.
+          items:
+            $ref: '#/components/schemas/CustomFieldOptionUpdate'
+          type: array
+      type: object
+      writeOnly: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

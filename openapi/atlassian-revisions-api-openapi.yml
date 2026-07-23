@@ -1,0 +1,385 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Revisions API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Revisions
+paths:
+  /snippets/{workspace}/{encoded_id}/{node_id}:
+    parameters:
+    - name: encoded_id
+      in: path
+      description: The snippet id.
+      required: true
+      schema:
+        type: string
+    - name: node_id
+      in: path
+      description: A commit revision (SHA1).
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Revisions
+      description: This API operation allows you to delete a specific previous revision of a snippet in Atlassian Bitbucket by providing the workspace identifier, the encoded snippet ID, and the node ID of the particular revision you want to remove. The deletion is permanent and removes only the specified historical version while preserving other revisions and the current state of the snippet. This is useful for managing snippet history, removing outdated or incorrect versions, or cleaning up revision clutter within a workspace. Authentication is required to perform this operation, and the user must have appropriate permissions to modify snippets within the specified workspace.
+      summary: Atlassian Delete Previous Revision of Snippet
+      responses:
+        '204':
+          description: If the snippet was deleted successfully.
+        '401':
+          description: If the snippet is private and the request was not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If authenticated user does not have permission to delete the private snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '405':
+          description: If `{node_id}` is not the latest revision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      operationId: deletePreviousRevisionOfSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Revisions
+      description: This API operation retrieves a specific previous revision of a snippet in Atlassian Bitbucket by providing the workspace identifier, the encoded snippet ID, and the node ID representing the particular revision you want to access. It allows users to view historical versions of code snippets, enabling them to track changes, compare different iterations, or restore earlier versions of their snippet content. The endpoint requires three path parameters to uniquely identify both the snippet and its specific revision within the workspace's collection of snippets.
+      summary: Atlassian Get Previous Revision of Snippet
+      responses:
+        '200':
+          description: The snippet object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/snippet'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/snippet'
+        '401':
+          description: If the snippet is private and the request was not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If authenticated user does not have access to the private snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet, or the revision does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: getPreviousRevisionOfSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Revisions
+      description: Updates the content and metadata of a specific previous revision of a snippet in Bitbucket by targeting a particular node ID within the snippet's version history. This PUT operation allows users to modify an existing historical version of a snippet within a specified workspace, identified by the workspace slug, the snippet's encoded ID, and the specific node ID representing that revision. The operation enables retroactive changes to snippet content, properties, or metadata while maintaining the snippet's version chain, useful for correcting errors or updating information in past revisions without affecting the current version.
+      summary: Atlassian Update Previous Revision of Snippet
+      responses:
+        '200':
+          description: The updated snippet object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/snippet'
+              examples:
+                snippet_2:
+                  $ref: '#/components/examples/snippet_2'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/snippet'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/snippet'
+        '401':
+          description: If the snippet is private and the request was not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If authenticated user does not have permission to update the private snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the snippet or the revision does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+        '405':
+          description: If `{node_id}` is not the latest revision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/related:
+              schema:
+                $ref: '#/components/schemas/error'
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - snippet:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      operationId: updatePreviousRevisionOfSnippet
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    snippet:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Snippet
+        description: A snippet object.
+        properties:
+          id:
+            type: integer
+            minimum: 0
+          title:
+            type: string
+          scm:
+            type: string
+            description: The DVCS used to store the snippet.
+            enum:
+            - git
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          owner:
+            $ref: '#/components/schemas/account'
+          creator:
+            $ref: '#/components/schemas/account'
+          is_private:
+            type: boolean
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+  examples:
+    snippet_2:
+      id: 12345
+      title: Example Code Snippet
+      scm: git
+      created_on: '2024-01-15T10:30:00Z'
+      updated_on: '2024-01-15T14:45:00Z'
+      owner:
+        username: john_doe
+        display_name: John Doe
+      creator:
+        username: jane_smith
+        display_name: Jane Smith
+      is_private: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

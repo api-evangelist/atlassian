@@ -1,0 +1,488 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Task API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Task
+paths:
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/merge/task-status/{task_id}:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: task_id
+      in: path
+      description: ID of the merge task
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Task
+      description: This GET endpoint retrieves the current status of a merge task for a specific pull request in a Bitbucket repository. By providing the workspace identifier, repository slug, pull request ID, and task ID in the URL path, users can poll this endpoint to monitor the progress of an asynchronous merge operation. The response typically includes information about whether the merge task is pending, in progress, completed successfully, or has failed, along with any relevant error messages or completion details. This is particularly useful for tracking long-running merge operations or implementing automated workflows that need to wait for merge completion before proceeding with subsequent actions.
+      summary: Atlassian Get the Merge Task Status for Pull Request
+      responses:
+        '200':
+          description: Returns a task status if the merge is either pending or successful, and if it is successful, a pull request
+        '400':
+          description: If the provided task ID does not relate to this pull request, or if something went wrong during the merge operation
+        '403':
+          description: The user making the request does not have permission to the repo and is different from the user who queued the task
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: getTheMergeTaskStatusForPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    post:
+      tags:
+      - Task
+      description: This API endpoint allows you to create a new task on a specific pull request within a Bitbucket repository. By sending a POST request to /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks, you can add actionable items or to-do items that need to be completed as part of the pull request review process. You must specify the workspace (team or user account), repository slug, and pull request ID in the URL path, along with task details in the request body such as the task description and its associated content. This is useful for tracking specific review requirements, requested changes, or action items that reviewers or contributors need to address before the pull request can be merged.
+      summary: Atlassian Create Task on Pull Request
+      responses:
+        '201':
+          description: The newly created task.
+          headers:
+            Location:
+              description: The URL of the new task
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/A_pullrequest_comment_task'
+        '400':
+          description: There is a missing required field in the request or the task content is blank.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the authenticated user does not have access to the pull request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the pull request does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/A_pullrequest_task_create'
+            examples:
+              pull-request-task-create:
+                $ref: '#/components/examples/pull-request-task-create'
+        description: The contents of the task
+        required: true
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: createTaskOnPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks/{task_id}:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: task_id
+      in: path
+      description: The ID of the task.
+      required: true
+      schema:
+        type: integer
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Task
+      description: 'The Delete Task On Pull Request operation in the Atlassian Bitbucket Pull Requests API removes a specific task from a pull request by sending a DELETE request to the endpoint /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/tasks/{task_id}. This operation requires four path parameters: the workspace identifier, the repository slug, the pull request ID, and the task ID that uniquely identifies the task to be deleted. When successfully executed, this endpoint permanently removes the specified task from the pull request, which is useful for cleaning up completed tasks, removing obsolete action items, or managing the task list associated with code review processes. The operation requires appropriate authentication and permissions to modify tasks within the specified repository and pull request.'
+      summary: Atlassian Delete Task on Pull Request
+      responses:
+        '204':
+          description: Successful deletion.
+        '403':
+          description: If the authenticated user does not have access to delete the task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the task does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: deleteTaskOnPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    get:
+      tags:
+      - Task
+      description: The Get Task On Pull Request operation retrieves detailed information about a specific task associated with a pull request in a Bitbucket repository. By providing the workspace identifier, repository slug, pull request ID, and task ID in the endpoint path, this GET request returns the task's complete details including its content, status, creation date, assignee information, and any related metadata. This endpoint is useful for tracking individual tasks within a pull request's review process, allowing developers and team members to monitor task completion, view task descriptions, and understand task-specific requirements without having to fetch all tasks associated with the pull request.
+      summary: Atlassian Get Task on Pull Request
+      responses:
+        '200':
+          description: The task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/A_pullrequest_comment_task'
+              examples:
+                undefined:
+                  $ref: '#/components/examples/undefined'
+        '403':
+          description: If the authenticated user does not have access to the pull request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the task does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: getTaskOnPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    A_pullrequest_task_create:
+      type: object
+      title: Pull Request Task Create
+      description: A pullrequest task create
+      properties:
+        content:
+          type: object
+          title: Task Raw Content
+          description: task raw content
+          properties:
+            raw:
+              type: string
+              description: The task contents
+          required:
+          - raw
+          additionalProperties: false
+          example: example_value
+        comment:
+          $ref: '#/components/schemas/comment'
+        pending:
+          type: boolean
+          example: true
+      required:
+      - content
+      additionalProperties: false
+    A_pullrequest_comment_task:
+      allOf:
+      - $ref: '#/components/schemas/A_pull_request_task'
+      - type: object
+        title: Pull Request Comment Task
+        description: A pullrequest comment task
+        properties:
+          comment:
+            $ref: '#/components/schemas/comment'
+        additionalProperties: false
+    comment:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Comment
+        description: The base type for all comments. This type should be considered abstract. Each of the "commentable" resources defines its own subtypes (e.g. `issue_comment`).
+        properties:
+          id:
+            type: integer
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          content:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          user:
+            $ref: '#/components/schemas/account'
+          deleted:
+            type: boolean
+          parent:
+            $ref: '#/components/schemas/comment'
+          inline:
+            type: object
+            properties:
+              from:
+                type: integer
+                description: The comment's anchor line in the old version of the file.
+                minimum: 1
+              to:
+                type: integer
+                description: The comment's anchor line in the new version of the file. If the 'from' line is also provided, this value will be removed.
+                minimum: 1
+              path:
+                type: string
+                description: The path of the file this comment is anchored to.
+            required:
+            - path
+            additionalProperties: false
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              code:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+        additionalProperties: true
+  examples:
+    undefined:
+      id: 12345
+      created_on: '2023-10-15T14:30:00.000000+00:00'
+      updated_on: '2023-10-15T15:45:00.000000+00:00'
+      content:
+        raw: This looks good to me!
+        markup: markdown
+        html: <p>This looks good to me!</p>
+      user:
+        display_name: John Doe
+        uuid: '{a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6}'
+        username: johndoe
+        type: user
+      deleted: false
+      parent:
+        id: 12340
+      inline:
+        to: 15
+        from: 10
+        path: src/main.py
+      type: pullrequest_comment
+      pullrequest:
+        id: 789
+        title: Add new feature
+        type: pullrequest
+      resolution:
+        status: resolved
+        timestamp: '2023-10-15T16:00:00.000000+00:00'
+      pending: false
+    pull-request-task-create:
+      content:
+        raw: Please review the authentication logic in the login handler
+      comment:
+        id: 12345
+      pending: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

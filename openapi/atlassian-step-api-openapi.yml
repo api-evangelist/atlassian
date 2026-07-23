@@ -1,0 +1,241 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Step API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Step
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}:
+    get:
+      tags:
+      - Step
+      summary: Atlassian Get Step of Pipeline
+      description: This API operation retrieves detailed information about a specific step within a pipeline execution in a Bitbucket repository. By providing the workspace identifier, repository slug, pipeline UUID, and step UUID as path parameters, you can fetch comprehensive data about an individual step's status, configuration, duration, logs reference, and execution details within the context of a Bitbucket Pipelines build process. This endpoint is useful for monitoring pipeline progress, debugging failed builds, or integrating pipeline step information into external tools and dashboards.
+      operationId: getStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The step.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_step'
+              examples:
+                pipeline-step:
+                  $ref: '#/components/examples/pipeline-step'
+        '404':
+          description: No account, repository, pipeline or step with the UUID provided exists for the pipeline with the UUID provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    pipeline_step:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step
+        description: A step of a Bitbucket pipeline. This represents the actual result of the step execution.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the step.
+          started_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was started. This is not set when the step hasn't executed yet.
+          completed_on:
+            type: string
+            format: date-time
+            description: The timestamp when the step execution was completed. This is not set if the step is still in progress.
+          state:
+            $ref: '#/components/schemas/pipeline_step_state'
+          image:
+            $ref: '#/components/schemas/pipeline_image'
+          setup_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of commands that are executed as part of the setup phase of the build. These commands are executed outside the build container.
+          script_commands:
+            type: array
+            items:
+              $ref: '#/components/schemas/pipeline_command'
+            description: The list of build commands. These commands are executed in the build container.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/{pipeline.uuid}/steps/{uuid}
+      x-bb-batch-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/steps_batch
+      x-bb-batch-max-size: 100
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    pipeline_command:
+      type: object
+      title: Pipeline Command
+      description: An executable pipeline command.
+      properties:
+        name:
+          type: string
+          description: The name of the command.
+          example: Example Title
+        command:
+          type: string
+          description: The executable command.
+          example: example_value
+    pipeline_image:
+      type: object
+      title: Pipeline Image
+      description: The definition of a Docker image that can be used for a Bitbucket Pipelines step execution context.
+      properties:
+        name:
+          type: string
+          description: The name of the image. If the image is hosted on DockerHub the short name can be used, otherwise the fully qualified name is required here.
+          example: Example Title
+        username:
+          type: string
+          description: The username needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        password:
+          type: string
+          description: The password needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: example_value
+        email:
+          type: string
+          description: The email needed to authenticate with the Docker registry. Only required when using a private Docker image.
+          example: user@example.com
+    pipeline_step_state:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Step State
+        description: The representation of the progress state of a pipeline step.
+        properties: {}
+  examples:
+    pipeline-step:
+      uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      started_on: '2024-01-15T10:30:00Z'
+      completed_on: '2024-01-15T10:35:00Z'
+      state: {}
+      image: {}
+      setup_commands: []
+      script_commands: []
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

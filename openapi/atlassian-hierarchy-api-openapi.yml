@@ -1,0 +1,186 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Hierarchy API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Hierarchy
+paths:
+  /wiki/rest/api/content/{id}/pagehierarchy/copy:
+    post:
+      tags:
+      - Hierarchy
+      summary: Atlassian Copy Page Hierarchy
+      description: This API operation allows you to copy an entire page hierarchy from one location in Confluence to another. By making a POST request to this endpoint with a specific page ID, you can duplicate not only the parent page but also all of its child pages and their descendants, preserving the hierarchical structure. This is useful when you need to replicate a complete documentation structure, create templates from existing page trees, or reorganize content while maintaining the original hierarchy. The operation requires appropriate permissions and will copy all associated content, including page bodies, attachments, and nested child pages to the specified destination within your Confluence space.
+      operationId: copyPageHierarchy
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Request object from json post body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyPageHierarchyRequest'
+        required: true
+      responses:
+        '202':
+          description: Returns a full JSON representation of a long running task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTask'
+        '400':
+          description: Returned if the title prefix is invalid (e.g. is empty, creates a conflict)
+          content: {}
+        '403':
+          description: Returned if the user does not have permission to create content at destination
+          content: {}
+        '404':
+          description: Returned if original page or destination page does not exist.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+        - write:page:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: request
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    ContentId:
+      type: string
+    CopyPageHierarchyRequest:
+      required:
+      - destinationPageId
+      type: object
+      properties:
+        copyAttachments:
+          type: boolean
+          description: If set to `true`, attachments are copied to the destination page.
+          default: false
+          example: true
+        copyPermissions:
+          type: boolean
+          description: If set to `true`, page permissions are copied to the destination page.
+          default: false
+          example: true
+        copyProperties:
+          type: boolean
+          description: If set to `true`, content properties are copied to the destination page.
+          default: false
+          example: true
+        copyLabels:
+          type: boolean
+          description: If set to `true`, labels are copied to the destination page.
+          default: false
+          example: true
+        copyCustomContents:
+          type: boolean
+          description: If set to `true`, custom contents are copied to the destination page.
+          default: false
+          example: true
+        copyDescendants:
+          type: boolean
+          description: If set to `true`, descendants are copied to the destination page.
+          default: true
+          example: true
+        destinationPageId:
+          $ref: '#/components/schemas/ContentId'
+        titleOptions:
+          $ref: '#/components/schemas/CopyPageHierarchyTitleOptions'
+    LongTask:
+      required:
+      - id
+      - links
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+          example: example_value
+        id:
+          type: string
+          description: a unique identifier for the long task
+          example: abc123
+        links:
+          type: object
+          additionalProperties: true
+          properties:
+            status:
+              type: string
+              description: The URL to retrive status of long task.
+          example: example_value
+    CopyPageHierarchyTitleOptions:
+      type: object
+      properties:
+        prefix:
+          type: string
+          example: example_value
+        replace:
+          type: string
+          example: example_value
+        search:
+          type: string
+          example: example_value
+      description: Required for copying page in the same space.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

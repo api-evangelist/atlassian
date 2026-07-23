@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account App Data Policies (EAP) API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: App Data Policies (EAP)
+paths:
+  /rest/api/3/data-policy/project:
+    get:
+      deprecated: false
+      description: Returns data policies for the projects specified in the request.
+      operationId: atlassianGetpolicies
+      parameters:
+      - description: A list of project identifiers. This parameter accepts a comma-separated list.
+        in: query
+        name: ids
+        schema:
+          description: A list of up to 50 project identifiers. This parameter accepts a comma-separated list.
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"projectDataPolicies":[{"dataPolicy":{"anyContentBlocked":false},"id":1000},{"dataPolicy":{"anyContentBlocked":true},"id":1001}]}'
+              schema:
+                $ref: '#/components/schemas/ProjectDataPolicies'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["Invalid request: some projects are not available or do not exist."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is not valid or includes invalid or not-permitted project identifiers.
+        '401':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only apps can access this resource."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":[""],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the client is not authorized to make the request.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Data Policy For Projects Eap
+      tags:
+      - App Data Policies (EAP)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/data-policy:
+    get:
+      deprecated: false
+      description: Returns data policy for the workspace.
+      operationId: atlassianGetpolicy
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"anyContentBlocked":false}'
+              schema:
+                $ref: '#/components/schemas/WorkspaceDataPolicy'
+          description: Returned if the request is successful
+        '401':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only apps can access this resource."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":[""],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the client is not authorized to make the request.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Data Policy For The Workspace Eap
+      tags:
+      - App Data Policies (EAP)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    ProjectDataPolicy:
+      additionalProperties: false
+      description: Details about data policy.
+      properties:
+        anyContentBlocked:
+          description: Whether the project contains any content inaccessible to the requesting application.
+          readOnly: true
+          type: boolean
+      type: object
+    ProjectDataPolicies:
+      additionalProperties: false
+      description: Details about data policies for a list of projects.
+      properties:
+        projectDataPolicies:
+          description: List of projects with data policies.
+          items:
+            $ref: '#/components/schemas/ProjectWithDataPolicy'
+          readOnly: true
+          type: array
+      type: object
+    ProjectWithDataPolicy:
+      additionalProperties: false
+      description: Details about data policies for a project.
+      properties:
+        dataPolicy:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDataPolicy'
+          description: Data policy.
+          readOnly: true
+        id:
+          description: The project ID.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    WorkspaceDataPolicy:
+      additionalProperties: false
+      description: Details about data policy.
+      properties:
+        anyContentBlocked:
+          description: Whether the workspace contains any content inaccessible to the requesting application.
+          readOnly: true
+          type: boolean
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,226 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Custom Field Values (Apps) API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Custom Field Values (Apps)
+paths:
+  /rest/api/3/app/field/value:
+    post:
+      deprecated: false
+      description: Updates the value of one or more custom fields on one or more issues. Combinations of custom field and issue should be unique within the request.<br><br>Apps can only perform this operation on [custom fields](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/) and [custom field types](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field-type/) declared in their own manifests.<br><br>**[Permissions](#permissions) required:** Only the app that owns the custom field or custom field type can update its values with this operation.
+      operationId: atlassianUpdatemultiplecustomfieldvalues
+      parameters:
+      - description: Whether to generate a changelog for this update.
+        in: query
+        name: generateChangelog
+        schema:
+          default: true
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            example:
+              updates:
+              - customField: customfield_10010
+                issueIds:
+                - 10010
+                - 10011
+                value: new value
+              - customField: customfield_10011
+                issueIds:
+                - 10010
+                value: 1000
+            schema:
+              $ref: '#/components/schemas/MultipleCustomFieldValuesUpdateDetails'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '403':
+          description: Returned if the request is not authenticated as the app that provided all the fields.
+        '404':
+          description: Returned if any field is not found.
+      security:
+      - basicAuth: []
+      - OAuth2: []
+      summary: Atlassian Update Custom Fields
+      tags:
+      - Issue Custom Field Values (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes: []
+        state: Current
+      - scheme: OAuth2
+        scopes: []
+        state: Beta
+      x-atlassian-connect-scope: INACCESSIBLE
+  /rest/api/3/app/field/{fieldIdOrKey}/value:
+    put:
+      deprecated: false
+      description: Updates the value of a custom field on one or more issues.<br><br>Apps can only perform this operation on [custom fields](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/) and [custom field types](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field-type/) declared in their own manifests.<br><br>**[Permissions](#permissions) required:** Only the app that owns the custom field or custom field type can update its values with this operation.
+      operationId: atlassianUpdatecustomfieldvalue
+      parameters:
+      - description: The ID or key of the custom field. For example, `customfield_10010`.
+        in: path
+        name: fieldIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: Whether to generate a changelog for this update.
+        in: query
+        name: generateChangelog
+        schema:
+          default: true
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            example:
+              updates:
+              - issueIds:
+                - 10010
+                value: new value
+            schema:
+              $ref: '#/components/schemas/CustomFieldValueUpdateDetails'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '403':
+          description: Returned if the request is not authenticated as the app that provided the field.
+        '404':
+          description: Returned if the field is not found.
+      security:
+      - basicAuth: []
+      - OAuth2: []
+      summary: Atlassian Update Custom Field Value
+      tags:
+      - Issue Custom Field Values (Apps)
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes: []
+        state: Current
+      - scheme: OAuth2
+        scopes: []
+        state: Beta
+      x-atlassian-connect-scope: INACCESSIBLE
+components:
+  schemas:
+    CustomFieldValueUpdateDetails:
+      additionalProperties: false
+      description: Details of updates for a custom field.
+      properties:
+        updates:
+          description: The list of custom field update details.
+          items:
+            $ref: '#/components/schemas/CustomFieldValueUpdate'
+          type: array
+      type: object
+      writeOnly: true
+    MultipleCustomFieldValuesUpdate:
+      additionalProperties: false
+      description: A custom field and its new value with a list of issue to update.
+      properties:
+        customField:
+          description: The ID or key of the custom field. For example, `customfield_10010`.
+          type: string
+          writeOnly: true
+        issueIds:
+          description: The list of issue IDs.
+          items:
+            format: int64
+            type: integer
+            writeOnly: true
+          type: array
+          writeOnly: true
+        value:
+          description: "The value for the custom field. The value must be compatible with the [custom field type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#data-types) as follows:\n\n *  `string` the value must be a string.\n *  `number` the value must be a number.\n *  `datetime` the value must be a string that represents a date in the ISO format or the simplified extended ISO format. For example, `\"2023-01-18T12:00:00-03:00\"` or `\"2023-01-18T12:00:00.000Z\"`. However, the milliseconds part is ignored.\n *  `user` the value must be an object that contains the `accountId` field.\n *  `group` the value must be an object that contains the group `name` or `groupId` field. Because group names can change, we recommend using `groupId`.\n\nA list of appropriate values must be provided if the field is of the `list` [collection type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#collection-types)."
+      required:
+      - customField
+      - issueIds
+      - value
+      type: object
+      writeOnly: true
+    MultipleCustomFieldValuesUpdateDetails:
+      additionalProperties: false
+      description: List of updates for a custom fields.
+      properties:
+        updates:
+          items:
+            $ref: '#/components/schemas/MultipleCustomFieldValuesUpdate'
+          type: array
+      type: object
+      writeOnly: true
+    CustomFieldValueUpdate:
+      additionalProperties: false
+      description: A list of issue IDs and the value to update a custom field to.
+      properties:
+        issueIds:
+          description: The list of issue IDs.
+          items:
+            format: int64
+            type: integer
+            writeOnly: true
+          type: array
+          writeOnly: true
+        value:
+          description: "The value for the custom field. The value must be compatible with the [custom field type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#data-types) as follows:\n\n *  `string` the value must be a string.\n *  `number` the value must be a number.\n *  `datetime` the value must be a string that represents a date in the ISO format or the simplified extended ISO format. For example, `\"2023-01-18T12:00:00-03:00\"` or `\"2023-01-18T12:00:00.000Z\"`. However, the milliseconds part is ignored.\n *  `user` the value must be an object that contains the `accountId` field.\n *  `group` the value must be an object that contains the group `name` or `groupId` field. Because group names can change, we recommend using `groupId`.\n\nA list of appropriate values must be provided if the field is of the `list` [collection type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#collection-types)."
+      required:
+      - issueIds
+      - value
+      type: object
+      writeOnly: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

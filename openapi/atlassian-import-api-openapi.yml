@@ -1,0 +1,261 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Import API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Import
+paths:
+  /repositories/{workspace}/{repo_slug}/issues/import:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Import
+      description: This API endpoint allows you to check the status of a bulk issue import operation for a specific Bitbucket repository. By making a GET request to `/repositories/{workspace}/{repo_slug}/issues/import`, you can retrieve information about a previously initiated issue import process, including whether it's still in progress, completed successfully, or encountered any errors. The endpoint requires you to specify both the workspace identifier and the repository slug in the URL path, and it returns details about the import job such as its current state, the number of issues processed, and any relevant metadata associated with the import operation.
+      summary: Atlassian Check Issue Import Status
+      responses:
+        '200':
+          description: Import job complete with either FAILURE or SUCCESS status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                issue-job-status:
+                  $ref: '#/components/examples/issue-job-status'
+        '202':
+          description: Import job started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                response:
+                  value:
+                    type: issue_job_status
+                    status: ACCEPTED
+                    phase: Attachments
+                    total: 15
+                    count: 0
+                    percent: 0
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No export job has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue:write
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: checkIssueImportStatus
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Import
+      description: This API endpoint allows users to import issues in bulk to a Bitbucket repository by sending a POST request to /repositories/{workspace}/{repo_slug}/issues/import. It requires specifying the workspace identifier and repository slug in the URL path, and is designed to facilitate the migration or mass creation of issues from external sources or other issue tracking systems into a Bitbucket repository's issue tracker. The endpoint accepts issue data in the request body and processes multiple issues in a single operation, making it efficient for transferring large sets of issues while maintaining their properties and metadata during the import process.
+      summary: Atlassian Import Issues
+      responses:
+        '202':
+          description: Import job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/issue_job_status'
+              examples:
+                response:
+                  value:
+                    type: issue_job_status
+                    status: ACCEPTED
+                    phase: Attachments
+                    total: 15
+                    count: 0
+                    percent: 0
+        '401':
+          description: The request wasn't authenticated properly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: When the authenticated user does not have admin permission on the repo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No export job has begun
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: Import already running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - issue:write
+        - repository:admin
+      - basic: []
+      - api_key: []
+      operationId: importIssues
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    issue-job-status:
+      type: export
+      status: RUNNING
+      phase: Processing issues
+      total: 1000
+      count: 450
+      pct: 45
+  schemas:
+    issue_job_status:
+      type: object
+      title: Issue Job Status
+      description: The status of an import or export job
+      properties:
+        type:
+          type: string
+          example: example_value
+        status:
+          type: string
+          description: The status of the import/export job
+          enum:
+          - ACCEPTED
+          - STARTED
+          - RUNNING
+          - FAILURE
+          example: ACCEPTED
+        phase:
+          type: string
+          description: The phase of the import/export job
+          example: example_value
+        total:
+          type: integer
+          description: The total number of issues being imported/exported
+          example: 10
+        count:
+          type: integer
+          description: The total number of issues already imported/exported
+          example: 10
+        pct:
+          type: number
+          description: The percentage of issues already imported/exported
+          minimum: 0
+          maximum: 100
+          example: 42.5
+      additionalProperties: false
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

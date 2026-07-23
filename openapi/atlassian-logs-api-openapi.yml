@@ -1,0 +1,323 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Logs API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Logs
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/log:
+    get:
+      tags:
+      - Logs
+      summary: Atlassian Get Log File for Step
+      description: This API operation retrieves the log file for a specific step within a Bitbucket pipeline. By providing the workspace ID, repository slug, pipeline UUID, and step UUID, you can access the detailed execution logs generated during that particular pipeline step. The logs contain console output, error messages, and other diagnostic information that occurred while the step was running, which is useful for debugging failed builds, monitoring deployment processes, or auditing pipeline execution history. This endpoint returns the raw log content that was captured during the step's execution in the CI/CD pipeline.
+      operationId: getLogFileForStep
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for this pipeline step.
+        '304':
+          description: The log has the same etag as the provided If-None-Match header.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: A pipeline with the given UUID does not exist, a step with the given UUID does not exist in the pipeline or a log file does not exist for the given step.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+        '416':
+          description: The requested range does not exist for requests that specified the [HTTP Range header](https://tools.ietf.org/html/rfc7233#section-3.1).
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pipelines/{pipeline_uuid}/steps/{step_uuid}/logs/{log_uuid}:
+    get:
+      tags:
+      - Logs
+      summary: Atlassian Get the Logs for the Build Container or Service Container for Given Step of Pipeline.
+      description: This API endpoint retrieves the logs for a specific build or service container associated with a particular step in a Bitbucket pipeline execution. By providing the workspace identifier, repository slug, pipeline UUID, step UUID, and log UUID, developers can access detailed log information that captures the output and execution details of containers running during the pipeline process. This is particularly useful for debugging pipeline failures, monitoring build processes, and tracking the behavior of services or builds within a specific pipeline step, enabling teams to troubleshoot issues and optimize their CI/CD workflows effectively.
+      operationId: getTheLogsForTheBuildContainerOrServiceContainerForGivenStepOfPipeline
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pipeline_uuid
+        description: The UUID of the pipeline.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: step_uuid
+        description: The UUID of the step.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: log_uuid
+        description: For the main build container specify the step UUID; for a service container specify the service container UUID
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The raw log file for the build container or service container.
+        '404':
+          description: No account, repository, pipeline, step or log exist for the provided path.
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        ChooseTags: true
+        WriteDescription: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pullrequests/activity:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Logs
+      description: This API endpoint retrieves the activity log for all pull requests within a specific repository in a Bitbucket workspace. By making a GET request to this endpoint with the workspace and repository slug parameters, you can access a chronological record of activities including comments, approvals, status changes, updates, and other events related to pull requests. The response provides a comprehensive audit trail of interactions and modifications made to pull requests in the repository, which is useful for tracking collaboration, reviewing decision-making processes, and monitoring the lifecycle of code review activities. This endpoint is commonly used for generating reports, analyzing team workflows, or integrating pull request activity into external monitoring and notification systems.
+      summary: Atlassian List Pull Request Activity Log
+      responses:
+        '200':
+          description: The pull request activity log
+        '401':
+          description: If the repository is private and the request was not authenticated.
+        '404':
+          description: If the specified repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: listPullRequestActivityLog
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/activity:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Logs
+      description: This API endpoint retrieves the activity log for a specific pull request in a Bitbucket repository, returning a chronological list of all events and actions that have occurred throughout the pull request's lifecycle. The activity log includes comments, approvals, declines, updates to the pull request description or title, commits added or removed, merge events, and other state changes. To access this endpoint, you need to provide the workspace identifier, repository slug, and pull request ID as path parameters. The response provides a comprehensive audit trail of the pull request, making it useful for tracking collaboration, understanding the review process, monitoring pull request progress, and generating reports on team activity and code review workflows.
+      summary: Atlassian List Pull Request Activity Log
+      responses:
+        '200':
+          description: The pull request activity log
+        '401':
+          description: If the repository is private and the request was not authenticated.
+        '404':
+          description: If the specified repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pullrequest:bitbucket
+      operationId: listPullRequestActivityLog
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

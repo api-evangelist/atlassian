@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Project Features API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Project Features
+paths:
+  /rest/api/3/project/{projectIdOrKey}/features:
+    get:
+      deprecated: false
+      description: Returns the list of features for a project.
+      operationId: atlassianGetfeaturesforproject
+      parameters:
+      - description: The ID or (case-sensitive) key of the project.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"features":[{"feature":"jsw.classic.roadmap","imageUri":"https://jira.atlassian.com/s/sb53l8/b/3/ab8a7691e4738b4f147e293f0864adfd5b8d3c85/_/download/resources/com.atlassian.jira.rest:classic-project-features/simple-roadmap-feature.svg","localisedDescription":"Your roadmap is an optimized location to create and manage your epics.","localisedName":"Roadmap","prerequisites":[],"projectId":10001,"state":"ENABLED","toggleLocked":true},{"feature":"jsw.classic.backlog","imageUri":"https://jira.atlassian.com/s/sb53l8/b/3/ab8a7691e4738b4f147e293f0864adfd5b8d3c85/_/download/resources/com.atlassian.jira.rest:classic-project-features/simple-backlog-feature.svg","localisedDescription":"Plan and prioritize work in a dedicated space. To enable and configure the backlog for each board, go to board settings.","localisedName":"Backlog","prerequisites":[],"projectId":10001,"state":"ENABLED","toggleLocked":true}]}'
+              schema:
+                $ref: '#/components/schemas/ContainerForProjectFeatures'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+        '404':
+          description: Returned if the project is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      summary: Atlassian Get Project Features
+      tags:
+      - Project Features
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:project.feature:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/project/{projectIdOrKey}/features/{featureKey}:
+    put:
+      deprecated: false
+      description: Sets the state of a project feature.
+      operationId: atlassianTogglefeatureforproject
+      parameters:
+      - description: The ID or (case-sensitive) key of the project.
+        in: path
+        name: projectIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The key of the feature.
+        in: path
+        name: featureKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              state: ENABLED
+            schema:
+              $ref: '#/components/schemas/ProjectFeatureState'
+        description: Details of the feature state change.
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"features":[{"feature":"jsw.classic.roadmap","imageUri":"https://jira.atlassian.com/s/sb53l8/b/3/ab8a7691e4738b4f147e293f0864adfd5b8d3c85/_/download/resources/com.atlassian.jira.rest:classic-project-features/simple-roadmap-feature.svg","localisedDescription":"Your roadmap is an optimized location to create and manage your epics.","localisedName":"Roadmap","prerequisites":[],"projectId":10001,"state":"ENABLED","toggleLocked":true},{"feature":"jsw.classic.backlog","imageUri":"https://jira.atlassian.com/s/sb53l8/b/3/ab8a7691e4738b4f147e293f0864adfd5b8d3c85/_/download/resources/com.atlassian.jira.rest:classic-project-features/simple-backlog-feature.svg","localisedDescription":"Plan and prioritize work in a dedicated space. To enable and configure the backlog for each board, go to board settings.","localisedName":"Backlog","prerequisites":[],"projectId":10001,"state":"ENABLED","toggleLocked":true}]}'
+              schema:
+                $ref: '#/components/schemas/ContainerForProjectFeatures'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the required permissions.
+        '404':
+          description: Returned if the project or project feature is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      summary: Atlassian Set Project Feature State
+      tags:
+      - Project Features
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:project.feature:jira
+        - read:project.feature:jira
+        state: Beta
+      x-atlassian-connect-scope: PROJECT_ADMIN
+components:
+  schemas:
+    ContainerForProjectFeatures:
+      additionalProperties: false
+      description: The list of features on a project.
+      properties:
+        features:
+          description: The project features.
+          items:
+            $ref: '#/components/schemas/ProjectFeature'
+          type: array
+      type: object
+    ProjectFeature:
+      additionalProperties: false
+      description: Details of a project feature.
+      properties:
+        feature:
+          description: The key of the feature.
+          type: string
+        imageUri:
+          description: URI for the image representing the feature.
+          type: string
+        localisedDescription:
+          description: Localized display description for the feature.
+          type: string
+        localisedName:
+          description: Localized display name for the feature.
+          type: string
+        prerequisites:
+          description: List of keys of the features required to enable the feature.
+          items:
+            type: string
+          type: array
+        projectId:
+          description: The ID of the project.
+          format: int64
+          type: integer
+        state:
+          description: The state of the feature. When updating the state of a feature, only ENABLED and DISABLED are supported. Responses can contain all values
+          enum:
+          - ENABLED
+          - DISABLED
+          - COMING_SOON
+          type: string
+        toggleLocked:
+          description: Whether the state of the feature can be updated.
+          type: boolean
+      type: object
+    ProjectFeatureState:
+      additionalProperties: false
+      description: Details of the feature state.
+      properties:
+        state:
+          description: The feature state.
+          enum:
+          - ENABLED
+          - DISABLED
+          - COMING_SOON
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

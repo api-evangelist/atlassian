@@ -1,0 +1,273 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Caches API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Caches
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines-config/caches:
+    get:
+      tags:
+      - Caches
+      summary: Atlassian List Caches
+      description: This GET operation retrieves a list of all configured build caches for a specific repository's pipeline in Bitbucket. By targeting the pipelines-config/caches endpoint under a particular workspace and repository slug, it returns information about the caching configurations that have been set up to optimize build times by storing dependencies and other reusable build artifacts. The response typically includes details such as cache names, sizes, and related metadata that help developers understand what content is being cached for their CI/CD pipelines. This endpoint is useful for monitoring cache usage, troubleshooting build performance issues, and managing pipeline resources within a Bitbucket repository.
+      operationId: listCaches
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The list of caches for the given repository.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_pipeline_caches'
+              examples:
+                paginated-pipeline-cache:
+                  $ref: '#/components/examples/paginated-pipeline-cache'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - read:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Caches
+      summary: Atlassian Delete Caches
+      description: The Atlassian Bitbucket Repositories API delete operation on the /repositories/{workspace}/{repo_slug}/pipelines-config/caches endpoint allows users to remove cached data associated with a specific repository's pipeline configuration. This operation requires authentication and proper permissions within the specified workspace and repository. When invoked, it clears the pipeline caches that have been stored to optimize build times, forcing subsequent pipeline runs to rebuild dependencies and artifacts from scratch. This is particularly useful when cached data becomes corrupted, outdated, or when you need to ensure a clean build environment. The operation accepts the workspace identifier and repository slug as path parameters to target the specific repository whose pipeline caches should be deleted.
+      operationId: deleteCaches
+      parameters:
+      - name: workspace
+        description: The account.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: name
+        description: The cache name.
+        required: true
+        in: query
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The caches were deleted.
+        '404':
+          description: The workspace, repository or cache name was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:write
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  examples:
+    paginated-pipeline-cache:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        pipeline_uuid: 123e4567-e89b-12d3-a456-426614174001
+        step_uuid: 123e4567-e89b-12d3-a456-426614174002
+        name: node_modules_cache
+        key_hash: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+        path: /opt/atlassian/pipelines/agent/build/node_modules
+        file_size_bytes: 52428800
+        created_on: '2024-01-15T14:30:00Z'
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines-config/caches?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/workspace/repo/pipelines-config/caches?page=0
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_pipeline_caches:
+      type: object
+      title: Paginated Pipeline Cache
+      description: A paged list of pipeline caches
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_cache'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    pipeline_cache:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Cache
+        description: A representation of metadata for a pipeline cache for given repository.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the pipeline cache.
+          pipeline_uuid:
+            type: string
+            description: The UUID of the pipeline that created the cache.
+          step_uuid:
+            type: string
+            description: The uuid of the step that created the cache.
+          name:
+            type: string
+            description: The name of the cache.
+          key_hash:
+            type: string
+            description: The key hash of the cache version.
+          path:
+            type: string
+            description: The path where the cache contents were retrieved from.
+          file_size_bytes:
+            type: integer
+            description: The size of the file containing the archive of the cache.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the cache was created.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

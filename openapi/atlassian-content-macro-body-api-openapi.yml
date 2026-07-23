@@ -1,0 +1,586 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content - Macro Body API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content - Macro Body
+paths:
+  /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}:
+    get:
+      tags:
+      - Content - Macro Body
+      summary: Atlassian Get Macro Body By Macro Id
+      description: 'Returns the body of a macro in storage format, for the given macro ID.<br>This includes information like the name of the macro, the body of the macro,<br>and any macro parameters. This method is mainly used by Cloud apps.<br><br>About the macro ID: When a macro is created in a new version of content,<br>Confluence will generate a random ID for it, unless an ID is specified<br>(by an app). The macro ID will look similar to this: ''50884bd9-0cb8-41d5-98be-f80943c14f96''.<br>The ID is then persisted as new versions of content are created, and is<br>only modified by Confluence if there are conflicting IDs.<br><br>Note, to preserve backwards compatibility this resource will also match on<br>the hash of the macro body, even if a macro ID is found. This check will<br>eventually become redundant, as macro IDs are generated for pages and<br>transparently propagate out to all instances.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content that the macro is in.'
+      operationId: atlassianGetmacrobodybymacroid
+      parameters:
+      - name: id
+        in: path
+        description: The ID for the content that contains the macro.
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: 'The version of the content that contains the macro. Specifying `0` as the `version` will return
+
+          the macro body for the latest content version.'
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: macroId
+        in: path
+        description: 'The ID of the macro. This is usually passed by the app that the
+
+          macro is in. Otherwise, find the macro ID by querying the desired
+
+          content and version, then expanding the body in storage format.
+
+          For example, ''/content/196611/version/7?expand=content.body.storage''.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested macro body is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroInstance'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The macro does not exist in the specified version.
+
+            - There is no macro matching the given macro ID or hash.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}/convert/{to}:
+    get:
+      tags:
+      - Content - Macro Body
+      summary: Atlassian Get Macro Body By Macro Id And Convert The Representation Synchronously
+      description: 'Returns the body of a macro in format specified in path, for the given macro ID.<br>This includes information like the name of the macro, the body of the macro,<br>and any macro parameters.<br><br>About the macro ID: When a macro is created in a new version of content,<br>Confluence will generate a random ID for it, unless an ID is specified<br>(by an app). The macro ID will look similar to this: ''50884bd9-0cb8-41d5-98be-f80943c14f96''.<br>The ID is then persisted as new versions of content are created, and is<br>only modified by Confluence if there are conflicting IDs.<br><br>Note, to preserve backwards compatibility this resource will also match on<br>the hash of the macro body, even if a macro ID is found. This check will<br>eventually become redundant, as macro IDs are generated for pages and<br>transparently propagate out to all instances.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content that the macro is in.'
+      operationId: atlassianGetandconvertmacrobodybymacroid
+      parameters:
+      - name: id
+        in: path
+        description: The ID for the content that contains the macro.
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: 'The version of the content that contains the macro. Specifying `0` as the `version` will return
+
+          the macro body for the latest content version.'
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: macroId
+        in: path
+        description: 'The ID of the macro. This is usually passed by the app that the
+
+          macro is in. Otherwise, find the macro ID by querying the desired
+
+          content and version, then expanding the body in storage format.
+
+          For example, ''/content/196611/version/7?expand=content.body.storage''.'
+        required: true
+        schema:
+          type: string
+      - name: to
+        in: path
+        required: true
+        description: The content representation to return the macro in.
+        schema:
+          type: string
+      - $ref: '#/components/parameters/bodyConversionExpand'
+      - name: spaceKeyContext
+        in: query
+        description: 'The space key used for resolving embedded content (page includes,
+
+          files, and links) in the content body. For example, if the source content
+
+          contains the link `<ac:link><ri:page ri:content-title="Example page" /><ac:link>`
+
+          and the `spaceKeyContext=TEST` parameter is provided, then the link
+
+          will be converted to a link to the "Example page" page in the "TEST" space.'
+        schema:
+          type: string
+      - name: embeddedContentRender
+        in: query
+        description: 'Mode used for rendering embedded content, like attachments.
+
+
+          - `current` renders the embedded content using the latest version.
+
+          - `version-at-save` renders the embedded content using the version at
+
+          the time of save.'
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - version-at-save
+      responses:
+        '200':
+          description: Returned if the requested content body is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentBody'
+        '400':
+          description: Returned if invalid content representation is requested, or context is missing.
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The macro does not exist in the specified version.
+
+            - There is no macro matching the given macro ID or hash.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}/convert/async/{to}:
+    get:
+      tags:
+      - Content - Macro Body
+      summary: Atlassian Get Macro Body By Macro Id And Convert Representation Asynchronously
+      description: 'Returns Async Id of the conversion task which will convert the macro into a content body of the desired format.<br>The result will be available for 5 minutes after completion of the conversion.<br><br>About the macro ID: When a macro is created in a new version of content,<br>Confluence will generate a random ID for it, unless an ID is specified<br>(by an app). The macro ID will look similar to this: ''884bd9-0cb8-41d5-98be-f80943c14f96''.<br>The ID is then persisted as new versions of content are created, and is<br>only modified by Confluence if there are conflicting IDs.<br><br>Note, to preserve backwards compatibility this resource will also match on<br>the hash of the macro body, even if a macro ID is found. This check will<br>eventually become redundant, as macro IDs are generated for pages and<br>transparently propagate out to all instances.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to view the content that the macro is in.'
+      operationId: atlassianGetandasyncconvertmacrobodybymacroid
+      parameters:
+      - name: id
+        in: path
+        description: The ID for the content that contains the macro.
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: 'The version of the content that contains the macro. Specifying `0` as the `version` will return
+
+          the macro body for the latest content version.'
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: macroId
+        in: path
+        description: 'The ID of the macro. For apps, this is passed to the macro by the Connect/Forge framework.
+
+          Otherwise, find the macro ID by querying the desired
+
+          content and version, then expanding the body in storage format.
+
+          For example, ''/content/196611/version/7?expand=content.body.storage''.'
+        required: true
+        schema:
+          type: string
+      - name: to
+        in: path
+        required: true
+        description: 'The content representation to return the macro in.
+
+          Currently, the following conversions are allowed:
+
+
+          - `export_view`
+
+          - `styled_view`
+
+          - `view`'
+        schema:
+          type: string
+          enum:
+          - export_view
+          - view
+          - styled_view
+      - $ref: '#/components/parameters/bodyConversionExpand'
+      - name: allowCache
+        in: query
+        description: "If this field is false, the cache will erase its current value and begin a conversion.\nIf this field is true, the cache will not erase its current value, and will set the status of the\nresult in cache to RERUNNING. Once the data is updated, the status will change to COMPLETED. \nLarge macros that take long to convert, and who want to show intermediate, but potentially stale data, immediately should set this field to true.\nCache values are stored per macro per user per content and expansions."
+        schema:
+          type: boolean
+          default: false
+      - name: spaceKeyContext
+        in: query
+        description: 'The space key used for resolving embedded content (page includes,
+
+          files, and links) in the content body. For example, if the source content
+
+          contains the link `<ac:link><ri:page ri:content-title="Example page" /><ac:link>`
+
+          and the `spaceKeyContext=TEST` parameter is provided, then the link
+
+          will be converted to a link to the "Example page" page in the "TEST" space.'
+        schema:
+          type: string
+      - name: embeddedContentRender
+        in: query
+        description: 'Mode used for rendering embedded content, like attachments.
+
+
+          - `current` renders the embedded content using the latest version.
+
+          - `version-at-save` renders the embedded content using the version at
+
+          the time of save.'
+        schema:
+          type: string
+          default: current
+          enum:
+          - current
+          - version-at-save
+      responses:
+        '200':
+          description: Returned if the requested macro conversion request is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncId'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The macro does not exist in the specified version.
+
+            - There is no macro matching the given macro ID or hash.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    Embeddable:
+      type: object
+      additionalProperties: true
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    AsyncId:
+      required:
+      - asyncId
+      type: object
+      properties:
+        asyncId:
+          type: string
+    MacroInstance:
+      type: object
+      properties:
+        name:
+          type: string
+        body:
+          type: string
+        parameters:
+          type: object
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+  parameters:
+    bodyConversionExpand:
+      name: expand
+      in: query
+      description: "A multi-value parameter indicating which properties of the content to expand and populate. Expands are dependent on the\n`to` conversion format and may be irrelevant for certain conversions (e.g. `macroRenderedOutput` is redundant when\nconverting to `view` format). \n\nIf rendering to `view` format, and the body content being converted includes arbitrary nested content (such as macros); then it is \nnecessary to include webresource expands in the request. Webresources for content body are the batched JS and CSS dependencies for\nany nested dynamic content (i.e. macros).\n\n- `embeddedContent` returns metadata for nested content (e.g. page included using page include macro)\n- `mediaToken` returns JWT token for retrieving attachment data from Media API\n- `macroRenderedOutput` additionally converts body to view format\n- `webresource.superbatch.uris.js` returns all common JS dependencies as static URLs\n- `webresource.superbatch.uris.css` returns all common CSS dependencies as static URLs\n- `webresource.superbatch.uris.all` returns all common dependencies as static URLs\n- `webresource.superbatch.tags.all` returns all common JS dependencies as html `<script>` tags\n- `webresource.superbatch.tags.css` returns all common CSS dependencies as html `<style>` tags\n- `webresource.superbatch.tags.js` returns all common dependencies as html `<script>` and `<style>` tags\n- `webresource.uris.js` returns JS dependencies specific to conversion\n- `webresource.uris.css` returns CSS dependencies specific to conversion\n- `webresource.uris.all` returns all dependencies specific to conversion     \n- `webresource.tags.all` returns common JS dependencies as html `<script>` tags\n- `webresource.tags.css` returns common CSS dependencies as html `<style>` tags\n- `webresource.tags.js` returns common dependencies as html `<script>` and `<style>` tags"
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

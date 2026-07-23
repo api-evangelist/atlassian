@@ -1,0 +1,226 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Organizations API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Organizations
+  description: Manage Atlassian organizations.
+paths:
+  /v1/orgs:
+    get:
+      operationId: getOrganizations
+      summary: Atlassian Get Organizations
+      description: Returns a list of organizations accessible to the caller based on the API key used for authentication.
+      tags:
+      - Organizations
+      parameters:
+      - name: cursor
+        in: query
+        description: Sets the starting point for paginated results. Use the value returned in the previous response to retrieve the next page.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful response containing a paginated list of organizations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationPage'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized. Authentication credentials are missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /v1/orgs/{orgId}:
+    get:
+      operationId: getOrganizationById
+      summary: Atlassian Get Organization by Id
+      description: Returns information about a single organization by its unique identifier.
+      tags:
+      - Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: Successful response containing the organization details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Organization not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      description: The unique identifier of the organization.
+      schema:
+        type: string
+  schemas:
+    OrganizationPage:
+      type: object
+      description: A paginated list of organizations.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+          description: The list of organizations.
+          example: []
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+    ErrorResponse:
+      type: object
+      description: Standard error response.
+      properties:
+        code:
+          type: integer
+          description: The HTTP status code.
+          example: 10
+        message:
+          type: string
+          description: A human-readable error message.
+          example: example_value
+        errors:
+          type: array
+          description: Detailed error information.
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: A machine-readable error code.
+              message:
+                type: string
+                description: A human-readable description of the error.
+          example: []
+    PaginationLinks:
+      type: object
+      description: Links for cursor-based pagination.
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link to the current page.
+          example: https://www.example.com
+        next:
+          type: string
+          format: uri
+          description: Link to the next page of results.
+          example: https://www.example.com
+        prev:
+          type: string
+          format: uri
+          description: Link to the previous page of results.
+          example: https://www.example.com
+    Organization:
+      type: object
+      description: Represents an Atlassian organization.
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the organization.
+          example: abc123
+        type:
+          type: string
+          description: The resource type.
+          enum:
+          - organization
+          example: organization
+        attributes:
+          type: object
+          description: The attributes of the organization.
+          properties:
+            name:
+              type: string
+              description: The display name of the organization.
+          example: example_value
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,180 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Converted API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Converted
+paths:
+  /wiki/rest/api/contentbody/convert/async/{id}:
+    get:
+      tags:
+      - Converted
+      summary: Atlassian Get Asynchronously Converted Content Body From the Id or the Current Status of the Task
+      description: This API endpoint retrieves the result of an asynchronous content body conversion operation in Atlassian Confluence using a unique task identifier. When content conversion is initiated asynchronously (such as converting between different markup formats like storage format, view format, or editor format), this GET operation allows you to check the current status of the conversion task and fetch the converted content once the operation is complete. The endpoint accepts the task ID as a path parameter and returns either the converted content body if the conversion has finished successfully, the current progress status if the task is still running, or an error message if the conversion failed. This is particularly useful for handling large or complex content conversions that may take significant time to process, allowing clients to poll for completion rather than blocking while waiting for the conversion to finish.
+      operationId: getAsynchronouslyConvertedContentBodyFromTheIdOrTheCurrentStatusOfTheTask
+      parameters:
+      - name: id
+        in: path
+        description: The asyncId of the macro task to get the converted body.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if successfully found an async conversion task associated with the id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncContentBody'
+        '400':
+          description: Returned if the async id is invalid.
+          content: {}
+        '401':
+          description: Returned if the request was not made by an anonymous user and user is not authenticated.
+          content: {}
+        '403':
+          description: Returned if the requesting user is not the user who made the conversion request.
+          content: {}
+        '404':
+          description: Returned if async macro conversion task cannot be found with the provided id.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    AsyncContentBody:
+      type: object
+      properties:
+        value:
+          type: string
+          example: example_value
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          example: view
+        renderTaskId:
+          type: string
+          example: '500123'
+        error:
+          type: string
+          example: example_value
+        status:
+          description: Rerunning is reserved for when the job is working, but there is a previous run's value in the cache. You may choose to continue polling, or use the cached value.
+          type: string
+          enum:
+          - WORKING
+          - QUEUED
+          - FAILED
+          - COMPLETED
+          - RERUNNING
+          example: WORKING
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+          example: []
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+          example: example_value
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

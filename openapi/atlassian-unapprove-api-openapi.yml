@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Unapprove API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Unapprove
+paths:
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Unapprove
+      description: The Atlassian Bitbucket Pull Requests API DELETE endpoint at /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/approve allows authenticated users to remove their approval from a previously approved pull request. This operation requires the workspace name, repository slug, and pull request ID as path parameters to identify the specific pull request from which the approval should be withdrawn. When executed, it revokes the caller's approval status on the designated pull request, effectively removing their vote of confidence in merging the proposed changes. This is useful when a reviewer changes their mind after reviewing new commits, discovering issues, or when their initial approval was given in error. The endpoint returns a success response when the approval is successfully removed, and appropriate error codes if the pull request doesn't exist, the user hasn't previously approved it, or authentication fails.
+      summary: Atlassian Unapprove Pull Request
+      responses:
+        '204':
+          description: An empty response indicating the authenticated user's approval has been withdrawn.
+        '400':
+          description: Pull request cannot be unapproved because the pull request has already been merged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified pull request or the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pullrequest:bitbucket
+      operationId: unapprovePullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/commit/{commit}/approve:
+    parameters:
+    - name: commit
+      in: path
+      description: The Commits SHA1.
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Unapprove
+      description: 'This API operation removes an approval from a specific commit in a Bitbucket repository by sending a DELETE request to the endpoint. When a user has previously approved a commit, this operation revokes that approval, effectively indicating that the commit no longer has their endorsement. The operation requires three path parameters: the workspace identifier, the repository slug, and the commit hash or reference. This is particularly useful in code review workflows where approvals may need to be withdrawn due to newly discovered issues, changes in requirements, or mistakes in the initial review, allowing teams to maintain accurate approval states throughout their development process.'
+      summary: Atlassian Unapprove Commit
+      responses:
+        '204':
+          description: An empty response indicating the authenticated user's approval has been withdrawn.
+        '404':
+          description: If the specified commit, or the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:repository:bitbucket
+      operationId: unapproveCommit
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

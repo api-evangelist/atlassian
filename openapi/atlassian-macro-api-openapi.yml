@@ -1,0 +1,152 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Macro API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Macro
+paths:
+  /wiki/rest/api/content/{id}/history/{version}/macro/id/{macroId}:
+    get:
+      tags:
+      - Macro
+      summary: Atlassian Get Macro Body by Macro Id
+      description: 'Retrieves the body content of a specific macro identified by its macro ID within a particular version of a Confluence page. This endpoint requires three path parameters: the content ID of the page, the version number of that content, and the unique macro ID whose body you want to retrieve. It''s particularly useful when you need to extract or inspect the content of a specific macro instance that existed in a historical version of a page, allowing developers to access macro parameters, content, or configuration from past revisions without having to parse the entire page markup.'
+      operationId: getMacroBodyByMacroId
+      parameters:
+      - name: id
+        in: path
+        description: The ID for the content that contains the macro.
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: 'The version of the content that contains the macro. Specifying `0` as the `version` will return
+
+          the macro body for the latest content version.'
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: macroId
+        in: path
+        description: 'The ID of the macro. This is usually passed by the app that the
+
+          macro is in. Otherwise, find the macro ID by querying the desired
+
+          content and version, then expanding the body in storage format.
+
+          For example, ''/content/196611/version/7?expand=content.body.storage''.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested macro body is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroInstance'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The macro does not exist in the specified version.
+
+            - There is no macro matching the given macro ID or hash.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.all
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.all
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.metadata:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    MacroInstance:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Example Title
+        body:
+          type: string
+          example: example_value
+        parameters:
+          type: object
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Number API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Number
+paths:
+  /repositories/{workspace}/{repo_slug}/pipelines_config/build_number:
+    put:
+      tags:
+      - Number
+      summary: Atlassian Update the Next Build Number
+      description: This PUT operation updates the next build number for Bitbucket Pipelines in a specific repository. By targeting the endpoint /repositories/{workspace}/{repo_slug}/pipelines_config/build_number, users can set a custom value for the next pipeline build number that will be assigned when a new pipeline is triggered. This is useful for maintaining consistent build numbering across different environments, resetting build numbers after repository migrations, or aligning build numbers with organizational versioning schemes. The operation requires workspace and repository slug parameters to identify the target repository, and the request body should contain the desired build number value. Only users with appropriate repository permissions can modify this configuration setting.
+      operationId: updateTheNextBuildNumber
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pipeline_build_number'
+            examples:
+              pipeline-build-number:
+                $ref: '#/components/examples/pipeline-build-number'
+        description: The build number to update.
+        required: true
+      responses:
+        '200':
+          description: The build number has been configured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pipeline_build_number'
+              examples:
+                pipeline-build-number_2:
+                  $ref: '#/components/examples/pipeline-build-number_2'
+        '400':
+          description: The update failed because the next number was invalid (it should be higher than the current number).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The account or repository was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:pipeline:bitbucket
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    pipeline_build_number:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Build Number
+        description: A Pipelines build number.
+        properties:
+          next:
+            type: integer
+            description: The next number that will be used as build number.
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+  examples:
+    pipeline-build-number_2:
+      next: 42
+    pipeline-build-number:
+      next: 42
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

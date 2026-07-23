@@ -1,0 +1,732 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Environments API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Environments
+paths:
+  /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables:
+    get:
+      tags:
+      - Environments
+      description: This GET operation retrieves all deployment variables configured for a specific environment within a Bitbucket repository's deployment configuration. By providing the workspace identifier, repository slug, and environment UUID in the path parameters, the API returns a list of variables that have been defined for that particular deployment environment, including both their names and values. These variables are typically used to store environment-specific configuration settings, credentials, or other data needed during the deployment process to that environment.
+      summary: Atlassian List Variables for an Environment
+      operationId: listVariablesForAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The retrieved deployment variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_deployment_variable'
+              examples:
+                paginated-deployment-variables:
+                  $ref: '#/components/examples/paginated-deployment-variables'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Environments
+      description: Creates a new deployment variable for a specific environment within a Bitbucket repository's deployment configuration. This operation requires specifying the workspace, repository slug, and environment UUID in the path, allowing teams to define environment-specific variables such as API keys, connection strings, or configuration values that will be available during the deployment process. The variable details including the key name, value, and optionally whether it should be secured or hidden are provided in the request body. This enables teams to manage configuration across different deployment environments like development, staging, and production while maintaining security and flexibility in their CI/CD pipelines.
+      summary: Atlassian Create Variable for an Environment
+      operationId: createVariableForAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment_variable'
+            examples:
+              deployment-variable:
+                $ref: '#/components/examples/deployment-variable'
+        description: The variable to create
+        required: true
+      responses:
+        '201':
+          description: The variable was created.
+          headers:
+            Location:
+              description: The URL of the newly created variable.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_variable'
+              examples:
+                deployment-variable_2:
+                  $ref: '#/components/examples/deployment-variable_2'
+        '404':
+          description: The account, repository, environment or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: A variable with the provided key already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables/{variable_uuid}:
+    put:
+      tags:
+      - Environments
+      description: Updates an existing deployment environment variable for a specific environment in a Bitbucket repository. This operation requires specifying the workspace, repository slug, environment UUID, and variable UUID in the request path. The PUT method allows you to modify the variable's configuration such as its key, value, secured status, and other properties. This is useful for managing environment-specific configuration values like API keys, database connection strings, or feature flags that are used during the deployment pipeline. The request must include authentication credentials with appropriate permissions to modify deployment variables in the specified repository and environment.
+      summary: Atlassian Update Variable for an Environment
+      operationId: updateVariableForAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to update.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment_variable'
+            examples:
+              deployment-variable_2:
+                $ref: '#/components/examples/deployment-variable_2'
+        description: The updated deployment variable.
+        required: true
+      responses:
+        '200':
+          description: The deployment variable was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_variable'
+              examples:
+                deployment-variable_2:
+                  $ref: '#/components/examples/deployment-variable_2'
+        '404':
+          description: The account, repository, environment or variable with the given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Environments
+      description: This API operation allows you to delete a specific deployment variable associated with an environment in a Bitbucket repository. By providing the workspace identifier, repository slug, environment UUID, and variable UUID in the request path, you can permanently remove a variable that was previously configured for deployment purposes. This is useful when cleaning up unused configuration variables or removing sensitive information that is no longer needed for your deployment pipeline. The deletion is performed via an HTTP DELETE request and requires appropriate authentication and permissions to modify deployment environment settings within the specified Bitbucket repository.
+      summary: Atlassian Delete Variable for an Environment
+      operationId: deleteVariableForAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: variable_uuid
+        description: The UUID of the variable to delete.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The variable was deleted.
+        '404':
+          description: The account, repository, environment or variable with given UUID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline:variable
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/environments:
+    get:
+      tags:
+      - Environments
+      description: This API operation retrieves a paginated list of deployment environments configured for a specific Bitbucket repository within a given workspace. By making a GET request to the endpoint with the workspace identifier and repository slug as path parameters, users can view all environments (such as production, staging, or development) that have been set up for the repository, enabling them to manage and track deployments across different stages of their software delivery pipeline. The response includes environment details such as names, types, and associated configurations, which are essential for implementing proper deployment strategies and maintaining environment-specific settings within the Bitbucket ecosystem.
+      summary: Atlassian List Environments
+      operationId: listEnvironments
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The matching environments.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/paginated_environments'
+              examples:
+                paginated-deployment-environments:
+                  $ref: '#/components/examples/paginated-deployment-environments'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Environments
+      description: The Create an Environment operation in the Atlassian Bitbucket Repositories API allows users to create a new deployment environment within a specific repository by sending a POST request to the /repositories/{workspace}/{repo_slug}/environments endpoint. This operation requires specifying both the workspace identifier and repository slug in the URL path, and enables teams to define distinct deployment targets such as development, staging, or production environments for their code. The created environment can then be referenced in deployment pipelines and used to manage environment-specific variables, restrictions, and deployment history, providing better control over the software delivery process within Bitbucket's CI/CD workflow.
+      summary: Atlassian Create an Environment
+      operationId: createAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment_environment'
+            examples:
+              deployment-environment:
+                $ref: '#/components/examples/deployment-environment'
+        description: The environment to create.
+        required: true
+      responses:
+        '201':
+          description: The environment was created.
+          headers:
+            Location:
+              description: The URL of the newly created environment.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_environment'
+              examples:
+                deployment-environment_2:
+                  $ref: '#/components/examples/deployment-environment_2'
+        '404':
+          description: The account or repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: An environment host with the provided name already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationRequestSchema: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/environments/{environment_uuid}:
+    get:
+      tags:
+      - Environments
+      summary: Atlassian Get an Environment
+      description: Retrieves detailed information about a specific deployment environment within a Bitbucket repository. This endpoint requires the workspace identifier, repository slug, and the unique UUID of the environment you want to retrieve. The operation returns comprehensive details about the environment including its name, type, environment variables, deployment restrictions, and any associated configuration. This is useful for auditing environment settings, verifying deployment configurations, or integrating environment data into external tools and workflows. Access to this endpoint typically requires appropriate repository permissions and authentication credentials.
+      operationId: getAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment UUID.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The environment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment_environment'
+              examples:
+                deployment-environment_2:
+                  $ref: '#/components/examples/deployment-environment_2'
+        '404':
+          description: No account, repository or environment with the UUID provided exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Environments
+      description: This API operation allows you to permanently remove a specific deployment environment from a Bitbucket repository by sending a DELETE request to the endpoint with the workspace identifier, repository slug, and environment UUID as path parameters. When executed, it deletes the environment configuration and all associated settings, which may include environment variables, deployment restrictions, and deployment history tied to that particular environment. This is typically used when an environment is no longer needed, such as when decommissioning a staging or testing environment, and requires appropriate permissions to execute successfully.
+      summary: Atlassian Delete an Environment
+      operationId: deleteAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment UUID.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: The environment was deleted.
+        '404':
+          description: No account or repository with the UUID provided exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/environments/{environment_uuid}/changes:
+    post:
+      tags:
+      - Environments
+      description: 'This POST operation updates a specific environment within a Bitbucket repository by modifying its configuration settings. The endpoint requires three path parameters: the workspace identifier, repository slug, and the unique UUID of the environment to be updated. It allows teams to modify environment properties such as name, environment type, deployment restrictions, and other configuration details that govern how code is deployed to that particular environment. This is particularly useful for maintaining and adjusting deployment pipelines, updating access controls, or changing environment-specific settings as project requirements evolve. The operation requires appropriate authentication and permissions to modify deployment environments within the specified repository.'
+      summary: Atlassian Update an Environment
+      operationId: updateAnEnvironment
+      parameters:
+      - name: workspace
+        description: This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: repo_slug
+        description: The repository.
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: environment_uuid
+        description: The environment UUID.
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '202':
+          description: The environment update request was accepted.
+        '404':
+          description: No account, repository or environment with the UUID provided exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pipeline
+      - basic: []
+      - api_key: []
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    deployment_variable:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Deployment Variable
+        description: A Pipelines deployment variable.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the variable.
+          key:
+            type: string
+            description: The unique name of the variable.
+          value:
+            type: string
+            description: The value of the variable. If the variable is secured, this will be empty.
+          secured:
+            type: boolean
+            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+    deployment_environment:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Deployment Environment
+        description: A Bitbucket Deployment Environment.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the environment.
+          name:
+            type: string
+            description: The name of the environment.
+      x-bb-default-fields:
+      - uuid
+      x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/environments/{uuid}
+      x-bb-batch-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/environments_batch
+      x-bb-batch-max-size: 100
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_deployment_variable:
+      type: object
+      title: Paginated Deployment Variables
+      description: A paged list of deployment variables.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/deployment_variable'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+    paginated_environments:
+      type: object
+      title: Paginated Deployment Environments
+      description: A paged list of environments
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          example: 10
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/deployment_environment'
+          description: The values of the current page.
+          example: []
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          example: 10
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          example: 10
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          example: https://www.example.com
+  examples:
+    deployment-environment:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      name: production
+    paginated-deployment-variables:
+      page: 1
+      values:
+        uuid: 123e4567-e89b-12d3-a456-426614174000
+        key: DATABASE_URL
+        value: postgresql://localhost:5432/mydb
+        secured: false
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/deployments/variables?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/deployments/variables?page=0
+    deployment-variable:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      key: DATABASE_URL
+      value: postgresql://localhost:5432/mydb
+      secured: false
+    deployment-environment_2:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      name: production
+    deployment-variable_2:
+      uuid: 123e4567-e89b-12d3-a456-426614174000
+      key: DATABASE_URL
+      value: postgresql://localhost:5432/mydb
+      secured: false
+    paginated-deployment-environments:
+      page: 1
+      values:
+        uuid: 3c7d1b5a-4f2e-4a9c-8d6f-1e2a3b4c5d6e
+        name: production
+      size: 42
+      pagelen: 10
+      next: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/environments?page=2
+      previous: https://api.bitbucket.org/2.0/repositories/myworkspace/myrepo/environments?page=0
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

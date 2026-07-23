@@ -1,0 +1,225 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Space Settings API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Space Settings
+paths:
+  /wiki/rest/api/space/{spaceKey}/settings:
+    get:
+      tags:
+      - Space Settings
+      summary: Atlassian Get Space Settings
+      description: Returns the settings of a space. Currently only the<br>`routeOverrideEnabled` setting can be returned.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space.
+      operationId: atlassianGetspacesettings
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its settings.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the space settings are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceSettings'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no space with the given key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Space Settings
+      summary: Atlassian Update Space Settings
+      description: Updates the settings for a space. Currently only the<br>`routeOverrideEnabled` setting can be updated.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space.
+      operationId: atlassianUpdatespacesettings
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space whose settings will be updated.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The space settings to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceSettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if space settings are updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceSettings'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no space with the given key.
+
+            - The calling user does not have permission to update the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-space
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-space
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:space.setting:confluence
+        - write:space.setting:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: SpaceSettingsUpdate
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    SpaceSettingsUpdate:
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+    SpaceSettings:
+      nullable: true
+      required:
+      - _links
+      - routeOverrideEnabled
+      type: object
+      properties:
+        routeOverrideEnabled:
+          type: boolean
+          description: 'Defines whether an override for the space home should be used. This is
+
+            used in conjunction with a space theme provided by an app. For
+
+            example, if this property is set to true, a theme can display a page
+
+            other than the space homepage when users visit the root URL for a
+
+            space. This property allows apps to provide content-only theming
+
+            without overriding the space home.'
+          example: true
+        editor:
+          required:
+          - page
+          - blogpost
+          - default
+          type: object
+          properties:
+            page:
+              type: string
+            blogpost:
+              type: string
+            default:
+              type: string
+          example: example_value
+        spaceKey:
+          type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

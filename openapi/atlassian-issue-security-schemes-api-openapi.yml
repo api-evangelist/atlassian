@@ -1,0 +1,1732 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Security Schemes API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Security Schemes
+paths:
+  /rest/api/3/issuesecurityschemes/level:
+    get:
+      deprecated: false
+      description: 'Returns a [paginated](#pagination) list of issue security levels.<br><br>Only issue security levels in the context of classic projects are returned.<br><br>Filtering using IDs is inclusive: if you specify both security scheme IDs and level IDs, the result will include both specified issue security levels and all issue security levels from the specified schemes.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).'
+      operationId: atlassianGetsecuritylevels
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: '0'
+          type: string
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: '50'
+          type: string
+      - description: 'The list of issue security scheme level IDs. To include multiple issue security levels, separate IDs with an ampersand: `id=10000&id=10001`.'
+        in: query
+        name: id
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: 'The list of issue security scheme IDs. To include multiple issue security schemes, separate IDs with an ampersand: `schemeId=10000&schemeId=10001`.'
+        in: query
+        name: schemeId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: When set to true, returns multiple default levels for each security scheme containing a default. If you provide scheme and level IDs not associated with the default, returns an empty page. The default value is false.
+        in: query
+        name: onlyDefault
+        schema:
+          default: false
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":50,"startAt":0,"total":1,"values":[{"description":"Only the reporter and internal staff can see this issue.","id":"10021","isDefault":true,"issueSecuritySchemeId":"10001","name":"Reporter Only","self":"https://your-domain.atlassian.net/rest/api/3/issuesecurityscheme/level?id=10021"}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanSecurityLevel'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["-1000 is not a valid value. id must be zero or a positive integer."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Security Levels
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-security-level:jira
+        - read:issue-security-scheme:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/level/default:
+    put:
+      deprecated: false
+      description: Sets default issue security levels for schemes.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSetdefaultlevels
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              defaultValues:
+              - defaultLevelId: '20000'
+                issueSecuritySchemeId: '10000'
+              - defaultLevelId: '30000'
+                issueSecuritySchemeId: '12000'
+            schema:
+              $ref: '#/components/schemas/SetDefaultLevelsRequest'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["some-wrong-string is not a valid value. The issue security scheme ID must be a positive integer."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the issue resolution isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Set Default Issue Security Levels
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/level/member:
+    get:
+      deprecated: false
+      description: 'Returns a [paginated](#pagination) list of issue security level members.<br><br>Only issue security level members in the context of classic projects are returned.<br><br>Filtering using parameters is inclusive: if you specify both security scheme IDs and level IDs, the result will include all issue security level members from the specified schemes and levels.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).'
+      operationId: atlassianGetsecuritylevelmembers
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: '0'
+          type: string
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: '50'
+          type: string
+      - description: 'The list of issue security level member IDs. To include multiple issue security level members separate IDs with an ampersand: `id=10000&id=10001`.'
+        in: query
+        name: id
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: 'The list of issue security scheme IDs. To include multiple issue security schemes separate IDs with an ampersand: `schemeId=10000&schemeId=10001`.'
+        in: query
+        name: schemeId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: 'The list of issue security level IDs. To include multiple issue security levels separate IDs with an ampersand: `levelId=10000&levelId=10001`.'
+        in: query
+        name: levelId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: "Use expand to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `all` Returns all expandable information\n *  `field` Returns information about the custom field granted the permission\n *  `group` Returns information about the group that is granted the permission\n *  `projectRole` Returns information about the project role granted the permission\n *  `user` Returns information about the user who is granted the permission"
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"isLast":true,"maxResults":100,"startAt":0,"total":3,"values":[{"id":"10000","issueSecurityLevelId":"20010","issueSecuritySchemeId":"10010","holder":{"expand":"group","type":"group"}}]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanSecurityLevelMember'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+          description: Returned if the user doesn't have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Issue Security Level Members
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-security-level:jira
+        - read:issue-security-scheme:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/project:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) mapping of projects that are using security schemes. You can provide either one or multiple security scheme IDs or project IDs to filter by. If you don't provide any, this will return a list of all mappings. Only issue security schemes in the context of classic projects are supported. **[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSearchprojectsusingsecurityschemes
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: '0'
+          type: string
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: '50'
+          type: string
+      - description: The list of security scheme IDs to be filtered out.
+        in: query
+        name: issueSecuritySchemeId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: The list of project IDs to be filtered out.
+        in: query
+        name: projectId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"issueSecuritySchemeId":"10000","projectId":"10000"}'
+              schema:
+                $ref: '#/components/schemas/PageBeanIssueSecuritySchemeToProjectMapping'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the search criteria is invalid.If you specify the project ID parameter
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Projects Using Issue Security Schemes
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Associates an issue security scheme with a project and remaps security levels of issues to the new levels, if provided.<br><br>This operation is [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAssociateschemestoprojects
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              oldToNewSecurityLevelMappings:
+              - newLevelId: '30001'
+                oldLevelId: '30000'
+              projectId: '10000'
+              schemeId: '20000'
+            schema:
+              $ref: '#/components/schemas/AssociateSecuritySchemeWithProjectDetails'
+        required: true
+      responses:
+        '303':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskProgressBeanObject'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["some-wrong-string is not a valid value. The issue security scheme ID must be a positive integer."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the security scheme isn't found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if a task to remove the issue security level is already running.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Associate Security Scheme To Project
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/search:
+    get:
+      deprecated: false
+      description: Returns a [paginated](#pagination) list of issue security schemes.  <br>If you specify the project ID parameter, the result will contain issue security schemes and related project IDs you filter by. Use \{@link IssueSecuritySchemeResource\#searchProjectsUsingSecuritySchemes(String, String, Set, Set)\} to obtain all projects related to scheme.<br><br>Only issue security schemes in the context of classic projects are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianSearchsecurityschemes
+      parameters:
+      - description: The index of the first item to return in a page of results (page offset).
+        in: query
+        name: startAt
+        schema:
+          default: '0'
+          type: string
+      - description: The maximum number of items to return per page.
+        in: query
+        name: maxResults
+        schema:
+          default: '50'
+          type: string
+      - description: 'The list of issue security scheme IDs. To include multiple issue security scheme IDs, separate IDs with an ampersand: `id=10000&id=10001`.'
+        in: query
+        name: id
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      - description: 'The list of project IDs. To include multiple project IDs, separate IDs with an ampersand: `projectId=10000&projectId=10001`.'
+        in: query
+        name: projectId
+        schema:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"id":10000,"self":"https://your-domain.atlassian.net/rest/api/3/issuesecurityscheme/10000","name":"Default scheme","description":"Default scheme description","defaultLevel":10001,"projectIds":[10002]}'
+              schema:
+                $ref: '#/components/schemas/PageBeanSecuritySchemeWithProjects'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["-1000 is not a valid value. id must be zero or a positive integer."],"errors":{}}'
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+          description: Returned if the user doesn't have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Search Issue Security Schemes
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-security-level:jira
+        - read:issue-security-scheme:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{id}:
+    get:
+      deprecated: false
+      description: Returns an issue security scheme along with its security levels.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).<br> *  *Administer Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for a project that uses the requested issue security scheme.
+      operationId: atlassianGetissuesecurityscheme
+      parameters:
+      - description: The ID of the issue security scheme. Use the [Get issue security schemes](#api-rest-api-3-issuesecurityschemes-get) operation to get a list of issue security scheme IDs.
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"defaultSecurityLevelId":10021,"description":"Description for the default issue security scheme","id":10000,"levels":[{"description":"Only the reporter and internal staff can see this issue.","id":"10021","name":"Reporter Only","self":"https://your-domain.atlassian.net/rest/api/3/securitylevel/10021"}],"name":"Default Issue Security Scheme","self":"https://your-domain.atlassian.net/rest/api/3/issuesecurityschemes/10000"}'
+              schema:
+                $ref: '#/components/schemas/SecurityScheme'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the administrator permission and the scheme is not used in any project where the user has administrative permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      summary: Atlassian Get Issue Security Scheme
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-security-level:jira
+        - read:issue-security-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates the issue security scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdateissuesecurityscheme
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: My issue security scheme description
+              name: My issue security scheme name
+            schema:
+              $ref: '#/components/schemas/UpdateIssueSecuritySchemeRequestBean'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The length of the description must not exceed 4,000 characters."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the issue security scheme isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Issue Security Scheme
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{schemeId}:
+    delete:
+      deprecated: false
+      description: Deletes an issue security scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeletesecurityscheme
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '"You can''t delete an issue security scheme if any projects are associated with it."'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the issue security scheme isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Issue Security Scheme
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{schemeId}/level:
+    put:
+      deprecated: false
+      description: Adds levels and levels' members to the issue security scheme. You can add up to 100 levels per request.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAddsecuritylevel
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              levels:
+              - description: First Level Description
+                isDefault: true
+                members:
+                - type: reporter
+                - parameter: jira-administrators
+                  type: group
+                name: First Level
+            schema:
+              $ref: '#/components/schemas/AddSecuritySchemeLevelsRequestBean'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["some-wrong-string is not a valid value. The issue security scheme ID must be a positive integer."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the security scheme isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Add Issue Security Levels
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{schemeId}/level/{levelId}:
+    delete:
+      deprecated: false
+      description: Deletes an issue security level.<br><br>This operation is [asynchronous](#async). Follow the `location` link in the response to determine the status of the task and use [Get task](#api-rest-api-3-task-taskId-get) to obtain subsequent updates.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianRemovelevel
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level to remove.
+        in: path
+        name: levelId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level that will replace the currently selected level.
+        in: query
+        name: replaceWith
+        schema:
+          type: string
+      responses:
+        '303':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskProgressBeanObject'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '"You can''t delete an issue security scheme if any projects are associated with it."'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request isn't valid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the issue security level isn't found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if a task to remove the issue security level is already running.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Remove Issue Security Level
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates the issue security level.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdatesecuritylevel
+      parameters:
+      - description: The ID of the issue security scheme level belongs to.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level to update.
+        in: path
+        name: levelId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: New level description
+              name: New level name
+            schema:
+              $ref: '#/components/schemas/UpdateIssueSecurityLevelDetails'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The length of the description must not exceed 4,000 characters."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request isn't valid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the issue security level isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Issue Security Level
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{schemeId}/level/{levelId}/member:
+    put:
+      deprecated: false
+      description: Adds members to the issue security level. You can add up to 100 members per request.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianAddsecuritylevelmembers
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level.
+        in: path
+        name: levelId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              members:
+              - type: reporter
+              - parameter: jira-administrators
+                type: group
+            schema:
+              $ref: '#/components/schemas/SecuritySchemeMembersRequest'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["some-wrong-string is not a valid value. The issue security scheme ID must be a positive integer."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the security scheme isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Add Issue Security Level Members
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes/{schemeId}/level/{levelId}/member/{memberId}:
+    delete:
+      deprecated: false
+      description: Removes an issue security level member from an issue security scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianRemovememberfromsecuritylevel
+      parameters:
+      - description: The ID of the issue security scheme.
+        in: path
+        name: schemeId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level.
+        in: path
+        name: levelId
+        required: true
+        schema:
+          type: string
+      - description: The ID of the issue security level member to be removed.
+        in: path
+        name: memberId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+        '404':
+          content:
+            application/json:
+              example: '{"errorMessages":["Issue security scheme with ID 10000 not found."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the security scheme isn't found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Remove Member From Issue Security Level
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+  /rest/api/3/issuesecurityschemes:
+    get:
+      deprecated: false
+      description: Returns all [issue security schemes](https://confluence.atlassian.com/x/J4lKLg).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetissuesecurityschemes
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"issueSecuritySchemes":[{"defaultSecurityLevelId":10021,"description":"Description for the default issue security scheme","id":10000,"name":"Default Issue Security Scheme","self":"https://your-domain.atlassian.net/rest/api/3/issuesecurityschemes/10000"}]}'
+              schema:
+                $ref: '#/components/schemas/SecuritySchemes'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+        '403':
+          description: Returned if the user does not have permission to administer issue security schemes.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-project
+      summary: Atlassian Get Issue Security Schemes
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-project
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-security-level:jira
+        - read:issue-security-scheme:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: Creates a security scheme with security scheme levels and levels' members. You can create up to 100 security scheme levels and security scheme levels' members per request.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreateissuesecurityscheme
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: Newly created issue security scheme
+              levels:
+              - description: Newly created level
+                isDefault: true
+                members:
+                - parameter: administrators
+                  type: group
+                name: New level
+              name: New security scheme
+            schema:
+              $ref: '#/components/schemas/CreateIssueSecuritySchemeDetails'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"id":"10001"}'
+              schema:
+                $ref: '#/components/schemas/SecuritySchemeId'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The length of the description must not exceed 4,000 characters."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user doesn't have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Issue Security Scheme
+      tags:
+      - Issue Security Schemes
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    AddSecuritySchemeLevelsRequestBean:
+      additionalProperties: false
+      properties:
+        levels:
+          description: The list of scheme levels which should be added to the security scheme.
+          items:
+            $ref: '#/components/schemas/SecuritySchemeLevelBean'
+          type: array
+          writeOnly: true
+      type: object
+    SetDefaultLevelsRequest:
+      additionalProperties: true
+      description: Details of new default levels.
+      properties:
+        defaultValues:
+          description: List of objects with issue security scheme ID and new default level ID.
+          items:
+            $ref: '#/components/schemas/DefaultLevelValue'
+          maxLength: 1000
+          type: array
+          writeOnly: true
+      required:
+      - defaultValues
+      type: object
+    PageBeanIssueSecuritySchemeToProjectMapping:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueSecuritySchemeToProjectMapping'
+          readOnly: true
+          type: array
+      type: object
+    PermissionHolder:
+      additionalProperties: false
+      description: Details of a user, group, field, or project role that holds a permission. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+      properties:
+        expand:
+          description: Expand options that include additional permission holder details in the response.
+          readOnly: true
+          type: string
+        parameter:
+          description: As a group's name can change, use of `value` is recommended. The identifier associated withthe `type` value that defines the holder of the permission.
+          type: string
+        type:
+          description: The type of permission holder.
+          type: string
+        value:
+          description: The identifier associated with the `type` value that defines the holder of the permission.
+          type: string
+      required:
+      - type
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    UpdateIssueSecuritySchemeRequestBean:
+      additionalProperties: false
+      properties:
+        description:
+          description: The description of the security scheme scheme.
+          maxLength: 255
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the security scheme scheme. Must be unique.
+          maxLength: 60
+          type: string
+          writeOnly: true
+      type: object
+    DefaultLevelValue:
+      additionalProperties: true
+      description: Details of scheme and new default level.
+      maxLength: 1000
+      properties:
+        defaultLevelId:
+          description: The ID of the issue security level to set as default for the specified scheme. Providing null will reset the default level.
+          type: string
+          writeOnly: true
+        issueSecuritySchemeId:
+          description: The ID of the issue security scheme to set default level for.
+          type: string
+          writeOnly: true
+      required:
+      - defaultLevelId
+      - issueSecuritySchemeId
+      type: object
+      writeOnly: true
+    SecuritySchemeMembersRequest:
+      additionalProperties: false
+      description: Details of issue security scheme level new members.
+      properties:
+        members:
+          description: The list of level members which should be added to the issue security scheme level.
+          items:
+            $ref: '#/components/schemas/SecuritySchemeLevelMemberBean'
+          type: array
+          writeOnly: true
+      required:
+      - securitySchemeLevelMembers
+      type: object
+    SecuritySchemeLevelBean:
+      additionalProperties: false
+      properties:
+        description:
+          description: The description of the issue security scheme level.
+          maxLength: 4000
+          type: string
+          writeOnly: true
+        isDefault:
+          description: Specifies whether the level is the default level. False by default.
+          type: boolean
+          writeOnly: true
+        members:
+          description: The list of level members which should be added to the issue security scheme level.
+          items:
+            $ref: '#/components/schemas/SecuritySchemeLevelMemberBean'
+          type: array
+          writeOnly: true
+        name:
+          description: The name of the issue security scheme level. Must be unique.
+          maxLength: 255
+          type: string
+          writeOnly: true
+      required:
+      - name
+      type: object
+      writeOnly: true
+    SecuritySchemeId:
+      additionalProperties: true
+      description: The ID of the issue security scheme.
+      properties:
+        id:
+          description: The ID of the issue security scheme.
+          readOnly: true
+          type: string
+      required:
+      - id
+      type: object
+    SecuritySchemeLevelMemberBean:
+      additionalProperties: false
+      properties:
+        parameter:
+          description: The value corresponding to the specified member type.
+          type: string
+          writeOnly: true
+        type:
+          description: The issue security level member type, e.g `reporter`, `group`, `user`.
+          type: string
+          writeOnly: true
+      required:
+      - type
+      type: object
+      writeOnly: true
+    PageBeanSecuritySchemeWithProjects:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/SecuritySchemeWithProjects'
+          readOnly: true
+          type: array
+      type: object
+    TaskProgressBeanObject:
+      additionalProperties: false
+      description: Details about a task.
+      properties:
+        description:
+          description: The description of the task.
+          type: string
+        elapsedRuntime:
+          description: The execution time of the task, in milliseconds.
+          format: int64
+          type: integer
+        finished:
+          description: A timestamp recording when the task was finished.
+          format: int64
+          type: integer
+        id:
+          description: The ID of the task.
+          type: string
+        lastUpdate:
+          description: A timestamp recording when the task progress was last updated.
+          format: int64
+          type: integer
+        message:
+          description: Information about the progress of the task.
+          type: string
+        progress:
+          description: The progress of the task, as a percentage complete.
+          format: int64
+          type: integer
+        result:
+          description: The result of the task execution.
+        self:
+          description: The URL of the task.
+          format: uri
+          type: string
+        started:
+          description: A timestamp recording when the task was started.
+          format: int64
+          type: integer
+        status:
+          description: The status of the task.
+          enum:
+          - ENQUEUED
+          - RUNNING
+          - COMPLETE
+          - FAILED
+          - CANCEL_REQUESTED
+          - CANCELLED
+          - DEAD
+          type: string
+        submitted:
+          description: A timestamp recording when the task was submitted.
+          format: int64
+          type: integer
+        submittedBy:
+          description: The ID of the user who submitted the task.
+          format: int64
+          type: integer
+      required:
+      - elapsedRuntime
+      - id
+      - lastUpdate
+      - progress
+      - self
+      - status
+      - submitted
+      - submittedBy
+      type: object
+    SecurityScheme:
+      additionalProperties: false
+      description: Details about a security scheme.
+      properties:
+        defaultSecurityLevelId:
+          description: The ID of the default security level.
+          format: int64
+          readOnly: true
+          type: integer
+        description:
+          description: The description of the issue security scheme.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue security scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        levels:
+          items:
+            $ref: '#/components/schemas/SecurityLevel'
+          type: array
+        name:
+          description: The name of the issue security scheme.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the issue security scheme.
+          readOnly: true
+          type: string
+      type: object
+    SecurityLevel:
+      additionalProperties: false
+      description: Details of an issue level security item.
+      properties:
+        description:
+          description: The description of the issue level security item.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue level security item.
+          readOnly: true
+          type: string
+        isDefault:
+          description: Whether the issue level security item is the default.
+          readOnly: true
+          type: boolean
+        issueSecuritySchemeId:
+          description: The ID of the issue level security scheme.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the issue level security item.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the issue level security item.
+          readOnly: true
+          type: string
+      type: object
+    UpdateIssueSecurityLevelDetails:
+      additionalProperties: true
+      description: Details of issue security scheme level.
+      properties:
+        description:
+          description: The description of the issue security scheme level.
+          maxLength: 255
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the issue security scheme level. Must be unique.
+          maxLength: 60
+          type: string
+          writeOnly: true
+      type: object
+    PageBeanSecurityLevel:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/SecurityLevel'
+          readOnly: true
+          type: array
+      type: object
+    CreateIssueSecuritySchemeDetails:
+      additionalProperties: true
+      description: Issue security scheme and it's details
+      properties:
+        description:
+          description: The description of the issue security scheme.
+          maxLength: 255
+          type: string
+          writeOnly: true
+        levels:
+          description: The list of scheme levels which should be added to the security scheme.
+          items:
+            $ref: '#/components/schemas/SecuritySchemeLevelBean'
+          type: array
+          writeOnly: true
+        name:
+          description: The name of the issue security scheme. Must be unique (case-insensitive).
+          maxLength: 60
+          type: string
+          writeOnly: true
+      required:
+      - name
+      type: object
+    OldToNewSecurityLevelMappingsBean:
+      additionalProperties: false
+      properties:
+        newLevelId:
+          description: The new issue security level ID. Providing null will clear the assigned old level from issues.
+          type: string
+          writeOnly: true
+        oldLevelId:
+          description: The old issue security level ID. Providing null will remap all issues without any assigned levels.
+          type: string
+          writeOnly: true
+      required:
+      - newLevelId
+      - oldLevelId
+      type: object
+      writeOnly: true
+    SecuritySchemes:
+      additionalProperties: false
+      description: List of security schemes.
+      properties:
+        issueSecuritySchemes:
+          description: List of security schemes.
+          items:
+            $ref: '#/components/schemas/SecurityScheme'
+          readOnly: true
+          type: array
+      type: object
+    PageBeanSecurityLevelMember:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/SecurityLevelMember'
+          readOnly: true
+          type: array
+      type: object
+    AssociateSecuritySchemeWithProjectDetails:
+      additionalProperties: false
+      description: Issue security scheme, project, and remapping details.
+      properties:
+        oldToNewSecurityLevelMappings:
+          description: The list of scheme levels which should be remapped to new levels of the issue security scheme.
+          items:
+            $ref: '#/components/schemas/OldToNewSecurityLevelMappingsBean'
+          type: array
+          writeOnly: true
+        projectId:
+          description: The ID of the project.
+          type: string
+          writeOnly: true
+        schemeId:
+          description: The ID of the issue security scheme. Providing null will clear the association with the issue security scheme.
+          type: string
+          writeOnly: true
+      required:
+      - projectId
+      - schemeId
+      type: object
+    SecuritySchemeWithProjects:
+      additionalProperties: true
+      description: Details about an issue security scheme.
+      properties:
+        defaultLevel:
+          description: The default level ID of the issue security scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        description:
+          description: The description of the issue security scheme.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue security scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        name:
+          description: The name of the issue security scheme.
+          readOnly: true
+          type: string
+        projectIds:
+          description: The list of project IDs associated with the issue security scheme.
+          items:
+            format: int64
+            readOnly: true
+            type: integer
+          readOnly: true
+          type: array
+          uniqueItems: true
+        self:
+          description: The URL of the issue security scheme.
+          readOnly: true
+          type: string
+      required:
+      - id
+      - name
+      - self
+      type: object
+    SecurityLevelMember:
+      additionalProperties: true
+      description: Issue security level member.
+      properties:
+        holder:
+          allOf:
+          - $ref: '#/components/schemas/PermissionHolder'
+          description: The user or group being granted the permission. It consists of a `type` and a type-dependent `parameter`. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+          readOnly: true
+        id:
+          description: The ID of the issue security level member.
+          readOnly: true
+          type: string
+        issueSecurityLevelId:
+          description: The ID of the issue security level.
+          readOnly: true
+          type: string
+        issueSecuritySchemeId:
+          description: The ID of the issue security scheme.
+          readOnly: true
+          type: string
+        managed:
+          type: boolean
+          writeOnly: true
+      required:
+      - holder
+      - id
+      - issueSecurityLevelId
+      - issueSecuritySchemeId
+      type: object
+    IssueSecuritySchemeToProjectMapping:
+      additionalProperties: true
+      description: Details about an project using security scheme mapping.
+      properties:
+        issueSecuritySchemeId:
+          readOnly: true
+          type: string
+        projectId:
+          readOnly: true
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

@@ -1,0 +1,359 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Workflow Transition Properties API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Workflow Transition Properties
+paths:
+  /rest/api/3/workflow/transitions/{transitionId}/properties:
+    delete:
+      deprecated: false
+      description: Deletes a property from a workflow transition. Transition properties are used to change the behavior of a transition. For more information, see [Transition properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties) and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianDeleteworkflowtransitionproperty
+      parameters:
+      - description: The ID of the transition. To get the ID, view the workflow in text mode in the Jira admin settings. The ID is shown next to the transition.
+        in: path
+        name: transitionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The name of the transition property to delete, also known as the name of the property.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      - description: The name of the workflow that the transition belongs to.
+        in: query
+        name: workflowName
+        required: true
+        schema:
+          type: string
+      - description: The workflow status. Set to `live` for inactive workflows or `draft` for draft workflows. Active workflows cannot be edited.
+        in: query
+        name: workflowMode
+        schema:
+          enum:
+          - live
+          - draft
+          type: string
+      responses:
+        '200':
+          description: 200 response
+        '304':
+          description: Returned if no changes were made by the request. For example, trying to delete a property that cannot be found.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Workflow Transition Property
+      tags:
+      - Workflow Transition Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:workflow.property:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    get:
+      deprecated: false
+      description: Returns the properties on a workflow transition. Transition properties are used to change the behavior of a transition. For more information, see [Transition properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties) and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetworkflowtransitionproperties
+      parameters:
+      - description: The ID of the transition. To get the ID, view the workflow in text mode in the Jira administration console. The ID is shown next to the transition.
+        in: path
+        name: transitionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: Some properties with keys that have the *jira.* prefix are reserved, which means they are not editable. To include these properties in the results, set this parameter to *true*.
+        in: query
+        name: includeReservedKeys
+        schema:
+          default: false
+          type: boolean
+      - description: The key of the property being returned, also known as the name of the property. If this parameter is not specified, all properties on the transition are returned.
+        in: query
+        name: key
+        schema:
+          type: string
+      - description: The name of the workflow that the transition belongs to.
+        in: query
+        name: workflowName
+        required: true
+        schema:
+          type: string
+      - description: The workflow status. Set to *live* for active and inactive workflows, or *draft* for draft workflows.
+        in: query
+        name: workflowMode
+        schema:
+          default: live
+          enum:
+          - live
+          - draft
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"id":"jira.i18n.title","key":"jira.i18n.title","value":"some.title"},{"id":"jira.permission","key":"jira.permission","value":"createissue"}]'
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have admin permission
+        '404':
+          description: Returned if the workflow transition or property is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Workflow Transition Properties
+      tags:
+      - Workflow Transition Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:workflow.property:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    post:
+      deprecated: false
+      description: Adds a property to a workflow transition. Transition properties are used to change the behavior of a transition. For more information, see [Transition properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties) and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreateworkflowtransitionproperty
+      parameters:
+      - description: The ID of the transition. To get the ID, view the workflow in text mode in the Jira admin settings. The ID is shown next to the transition.
+        in: path
+        name: transitionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The key of the property being added, also known as the name of the property. Set this to the same value as the `key` defined in the request body.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      - description: The name of the workflow that the transition belongs to.
+        in: query
+        name: workflowName
+        required: true
+        schema:
+          type: string
+      - description: The workflow status. Set to *live* for inactive workflows or *draft* for draft workflows. Active workflows cannot be edited.
+        in: query
+        name: workflowMode
+        schema:
+          default: live
+          enum:
+          - live
+          - draft
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: createissue
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionProperty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"jira.i18n.title","value":"some.title","id":"jira.i18n.title"}'
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '400':
+          description: Returned if a workflow property with the same key is present on the transition.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Create Workflow Transition Property
+      tags:
+      - Workflow Transition Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow.property:jira
+        - read:workflow.property:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+    put:
+      deprecated: false
+      description: Updates a workflow transition by changing the property value. Trying to update a property that does not exist results in a new property being added to the transition. Transition properties are used to change the behavior of a transition. For more information, see [Transition properties](https://confluence.atlassian.com/x/zIhKLg#Advancedworkflowconfiguration-transitionproperties) and [Workflow properties](https://confluence.atlassian.com/x/JYlKLg).<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianUpdateworkflowtransitionproperty
+      parameters:
+      - description: The ID of the transition. To get the ID, view the workflow in text mode in the Jira admin settings. The ID is shown next to the transition.
+        in: path
+        name: transitionId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The key of the property being updated, also known as the name of the property. Set this to the same value as the `key` defined in the request body.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      - description: The name of the workflow that the transition belongs to.
+        in: query
+        name: workflowName
+        required: true
+        schema:
+          type: string
+      - description: The workflow status. Set to `live` for inactive workflows or `draft` for draft workflows. Active workflows cannot be edited.
+        in: query
+        name: workflowMode
+        schema:
+          enum:
+          - live
+          - draft
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: createissue
+            schema:
+              $ref: '#/components/schemas/WorkflowTransitionProperty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"jira.i18n.title","value":"some.title","id":"jira.i18n.title"}'
+              schema:
+                $ref: '#/components/schemas/WorkflowTransitionProperty'
+          description: 200 response
+        '304':
+          description: Returned if no changes were made by the request. For example, attempting to update a property with its current value.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have the necessary permission.
+        '404':
+          description: Returned if the workflow transition is not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Update Workflow Transition Property
+      tags:
+      - Workflow Transition Properties
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:workflow.property:jira
+        - read:workflow.property:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    WorkflowTransitionProperty:
+      additionalProperties: true
+      description: Details about the server Jira is running on.
+      properties:
+        id:
+          description: The ID of the transition property.
+          readOnly: true
+          type: string
+        key:
+          description: The key of the transition property. Also known as the name of the transition property.
+          readOnly: true
+          type: string
+        value:
+          description: The value of the transition property.
+          type: string
+      required:
+      - value
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

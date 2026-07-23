@@ -1,0 +1,394 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Space Permissions API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Space Permissions
+paths:
+  /wiki/rest/api/space/{spaceKey}/permission:
+    post:
+      tags:
+      - Space Permissions
+      summary: Atlassian Add New Permission to Space
+      description: 'Adds new permission to space.<br><br>If the permission to be added is a group permission, the group can be identified<br>by its group name or group id.<br><br>Note: Apps cannot access this REST resource - including when utilizing user impersonation.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Admin'' permission for the space.'
+      operationId: atlassianAddpermissiontospace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The permission to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePermissionRequest'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpacePermissionV2'
+        '400':
+          description: 'Used for various errors. Such as:
+
+            - Permission already exists for the given user or group.
+
+            - ''read space'' permission doesn''t exist for the given user or group.
+
+            - No group found with the given groupName or groupId'
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: 'Returned if any of the following is true:
+
+            - There is no space with the given key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      x-codegen-request-body-name: body
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:space.permission:confluence
+        - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:space.permission:confluence
+        - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/permission/custom-content:
+    post:
+      tags:
+      - Space Permissions
+      summary: Atlassian Add New Custom Content Permission to Space
+      description: 'Adds new custom content permission to space.<br><br>If the permission to be added is a group permission, the group can be identified<br>by its group name or group id.<br><br>Note: Only apps can access this REST resource and only make changes to the respective app permissions.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Admin'' permission for the space.'
+      operationId: atlassianAddcustomcontentpermissions
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The permissions to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpacePermissionCustomContent'
+        required: true
+      responses:
+        '200':
+          description: Returned if the requested content is returned.
+          content: {}
+        '400':
+          description: 'Used for various errors. Such as:
+
+            - Permission already exists for the given user or group.
+
+            - ''read space'' permission doesn''t exist for the given user or group.
+
+            - No group found with the given groupName or groupId'
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: 'Returned if any of the following is true:
+
+            - There is no space with the given key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      x-codegen-request-body-name: body
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:space.permission:confluence
+        - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:space.permission:confluence
+        - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/space/{spaceKey}/permission/{id}:
+    delete:
+      tags:
+      - Space Permissions
+      summary: Atlassian Remove a Space Permission
+      description: 'Removes a space permission. Note that removing Read Space permission for a user or group will remove all<br>the space permissions for that user or group.<br><br>Note: Apps cannot access this REST resource - including when utilizing user impersonation.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Admin'' permission for the space.'
+      operationId: atlassianRemovepermission
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to be queried for its content.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: Id of the permission to be deleted.
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Permission successfully removed.
+          content: {}
+        '400':
+          description: 'Used for various errors. Such as:
+
+            - All of the admin permissions cannot be removed from a space.'
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the user isn't authorized.
+          content: {}
+        '404':
+          description: 'Returned if any of the following is true:
+
+            - There is no permission with the given id.
+
+            - There is no space with the given key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:space.permission:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:space.permission:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    SpacePermissionRequest:
+      required:
+      - subject
+      - operation
+      type: object
+      additionalProperties: true
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubject'
+        operation:
+          required:
+          - key
+          - target
+          type: object
+          properties:
+            key:
+              type: string
+              enum:
+              - administer
+              - archive
+              - copy
+              - create
+              - delete
+              - export
+              - move
+              - purge
+              - purge_version
+              - read
+              - restore
+              - restrict_content
+              - update
+              - use
+            target:
+              type: string
+              description: The space or content type that the operation applies to.
+              enum:
+              - page
+              - blogpost
+              - comment
+              - attachment
+              - space
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: "This object represents the request for the single space permission. Permissions consist of\none operation object with an accompanying subjects object.\n\nThe following combinations of `operation.key` and `operation.target` values are\nvalid for the `operation` object:\n``` bash\n'create': 'page', 'blogpost', 'comment', 'attachment'\n'read': 'space'\n'delete': 'page', 'blogpost', 'comment', 'attachment', 'space'\n'export': 'space'\n'administer': 'space'\n'archive': 'page'\n'restrict_content': 'space'\n```\n\nFor example, to enable Delete Own permission, set the `operation` object to the following:\n```\n\"operation\": {\n    \"key\": \"delete\",\n    \"target\": \"space\"\n}\n```\nTo enable Add/Delete Restrictions permissions, set the `operation` object to the following:\n```\n\"operation\": {\n    \"key\": \"restrict_content\",\n    \"target\": \"space\"\n}\n```"
+    SpacePermissionV2:
+      required:
+      - id
+      - subject
+      - operation
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: abc123
+        subject:
+          $ref: '#/components/schemas/PermissionSubject'
+        operation:
+          required:
+          - key
+          - target
+          type: object
+          properties:
+            key:
+              type: string
+              enum:
+              - administer
+              - archive
+              - copy
+              - create
+              - delete
+              - export
+              - move
+              - purge
+              - purge_version
+              - read
+              - restore
+              - restrict_content
+              - update
+              - use
+            target:
+              type: string
+              description: The space or content type that the operation applies to.
+              enum:
+              - page
+              - blogpost
+              - comment
+              - attachment
+              - space
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: "This object represents a single space permission. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation.key` and `operation.target` values are\nvalid for the `operation` object:\n``` bash\n'create': 'page', 'blogpost', 'comment', 'attachment'\n'read': 'space'\n'delete': 'page', 'blogpost', 'comment', 'attachment', 'space'\n'export': 'space'\n'administer': 'space'\n'archive': 'page'\n'restrict_content': 'space'\n```\n\nFor example, to enable Delete Own permission, set the `operation` object to the following:\n```\n\"operation\": {\n    \"key\": \"delete\",\n    \"target\": \"space\"\n}\n```\nTo enable Add/Delete Restrictions permissions, set the `operation` object to the following:\n```\n\"operation\": {\n    \"key\": \"restrict_content\",\n    \"target\": \"space\"\n}\n```"
+    SpacePermissionCustomContent:
+      required:
+      - operations
+      - subject
+      type: object
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubject'
+        operations:
+          type: array
+          items:
+            required:
+            - access
+            - key
+            - target
+            type: object
+            properties:
+              key:
+                type: string
+                description: The operation type
+                enum:
+                - read
+                - create
+                - delete
+              target:
+                type: string
+                description: The custom content type
+              access:
+                type: boolean
+                description: Grant or restrict access
+      description: 'This object represents a list of space permissions for custom content type for an individual user. Permissions consist of
+
+        a subjects object and a list with at least one operation object.'
+    PermissionSubject:
+      required:
+      - identifier
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - user
+          - group
+        identifier:
+          type: string
+          description: "for `type=user`, identifier should be user's accountId or `anonymous` for anonymous users\n\nfor `type=group`, identifier should be the groupId. We are deprecating groupName support in mid-2024 \nfor this field but still accept it in the interim."
+      description: The user or group that the permission applies to.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

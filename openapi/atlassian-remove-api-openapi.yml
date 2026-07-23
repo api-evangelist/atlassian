@@ -1,0 +1,684 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Remove API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Remove
+paths:
+  /repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/request-changes:
+    parameters:
+    - name: pull_request_id
+      in: path
+      description: The id of the pull request.
+      required: true
+      schema:
+        type: integer
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Remove
+      description: This API operation removes a change request from a specific pull request in a Bitbucket repository. It uses a DELETE method to target a particular pull request identified by the workspace, repository slug, and pull request ID. When executed, it withdraws a previously submitted request for changes, effectively removing the user's review status that indicated modifications were needed before the pull request could be merged. This is useful when a reviewer wants to retract their change request, perhaps because the issues have been addressed or the reviewer has changed their assessment of the pull request.
+      summary: Atlassian Remove Change Request for Pull Request
+      responses:
+        '204':
+          description: An empty response indicating the authenticated user's request for change has been withdrawn.
+        '400':
+          description: Pull request requested changes cannot be removed because the pull request has already been merged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: The request wasn't authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The specified pull request or the repository does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - pullrequest:write
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - write:pullrequest:bitbucket
+      operationId: removeChangeRequestForPullRequest
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /repositories/{workspace}/{repo_slug}/issues/{issue_id}/vote:
+    parameters:
+    - name: issue_id
+      in: path
+      description: The issue id
+      required: true
+      schema:
+        type: string
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Remove
+      description: This API operation allows you to remove your vote from a specific issue in a Bitbucket repository. By sending a DELETE request to the endpoint with the workspace identifier, repository slug, and issue ID, you can retract a previously cast vote on that issue. This is useful when you no longer wish to express support or priority for a particular issue, effectively decreasing its vote count and potentially affecting its perceived importance or ranking within the project's issue tracker.
+      summary: Atlassian Remove Vote for an Issue
+      responses:
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - account:write
+        - issue:write
+      - basic: []
+      - api_key: []
+      operationId: removeVoteForAnIssue
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user}:
+    parameters:
+    - name: project_key
+      in: path
+      description: 'The project in question. This can either be the actual `key` assigned
+
+        to the project or the `UUID` (surrounded by curly-braces (`{}`)).
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: selected_user
+      in: path
+      description: 'This can either be the username or the UUID of the default reviewer,
+
+        surrounded by curly-braces, for example: `{account UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    delete:
+      tags:
+      - Remove
+      description: This API operation removes a specific user from the default reviewers list for a given project within a Bitbucket workspace. When invoked, it performs a DELETE request to the endpoint /workspaces/{workspace}/projects/{project_key}/default-reviewers/{selected_user}, where the workspace parameter identifies the workspace containing the project, project_key specifies the particular project, and selected_user indicates the user to be removed from the default reviewers. Once executed, the specified user will no longer be automatically added as a reviewer for new pull requests created in that project, though existing pull request assignments remain unaffected. This operation requires appropriate administrative permissions for the project and helps teams manage their code review workflows by controlling who is automatically involved in the review process.
+      summary: Atlassian Remove the Specific User From the Project S Default Reviewers
+      responses:
+        '204':
+          description: The specified user was removed from the list of project default reviewers
+        '400':
+          description: If the specified user is not a default reviewer for the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: If the authenticated user does not have admin access to the project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: If the specified user, project, or workspace does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - project:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:project:bitbucket
+      operationId: atlassianRemoveTheSpecificUserFromTheProjectSDefaultReviewers
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /atlassian-connect/1/app/module/dynamic:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove Modules
+      description: This API operation allows developers to remove dynamically registered modules from an Atlassian Confluence Connect app. When called via DELETE request to the /atlassian-connect/1/app/module/dynamic endpoint, it removes previously added modules that were registered at runtime rather than being defined in the app descriptor. This is particularly useful for Connect apps that need to programmatically manage their module lifecycle, enabling them to clean up or deregister modules that are no longer needed without requiring a full app reinstallation or descriptor update. The operation requires proper authentication and authorization, and successfully removing a module will make it unavailable in the Confluence interface until it is registered again through the dynamic module registration API.
+      operationId: removeModules
+      parameters:
+      - name: moduleKey
+        in: query
+        description: 'The key of the module to remove. To include multiple module keys, provide multiple copies of this parameter.
+
+          For example, `moduleKey=dynamic-attachment-entity-property&moduleKey=dynamic-select-field`.
+
+          Nonexistent keys are ignored.'
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+          content: {}
+        '401':
+          description: Returned if the call is not from a Connect app.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: The request is not from a Connect app.
+      deprecated: false
+      x-experimental: true
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+      security:
+      - bearerHttpAuthentication: []
+      x-api-evangelist-processing:
+        AddBearerAuthtoOperations: true
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/label:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove Label From Content Using Query Parameter
+      description: This API operation removes a label from a specific piece of Confluence content by specifying the content ID in the URL path and the label name as a query parameter. When executed with a DELETE HTTP method, it allows users to untag or dissociate a previously applied label from a page, blog post, or other content item in Confluence. The operation requires appropriate permissions to modify labels on the target content and will return a success response once the label has been successfully removed from the specified content item.
+      operationId: removeLabelFromContentUsingQueryParameter
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the label will be removed from.
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: The name of the label to be removed.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the label is removed. The response body will be empty.
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/label/{label}:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove Label From Content
+      description: Removes a specific label from a Confluence content item identified by its content ID. This DELETE operation targets the endpoint /wiki/rest/api/content/{id}/label/{label} where {id} represents the unique identifier of the content (such as a page or blog post) and {label} is the name of the label to be removed. When executed successfully, the API removes the association between the specified label and the content, effectively unlabeling that content item. This operation is useful for content management workflows where labels are used for categorization, organization, or search purposes and need to be dynamically updated or removed. The operation requires appropriate permissions to modify labels on the target content and returns a success response when the label is successfully removed from the content item.
+      operationId: removeLabelFromContent
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the label will be removed from.
+        required: true
+        schema:
+          type: string
+      - name: label
+        in: path
+        description: The name of the label to be removed.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the label is removed. The response body will be empty.
+          content: {}
+        '400':
+          description: Returned if the label name has a "/" character.
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/group/{groupName}:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove Group From Content Restriction
+      deprecated: true
+      description: This API operation removes a specific group from content restrictions for a given operation on a Confluence page or blog post. By sending a DELETE request to this endpoint with the content ID, operation key (such as 'read' or 'update'), and group name, administrators can revoke the specified group's access permissions for that particular operation on the content. This is useful for managing granular access control when you need to remove a group's ability to perform specific actions on restricted content without affecting other groups or individual user restrictions that may be in place.
+      operationId: removeGroupFromContentRestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupName
+        in: path
+        description: The name of the group to remove from the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The restriction to be deleted does not exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/byGroupId/{groupId}:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove Group From Content Restriction
+      description: 'This API operation removes a specific group from content restrictions in Atlassian Confluence by deleting the association between a group and an operation-based restriction on a particular piece of content. It requires three path parameters: the content ID identifying the restricted content, the operationKey specifying the type of operation (such as read or update), and the groupId representing the group to be removed from the restriction. When executed successfully, this DELETE request revokes the specified group''s access permissions for the given operation on the content, effectively removing that group from the restriction list without affecting other groups or users who may still have restrictions or permissions on the same content.'
+      operationId: removeGroupFromContentRestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - name: groupId
+        in: path
+        description: The id of the group to remove from the content restriction.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Returned if the group is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '400':
+          description: Returned if given group id is blank
+          content: {}
+        '403':
+          description: Returned if the calling user does not have permission to view the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - The restriction to be deleted does not exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/restriction/byOperation/{operationKey}/user:
+    delete:
+      tags:
+      - Remove
+      summary: Atlassian Remove User From Content Restriction
+      description: This API operation removes a specific user from content restrictions for a given operation type in Atlassian Confluence. By making a DELETE request to the endpoint with the content ID, operation key (such as 'read' or 'update'), and user account ID as parameters, administrators can revoke previously granted or denied permissions for that user on the specified content. This is useful for managing access control when a user's permissions need to be changed or when cleaning up outdated restrictions, effectively removing the user from the restriction list without affecting other users' permissions on the same content.
+      operationId: removeUserFromContentRestriction
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content that the restriction applies to.
+        required: true
+        schema:
+          type: string
+      - name: operationKey
+        in: path
+        description: The operation that the restriction applies to.
+        required: true
+        schema:
+          type: string
+          enum:
+          - read
+          - update
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: 'Returned if the user is removed from the content restriction. The response
+
+            body will be empty.'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The calling user does not have permission to view the content.
+
+            - An invalid operation or group is specified.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:content.restriction:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  parameters:
+    userLookupUsername:
+      name: username
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
+    userLookupKey:
+      name: key
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
+    userLookupAccountId:
+      name: accountId
+      in: query
+      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+      schema:
+        type: string
+  schemas:
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

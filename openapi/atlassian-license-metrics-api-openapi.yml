@@ -1,0 +1,254 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account License Metrics API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: License Metrics
+paths:
+  /rest/api/3/instance/license:
+    get:
+      deprecated: false
+      description: Returns licensing information about the Jira instance.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetlicense
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"applications":[{"id":"jira-core","plan":"PAID"},{"id":"jira-servicedesk","plan":"FREE"},{"id":"jira-software","plan":"PAID"},{"id":"jira-product-discovery","plan":"FREE"}]}'
+              schema:
+                $ref: '#/components/schemas/License'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get License
+      tags:
+      - License Metrics
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:license:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/license/approximateLicenseCount:
+    get:
+      deprecated: false
+      description: Returns the approximate number of user accounts across all Jira licenses. Note that this information is cached with a 7-day lifecycle and could be stale at the time of call.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetapproximatelicensecount
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"license.totalApproximateUserCount","value":"1000"}'
+              schema:
+                $ref: '#/components/schemas/LicenseMetric'
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollections'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access license details."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollections'
+          description: Returned if the user does not have permission to complete this request.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Approximate License Count
+      tags:
+      - License Metrics
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:license:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/license/approximateLicenseCount/product/{applicationKey}:
+    get:
+      deprecated: false
+      description: Returns the total approximate number of user accounts for a single Jira license. Note that this information is cached with a 7-day lifecycle and could be stale at the time of call.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianGetapproximateapplicationlicensecount
+      parameters:
+      - description: The ID of the application, represents a specific version of Jira.
+        in: path
+        name: applicationKey
+        required: true
+        schema:
+          enum:
+          - jira-core
+          - jira-product-discovery
+          - jira-software
+          - jira-servicedesk
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"key":"license.jira-software.approximateUserCount","value":"115"}'
+              schema:
+                $ref: '#/components/schemas/LicenseMetric'
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["Only Jira administrators can access license details."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have permission to complete this request.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Approximate Application License Count
+      tags:
+      - License Metrics
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:license:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    ErrorCollections:
+      additionalProperties: false
+      type: object
+    LicenseMetric:
+      additionalProperties: false
+      description: A metric that provides insight into the active licence details
+      properties:
+        key:
+          description: The key of a specific license metric.
+          type: string
+        value:
+          description: The calculated value of a licence metric linked to the key. An example licence metric is the approximate number of user accounts.
+          type: string
+      type: object
+    License:
+      additionalProperties: false
+      description: Details about a license for the Jira instance.
+      properties:
+        applications:
+          description: The applications under this license.
+          items:
+            $ref: '#/components/schemas/LicensedApplication'
+          readOnly: true
+          type: array
+      required:
+      - applications
+      type: object
+    LicensedApplication:
+      additionalProperties: false
+      description: Details about a licensed Jira application.
+      properties:
+        id:
+          description: The ID of the application.
+          readOnly: true
+          type: string
+        plan:
+          description: The licensing plan.
+          enum:
+          - UNLICENSED
+          - FREE
+          - PAID
+          readOnly: true
+          type: string
+      required:
+      - id
+      - plan
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

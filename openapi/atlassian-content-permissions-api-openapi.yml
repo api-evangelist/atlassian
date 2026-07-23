@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Content Permissions API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Content Permissions
+paths:
+  /wiki/rest/api/content/{id}/permission/check:
+    post:
+      tags:
+      - Content Permissions
+      summary: Atlassian Check Content Permissions
+      description: Check if a user or a group can perform an operation to the specified content. The `operation` to check<br>must be provided. The user’s account ID or the ID of the group can be provided in the `subject` to check<br>permissions against a specified user or group. The following permission checks are done to make sure that the<br>user or group has the proper access:<br><br>- site permissions<br>- space permissions<br>- content restrictions<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission) if checking permission for self,<br>otherwise 'Confluence Administrator' global permission is required.
+      operationId: atlassianCheckcontentpermission
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to check permissions against.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The content permission request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentPermissionRequest'
+        required: true
+      responses:
+        '200':
+          description: Returned if the permission check completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckResponse'
+        '400':
+          description: 'Returned if;
+
+
+            - If any of the required fields are missing.
+
+            - If specified `subject` or `operation` is invalid.'
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the user does not have permission perform the check.
+          content: {}
+        '404':
+          description: Returned if there is no content with the given ID.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.permission
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.permission
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:content.permission:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ContentPermissionRequest:
+      required:
+      - operation
+      - subject
+      type: object
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
+        operation:
+          type: string
+          description: The content permission operation to check.
+          enum:
+          - read
+          - update
+          - delete
+      description: This object represents the request for the content permission check API.
+    Message:
+      required:
+      - args
+      type: object
+      additionalProperties: true
+      properties:
+        translation:
+          type: string
+        args:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+    PermissionSubjectWithGroupId:
+      required:
+      - identifier
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - user
+          - group
+        identifier:
+          type: string
+          description: 'for `type=user`, identifier should be user''s accountId or `anonymous` for anonymous users
+
+
+            for `type=group`, identifier should be ID of the group'
+      description: The user or group that the permission applies to.
+    PermissionCheckResponse:
+      required:
+      - hasPermission
+      type: object
+      properties:
+        hasPermission:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+      description: 'This object represents the response for the content permission check API. If the user or group does not have
+
+        permissions, the following errors may be returned:
+
+
+        - Group does not have permission to the space
+
+        - Group does not have permission to the content
+
+        - User is not allowed to use Confluence
+
+        - User does not have permission to the space
+
+        - User does not have permission to the content
+
+        - Anonymous users are not allowed to use Confluence
+
+        - Anonymous user does not have permission to the space
+
+        - Anonymous user does not have permission to the content'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

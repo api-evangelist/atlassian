@@ -1,0 +1,323 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Dynamic Modules API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Dynamic Modules
+paths:
+  /atlassian-connect/1/app/module/dynamic:
+    get:
+      tags:
+      - Dynamic Modules
+      summary: Atlassian Get Modules
+      description: Returns all modules registered dynamically by the calling app.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianGetmodules
+      responses:
+        '200':
+          description: Returned if the request is successful.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConnectModules'
+        '401':
+          description: Returned if the call is not from a Connect app.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: The request is not from a Connect app.
+      deprecated: false
+      x-experimental: true
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    post:
+      tags:
+      - Dynamic Modules
+      summary: Atlassian Register Modules
+      description: Registers a list of modules. For the list of modules that support dynamic registration, see [Dynamic modules](https://developer.atlassian.com/cloud/confluence/dynamic-modules/).<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianRegistermodules
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ConnectModules'
+        required: true
+      responses:
+        '200':
+          description: Returned if the request is successful.
+          content: {}
+        '400':
+          description: 'Returned if:
+
+            * any of the provided modules is invalid. For example, required properties are missing.
+
+            * any of the modules conflict with registered dynamic modules or modules defined in the app descriptor. For example, there are duplicate keys.
+
+
+            Details of the issues encountered are included in the error message.'
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: 'Installation failed. The app com.example.app.key has duplicate module keys: [module-key]. Please contact the app vendor.'
+        '401':
+          description: Returned if the call is not from a Connect app.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: The request is not from a Connect app.
+      deprecated: false
+      x-experimental: true
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
+    delete:
+      tags:
+      - Dynamic Modules
+      summary: Atlassian Remove Modules
+      description: Remove all or a list of modules registered by the calling app.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianRemovemodules
+      parameters:
+      - name: moduleKey
+        in: query
+        description: 'The key of the module to remove. To include multiple module keys, provide multiple copies of this parameter.
+
+          For example, `moduleKey=dynamic-attachment-entity-property&moduleKey=dynamic-select-field`.
+
+          Nonexistent keys are ignored.'
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+          content: {}
+        '401':
+          description: Returned if the call is not from a Connect app.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DynamicModulesErrorMessage'
+            message:
+              example: The request is not from a Connect app.
+      deprecated: false
+      x-experimental: true
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+  /rest/atlassian-connect/1/app/module/dynamic:
+    delete:
+      deprecated: false
+      description: Remove all or a list of modules registered by the calling app.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianDynamicmodulesresourceRemovemodulesDelete
+      parameters:
+      - description: 'The key of the module to remove. To include multiple module keys, provide multiple copies of this parameter.
+
+          For example, `moduleKey=dynamic-attachment-entity-property&moduleKey=dynamic-select-field`.
+
+          Nonexistent keys are ignored.'
+        in: query
+        name: moduleKey
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              example:
+                message: The request is not from a Connect app.
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Returned if the call is not from a Connect app.
+      summary: Atlassian Remove Modules
+      tags:
+      - Dynamic Modules
+      x-atlassian-connect-scope: NONE
+    get:
+      deprecated: false
+      description: Returns all modules registered dynamically by the calling app.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianDynamicmodulesresourceGetmodulesGet
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectModules'
+          description: Returned if the request is successful.
+        '401':
+          content:
+            application/json:
+              example:
+                message: The request is not from a Connect app.
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Returned if the call is not from a Connect app.
+      summary: Atlassian Get Modules
+      tags:
+      - Dynamic Modules
+      x-atlassian-connect-scope: NONE
+    post:
+      deprecated: false
+      description: Registers a list of modules.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request.
+      operationId: atlassianDynamicmodulesresourceRegistermodulesPost
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectModules'
+        required: true
+      responses:
+        '200':
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example:
+                message: 'Installation failed. The app com.example.app.key has duplicate module keys: [module-key]. Please contact the app vendor.'
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: 'Returned if:
+
+            * any of the provided modules is invalid. For example, required properties are missing.
+
+            * any of the modules conflict with registered dynamic modules or modules defined in the app descriptor. For example, there are duplicate keys.
+
+
+            Details of the issues encountered are included in the error message.'
+        '401':
+          content:
+            application/json:
+              example:
+                message: The request is not from a Connect app.
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Returned if the call is not from a Connect app.
+      summary: Atlassian Register Modules
+      tags:
+      - Dynamic Modules
+      x-atlassian-connect-scope: NONE
+components:
+  schemas:
+    ConnectModule:
+      type: object
+      description: 'A [Connect module](https://developer.atlassian.com/cloud/confluence/modules/admin-page/) in the same format as in the
+
+        [app descriptor](https://developer.atlassian.com/cloud/confluence/app-descriptor/).'
+      example:
+        key: my-webitem
+        location: system.admin/globalsettings
+        url: /my-web-item
+        name:
+          value: My Web Item
+    DynamicModulesErrorMessage:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+          description: The error message.
+      example:
+        message: The request is not from a Connect app.
+    ErrorMessage:
+      additionalProperties: false
+      example:
+        message: The request is not from a Connect app.
+      properties:
+        message:
+          description: The error message.
+          type: string
+      required:
+      - message
+      type: object
+    ConnectModules:
+      example:
+        jiraEntityProperties:
+        - keyConfigurations:
+          - extractions:
+            - objectName: extension
+              type: text
+              alias: attachmentExtension
+            propertyKey: attachment
+          entityType: issue
+          name:
+            value: Attachment Index Document
+          key: dynamic-attachment-entity-property
+        jiraIssueFields:
+        - description:
+            value: A dynamically added single-select field
+          type: single_select
+          extractions:
+          - path: category
+            type: text
+            name: categoryName
+          name:
+            value: Dynamic single select
+          key: dynamic-select-field
+      properties:
+        modules:
+          description: 'A list of app modules in the same format as the `modules` property in the
+
+            [app descriptor](https://developer.atlassian.com/cloud/jira/platform/app-descriptor/).'
+          items:
+            $ref: '#/components/schemas/ConnectModule'
+          type: array
+      required:
+      - modules
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

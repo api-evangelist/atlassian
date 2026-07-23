@@ -1,0 +1,567 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Issue Remote Links API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Issue Remote Links
+paths:
+  /rest/api/3/issue/{issueIdOrKey}/remotelink:
+    delete:
+      deprecated: false
+      description: Deletes the remote issue link from the issue using the link's global ID. Where the global ID includes reserved URL characters these must be escaped in the request. For example, pass `system=http://www.mycompany.com/support&id=1` as `system%3Dhttp%3A%2F%2Fwww.mycompany.com%2Fsupport%26id%3D1`.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is implemented, issue-level security permission to view the issue.
+      operationId: atlassianDeleteremoteissuelinkbyglobalid
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      - description: The global ID of a remote issue link.
+        in: query
+        name: globalId
+        required: true
+        schema:
+          example: system=http://www.mycompany.com/support&id=1
+          type: string
+        x-showInExample: 'true'
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if a global ID isn't provided.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to link issues.
+        '404':
+          description: Returned if the issue or remote issue link is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Remote Issue Link By Global Id
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue.remote-link:jira
+        - write:issue:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns the remote issue links for an issue. When a remote issue link global ID is provided the record with that global ID is returned, otherwise all remote issue links are returned. Where a global ID includes reserved URL characters these must be escaped in the request. For example, pass `system=http://www.mycompany.com/support&id=1` as `system%3Dhttp%3A%2F%2Fwww.mycompany.com%2Fsupport%26id%3D1`.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetremoteissuelinks
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      - description: The global ID of the remote issue link.
+        in: query
+        name: globalId
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"application":{"name":"My Acme Tracker","type":"com.acme.tracker"},"globalId":"system=http://www.mycompany.com/support&id=1","id":10000,"object":{"icon":{"title":"Support Ticket","url16x16":"http://www.mycompany.com/support/ticket.png"},"status":{"icon":{"link":"http://www.mycompany.com/support?id=1&details=closed","title":"Case Closed","url16x16":"http://www.mycompany.com/support/resolved.png"},"resolved":true},"summary":"Customer support issue","title":"TSTSUP-111","url":"http://www.mycompany.com/support?id=1"},"relationship":"causes","self":"https://your-domain.atlassian.net/rest/api/issue/MKY-1/remotelink/10000"},{"application":{"name":"My Acme Tester","type":"com.acme.tester"},"globalId":"system=http://www.anothercompany.com/tester&id=1234","id":10001,"object":{"icon":{"title":"Test Case","url16x16":"http://www.anothercompany.com/tester/images/testcase.gif"},"status":{"icon":{"link":"http://www.anothercompany.com/tester/person?accountId=5b10a2844c20165700ede21g","title":"Tested by Mia Krystof","url16x16":"http://www.anothercompany.com/tester/images/person/mia.gif"},"resolved":false},"summary":"Test that the submit button saves the item","title":"Test Case #1234","url":"http://www.anothercompany.com/tester/testcase/1234"},"relationship":"is tested by","self":"https://your-domain.atlassian.net/rest/api/issue/MKY-1/remotelink/10001"}]'
+              schema:
+                $ref: '#/components/schemas/RemoteIssueLink'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if issue linking is disabled.
+        '404':
+          description: Returned if the issue or remote issue link is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Remote Issue Links
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.remote-link:jira
+        - read:status:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Creates or updates a remote issue link for an issue.<br><br>If a `globalId` is provided and a remote issue link with that global ID is found it is updated. Any fields without values in the request are set to null. Otherwise, the remote issue link is created.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianCreateorupdateremoteissuelink
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              application:
+                name: My Acme Tracker
+                type: com.acme.tracker
+              globalId: system=http://www.mycompany.com/support&id=1
+              object:
+                icon:
+                  title: Support Ticket
+                  url16x16: http://www.mycompany.com/support/ticket.png
+                status:
+                  icon:
+                    link: http://www.mycompany.com/support?id=1&details=closed
+                    title: Case Closed
+                    url16x16: http://www.mycompany.com/support/resolved.png
+                  resolved: true
+                summary: Customer support issue
+                title: TSTSUP-111
+                url: http://www.mycompany.com/support?id=1
+              relationship: causes
+            schema:
+              $ref: '#/components/schemas/RemoteIssueLinkRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"id":10000,"self":"https://your-domain.atlassian.net/rest/api/issue/MKY-1/remotelink/10000"}'
+              schema:
+                $ref: '#/components/schemas/RemoteIssueLinkIdentifies'
+          description: Returned if the remote issue link is updated.
+        '201':
+          content:
+            application/json:
+              example: '{"id":10000,"self":"https://your-domain.atlassian.net/rest/api/issue/MKY-1/remotelink/10000"}'
+              schema:
+                $ref: '#/components/schemas/RemoteIssueLinkIdentifies'
+          description: Returned if the remote issue link is created.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":[],"errors":{"title":"''title'' is required."}}'
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to link issues.
+        '404':
+          description: Returned if the issue is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Create Or Update Remote Issue Link
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue:jira
+        - write:issue.remote-link:jira
+        - read:issue.remote-link:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+  /rest/api/3/issue/{issueIdOrKey}/remotelink/{linkId}:
+    delete:
+      deprecated: false
+      description: Deletes a remote issue link from an issue.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects*, *Edit issues*, and *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianDeleteremoteissuelinkbyid
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      - description: The ID of a remote issue link.
+        in: path
+        name: linkId
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the link ID is invalid or the remote issue link does not belong to the issue.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to link issues.
+        '404':
+          description: Returned if the issue or remote issue link is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Delete Remote Issue Link By Id
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:issue.remote-link:jira
+        - write:issue:jira
+        state: Beta
+      x-atlassian-connect-scope: DELETE
+    get:
+      deprecated: false
+      description: Returns a remote issue link for an issue.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.
+      operationId: atlassianGetremoteissuelinkbyid
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          type: string
+      - description: The ID of the remote issue link.
+        in: path
+        name: linkId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"application":{"name":"My Acme Tracker","type":"com.acme.tracker"},"globalId":"system=http://www.mycompany.com/support&id=1","id":10000,"object":{"icon":{"title":"Support Ticket","url16x16":"http://www.mycompany.com/support/ticket.png"},"status":{"icon":{"link":"http://www.mycompany.com/support?id=1&details=closed","title":"Case Closed","url16x16":"http://www.mycompany.com/support/resolved.png"},"resolved":true},"summary":"Customer support issue","title":"TSTSUP-111","url":"http://www.mycompany.com/support?id=1"},"relationship":"causes","self":"https://your-domain.atlassian.net/rest/api/issue/MKY-1/remotelink/10000"}'
+              schema:
+                $ref: '#/components/schemas/RemoteIssueLink'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the link ID is invalid or the remote issue link does not belong to the issue.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if issue linking is disabled.
+        '404':
+          description: Returned if the issue or remote issue link is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Remote Issue Link By Id
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue.remote-link:jira
+        - read:status:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    put:
+      deprecated: false
+      description: 'Updates a remote issue link for an issue.<br><br>Note: Fields without values in the request are set to null.<br><br>This operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Browse projects* and *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.<br> *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.'
+      operationId: atlassianUpdateremoteissuelink
+      parameters:
+      - description: The ID or key of the issue.
+        in: path
+        name: issueIdOrKey
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      - description: The ID of the remote issue link.
+        in: path
+        name: linkId
+        required: true
+        schema:
+          example: '10000'
+          type: string
+        x-showInExample: 'true'
+      requestBody:
+        content:
+          application/json:
+            example:
+              application:
+                name: My Acme Tracker
+                type: com.acme.tracker
+              globalId: system=http://www.mycompany.com/support&id=1
+              object:
+                icon:
+                  title: Support Ticket
+                  url16x16: http://www.mycompany.com/support/ticket.png
+                status:
+                  icon:
+                    link: http://www.mycompany.com/support?id=1&details=closed
+                    title: Case Closed
+                    url16x16: http://www.mycompany.com/support/resolved.png
+                  resolved: true
+                summary: Customer support issue
+                title: TSTSUP-111
+                url: http://www.mycompany.com/support?id=1
+              relationship: causes
+            schema:
+              $ref: '#/components/schemas/RemoteIssueLinkRequest'
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":[],"errors":{"title":"''title'' is required."}}'
+          description: "Returned if:\n\n *  the link ID is invalid.\n *  the remote issue link does not belong to the issue.\n *  the request body is invalid."
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          description: Returned if the user does not have permission to link issues.
+        '404':
+          description: Returned if the issue or remote issue link is not found or the user does not have permission to view the issue.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - write:jira-work
+      - {}
+      summary: Atlassian Update Remote Issue Link By Id
+      tags:
+      - Issue Remote Links
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - write:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:issue:jira
+        - write:issue.remote-link:jira
+        state: Beta
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    RemoteIssueLink:
+      additionalProperties: false
+      description: Details of an issue remote link.
+      properties:
+        application:
+          allOf:
+          - $ref: '#/components/schemas/Application'
+          description: Details of the remote application the linked item is in.
+        globalId:
+          description: The global ID of the link, such as the ID of the item on the remote system.
+          type: string
+        id:
+          description: The ID of the link.
+          format: int64
+          type: integer
+        object:
+          allOf:
+          - $ref: '#/components/schemas/RemoteObject'
+          description: Details of the item linked to.
+        relationship:
+          description: Description of the relationship between the issue and the linked item.
+          type: string
+        self:
+          description: The URL of the link.
+          format: uri
+          type: string
+      type: object
+    RemoteObject:
+      additionalProperties: true
+      description: The linked item.
+      properties:
+        icon:
+          allOf:
+          - $ref: '#/components/schemas/Icon'
+          description: Details of the icon for the item. If no icon is defined, the default link icon is used in Jira.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status'
+          description: The status of the item.
+        summary:
+          description: The summary details of the item.
+          type: string
+        title:
+          description: The title of the item.
+          type: string
+        url:
+          description: The URL of the item.
+          type: string
+      required:
+      - title
+      - url
+      type: object
+    Status:
+      additionalProperties: true
+      description: The status of the item.
+      properties:
+        icon:
+          allOf:
+          - $ref: '#/components/schemas/Icon'
+          description: Details of the icon representing the status. If not provided, no status icon displays in Jira.
+        resolved:
+          description: Whether the item is resolved. If set to "true", the link to the issue is displayed in a strikethrough font, otherwise the link displays in normal font.
+          type: boolean
+      type: object
+    Icon:
+      additionalProperties: true
+      description: "An icon. If no icon is defined:\n\n *  for a status icon, no status icon displays in Jira.\n *  for the remote object icon, the default link icon displays in Jira."
+      properties:
+        link:
+          description: The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable.
+          type: string
+        title:
+          description: "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\"."
+          type: string
+        url16x16:
+          description: The URL of an icon that displays at 16x16 pixel in Jira.
+          type: string
+      type: object
+    RemoteIssueLinkIdentifies:
+      additionalProperties: false
+      description: Details of the identifiers for a created or updated remote issue link.
+      properties:
+        id:
+          description: The ID of the remote issue link, such as the ID of the item on the remote system.
+          format: int64
+          readOnly: true
+          type: integer
+          xml:
+            attribute: true
+        self:
+          description: The URL of the remote issue link.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+      type: object
+    RemoteIssueLinkRequest:
+      additionalProperties: true
+      description: Details of a remote issue link.
+      properties:
+        application:
+          allOf:
+          - $ref: '#/components/schemas/Application'
+          description: Details of the remote application the linked item is in. For example, trello.
+        globalId:
+          description: 'An identifier for the remote item in the remote system. For example, the global ID for a remote item in Confluence would consist of the app ID and page ID, like this: `appId=456&pageId=123`.
+
+
+            Setting this field enables the remote issue link details to be updated or deleted using remote system and item details as the record identifier, rather than using the record''s Jira ID.
+
+
+            The maximum length is 255 characters.'
+          type: string
+        object:
+          allOf:
+          - $ref: '#/components/schemas/RemoteObject'
+          description: Details of the item linked to.
+        relationship:
+          description: Description of the relationship between the issue and the linked item. If not set, the relationship description "links to" is used in Jira.
+          type: string
+      required:
+      - object
+      type: object
+    Application:
+      additionalProperties: true
+      description: The application the linked item is in.
+      properties:
+        name:
+          description: The name of the application. Used in conjunction with the (remote) object icon title to display a tooltip for the link's icon. The tooltip takes the format "\[application name\] icon title". Blank items are excluded from the tooltip title. If both items are blank, the icon tooltop displays as "Web Link". Grouping and sorting of links may place links without an application name last.
+          type: string
+        type:
+          description: The name-spaced type of the application, used by registered rendering apps.
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

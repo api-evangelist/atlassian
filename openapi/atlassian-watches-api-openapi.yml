@@ -1,0 +1,485 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Watches API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Watches
+paths:
+  /wiki/rest/api/content/{id}/notification/child-created:
+    get:
+      tags:
+      - Watches
+      summary: Atlassian Get Watches for Page
+      description: This API operation retrieves a list of all users and groups watching a specific Confluence page for child page creation events. When called with a page ID, it returns the watches configured to notify watchers whenever a new child page is created under the specified parent page. The endpoint requires appropriate authentication and permissions to view the watch list, and it provides information about who will be notified when child content is added beneath the given page in the content hierarchy.
+      operationId: getWatchesForPage
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its watches.
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned watches.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of watches to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: Returned if the requested watches are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchArray'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:watcher:confluence
+        - read:user:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/notification/created:
+    get:
+      tags:
+      - Watches
+      summary: Atlassian Get Watches for Space
+      description: This API operation retrieves a list of all watches that have been set up for content creation events within a specific Confluence space. When called, it returns information about users who are watching for new content being created in the space identified by the provided ID parameter. The endpoint uses a GET request and is part of Atlassian Confluence's notification system, allowing administrators and developers to query which users have subscribed to receive notifications when new pages, blog posts, or other content types are added to the specified space. This is useful for understanding notification distribution, managing watch lists, or auditing user engagement with space content.
+      operationId: getWatchesForSpace
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content to be queried for its watches.
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned watches.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of watches to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: Returned if the requested watches are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceWatchArray'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:watcher:confluence
+        - read:user:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-api-evangelist-processing:
+        PascalCaseOperationSummaries: true
+        CaselCaseOperationIds: true
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    GenericUserName:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    GenericUserKey:
+      type: string
+      nullable: true
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    WatchUser:
+      required:
+      - type
+      - accountId
+      - profilePicture
+      - displayName
+      - operations
+      - isExternalCollaborator
+      - accountType
+      - email
+      - publicName
+      - personalSpace
+      - externalCollaborator
+      type: object
+      properties:
+        type:
+          type: string
+          example: example_value
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          type: string
+          example: example_value
+        timeZone:
+          nullable: true
+          type: string
+          example: example_value
+        operations:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+          example: []
+        isExternalCollaborator:
+          type: boolean
+          example: true
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        accountType:
+          type: string
+          example: example_value
+        email:
+          type: string
+          example: user@example.com
+        publicName:
+          type: string
+          example: example_value
+        personalSpace:
+          type: object
+          nullable: true
+          example: example_value
+        externalCollaborator:
+          type: boolean
+          example: true
+      description: 'This essentially the same as the `User` object, but no `_links` property and
+
+        no `_expandable` property (therefore, different required fields).'
+    SpaceWatchArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpaceWatch'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Watch:
+      required:
+      - contentId
+      - type
+      - watcher
+      type: object
+      properties:
+        type:
+          type: string
+          example: example_value
+        watcher:
+          $ref: '#/components/schemas/WatchUser'
+        contentId:
+          type: integer
+          format: int64
+          example: '500123'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type: object
+      nullable: true
+      properties:
+        path:
+          type: string
+          example: example_value
+        width:
+          type: integer
+          format: int32
+          example: 10
+        height:
+          type: integer
+          format: int32
+          example: 10
+        isDefault:
+          type: boolean
+          example: true
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericAccountId:
+      type: string
+      nullable: true
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    SpaceWatch:
+      required:
+      - type
+      - watcher
+      type: object
+      properties:
+        type:
+          type: string
+          example: example_value
+        watcher:
+          $ref: '#/components/schemas/WatchUser'
+        spaceKey:
+          type: string
+          example: example_value
+        labelName:
+          type: string
+          example: example_value
+        prefix:
+          type: string
+          example: example_value
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+          example: administer
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+          example: example_value
+      description: An operation and the target entity that it applies to, e.g. create page.
+    WatchArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Watch'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    UserDetails:
+      type: object
+      properties:
+        business:
+          type: object
+          properties:
+            position:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            department:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            location:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+          example: example_value
+        personal:
+          type: object
+          properties:
+            phone:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            im:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            website:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. There is no replacement. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+            email:
+              type: string
+              description: 'This property has been deprecated due to privacy changes. Use the `User.email` property instead. See the
+
+                [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
+
+                for details.'
+          example: example_value
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

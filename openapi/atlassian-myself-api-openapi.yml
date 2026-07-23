@@ -1,0 +1,541 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Myself API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Myself
+paths:
+  /rest/api/3/mypreferences/locale:
+    delete:
+      deprecated: true
+      description: Deprecated, use [ Update a user profile](https://developer.atlassian.com/cloud/admin/user-management/rest/#api-users-account-id-manage-profile-patch) from the user management REST API instead.<br><br>Deletes the locale of the user, which restores the default setting.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianDeletelocale
+      parameters: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      summary: Atlassian Delete Locale
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    get:
+      deprecated: false
+      description: Returns the locale for the user.<br><br>If the user has no language preference set (which is the default setting) or this resource is accessed anonymous, the browser locale detected by Jira is returned. Jira detects the browser locale using the *Accept-Language* header in the request. However, if this doesn't match a locale available Jira, the site default locale is returned.<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetlocale
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"locale":"en_US"}'
+              schema:
+                $ref: '#/components/schemas/Locale'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      - {}
+      summary: Atlassian Get Locale
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ACT_AS_USER
+    put:
+      deprecated: true
+      description: Deprecated, use [ Update a user profile](https://developer.atlassian.com/cloud/admin/user-management/rest/#api-users-account-id-manage-profile-patch) from the user management REST API instead.<br><br>Sets the locale of the user. The locale must be one supported by the instance of Jira.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianSetlocale
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              locale: en_US
+            schema:
+              $ref: '#/components/schemas/Locale'
+        description: The locale defined in a LocaleBean.
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      summary: Atlassian Set Locale
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+  /rest/api/3/mypreferences:
+    delete:
+      deprecated: false
+      description: Deletes a preference of the user, which restores the default value of system defined settings.<br><br>Note that these keys are deprecated:<br><br> *  *jira.user.locale* The locale of the user. By default, not set. The user takes the instance locale.<br> *  *jira.user.timezone* The time zone of the user. By default, not set. The user takes the instance timezone.<br><br>Use [ Update a user profile](https://developer.atlassian.com/cloud/admin/user-management/rest/#api-users-account-id-manage-profile-patch) from the user management REST API to manage timezone and locale instead.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianRemovepreference
+      parameters:
+      - description: The key of the preference.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the key is not provided or not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Delete Preference
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - delete:user-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ACT_AS_USER
+    get:
+      deprecated: false
+      description: Returns the value of a preference of the current user.<br><br>Note that these keys are deprecated:<br><br> *  *jira.user.locale* The locale of the user. By default this is not set and the user takes the locale of the instance.<br> *  *jira.user.timezone* The time zone of the user. By default this is not set and the user takes the timezone of the instance.<br><br>These system preferences keys will be deprecated by 15/07/2024. You can still retrieve these keys, but it will not have any impact on Notification behaviour.<br><br> *  *user.notifiy.own.changes* Whether the user gets notified of their own changes.<br> *  *user.notifications.watcher* Whether the user gets notified when they are watcher.<br> *  *user.notifications.assignee* Whether the user gets notified when they are assignee.<br> *  *user.notifications.reporter* Whether the user gets notified when they are reporter.<br> *  *user.notifications.mentions* Whether the user gets notified when they are mentions.<br><br>Use [ Update a user profile](https://developer.atlassian.com/cloud/admin/user-management/rest/#api-users-account-id-manage-profile-patch) from the user management REST API to manage timezone and locale instead.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetpreference
+      parameters:
+      - description: The key of the preference.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the key is not provided or not found.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Get Preference
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ACT_AS_USER
+    put:
+      deprecated: false
+      description: 'Creates a preference for the user or updates a preference''s value by sending a plain text string. For example, `false`. An arbitrary preference can be created with the value containing up to 255 characters. In addition, the following keys define system preferences that can be set or created:<br><br> *  *user.notifications.mimetype* The mime type used in notifications sent to the user. Defaults to `html`.<br> *  *user.default.share.private* Whether new [ filters](https://confluence.atlassian.com/x/eQiiLQ) are set to private. Defaults to `true`.<br> *  *user.keyboard.shortcuts.disabled* Whether keyboard shortcuts are disabled. Defaults to `false`.<br> *  *user.autowatch.disabled* Whether the user automatically watches issues they create or add a comment to. By default, not set: the user takes the instance autowatch setting.<br><br>Note that these keys are deprecated:<br><br> *  *jira.user.locale* The locale of the user. By default, not set. The user takes the instance locale.<br> *  *jira.user.timezone* The time zone of the user. By default, not set. The user takes the instance timezone.<br><br>These system preferences keys will be deprecated by 15/07/2024. You can still use these keys to create arbitrary preferences, but it will not have any impact on Notification behaviour.<br><br> *  *user.notifiy.own.changes* Whether the user gets notified of their own changes.<br> *  *user.notifications.watcher* Whether the user gets notified when they are watcher.<br> *  *user.notifications.assignee* Whether the user gets notified when they are assignee.<br> *  *user.notifications.reporter* Whether the user gets notified when they are reporter.<br> *  *user.notifications.mentions* Whether the user gets notified when they are mentions.<br><br>Use [ Update a user profile](https://developer.atlassian.com/cloud/admin/user-management/rest/#api-users-account-id-manage-profile-patch) from the user management REST API to manage timezone and locale instead.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.'
+      operationId: atlassianSetpreference
+      parameters:
+      - description: The key of the preference. The maximum length is 255 characters.
+        in: query
+        name: key
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+        description: The value of the preference as a plain text string. The maximum length is 255 characters.
+        required: true
+      responses:
+        '204':
+          content:
+            application/json:
+              schema: {}
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+        '404':
+          description: Returned if the key or value is not provided or invalid.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Set Preference
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:user-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ACT_AS_USER
+  /rest/api/3/myself:
+    get:
+      deprecated: false
+      description: Returns details for the current user.<br><br>**[Permissions](#permissions) required:** Permission to access Jira.
+      operationId: atlassianGetcurrentuser
+      parameters:
+      - description: "Use [expand](#expansion) to include additional information about user in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `groups` Returns all groups, including nested groups, the user belongs to.\n *  `applicationRoles` Returns the application roles the user is assigned to."
+        in: query
+        name: expand
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"accountId":"5b10a2844c20165700ede21g","accountType":"atlassian","active":true,"applicationRoles":{"items":[],"size":1},"avatarUrls":{"16x16":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16","24x24":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24","32x32":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32","48x48":"https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48"},"displayName":"Mia Krystof","emailAddress":"mia@example.com","groups":{"items":[],"size":3},"key":"","name":"","self":"https://your-domain.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g","timeZone":"Australia/Sydney"}'
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Get Current User
+      tags:
+      - Myself
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:application-role:jira
+        - read:group:jira
+        - read:user:jira
+        - read:avatar:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    ListWrapperCallbackGroupName:
+      additionalProperties: false
+      type: object
+    SimpleListWrapperApplicationRole:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationRole'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    GroupName:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          nullable: true
+          type: string
+        name:
+          description: The name of group.
+          type: string
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    ApplicationRole:
+      additionalProperties: false
+      description: Details of an application role.
+      properties:
+        defaultGroups:
+          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        defaultGroupsDetails:
+          description: The groups that are granted default access for this application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        defined:
+          description: Deprecated.
+          type: boolean
+        groupDetails:
+          description: The groups associated with the application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        groups:
+          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        hasUnlimitedSeats:
+          type: boolean
+        key:
+          description: The key of the application role.
+          type: string
+        name:
+          description: The display name of the application role.
+          type: string
+        numberOfSeats:
+          description: The maximum count of users on your license.
+          format: int32
+          type: integer
+        platform:
+          description: Indicates if the application role belongs to Jira platform (`jira-core`).
+          type: boolean
+        remainingSeats:
+          description: The count of users remaining on your license.
+          format: int32
+          type: integer
+        selectedByDefault:
+          description: Determines whether this application role should be selected by default on user creation.
+          type: boolean
+        userCount:
+          description: The number of users counting against your license.
+          format: int32
+          type: integer
+        userCountDescription:
+          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+          type: string
+      type: object
+    ListWrapperCallbackApplicationRole:
+      additionalProperties: false
+      type: object
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
+    User:
+      additionalProperties: false
+      description: "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.
+          maxLength: 128
+          type: string
+        accountType:
+          description: "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk"
+          enum:
+          - atlassian
+          - app
+          - customer
+          - unknown
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
+          readOnly: true
+          type: boolean
+        applicationRoles:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperApplicationRole'
+          description: The application roles the user is assigned to.
+          readOnly: true
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
+          readOnly: true
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        expand:
+          description: Expand options that include additional user details in the response.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+        groups:
+          allOf:
+          - $ref: '#/components/schemas/SimpleListWrapperGroupName'
+          description: The groups that the user belongs to.
+          readOnly: true
+        key:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        locale:
+          description: The locale of the user. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
+        self:
+          description: The URL of the user.
+          format: uri
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy setting, this may be returned as null.
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: user
+    Locale:
+      additionalProperties: false
+      description: Details of a locale.
+      properties:
+        locale:
+          description: 'The locale code. The Java the locale format is used: a two character language code (ISO 639), an underscore, and two letter country code (ISO 3166). For example, en\_US represents a locale of English (United States). Required on create.'
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

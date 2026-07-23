@@ -1,0 +1,995 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Template API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Template
+paths:
+  /wiki/rest/api/template/blueprint:
+    get:
+      tags:
+      - Template
+      summary: Atlassian Get Blueprint Templates
+      description: Returns all templates provided by blueprints. Use this method to retrieve<br>all global blueprint templates or all blueprint templates in a space.<br><br>Note, all global blueprints are inherited by each space. Space blueprints<br>can be customised without affecting the global blueprints.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space to view blueprints for the space and permission<br>to access the Confluence site ('Can use' global permission) to view global blueprints.
+      operationId: atlassianGetblueprinttemplates
+      parameters:
+      - name: spaceKey
+        in: query
+        description: 'The key of the space to be queried for templates. If the `spaceKey`
+
+          is not specified, global blueprint templates will be returned.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned templates.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of templates to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the template
+
+          to expand.
+
+
+          - `body` returns the content of the template in storage format.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - body
+      responses:
+        '200':
+          description: Returned if the requested templates are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintTemplateArray'
+        '403':
+          description: 'Returned if the calling user does not have permission to view
+
+            blueprint templates.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/template/page:
+    get:
+      tags:
+      - Template
+      summary: Atlassian Get Content Templates
+      description: Returns all content templates. Use this method to retrieve all global<br>content templates or all content templates in a space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space to view space templates and permission to<br>access the Confluence site ('Can use' global permission) to view global templates.
+      operationId: atlassianGetcontenttemplates
+      parameters:
+      - name: spaceKey
+        in: query
+        description: 'The key of the space to be queried for templates. If the `spaceKey`
+
+          is not specified, global templates will be returned.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned templates.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of templates to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 25
+      - name: expand
+        in: query
+        description: 'A multi-value parameter indicating which properties of the template
+
+          to expand.
+
+
+          - `body` returns the content of the template in storage format.'
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - body
+      responses:
+        '200':
+          description: Returned if the requested templates are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplateArray'
+        '403':
+          description: 'Returned if the calling user does not have permission to view the
+
+            content templates.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/template/{contentTemplateId}:
+    get:
+      tags:
+      - Template
+      summary: Atlassian Get Content Template
+      description: Returns a content template. This includes information about template,<br>like the name, the space or blueprint that the template is in, the body<br>of the template, and more.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space to view space templates and permission to<br>access the Confluence site ('Can use' global permission) to view global templates.
+      operationId: atlassianGetcontenttemplate
+      parameters:
+      - name: contentTemplateId
+        in: path
+        description: The ID of the content template to be returned.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if the requested template is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate'
+        '403':
+          description: 'Returned if;
+
+
+            - There is no template with the given ID.
+
+            - The calling user does not have permission to view the template.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Template
+      summary: Atlassian Remove Template
+      description: Deletes a template. This results in different actions depending on the<br>type of template:<br><br>- If the template is a content template, it is deleted.<br>- If the template is a modified space-level blueprint template, it reverts<br>to the template inherited from the global-level blueprint template.<br>- If the template is a modified global-level blueprint template, it reverts<br>to the default global-level blueprint template.<br><br> Note, unmodified blueprint templates cannot be deleted.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>        'Admin' permission for the space to delete a space template or 'Confluence Administrator'<br>        global permission to delete a global template.
+      operationId: atlassianRemovetemplate
+      parameters:
+      - name: contentTemplateId
+        in: path
+        description: The ID of the template to be deleted.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the template has been successfully been deleted.
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - There is no template with the given ID.
+
+            - The calling user does not have permission to delete the template.'
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:template:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: DELETE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/template:
+    put:
+      tags:
+      - Template
+      summary: Atlassian Update Content Template
+      description: Updates a content template. Note, blueprint templates cannot be updated<br>via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to update a space template or 'Confluence Administrator'<br>global permission to update a global template.
+      operationId: atlassianUpdatecontenttemplate
+      requestBody:
+        description: The updated content template.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentTemplateUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the template is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate_3'
+        '400':
+          description: Returned if template name is null or an empty string.
+          content: {}
+        '403':
+          description: Returned if the calling user does not have permission.
+          content: {}
+        '404':
+          description: 'Returned if the calling user does not have permission to update the
+
+            template or if the template doesn''t exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+        - write:template:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+      - Template
+      summary: Atlassian Create Content Template
+      description: Creates a new content template. Note, blueprint templates cannot be created via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to create a space template or 'Confluence Administrator'<br>global permission to create a global template.
+      operationId: atlassianCreatecontenttemplate
+      requestBody:
+        description: 'The content template to be created.
+
+          The content body must be in ''storage'' format.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentTemplateCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the template is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate_3'
+        '400':
+          description: Returned if template name is null or an empty string.
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to create the
+
+            template.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+        - write:template:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+components:
+  schemas:
+    ContentTemplate:
+      required:
+      - _links
+      - description
+      - labels
+      - name
+      - templateId
+      - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+          example: '500123'
+        originalTemplate:
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+          example: example_value
+        referencingBlueprint:
+          type: string
+          example: example_value
+        name:
+          type: string
+          example: Example Title
+        description:
+          type: string
+          example: A sample description.
+        space:
+          type: object
+          additionalProperties: true
+          example: example_value
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          example: []
+        templateType:
+          type: string
+          example: example_value
+        editorVersion:
+          type: string
+          example: example_value
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
+          example: example_value
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Embeddable:
+      type: object
+      additionalProperties: true
+    ContentTemplateCreate:
+      required:
+      - body
+      - name
+      - templateType
+      type: object
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+          description: The name of the new template.
+        templateType:
+          type: string
+          description: The type of the new template. Set to `page`.
+        body:
+          $ref: '#/components/schemas/ContentTemplateBodyCreate'
+        description:
+          maxLength: 255
+          type: string
+          description: A description of the new template.
+        labels:
+          type: array
+          description: Labels for the new template.
+          items:
+            $ref: '#/components/schemas/Label'
+        space:
+          required:
+          - key
+          type: object
+          additionalProperties: true
+          nullable: true
+          properties:
+            key:
+              type: string
+          description: 'The key for the space of the new template. Only applies to space templates.
+
+            If the spaceKey is not specified, the template will be created as a global
+
+            template.'
+      description: This object is used to create content templates.
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    ContentTemplateBody:
+      type: object
+      properties:
+        view:
+          $ref: '#/components/schemas/ContentBody'
+        export_view:
+          $ref: '#/components/schemas/ContentBody'
+        styled_view:
+          $ref: '#/components/schemas/ContentBody'
+        storage:
+          $ref: '#/components/schemas/ContentBody'
+        editor:
+          $ref: '#/components/schemas/ContentBody'
+        editor2:
+          $ref: '#/components/schemas/ContentBody'
+        wiki:
+          $ref: '#/components/schemas/ContentBody'
+        atlas_doc_format:
+          $ref: '#/components/schemas/ContentBody'
+        anonymous_export_view:
+          $ref: '#/components/schemas/ContentBody'
+      description: 'The body of the new content. Does not apply to attachments.
+
+        Only one body format should be specified as the property for
+
+        this object, e.g. `storage`.
+
+
+        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
+
+        the same as `export_view` format but only content viewable by an anonymous
+
+        user is included.'
+    BlueprintTemplateArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintTemplate'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SuperBatchWebResources:
+      type: object
+      properties:
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
+          type: string
+        _expandable:
+          type: object
+          additionalProperties: true
+    ContentTemplateBodyCreate:
+      type: object
+      properties:
+        view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        styled_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        storage:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor2:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        wiki:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        atlas_doc_format:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        anonymous_export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+      description: 'The body of the new content. Does not apply to attachments.
+
+        Only one body format should be specified as the property for
+
+        this object, e.g. `storage`.
+
+
+        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
+
+        the same as `export_view` format but only content viewable by an anonymous
+
+        user is included.'
+    ContentBodyCreate:
+      required:
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+          description: The body of the content in the relevant format.
+        representation:
+          type: string
+          description: 'The content format type. Set the value of this property to
+
+            the name of the format being used, e.g. ''storage''.'
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - plain
+          - raw
+      description: This object is used when creating or updating content.
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    BlueprintTemplate:
+      required:
+      - _links
+      - description
+      - labels
+      - name
+      - originalTemplate
+      - referencingBlueprint
+      - templateId
+      - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+        originalTemplate:
+          required:
+          - moduleKey
+          - pluginKey
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    ContentTemplateArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentTemplate'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentTemplate_3:
+      required:
+      - _links
+      - description
+      - labels
+      - name
+      - templateId
+      - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+        originalTemplate:
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    WebResourceDependencies:
+      type: object
+      properties:
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            uris:
+              oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        keys:
+          type: array
+          items:
+            type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        uris:
+          type: object
+          properties:
+            all:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+              properties:
+                css:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                js:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+        tags:
+          type: object
+          properties:
+            all:
+              type: string
+            css:
+              type: string
+            data:
+              type: string
+            js:
+              type: string
+            _expandable:
+              type: object
+              additionalProperties: true
+        superbatch:
+          $ref: '#/components/schemas/SuperBatchWebResources'
+    ContentTemplateUpdate:
+      required:
+      - body
+      - name
+      - templateId
+      - templateType
+      type: object
+      additionalProperties: true
+      properties:
+        templateId:
+          type: string
+          description: The ID of the template being updated.
+        name:
+          type: string
+          description: 'The name of the template. Set to the current `name` if this field is
+
+            not being updated.'
+        templateType:
+          type: string
+          description: The type of the template. Set to `page`.
+          enum:
+          - page
+        body:
+          $ref: '#/components/schemas/ContentTemplateBodyCreate'
+        description:
+          maxLength: 100
+          type: string
+          description: A description of the template.
+        labels:
+          type: array
+          description: Labels for the template.
+          items:
+            $ref: '#/components/schemas/Label'
+        space:
+          required:
+          - key
+          type: object
+          additionalProperties: true
+          nullable: true
+          properties:
+            key:
+              type: string
+          description: 'The key for the space of the template. Required if the template is a
+
+            space template. Set this to the current `space.key`.'
+      description: This object is used to update content templates.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

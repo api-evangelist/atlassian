@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Inheritance API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Inheritance
+paths:
+  /repositories/{workspace}/{repo_slug}/override-settings:
+    parameters:
+    - name: repo_slug
+      in: path
+      description: 'This can either be the repository slug or the UUID of the repository,
+
+        surrounded by curly-braces, for example: `{repository UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    - name: workspace
+      in: path
+      description: 'This can either be the workspace ID (slug) or the workspace UUID
+
+        surrounded by curly-braces, for example: `{workspace UUID}`.
+
+        '
+      required: true
+      schema:
+        type: string
+    get:
+      tags:
+      - Inheritance
+      description: This API operation retrieves the inheritance state configuration for settings within a specific Bitbucket repository. By making a GET request to the endpoint with the workspace identifier and repository slug, you can determine which repository settings are being inherited from the project level versus those that have been explicitly overridden at the repository level. This is particularly useful for administrators who need to understand the configuration hierarchy and manage settings inheritance across their Bitbucket workspace, allowing them to see which settings are using default project values and which have custom repository-specific configurations applied.
+      summary: Atlassian Retrieve the Inheritance State for Repository Settings
+      responses:
+        '200':
+          description: The repository setting inheritance state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/repository_inheritance_state'
+              examples:
+                repository-inheritance-state:
+                  $ref: '#/components/examples/repository-inheritance-state'
+        '404':
+          description: If no repository exists at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: retrieveTheInheritanceStateForRepositorySettings
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+        GenerateExampleFromOperationResponseSchema: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    put:
+      tags:
+      - Inheritance
+      description: This API operation allows administrators to configure the inheritance behavior of settings for a specific Bitbucket repository within a workspace. By making a PUT request to this endpoint, users can control whether repository settings should inherit values from the project or workspace level, or use custom overrides specific to that repository. This is particularly useful in organizations that want to enforce certain settings across multiple repositories while allowing selective customization for specific repos. The operation requires specification of both the workspace identifier and the repository slug in the URL path, and the request body typically contains the inheritance configuration that determines which settings should be inherited and which should be overridden at the repository level.
+      summary: Atlassian Set the Inheritance State for Repository Settings
+      responses:
+        '204':
+          description: The repository setting inheritance state was set and no content returned
+        '404':
+          description: If no repository exists at this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+      - oauth2:
+        - repository:admin
+      - basic: []
+      - api_key: []
+      x-atlassian-oauth2-scopes:
+      - state: Current
+        scheme: oauth2
+        scopes:
+        - admin:repository:bitbucket
+      operationId: setTheInheritanceStateForRepositorySettings
+      x-api-evangelist-processing:
+        WriteDescription: true
+        ChooseTags: true
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+components:
+  schemas:
+    repository_inheritance_state:
+      type: object
+      title: Repository Inheritance State
+      description: A json object representing the repository's inheritance state values
+      properties:
+        type:
+          type: string
+          example: example_value
+        override_settings:
+          type: object
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+          example: example_value
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+          example: example_value
+      required:
+      - type
+      additionalProperties: true
+  examples:
+    repository-inheritance-state:
+      type: enabled
+      override_settings:
+        branch_protection: true
+        security_scanning: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

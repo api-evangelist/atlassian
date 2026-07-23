@@ -1,0 +1,403 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Experimental API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Experimental
+paths:
+  /wiki/rest/api/space/{spaceKey}/label:
+    get:
+      tags:
+      - Experimental
+      summary: Atlassian Get Space Labels
+      description: Returns a list of labels associated with a space. Can provide a prefix as well as other filters to<br>select different types of labels.
+      operationId: atlassianGetlabelsforspace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to get labels for.
+        required: true
+        schema:
+          type: string
+      - name: prefix
+        in: query
+        description: 'Filters the results to labels with the specified prefix. If this parameter
+
+          is not specified, then labels with any prefix will be returned.
+
+
+          - `global` prefix is used by labels that are on content within the provided space.
+
+          - `my` prefix can be explicitly added by a user when adding a label
+
+          via the UI, e.g. ''my:example-label''.
+
+          - `team` prefix is used for labels applied to the space.'
+        schema:
+          type: string
+          enum:
+          - global
+          - my
+          - team
+      - name: start
+        in: query
+        description: The starting index of the returned labels.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of labels to return per page. Note,
+
+          this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: Returned if the list of labels is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '404':
+          description: 'Returned if;
+
+            - There is no space with the given space key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-space.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-space.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    post:
+      tags:
+      - Experimental
+      summary: Atlassian Add Labels to a Space
+      description: Adds labels to a piece of content. Does not modify the existing labels.<br><br>Notes:<br><br>- Labels can also be added when creating content ([Create content](#api-content-post)).<br>- Labels can be updated when updating content ([Update content](#api-content-id-put)).<br>This will delete the existing labels and replace them with the labels in<br>the request.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to update the content.
+      operationId: atlassianAddlabelstospace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to add labels to.
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The labels to add to the content.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the labels are added to the content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelArray'
+        '400':
+          description: 'Returned if;
+
+
+            - The body contains labels with invalid characters or too many characters.
+
+            - The body contains too many labels.
+
+            - The target content would contain too many labels after the operation.
+
+            - The calling user does not have permission to edit labels.'
+          content: {}
+        '403':
+          description: Returned if the calling user can view but not edit the content.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+            - There is no space with the given space key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-space
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-space
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:label:confluence
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+    delete:
+      tags:
+      - Experimental
+      summary: Atlassian Remove Label From a Space
+      description: Needs a more full description created.
+      operationId: atlassianDeletelabelfromspace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to remove a labels from.
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: The name of the label to remove
+        required: true
+        schema:
+          type: string
+      - name: prefix
+        in: query
+        description: The prefix of the label to remove. If not provided defaults to global.
+        required: false
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Returned if the label was successfully deleted.
+          content: {}
+        '400':
+          description: 'Returned if;
+
+            - The user does not provide a label name'
+          content: {}
+        '404':
+          description: 'Returned if;
+
+            - There is no space with the given space key.
+
+            - The calling user does not have permission to view the space.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-space
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-space
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:label:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-experimental: true
+      x-atlassian-connect-scope: WRITE
+      x-microcks-operation:
+        delay: 0
+        dispatcher: FALLBACK
+  /wiki/rest/api/content/{id}/pageTree:
+    delete:
+      tags:
+      - Experimental
+      summary: Atlassian Delete Page Tree
+      description: 'Moves a pagetree rooted at a page to the space''s trash:<br><br>- If the content''s type is `page` and its status is `current`, it will be trashed including<br>all its descendants.<br>- For every other combination of content type and status, this API is not supported.<br><br>This API accepts the pageTree delete request and returns a task ID.<br>The delete process happens asynchronously.<br><br> Response example:<br> <br> {<br>      "id" : "1180606",<br>      "links" : {<br>           "status" : "/rest/api/longtask/1180606"<br>      }<br> }<br> <br> Use the `/longtask/` REST API to get the copy task status.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Delete'' permission for the space that the content is in.'
+      operationId: atlassianDeletepagetree
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the content which forms root of the page tree, to be deleted.
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Returned if the request to trash content and all its current page descendants, is successfully accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LongTask'
+        '400':
+          description: Returned if the content id is invalid or id does not represents a 'CURRENT' page.
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: Returned if the calling user can not delete the content with specified id.
+          content: {}
+        '404':
+          description: 'Returned if;
+
+
+            - There is no content with the given ID.
+
+            - The requesting user does not have permission to trash the content or any of it''s descendant pages.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - delete:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: DELETE
+components:
+  schemas:
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          example: []
+        start:
+          type: integer
+          format: int32
+          example: 10
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        size:
+          type: integer
+          format: int32
+          example: 10
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    LabelCreate:
+      required:
+      - name
+      - prefix
+      type: object
+      additionalProperties: true
+      properties:
+        prefix:
+          type: string
+          description: The prefix for the label. `global`, `my` `team`, etc.
+        name:
+          type: string
+          description: The name of the label, which will be shown in the UI.
+    LongTask:
+      required:
+      - id
+      - links
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+        id:
+          type: string
+          description: a unique identifier for the long task
+        links:
+          type: object
+          additionalProperties: true
+          properties:
+            status:
+              type: string
+              description: The URL to retrive status of long task.
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/

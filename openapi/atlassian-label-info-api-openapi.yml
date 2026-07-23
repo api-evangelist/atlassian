@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: Atlassian Admin Account Label Info API
+  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  version: 1.0.0
+  contact:
+    name: Atlassian Developer
+    url: https://developer.atlassian.com/cloud/admin/
+  license:
+    name: Atlassian Developer Terms
+    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
+  x-logo:
+    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+servers:
+- url: https://api.atlassian.com
+  description: Atlassian Cloud API
+security:
+- bearerAuth: []
+- oauth2: []
+tags:
+- name: Label Info
+paths:
+  /wiki/rest/api/label:
+    get:
+      tags:
+      - Label Info
+      summary: Atlassian Get Label Information
+      description: Returns label information and a list of contents associated with the label.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission). Only contents<br>that the user is permitted to view is returned.
+      operationId: atlassianGetalllabelcontent
+      parameters:
+      - name: name
+        in: query
+        description: Name of the label to query.
+        required: true
+        schema:
+          type: string
+          default: null
+      - name: type
+        in: query
+        description: The type of contents that are to be returned.
+        schema:
+          type: string
+          default: null
+          enum:
+          - page
+          - blogpost
+          - attachment
+          - page_template
+      - name: start
+        in: query
+        description: The starting offset for the results.
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: The number of results to be returned.
+        schema:
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: Returned if the query fetches zero or more results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelDetails'
+        '400':
+          description: 'Returned if no label name is provide or
+
+            if content type provided in the query is invalid.'
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to view
+
+            any content including label info.'
+          content: {}
+        '404':
+          description: Returned if the lable name is invalid or if no label is found for a given label.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:label:confluence
+        - read:content:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+components:
+  schemas:
+    LabeledContentPageResponse:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabeledContent'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    LabeledContentType:
+      type: string
+      enum:
+      - page
+      - blogpost
+      - attachment
+      - page_template
+    LabelDetails:
+      required:
+      - label
+      type: object
+      properties:
+        label:
+          $ref: '#/components/schemas/Label'
+        associatedContents:
+          $ref: '#/components/schemas/LabeledContentPageResponse'
+    LabeledContent:
+      required:
+      - contentId
+      - contentType
+      - title
+      type: object
+      properties:
+        contentType:
+          $ref: '#/components/schemas/LabeledContentType'
+        contentId:
+          type: integer
+          format: int64
+        title:
+          type: string
+          description: Title of the content.
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          tokenUrl: https://auth.atlassian.com/oauth/token
+          scopes:
+            read:org:admin: Read organization information.
+            write:org:admin: Modify organization settings.
+            read:user:admin: Read user information.
+            write:user:admin: Modify user accounts.
+            read:policy:admin: Read organization policies.
+            write:policy:admin: Modify organization policies.
+            read:event:admin: Read organization events.
+externalDocs:
+  description: Atlassian Admin REST API Documentation
+  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
