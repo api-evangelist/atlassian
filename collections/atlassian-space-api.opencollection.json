@@ -1,0 +1,286 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Atlassian Admin Account Space API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Space",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Atlassian Create Private Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/_private",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new space that is only visible to the creator. This method is<br>the same as the [Create space](#api-space-post) method with permissions<br>set to the current user only. Note, currently you cannot set space<br>labels when creating a space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Create Space(s)' global permission."
+        },
+        {
+          "info": {
+            "name": "Atlassian Get Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/:spaceKey",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "path",
+                "description": "The key of the space to be returned."
+              },
+              {
+                "name": "expand",
+                "value": "",
+                "type": "query",
+                "description": "A multi-value parameter indicating which properties of the spaces to\nexpand, where:\n\n  - `settings` returns the settings for the space, similar to [Get space settings](#api-space-spaceKey-settings-get).\n  - `metadata` returns the space metadata.\n  - `metadata.labels` returns the space labels, which are used to categorize the space.\n  - `operations` returns the operations for a space, which are used when setting permissions.\n  - `lookAndFeel` returns information about the look and feel of the space, including the color scheme.\n  - `permissions` returns the permissions for the space. Note that this may return permissions for deleted groups,\n  because deleting a group doesn't remove associated space permissions.\n  - `icon` returns information about space icon.\n  - `description` returns the description of the space.\n  - `description.plain` returns the description of the space, the plain format.\n  - `description.view` returns the description of the space, the view format.\n  - `theme` returns information about the space theme.\n  - `homepage` returns information about the space homepage.\n  - `history` returns information about the history of the space."
+              }
+            ]
+          },
+          "docs": "Deprecated, use [Confluence's v2 API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns a space. This includes information like the name, description,<br>and permissions, but not the content in the space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space."
+        },
+        {
+          "info": {
+            "name": "Atlassian Update Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/:spaceKey",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "path",
+                "description": "The key of the space to update."
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates the name, description, or homepage of a space.<br><br>-   For security reasons, permissions cannot be updated via the API and<br>must be changed via the user interface instead.<br>-   Currently you cannot set space labels when updating a space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space."
+        },
+        {
+          "info": {
+            "name": "Atlassian Delete Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/:spaceKey",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "path",
+                "description": "The key of the space to delete."
+              }
+            ]
+          },
+          "docs": "Deletes a space. Note, the space will be deleted in a long running task.<br>Therefore, the space may not be deleted yet when this method has<br>returned. Clients should poll the status link that is returned in the<br>response until the task completes.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space."
+        },
+        {
+          "info": {
+            "name": "Atlassian Get Content for Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/:spaceKey/content",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "path",
+                "description": "The key of the space to be queried for its content."
+              },
+              {
+                "name": "depth",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to content at the root level of the space or all content."
+              },
+              {
+                "name": "expand",
+                "value": "",
+                "type": "query",
+                "description": "A multi-value parameter indicating which properties of the content to expand.\n\n- `childTypes.all` returns whether the content has attachments, comments, or child pages/whiteboards.\nUse this if you only need to check whether the content has children of a particular type.\n- `childTypes.attachment` returns whether the content has attachments.\n- `childTypes.comment` returns whether the content has comments.\n- `childTypes.page` returns whether the content has child pages.\n- `container` returns the space that the content is in. This is the same as the information\nreturned by [Get space](#api-space-spaceKey-get).\n- `metadata.currentuser` returns information about the current user in relation to the content,\nincluding when they last viewed it, modified it, contributed to it, or added it as a favorite.\n- `metadata.properties` returns content properties that have been set via the Confluence REST API.\n- `metadata.labels` returns the labels that have been added to the content.\n- `metadata.frontend` this property is only used by Atlassian.\n- `operations` returns the operations for the content, which are used when setting permissions.\n- `children.page` returns pages that are descendants at the level immediately below the content.\n- `children.attachment` returns all attachments for the content.\n- `children.comment` returns all comments on the content.\n- `restrictions.read.restrictions.user` returns the users that have permission to read the content.\n- `restrictions.read.restrictions.group` returns the groups that have permission to read the content. Note that\nthis may return deleted groups, because deleting a group doesn't remove associated restrictions.\n- `restrictions.update.restrictions.user` returns the users that have permission to update the content.\n- `restrictions.update.restrictions.group` returns the groups that have permission to update the content. Note that\nthis may return deleted groups because deleting a group doesn't remove associated restrictions.\n- `history` returns the history of the content, including the date it was created.\n- `history.lastUpdated` returns information about the most recent update of the content, including\nwho updated it and when it was updated.\n- `history.previousVersion` returns information about the update prior to the current content update.\n- `history.contributors` returns all of the users who have contributed to the content.\n- `history.nextVersion` returns information about the update after to the current content update.\n- `ancestors` returns the parent content, if the content is a page or whiteboard.\n- `body` returns the body of the content in different formats, including the editor format,\nview format, and export format.\n- `body.storage` returns the body of content in storage format.\n- `body.view` returns the body of content in view format.\n- `version` returns information about the most recent update of the content, including who updated it\nand when it was updated.\n- `descendants.page` returns pages that are descendants at any level below the content.\n- `descendants.attachment` returns all attachments for the content, same as `children.attachment`.\n- `descendants.comment` returns all comments on the content, same as `children.comment`.\n- `space` returns the space that the content is in. This is the same as the information returned by\n[Get space](#api-space-spaceKey-get).\n\nIn addition, the following comment-specific expansions can be used:\n- `extensions.inlineProperties` returns inline comment-specific properties.\n- `extensions.resolution` returns the resolution status of each comment."
+              },
+              {
+                "name": "start",
+                "value": "",
+                "type": "query",
+                "description": "The starting index of the returned content."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "The maximum number of content objects to return per page. Note, this\nmay be restricted by fixed system limits."
+              }
+            ]
+          },
+          "docs": "Deprecated, use [Confluence's v2 API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns all content in a space. The returned content is grouped by type<br>(pages then blogposts), then ordered by content ID in ascending order.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space. Note, the returned list will only<br>contain content that the current user has permission to view."
+        },
+        {
+          "info": {
+            "name": "Atlassian Get Content by Type for Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.atlassian.com/wiki/rest/api/space/:spaceKey/content/:type",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "path",
+                "description": "The key of the space to be queried for its content."
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "path",
+                "description": "The type of content to return. `page`, `blogpost`, `<some_customContentType>`."
+              },
+              {
+                "name": "depth",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to content at the root level of the space or all\ncontent."
+              },
+              {
+                "name": "expand",
+                "value": "",
+                "type": "query",
+                "description": "A multi-value parameter indicating which properties of the content to expand.\n\n- `childTypes.all` returns whether the content has attachments, comments, or child pages/whiteboards.\nUse this if you only need to check whether the content has children of a particular type.\n- `childTypes.attachment` returns whether the content has attachments.\n- `childTypes.comment` returns whether the content has comments.\n- `childTypes.page` returns whether the content has child pages.\n- `container` returns the space that the content is in. This is the same as the information\nreturned by [Get space](#api-space-spaceKey-get).\n- `metadata.currentuser` returns information about the current user in relation to the content,\nincluding when they last viewed it, modified it, contributed to it, or added it as a favorite.\n- `metadata.properties` returns content properties that have been set via the Confluence REST API.\n- `metadata.labels` returns the labels that have been added to the content.\n- `metadata.frontend` this property is only used by Atlassian.\n- `operations` returns the operations for the content, which are used when setting permissions.\n- `children.page` returns pages that are descendants at the level immediately below the content.\n- `children.attachment` returns all attachments for the content.\n- `children.comment` returns all comments on the content.\n- `restrictions.read.restrictions.user` returns the users that have permission to read the content.\n- `restrictions.read.restrictions.group` returns the groups that have permission to read the content. Note that\nthis may return deleted groups, because deleting a group doesn't remove associated restrictions.\n- `restrictions.update.restrictions.user` returns the users that have permission to update the content.\n- `restrictions.update.restrictions.group` returns the groups that have permission to update the content. Note that\nthis may return deleted groups because deleting a group doesn't remove associated restrictions.\n- `history` returns the history of the content, including the date it was created.\n- `history.lastUpdated` returns information about the most recent update of the content, including\nwho updated it and when it was updated.\n- `history.previousVersion` returns information about the update prior to the current content update.\n- `history.contributors` returns all of the users who have contributed to the content.\n- `history.nextVersion` returns information about the update after to the current content update.\n- `ancestors` returns the parent content, if the content is a page or whiteboard.\n- `body` returns the body of the content in different formats, including the editor format,\nview format, and export format.\n- `body.storage` returns the body of content in storage format.\n- `body.view` returns the body of content in view format.\n- `version` returns information about the most recent update of the content, including who updated it\nand when it was updated.\n- `descendants.page` returns pages that are descendants at any level below the content.\n- `descendants.attachment` returns all attachments for the content, same as `children.attachment`.\n- `descendants.comment` returns all comments on the content, same as `children.comment`.\n- `space` returns the space that the content is in. This is the same as the information returned by\n[Get space](#api-space-spaceKey-get).\n\nIn addition, the following comment-specific expansions can be used:\n- `extensions.inlineProperties` returns inline comment-specific properties.\n- `extensions.resolution` returns the resolution status of each comment."
+              },
+              {
+                "name": "start",
+                "value": "",
+                "type": "query",
+                "description": "The starting index of the returned content."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "The maximum number of content objects to return per page. Note, this\nmay be restricted by fixed system limits."
+              }
+            ]
+          },
+          "docs": "Deprecated, use [Confluence's v2 API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns all content of a given type, in a space. The returned content is<br>ordered by content ID in ascending order.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'View' permission for the space. Note, the returned list will only<br>contain content that the current user has permission to view."
+        },
+        {
+          "info": {
+            "name": "Atlassian Get Spaces",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.atlassian.com/wiki/rest/api/space",
+            "params": [
+              {
+                "name": "spaceKey",
+                "value": "",
+                "type": "query",
+                "description": "The key of the space to be returned. To return multiple spaces,\nspecify this parameter multiple times with different values."
+              },
+              {
+                "name": "spaceId",
+                "value": "",
+                "type": "query",
+                "description": "The id of the space to be returned. To return multiple spaces,\nspecify this parameter multiple times with different values."
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to spaces based on their type."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to spaces based on their status."
+              },
+              {
+                "name": "label",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to spaces based on their label."
+              },
+              {
+                "name": "favourite",
+                "value": "",
+                "type": "query",
+                "description": "Filter the results to the favourite spaces of the user specified by\n`favouriteUserKey`. Note, 'favourite' spaces are also\nknown as 'saved for later' spaces."
+              },
+              {
+                "name": "favouriteUserKey",
+                "value": "",
+                "type": "query",
+                "description": "The userKey of the user, whose favourite spaces are used to filter\nthe results when using the `favourite` parameter.\n\nLeave blank for the current user. Use [Get user](#api-user-get) to\nget the userKey for a user."
+              },
+              {
+                "name": "expand",
+                "value": "",
+                "type": "query",
+                "description": "A multi-value parameter indicating which properties of the spaces to\nexpand, where:\n\n  - `settings` returns the settings for the space, similar to [Get space settings](#api-space-spaceKey-settings-get).\n  - `metadata` returns the space metadata.\n  - `metadata.labels` returns the space labels, which are used to categorize the space.\n  - `operations` returns the operations for a space, which are used when setting permissions.\n  - `lookAndFeel` returns information about the look and feel of the space, including the color scheme.\n  - `permissions` returns the permissions for the space. Note that this may return permissions for deleted groups,\n  because deleting a group doesn't remove associated space permissions.\n  - `icon` returns information about space icon.\n  - `description` returns the description of the space.\n  - `description.plain` returns the description of the space, the plain format.\n  - `description.view` returns the description of the space, the view format.\n  - `theme` returns information about the space theme.\n  - `homepage` returns information about the space homepage.\n  - `history` returns information about the history of the space."
+              },
+              {
+                "name": "start",
+                "value": "",
+                "type": "query",
+                "description": "The starting index of the returned spaces."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "The maximum number of spaces to return per page. Note, this may be\nrestricted by fixed system limits."
+              }
+            ]
+          },
+          "docs": "Deprecated, use [Confluence's v2 API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).<br><br>Returns all spaces. The returned spaces are ordered alphabetically in<br>ascending order by space key.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission).<br>Note, the returned list will only contain spaces that the current user<br>has permission to view."
+        },
+        {
+          "info": {
+            "name": "Atlassian Create Space",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.atlassian.com/wiki/rest/api/space",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new space. Note, currently you cannot set space labels when<br>creating a space.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Create Space(s)' global permission."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
