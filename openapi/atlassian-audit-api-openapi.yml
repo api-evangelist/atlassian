@@ -1,32 +1,141 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Atlassian Admin Account Audit API
-  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  title: Atlassian The Confluence Cloud REST Audit API
+  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  termsOfService: https://atlassian.com/terms/
   version: 1.0.0
-  contact:
-    name: Atlassian Developer
-    url: https://developer.atlassian.com/cloud/admin/
-  license:
-    name: Atlassian Developer Terms
-    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
-  x-logo:
-    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
 servers:
-- url: https://api.atlassian.com
-  description: Atlassian Cloud API
-security:
-- bearerAuth: []
-- oauth2: []
+- url: //your-domain.atlassian.net
 tags:
 - name: Audit
+  description: ''
 paths:
+  /wiki/rest/api/audit:
+    get:
+      tags:
+      - Audit
+      summary: Atlassian Get Audit Records
+      description: Returns all records in the audit log, optionally for a certain date range.<br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianGetauditrecords
+      parameters:
+      - name: startDate
+        in: query
+        description: 'Filters the results to the records on or after the `startDate`.
+
+          The `startDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        description: 'Filters the results to the records on or before the `endDate`.
+
+          The `endDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        schema:
+          type: string
+      - name: searchString
+        in: query
+        description: 'Filters the results to records that have string property values
+
+          matching the `searchString`.'
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The starting index of the returned records.
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: 'The maximum number of records to return per page.
+
+          Note, this may be restricted by fixed system limits.'
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 1000
+      responses:
+        '200':
+          description: Returned if the requested records are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecordArray'
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to view the audit
+
+            log.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: INACCESSIBLE
+    post:
+      tags:
+      - Audit
+      summary: Atlassian Create Audit Record
+      description: Creates a record in the audit log.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianCreateauditrecord
+      requestBody:
+        description: The record to be created in the audit log.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRecordCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the record is created in the audit log.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditRecord'
+        '400':
+          description: Returned if the `remoteAddress` property is not specified.
+          content: {}
+        '401':
+          description: 'Returned if the authentication credentials are incorrect or missing
+
+            from the request.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:audit-log:confluence
+        - write:audit-log:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:audit-log:confluence
+        - write:audit-log:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: INACCESSIBLE
   /wiki/rest/api/audit/export:
     get:
       tags:
       - Audit
       summary: Atlassian Export Audit Records
-      description: The Export Audit Records operation is a GET endpoint in the Atlassian Confluence Audit API accessible via `/wiki/rest/api/audit/export` that allows administrators to retrieve and download audit log data from their Confluence instance. This endpoint enables users to export audit records in a structured format for compliance, security analysis, archival purposes, or integration with external monitoring and SIEM systems. The operation typically supports filtering parameters to narrow down the audit records by date range, event type, user, or affected content, and returns the data in a downloadable format such as CSV or JSON. This functionality is essential for organizations that need to maintain comprehensive audit trails of user activities, content changes, permission modifications, and system events within their Confluence workspace for regulatory compliance and security auditing requirements.
-      operationId: exportAuditRecords
+      description: Exports audit records as a CSV file or ZIP file.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianExportauditrecords
       parameters:
       - name: startDate
         in: query
@@ -87,110 +196,6 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: INACCESSIBLE
-      x-api-evangelist-processing:
-        PascalCaseOperationSummaries: true
-        CaselCaseOperationIds: true
-        WriteDescription: true
-        ChooseTags: true
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-  /wiki/rest/api/audit/since:
-    get:
-      tags:
-      - Audit
-      summary: Atlassian Get Audit Records for Time Period
-      description: The Atlassian Confluence Audit API endpoint `/wiki/rest/api/audit/since` using the GET method retrieves audit records that have been created since a specified time period. This operation allows administrators and authorized users to query and review system audit logs within a defined timeframe, providing visibility into user actions, system changes, and security-related events that occurred after a particular timestamp. The endpoint is essential for compliance monitoring, security auditing, and tracking changes made to Confluence spaces, pages, and configuration settings over time.
-      operationId: getAuditRecordsForTimePeriod
-      parameters:
-      - name: number
-        in: query
-        description: The number of units for the time period.
-        schema:
-          type: integer
-          format: int64
-          default: 3
-      - name: units
-        in: query
-        description: The unit of time that the time period is measured in.
-        schema:
-          type: string
-          default: MONTHS
-          enum:
-          - NANOS
-          - MICROS
-          - MILLIS
-          - SECONDS
-          - MINUTES
-          - HOURS
-          - HALF_DAYS
-          - DAYS
-          - WEEKS
-          - MONTHS
-          - YEARS
-          - DECADES
-          - CENTURIES
-      - name: searchString
-        in: query
-        description: 'Filters the results to records that have string property values
-
-          matching the `searchString`.'
-        schema:
-          type: string
-      - name: start
-        in: query
-        description: The starting index of the returned records.
-        schema:
-          minimum: 0
-          type: integer
-          format: int32
-          default: 0
-      - name: limit
-        in: query
-        description: 'The maximum number of records to return per page.
-
-          Note, this may be restricted by fixed system limits.'
-        schema:
-          minimum: 0
-          type: integer
-          format: int32
-          default: 1000
-      responses:
-        '200':
-          description: Returned if the requested records are returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuditRecordArray'
-              examples:
-                undefined_2:
-                  $ref: '#/components/examples/undefined_2'
-        '403':
-          description: 'Returned if the calling user does not have permission to view the audit
-
-            log.'
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:audit-log:confluence
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:audit-log:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: INACCESSIBLE
-      x-api-evangelist-processing:
-        PascalCaseOperationSummaries: true
-        CaselCaseOperationIds: true
-        WriteDescription: true
-        ChooseTags: true
-        GenerateExampleFromOperationResponseSchema: true
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
   /wiki/rest/api/audit/retention:
     get:
       tags:
@@ -260,28 +265,41 @@ paths:
       - app-access-rule-exempt: true
       x-codegen-request-body-name: body
       x-atlassian-connect-scope: INACCESSIBLE
-  /wiki/rest/api/audit:
+  /wiki/rest/api/audit/since:
     get:
       tags:
       - Audit
-      summary: Atlassian Get Audit Records
-      description: Returns all records in the audit log, optionally for a certain date range.<br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
-      operationId: atlassianGetauditrecords
+      summary: Atlassian Get Audit Records For Time Period
+      description: Returns records from the audit log, for a time period back from the current<br>date. For example, you can use this method to get the last 3 months of records.<br><br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      operationId: atlassianGetauditrecordsfortimeperiod
       parameters:
-      - name: startDate
+      - name: number
         in: query
-        description: 'Filters the results to the records on or after the `startDate`.
-
-          The `startDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
+        description: The number of units for the time period.
+        schema:
+          type: integer
+          format: int64
+          default: 3
+      - name: units
+        in: query
+        description: The unit of time that the time period is measured in.
         schema:
           type: string
-      - name: endDate
-        in: query
-        description: 'Filters the results to the records on or before the `endDate`.
-
-          The `endDate` must be specified as [epoch time](https://www.epochconverter.com/) in milliseconds.'
-        schema:
-          type: string
+          default: MONTHS
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
       - name: searchString
         in: query
         description: 'Filters the results to records that have string property values
@@ -313,12 +331,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuditRecordArray_3'
-        '401':
-          description: 'Returned if the authentication credentials are incorrect or missing
-
-            from the request.'
-          content: {}
+                $ref: '#/components/schemas/AuditRecordArray'
         '403':
           description: 'Returned if the calling user does not have permission to view the audit
 
@@ -336,81 +349,8 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: INACCESSIBLE
-    post:
-      tags:
-      - Audit
-      summary: Atlassian Create Audit Record
-      description: Creates a record in the audit log.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
-      operationId: atlassianCreateauditrecord
-      requestBody:
-        description: The record to be created in the audit log.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuditRecordCreate'
-        required: true
-      responses:
-        '200':
-          description: Returned if the record is created in the audit log.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuditRecord'
-        '400':
-          description: Returned if the `remoteAddress` property is not specified.
-          content: {}
-        '401':
-          description: 'Returned if the authentication credentials are incorrect or missing
-
-            from the request.'
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:audit-log:confluence
-        - write:audit-log:confluence
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:audit-log:confluence
-        - write:audit-log:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-codegen-request-body-name: body
-      x-atlassian-connect-scope: INACCESSIBLE
 components:
   schemas:
-    RetentionPeriod:
-      required:
-      - number
-      - units
-      type: object
-      properties:
-        number:
-          type: integer
-          description: The number of units for the retention period.
-          format: int32
-        units:
-          type: string
-          description: The unit of time that the retention period is measured in.
-          enum:
-          - NANOS
-          - MICROS
-          - MILLIS
-          - SECONDS
-          - MINUTES
-          - HOURS
-          - HALF_DAYS
-          - DAYS
-          - WEEKS
-          - MONTHS
-          - YEARS
-          - DECADES
-          - CENTURIES
-          - MILLENNIA
-          - ERAS
-          - FOREVER
     GenericLinks:
       type: object
       additionalProperties:
@@ -418,31 +358,13 @@ components:
         - type: object
           additionalProperties: true
         - type: string
-    GenericUserKey:
-      type: string
-      nullable: true
-      description: 'This property is no longer available and will be removed from the documentation soon.
+    GenericAccountId:
+      type:
+      - string
+      - 'null'
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
 
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    ChangedValue:
-      required:
-      - name
-      - newValue
-      - oldValue
-      type: object
-      properties:
-        name:
-          type: string
-        oldValue:
-          type: string
-        hiddenOldValue:
-          type: string
-        newValue:
-          type: string
-        hiddenNewValue:
-          type: string
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
     AuditRecord:
       required:
       - affectedObject
@@ -472,8 +394,9 @@ components:
             displayName:
               type: string
             operations:
-              nullable: true
-              type: object
+              type:
+              - object
+              - 'null'
               properties: {}
             username:
               $ref: '#/components/schemas/GenericUserName'
@@ -517,13 +440,72 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AffectedObject'
-    GenericAccountId:
-      type: string
-      nullable: true
-      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+    GenericUserName:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
 
-        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
-    AuditRecordArray_3:
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    GenericUserKey:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    RetentionPeriod:
+      required:
+      - number
+      - units
+      type: object
+      properties:
+        number:
+          type: integer
+          description: The number of units for the retention period.
+          format: int32
+        units:
+          type: string
+          description: The unit of time that the retention period is measured in.
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+          - MILLENNIA
+          - ERAS
+          - FOREVER
+    ChangedValue:
+      required:
+      - name
+      - newValue
+      - oldValue
+      type: object
+      properties:
+        name:
+          type: string
+        oldValue:
+          type: string
+        hiddenOldValue:
+          type: string
+        newValue:
+          type: string
+        hiddenNewValue:
+          type: string
+    AuditRecordArray:
       required:
       - _links
       - limit
@@ -547,39 +529,16 @@ components:
           format: int32
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    GenericUserName:
-      type: string
-      nullable: true
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    AuditRecordArray:
+    AffectedObject:
       required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
+      - name
+      - objectType
       type: object
       properties:
-        results:
-          example: example_value
-        start:
-          type: integer
-          format: int32
-          example: 10
-        limit:
-          type: integer
-          format: int32
-          example: 10
-        size:
-          type: integer
-          format: int32
-          example: 10
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
+        name:
+          type: string
+        objectType:
+          type: string
     AuditRecordCreate:
       required:
       - remoteAddress
@@ -658,47 +617,166 @@ components:
             space.'
           items:
             $ref: '#/components/schemas/AffectedObject'
-    AffectedObject:
-      required:
-      - name
-      - objectType
-      type: object
-      properties:
-        name:
-          type: string
-        objectType:
-          type: string
-  examples:
-    undefined_2:
-      _links:
-        self: https://api.example.com/resource
-        next: https://api.example.com/resource?start=10
-        base: https://api.example.com
-      limit: 10
-      results: []
-      size: 0
-      start: 0
   securitySchemes:
-    bearerAuth:
+    basicAuth:
       type: http
-      scheme: bearer
-      bearerFormat: API Key
-      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
-    oauth2:
+      description: You can access this resource via basic auth.
+      scheme: basic
+    oAuthDefinitions:
       type: oauth2
-      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      description: This API uses OAuth 2 with the authorizationCode grant flow.
       flows:
         authorizationCode:
           authorizationUrl: https://auth.atlassian.com/authorize
           tokenUrl: https://auth.atlassian.com/oauth/token
           scopes:
-            read:org:admin: Read organization information.
-            write:org:admin: Modify organization settings.
-            read:user:admin: Read user information.
-            write:user:admin: Modify user accounts.
-            read:policy:admin: Read organization policies.
-            write:policy:admin: Modify organization policies.
-            read:event:admin: Read organization events.
+            read:confluence-content.all: Read all content, including content body (expansions permitted). Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            read:confluence-content.permission: Read content permissions.
+            read:confluence-content.summary: Read a summary of the content, which is the content without expansions. Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            write:confluence-content: Permits the creation of pages, blogs, comments and questions.
+            read:confluence-space.summary: Read a summary of space information without expansions.
+            write:confluence-space: Create, update and delete space information.
+            write:confluence-file: Upload attachments.
+            read:confluence-props: Read content properties.
+            write:confluence-props: Write content properties.
+            search:confluence: Search Confluence. Note, APIs using this scope may also return data allowed by read:confluence-space.summary and read:confluence-content.summary. However, this scope is not a substitute for read:confluence-space.summary or read:confluence-content.summary.
+            manage:confluence-configuration: Manage global settings.
+            read:confluence-groups: Read user groups.
+            write:confluence-groups: Create, remove and update user groups.
+            read:confluence-user: Read users.
+            readonly:content.attachment:confluence: Download attachments of a Confluence page or blogpost that you have access to.
+            read:content:confluence: View content.
+            read:content-details:confluence: View content details.
+            write:content:confluence: Create and update content.
+            delete:content:confluence: Delete content.
+            read:space-details:confluence: View space details.
+            read:analytics.content:confluence: View analytics for content.
+            read:audit-log:confluence: View audit records.
+            write:audit-log:confluence: Create audit records.
+            read:configuration:confluence: View Confluence settings.
+            write:configuration:confluence: Update Confluence settings.
+            read:page:confluence: View pages.
+            write:page:confluence: Create and update pages.
+            delete:page:confluence: Delete pages.
+            read:blogpost:confluence: View blogposts.
+            write:blogpost:confluence: Create and update blogposts.
+            delete:blogpost:confluence: Delete blogposts.
+            read:whiteboard:confluence: View whiteboards.
+            write:whiteboard:confluence: Create and update whiteboards.
+            delete:whiteboard:confluence: Delete whiteboards.
+            read:custom-content:confluence: View custom content.
+            write:custom-content:confluence: Create and update custom content.
+            delete:custom-content:confluence: Delete custom content.
+            read:attachment:confluence: View and download content attachments.
+            write:attachment:confluence: Create and update attachments.
+            delete:attachment:confluence: Delete attachments.
+            read:comment:confluence: View comments.
+            write:comment:confluence: Create and update comments.
+            delete:comment:confluence: Delete comments.
+            read:template:confluence: View content templates.
+            write:template:confluence: Create, update and delete content templates.
+            read:label:confluence: View labels.
+            write:label:confluence: Add and remove labels.
+            read:content.permission:confluence: Check content permissions.
+            read:content.property:confluence: View content properties.
+            write:content.property:confluence: Create, update and delete content properties.
+            read:content.restriction:confluence: View content restrictions.
+            write:content.restriction:confluence: Update content restrictions.
+            read:content.metadata:confluence: View content summaries.
+            read:watcher:confluence: View content watchers.
+            write:watcher:confluence: Add and remove content watchers.
+            read:group:confluence: View groups.
+            write:group:confluence: Create and delete groups.
+            read:inlinetask:confluence: View tasks.
+            write:inlinetask:confluence: Update tasks.
+            read:relation:confluence: View entity relationships.
+            write:relation:confluence: Create and update entity relationships.
+            read:space:confluence: View spaces.
+            write:space:confluence: Create and update spaces.
+            delete:space:confluence: Delete spaces.
+            read:space.permission:confluence: View space permissions.
+            write:space.permission:confluence: Update space permissions.
+            read:space.property:confluence: View space properties.
+            write:space.property:confluence: Create, update and delete space properties.
+            read:user.property:confluence: View user properties.
+            write:user.property:confluence: Create, update and delete user properties.
+            read:space.setting:confluence: View space settings.
+            write:space.setting:confluence: Update space settings.
+            read:user:confluence: View user details.
 externalDocs:
-  description: Atlassian Admin REST API Documentation
-  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+x-atlassian-narrative:
+  documents:
+  - title: About
+    anchor: about
+    body: 'This is the reference for the Confluence Cloud REST API. This API is the primary way to get and
+
+      modify data in Confluence Cloud, whether you are developing an app or any other integration.
+
+      Use it to interact with Confluence entities, like pages and blog posts, spaces, users, groups,
+
+      and more.'
+  - title: Authentication and authorization
+    anchor: auth
+    body: '**Authentication:** If you are building a Cloud app, authentication is implemented via JWT or OAuth 2.0, depending on what you are building (see [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/)). Otherwise, if you are authenticating directly against the REST API, the REST API supports basic auth (see [Basic auth for REST APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+      **Authorization:** If you are building a Cloud app, authorization can be implemented by [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by [OAuth 2.0 user impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps). Otherwise, if you are making calls directly against the REST API, authorization is based on the user used in the authentication process.
+
+
+      See [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/) for more details on authentication and authorization.'
+  - title: Status codes
+    anchor: status-code
+    body: "The Confluence REST API uses the [standard HTTP status codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).\n\nResponses that return an error status code will also return a response body, similar to the following:\n```json\n{\n  \"statusCode\": 404,\n  \"data\": {\n    \"authorized\": false,\n    \"valid\": false,\n    \"errors\": [\n      {\n        \"message\": {\n          \"translation\": \"This is an example error message.\",\n          \"args\": []\n        }\n      }\n    ],\n    \"successful\": false\n  },\n  \"message\": \"This is an example error message.\"\n}\n```"
+  - title: Using the REST API
+    anchor: using
+    body: '**Expansion:** The Confluence REST API uses resource expansion: some parts of a resource are not returned unless explicitly specified. This simplifies responses and minimizes network traffic.
+
+
+      To expand part of a resource in a request, use the `expand` query parameter and specify the entities to be expanded. If you need to expand nested entities, use the `.` dot notation. For example, the following request will expand information about the requested content''s space and labels:
+
+      ```
+
+      GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+      ```
+
+      **Pagination:** The Confluence REST API uses pagination: a method that returns a response with multiple objects can only return a limited number at one time. This limits the size of responses and conserves server resources.
+
+
+      Use the ''limit'' and ''start'' query parameters to specify pagination:
+
+
+      - `limit` is the number of objects to return per page. This may be restricted by system limits.
+
+      - `start` is the index of the first item returned in the page of results. The base index is 0.
+
+
+      For example, the following request will return ten content objects, starting from the fifth object.
+
+      ```
+
+      GET /wiki/rest/api/content?start=4&limit=10
+
+      ```
+
+      **Special headers:**
+
+
+      - `X-Atlassian-Token: no-check` request header must be specified for methods
+
+      that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks. This is
+
+      stated in the method description, if required. For more information, see this
+
+      [KB article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).'
+  - title: Capabilities
+    anchor: capabilities
+    body: '**Webhooks:** A webhook is a user-defined callback over HTTP. You can use Confluence webhooks to notify your app or web application when certain events occur in Confluence. For example, when a page is created or updated. To learn more, see [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+      **Content properties:** Content properties are a key-value storage associated with a piece of Confluence content. If you are building an app, this is one form of persistence that you can use. You can use the Confluence REST API to get, update, and delete content properties. To learn more, see [Content properties in the REST API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+      **CQL:** The Confluence Query Language (CQL) allows you to perform complex searches for content using an SQL-like syntax in the `search` resource. To learn more, see [Advanced searching using CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).'

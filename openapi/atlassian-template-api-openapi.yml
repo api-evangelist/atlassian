@@ -1,25 +1,114 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Atlassian Admin Account Template API
-  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  title: Atlassian The Confluence Cloud REST Template API
+  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  termsOfService: https://atlassian.com/terms/
   version: 1.0.0
-  contact:
-    name: Atlassian Developer
-    url: https://developer.atlassian.com/cloud/admin/
-  license:
-    name: Atlassian Developer Terms
-    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
-  x-logo:
-    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
 servers:
-- url: https://api.atlassian.com
-  description: Atlassian Cloud API
-security:
-- bearerAuth: []
-- oauth2: []
+- url: //your-domain.atlassian.net
 tags:
 - name: Template
 paths:
+  /wiki/rest/api/template:
+    put:
+      tags:
+      - Template
+      summary: Atlassian Update Content Template
+      description: Updates a content template. Note, blueprint templates cannot be updated<br>via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to update a space template or 'Confluence Administrator'<br>global permission to update a global template.
+      operationId: atlassianUpdatecontenttemplate
+      requestBody:
+        description: The updated content template.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentTemplateUpdate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the template is updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate'
+        '400':
+          description: Returned if template name is null or an empty string.
+          content: {}
+        '403':
+          description: Returned if the calling user does not have permission.
+          content: {}
+        '404':
+          description: 'Returned if the calling user does not have permission to update the
+
+            template or if the template doesn''t exist.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+        - write:template:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
+    post:
+      tags:
+      - Template
+      summary: Atlassian Create Content Template
+      description: Creates a new content template. Note, blueprint templates cannot be created via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to create a space template or 'Confluence Administrator'<br>global permission to create a global template.
+      operationId: atlassianCreatecontenttemplate
+      requestBody:
+        description: 'The content template to be created.
+
+          The content body must be in ''storage'' format.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentTemplateCreate'
+        required: true
+      responses:
+        '200':
+          description: Returned if the template is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentTemplate'
+        '400':
+          description: Returned if template name is null or an empty string.
+          content: {}
+        '403':
+          description: 'Returned if the calling user does not have permission to create the
+
+            template.'
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:template:confluence
+        - read:content-details:confluence
+        - write:template:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-codegen-request-body-name: body
+      x-atlassian-connect-scope: WRITE
   /wiki/rest/api/template/blueprint:
     get:
       tags:
@@ -98,9 +187,6 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
   /wiki/rest/api/template/page:
     get:
       tags:
@@ -179,9 +265,6 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
   /wiki/rest/api/template/{contentTemplateId}:
     get:
       tags:
@@ -228,9 +311,6 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
     delete:
       tags:
       - Template
@@ -271,209 +351,8 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: DELETE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-  /wiki/rest/api/template:
-    put:
-      tags:
-      - Template
-      summary: Atlassian Update Content Template
-      description: Updates a content template. Note, blueprint templates cannot be updated<br>via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to update a space template or 'Confluence Administrator'<br>global permission to update a global template.
-      operationId: atlassianUpdatecontenttemplate
-      requestBody:
-        description: The updated content template.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ContentTemplateUpdate'
-        required: true
-      responses:
-        '200':
-          description: Returned if the template is updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContentTemplate_3'
-        '400':
-          description: Returned if template name is null or an empty string.
-          content: {}
-        '403':
-          description: Returned if the calling user does not have permission.
-          content: {}
-        '404':
-          description: 'Returned if the calling user does not have permission to update the
-
-            template or if the template doesn''t exist.'
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - read:template:confluence
-        - read:content-details:confluence
-        - write:template:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-codegen-request-body-name: body
-      x-atlassian-connect-scope: WRITE
-    post:
-      tags:
-      - Template
-      summary: Atlassian Create Content Template
-      description: Creates a new content template. Note, blueprint templates cannot be created via the REST API.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Admin' permission for the space to create a space template or 'Confluence Administrator'<br>global permission to create a global template.
-      operationId: atlassianCreatecontenttemplate
-      requestBody:
-        description: 'The content template to be created.
-
-          The content body must be in ''storage'' format.'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ContentTemplateCreate'
-        required: true
-      responses:
-        '200':
-          description: Returned if the template is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContentTemplate_3'
-        '400':
-          description: Returned if template name is null or an empty string.
-          content: {}
-        '403':
-          description: 'Returned if the calling user does not have permission to create the
-
-            template.'
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - read:template:confluence
-        - read:content-details:confluence
-        - write:template:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-codegen-request-body-name: body
-      x-atlassian-connect-scope: WRITE
 components:
   schemas:
-    ContentTemplate:
-      required:
-      - _links
-      - description
-      - labels
-      - name
-      - templateId
-      - templateType
-      type: object
-      properties:
-        templateId:
-          type: string
-          example: '500123'
-        originalTemplate:
-          type: object
-          properties:
-            pluginKey:
-              type: string
-            moduleKey:
-              type: string
-          example: example_value
-        referencingBlueprint:
-          type: string
-          example: example_value
-        name:
-          type: string
-          example: Example Title
-        description:
-          type: string
-          example: A sample description.
-        space:
-          type: object
-          additionalProperties: true
-          example: example_value
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-          example: []
-        templateType:
-          type: string
-          example: example_value
-        editorVersion:
-          type: string
-          example: example_value
-        body:
-          $ref: '#/components/schemas/ContentTemplateBody'
-        _expandable:
-          type: object
-          properties:
-            body:
-              type: string
-          example: example_value
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    Embeddable:
-      type: object
-      additionalProperties: true
-    ContentTemplateCreate:
-      required:
-      - body
-      - name
-      - templateType
-      type: object
-      additionalProperties: true
-      properties:
-        name:
-          type: string
-          description: The name of the new template.
-        templateType:
-          type: string
-          description: The type of the new template. Set to `page`.
-        body:
-          $ref: '#/components/schemas/ContentTemplateBodyCreate'
-        description:
-          maxLength: 255
-          type: string
-          description: A description of the new template.
-        labels:
-          type: array
-          description: Labels for the new template.
-          items:
-            $ref: '#/components/schemas/Label'
-        space:
-          required:
-          - key
-          type: object
-          additionalProperties: true
-          nullable: true
-          properties:
-            key:
-              type: string
-          description: 'The key for the space of the new template. Only applies to space templates.
-
-            If the spaceKey is not specified, the template will be created as a global
-
-            template.'
-      description: This object is used to create content templates.
     GenericLinks:
       type: object
       additionalProperties:
@@ -481,67 +360,6 @@ components:
         - type: object
           additionalProperties: true
         - type: string
-    ContentTemplateBody:
-      type: object
-      properties:
-        view:
-          $ref: '#/components/schemas/ContentBody'
-        export_view:
-          $ref: '#/components/schemas/ContentBody'
-        styled_view:
-          $ref: '#/components/schemas/ContentBody'
-        storage:
-          $ref: '#/components/schemas/ContentBody'
-        editor:
-          $ref: '#/components/schemas/ContentBody'
-        editor2:
-          $ref: '#/components/schemas/ContentBody'
-        wiki:
-          $ref: '#/components/schemas/ContentBody'
-        atlas_doc_format:
-          $ref: '#/components/schemas/ContentBody'
-        anonymous_export_view:
-          $ref: '#/components/schemas/ContentBody'
-      description: 'The body of the new content. Does not apply to attachments.
-
-        Only one body format should be specified as the property for
-
-        this object, e.g. `storage`.
-
-
-        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
-
-        the same as `export_view` format but only content viewable by an anonymous
-
-        user is included.'
-    BlueprintTemplateArray:
-      required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/BlueprintTemplate'
-          example: []
-        start:
-          type: integer
-          format: int32
-          example: 10
-        limit:
-          type: integer
-          format: int32
-          example: 10
-        size:
-          type: integer
-          format: int32
-          example: 10
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
     SuperBatchWebResources:
       type: object
       properties:
@@ -582,67 +400,6 @@ components:
         _expandable:
           type: object
           additionalProperties: true
-    ContentTemplateBodyCreate:
-      type: object
-      properties:
-        view:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        export_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        styled_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        storage:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        editor:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        editor2:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        wiki:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        atlas_doc_format:
-          $ref: '#/components/schemas/ContentBodyCreate'
-        anonymous_export_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
-      description: 'The body of the new content. Does not apply to attachments.
-
-        Only one body format should be specified as the property for
-
-        this object, e.g. `storage`.
-
-
-        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
-
-        the same as `export_view` format but only content viewable by an anonymous
-
-        user is included.'
-    ContentBodyCreate:
-      required:
-      - representation
-      - value
-      type: object
-      additionalProperties: true
-      properties:
-        value:
-          type: string
-          description: The body of the content in the relevant format.
-        representation:
-          type: string
-          description: 'The content format type. Set the value of this property to
-
-            the name of the format being used, e.g. ''storage''.'
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-          - plain
-          - raw
-      description: This object is used when creating or updating content.
     ContentBody:
       required:
       - representation
@@ -750,17 +507,30 @@ components:
               type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    EmbeddedContent:
+    ContentTemplateArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
       type: object
-      additionalProperties: true
       properties:
-        entityId:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentTemplate'
+        start:
           type: integer
-          format: int64
-        entityType:
-          type: string
-        entity:
-          $ref: '#/components/schemas/Embeddable'
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
     Label:
       required:
       - id
@@ -777,79 +547,6 @@ components:
           type: string
         label:
           type: string
-    ContentTemplateArray:
-      required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ContentTemplate'
-          example: []
-        start:
-          type: integer
-          format: int32
-          example: 10
-        limit:
-          type: integer
-          format: int32
-          example: 10
-        size:
-          type: integer
-          format: int32
-          example: 10
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    ContentTemplate_3:
-      required:
-      - _links
-      - description
-      - labels
-      - name
-      - templateId
-      - templateType
-      type: object
-      properties:
-        templateId:
-          type: string
-        originalTemplate:
-          type: object
-          properties:
-            pluginKey:
-              type: string
-            moduleKey:
-              type: string
-        referencingBlueprint:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        space:
-          type: object
-          additionalProperties: true
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        templateType:
-          type: string
-        editorVersion:
-          type: string
-        body:
-          $ref: '#/components/schemas/ContentTemplateBody'
-        _expandable:
-          type: object
-          properties:
-            body:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
     WebResourceDependencies:
       type: object
       properties:
@@ -923,6 +620,120 @@ components:
               additionalProperties: true
         superbatch:
           $ref: '#/components/schemas/SuperBatchWebResources'
+    ContentTemplateBody:
+      type: object
+      properties:
+        view:
+          $ref: '#/components/schemas/ContentBody'
+        export_view:
+          $ref: '#/components/schemas/ContentBody'
+        styled_view:
+          $ref: '#/components/schemas/ContentBody'
+        storage:
+          $ref: '#/components/schemas/ContentBody'
+        editor:
+          $ref: '#/components/schemas/ContentBody'
+        editor2:
+          $ref: '#/components/schemas/ContentBody'
+        wiki:
+          $ref: '#/components/schemas/ContentBody'
+        atlas_doc_format:
+          $ref: '#/components/schemas/ContentBody'
+        anonymous_export_view:
+          $ref: '#/components/schemas/ContentBody'
+      description: 'The body of the new content. Does not apply to attachments.
+
+        Only one body format should be specified as the property for
+
+        this object, e.g. `storage`.
+
+
+        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
+
+        the same as `export_view` format but only content viewable by an anonymous
+
+        user is included.'
+    ContentTemplateBodyCreate:
+      type: object
+      properties:
+        view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        styled_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        storage:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor2:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        wiki:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        atlas_doc_format:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        anonymous_export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+      description: 'The body of the new content. Does not apply to attachments.
+
+        Only one body format should be specified as the property for
+
+        this object, e.g. `storage`.
+
+
+        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
+
+        the same as `export_view` format but only content viewable by an anonymous
+
+        user is included.'
+    Embeddable:
+      type: object
+      additionalProperties: true
+    ContentTemplate:
+      required:
+      - _links
+      - description
+      - labels
+      - name
+      - templateId
+      - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+        originalTemplate:
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
     ContentTemplateUpdate:
       required:
       - body
@@ -959,9 +770,10 @@ components:
         space:
           required:
           - key
-          type: object
+          type:
+          - object
+          - 'null'
           additionalProperties: true
-          nullable: true
           properties:
             key:
               type: string
@@ -969,27 +781,270 @@ components:
 
             space template. Set this to the current `space.key`.'
       description: This object is used to update content templates.
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    BlueprintTemplateArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintTemplate'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentTemplateCreate:
+      required:
+      - body
+      - name
+      - templateType
+      type: object
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+          description: The name of the new template.
+        templateType:
+          type: string
+          description: The type of the new template. Set to `page`.
+        body:
+          $ref: '#/components/schemas/ContentTemplateBodyCreate'
+        description:
+          maxLength: 255
+          type: string
+          description: A description of the new template.
+        labels:
+          type: array
+          description: Labels for the new template.
+          items:
+            $ref: '#/components/schemas/Label'
+        space:
+          required:
+          - key
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          properties:
+            key:
+              type: string
+          description: 'The key for the space of the new template. Only applies to space templates.
+
+            If the spaceKey is not specified, the template will be created as a global
+
+            template.'
+      description: This object is used to create content templates.
+    ContentBodyCreate:
+      required:
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+          description: The body of the content in the relevant format.
+        representation:
+          type: string
+          description: 'The content format type. Set the value of this property to
+
+            the name of the format being used, e.g. ''storage''.'
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - plain
+          - raw
+      description: This object is used when creating or updating content.
   securitySchemes:
-    bearerAuth:
+    basicAuth:
       type: http
-      scheme: bearer
-      bearerFormat: API Key
-      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
-    oauth2:
+      description: You can access this resource via basic auth.
+      scheme: basic
+    oAuthDefinitions:
       type: oauth2
-      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      description: This API uses OAuth 2 with the authorizationCode grant flow.
       flows:
         authorizationCode:
           authorizationUrl: https://auth.atlassian.com/authorize
           tokenUrl: https://auth.atlassian.com/oauth/token
           scopes:
-            read:org:admin: Read organization information.
-            write:org:admin: Modify organization settings.
-            read:user:admin: Read user information.
-            write:user:admin: Modify user accounts.
-            read:policy:admin: Read organization policies.
-            write:policy:admin: Modify organization policies.
-            read:event:admin: Read organization events.
+            read:confluence-content.all: Read all content, including content body (expansions permitted). Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            read:confluence-content.permission: Read content permissions.
+            read:confluence-content.summary: Read a summary of the content, which is the content without expansions. Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            write:confluence-content: Permits the creation of pages, blogs, comments and questions.
+            read:confluence-space.summary: Read a summary of space information without expansions.
+            write:confluence-space: Create, update and delete space information.
+            write:confluence-file: Upload attachments.
+            read:confluence-props: Read content properties.
+            write:confluence-props: Write content properties.
+            search:confluence: Search Confluence. Note, APIs using this scope may also return data allowed by read:confluence-space.summary and read:confluence-content.summary. However, this scope is not a substitute for read:confluence-space.summary or read:confluence-content.summary.
+            manage:confluence-configuration: Manage global settings.
+            read:confluence-groups: Read user groups.
+            write:confluence-groups: Create, remove and update user groups.
+            read:confluence-user: Read users.
+            readonly:content.attachment:confluence: Download attachments of a Confluence page or blogpost that you have access to.
+            read:content:confluence: View content.
+            read:content-details:confluence: View content details.
+            write:content:confluence: Create and update content.
+            delete:content:confluence: Delete content.
+            read:space-details:confluence: View space details.
+            read:analytics.content:confluence: View analytics for content.
+            read:audit-log:confluence: View audit records.
+            write:audit-log:confluence: Create audit records.
+            read:configuration:confluence: View Confluence settings.
+            write:configuration:confluence: Update Confluence settings.
+            read:page:confluence: View pages.
+            write:page:confluence: Create and update pages.
+            delete:page:confluence: Delete pages.
+            read:blogpost:confluence: View blogposts.
+            write:blogpost:confluence: Create and update blogposts.
+            delete:blogpost:confluence: Delete blogposts.
+            read:whiteboard:confluence: View whiteboards.
+            write:whiteboard:confluence: Create and update whiteboards.
+            delete:whiteboard:confluence: Delete whiteboards.
+            read:custom-content:confluence: View custom content.
+            write:custom-content:confluence: Create and update custom content.
+            delete:custom-content:confluence: Delete custom content.
+            read:attachment:confluence: View and download content attachments.
+            write:attachment:confluence: Create and update attachments.
+            delete:attachment:confluence: Delete attachments.
+            read:comment:confluence: View comments.
+            write:comment:confluence: Create and update comments.
+            delete:comment:confluence: Delete comments.
+            read:template:confluence: View content templates.
+            write:template:confluence: Create, update and delete content templates.
+            read:label:confluence: View labels.
+            write:label:confluence: Add and remove labels.
+            read:content.permission:confluence: Check content permissions.
+            read:content.property:confluence: View content properties.
+            write:content.property:confluence: Create, update and delete content properties.
+            read:content.restriction:confluence: View content restrictions.
+            write:content.restriction:confluence: Update content restrictions.
+            read:content.metadata:confluence: View content summaries.
+            read:watcher:confluence: View content watchers.
+            write:watcher:confluence: Add and remove content watchers.
+            read:group:confluence: View groups.
+            write:group:confluence: Create and delete groups.
+            read:inlinetask:confluence: View tasks.
+            write:inlinetask:confluence: Update tasks.
+            read:relation:confluence: View entity relationships.
+            write:relation:confluence: Create and update entity relationships.
+            read:space:confluence: View spaces.
+            write:space:confluence: Create and update spaces.
+            delete:space:confluence: Delete spaces.
+            read:space.permission:confluence: View space permissions.
+            write:space.permission:confluence: Update space permissions.
+            read:space.property:confluence: View space properties.
+            write:space.property:confluence: Create, update and delete space properties.
+            read:user.property:confluence: View user properties.
+            write:user.property:confluence: Create, update and delete user properties.
+            read:space.setting:confluence: View space settings.
+            write:space.setting:confluence: Update space settings.
+            read:user:confluence: View user details.
 externalDocs:
-  description: Atlassian Admin REST API Documentation
-  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+x-atlassian-narrative:
+  documents:
+  - title: About
+    anchor: about
+    body: 'This is the reference for the Confluence Cloud REST API. This API is the primary way to get and
+
+      modify data in Confluence Cloud, whether you are developing an app or any other integration.
+
+      Use it to interact with Confluence entities, like pages and blog posts, spaces, users, groups,
+
+      and more.'
+  - title: Authentication and authorization
+    anchor: auth
+    body: '**Authentication:** If you are building a Cloud app, authentication is implemented via JWT or OAuth 2.0, depending on what you are building (see [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/)). Otherwise, if you are authenticating directly against the REST API, the REST API supports basic auth (see [Basic auth for REST APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+      **Authorization:** If you are building a Cloud app, authorization can be implemented by [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by [OAuth 2.0 user impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps). Otherwise, if you are making calls directly against the REST API, authorization is based on the user used in the authentication process.
+
+
+      See [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/) for more details on authentication and authorization.'
+  - title: Status codes
+    anchor: status-code
+    body: "The Confluence REST API uses the [standard HTTP status codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).\n\nResponses that return an error status code will also return a response body, similar to the following:\n```json\n{\n  \"statusCode\": 404,\n  \"data\": {\n    \"authorized\": false,\n    \"valid\": false,\n    \"errors\": [\n      {\n        \"message\": {\n          \"translation\": \"This is an example error message.\",\n          \"args\": []\n        }\n      }\n    ],\n    \"successful\": false\n  },\n  \"message\": \"This is an example error message.\"\n}\n```"
+  - title: Using the REST API
+    anchor: using
+    body: '**Expansion:** The Confluence REST API uses resource expansion: some parts of a resource are not returned unless explicitly specified. This simplifies responses and minimizes network traffic.
+
+
+      To expand part of a resource in a request, use the `expand` query parameter and specify the entities to be expanded. If you need to expand nested entities, use the `.` dot notation. For example, the following request will expand information about the requested content''s space and labels:
+
+      ```
+
+      GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+      ```
+
+      **Pagination:** The Confluence REST API uses pagination: a method that returns a response with multiple objects can only return a limited number at one time. This limits the size of responses and conserves server resources.
+
+
+      Use the ''limit'' and ''start'' query parameters to specify pagination:
+
+
+      - `limit` is the number of objects to return per page. This may be restricted by system limits.
+
+      - `start` is the index of the first item returned in the page of results. The base index is 0.
+
+
+      For example, the following request will return ten content objects, starting from the fifth object.
+
+      ```
+
+      GET /wiki/rest/api/content?start=4&limit=10
+
+      ```
+
+      **Special headers:**
+
+
+      - `X-Atlassian-Token: no-check` request header must be specified for methods
+
+      that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks. This is
+
+      stated in the method description, if required. For more information, see this
+
+      [KB article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).'
+  - title: Capabilities
+    anchor: capabilities
+    body: '**Webhooks:** A webhook is a user-defined callback over HTTP. You can use Confluence webhooks to notify your app or web application when certain events occur in Confluence. For example, when a page is created or updated. To learn more, see [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+      **Content properties:** Content properties are a key-value storage associated with a piece of Confluence content. If you are building an app, this is one form of persistence that you can use. You can use the Confluence REST API to get, update, and delete content properties. To learn more, see [Content properties in the REST API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+      **CQL:** The Confluence Query Language (CQL) allows you to perform complex searches for content using an SQL-like syntax in the `search` resource. To learn more, see [Advanced searching using CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).'

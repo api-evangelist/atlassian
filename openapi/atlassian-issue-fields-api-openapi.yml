@@ -1,25 +1,113 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Atlassian Admin Account Issue Fields API
-  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
-  version: 1.0.0
   contact:
-    name: Atlassian Developer
-    url: https://developer.atlassian.com/cloud/admin/
+    email: ecosystem@atlassian.com
+  description: Jira Cloud platform REST API documentation
   license:
-    name: Atlassian Developer Terms
-    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
-  x-logo:
-    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://atlassian.com/terms/
+  title: Atlassian The Jira Cloud platform REST Issue Fields API
+  version: 1001.0.0-SNAPSHOT-67b5c6e5f3598d7ec1649016d026468ab2838a77
 servers:
-- url: https://api.atlassian.com
-  description: Atlassian Cloud API
-security:
-- bearerAuth: []
-- oauth2: []
+- url: https://your-domain.atlassian.net
 tags:
 - name: Issue Fields
 paths:
+  /rest/api/3/field:
+    get:
+      deprecated: false
+      description: Returns system and custom issue fields according to the following rules:<br><br> *  Fields that cannot be added to the issue navigator are always returned.<br> *  Fields that cannot be placed on an issue screen are always returned.<br> *  Fields that depend on global Jira settings are only returned if the setting is enabled. That is, timetracking fields, subtasks, votes, and watches.<br> *  For all other fields, this operation only returns the fields that the user has permission to view (that is, the field is used in at least one project that the user has *Browse Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for.)<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
+      operationId: atlassianGetfields
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '[{"clauseNames":["description"],"custom":false,"id":"description","name":"Description","navigable":true,"orderable":true,"schema":{"system":"description","type":"string"},"searchable":true},{"clauseNames":["summary"],"custom":false,"id":"summary","key":"summary","name":"Summary","navigable":true,"orderable":true,"schema":{"system":"summary","type":"string"},"searchable":true}]'
+              schema:
+                items:
+                  $ref: '#/components/schemas/FieldDetails'
+                type: array
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Fields
+      tags:
+      - Issue Fields
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        - read:avatar:jira
+        - read:project-category:jira
+        - read:project:jira
+        - read:field-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: Creates a custom field.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      operationId: atlassianCreatecustomfield
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: Custom field for picking groups
+              name: New custom field
+              searcherKey: com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
+              type: com.atlassian.jira.plugin.system.customfieldtypes:grouppicker
+            schema:
+              $ref: '#/components/schemas/CustomFieldDefinitionJsonBean'
+        description: Definition of the custom field to be created
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              example: '{"clauseNames":["cf[10101]","New custom field"],"custom":true,"id":"customfield_10101","key":"customfield_10101","name":"New custom field","navigable":true,"orderable":true,"schema":{"custom":"com.atlassian.jira.plugin.system.customfieldtypes:project","customId":10101,"type":"project"},"searchable":true,"untranslatedName":"New custom field"}'
+              schema:
+                $ref: '#/components/schemas/FieldDetails'
+          description: Returned if the custom field is created.
+        '400':
+          description: "Returned if:\n\n *  the user does not have permission to create custom fields.\n *  any of the request object properties have invalid or missing values."
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      - {}
+      summary: Atlassian Create Custom Field
+      tags:
+      - Issue Fields
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - write:field:jira
+        - read:avatar:jira
+        - read:field:jira
+        - read:project-category:jira
+        - read:project:jira
+        - read:field-configuration:jira
+        state: Beta
+      x-atlassian-connect-scope: ADMIN
   /rest/api/3/field/search:
     get:
       deprecated: false
@@ -551,135 +639,25 @@ paths:
         - delete:field:jira
         state: Beta
       x-atlassian-connect-scope: ADMIN
-  /rest/api/3/field:
-    get:
-      deprecated: false
-      description: Returns system and custom issue fields according to the following rules:<br><br> *  Fields that cannot be added to the issue navigator are always returned.<br> *  Fields that cannot be placed on an issue screen are always returned.<br> *  Fields that depend on global Jira settings are only returned if the setting is enabled. That is, timetracking fields, subtasks, votes, and watches.<br> *  For all other fields, this operation only returns the fields that the user has permission to view (that is, the field is used in at least one project that the user has *Browse Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for.)<br><br>This operation can be accessed anonymously.<br><br>**[Permissions](#permissions) required:** None.
-      operationId: atlassianGetfields
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              example: '[{"clauseNames":["description"],"custom":false,"id":"description","name":"Description","navigable":true,"orderable":true,"schema":{"system":"description","type":"string"},"searchable":true},{"clauseNames":["summary"],"custom":false,"id":"summary","key":"summary","name":"Summary","navigable":true,"orderable":true,"schema":{"system":"summary","type":"string"},"searchable":true}]'
-              schema:
-                items:
-                  $ref: '#/components/schemas/FieldDetails'
-                type: array
-          description: Returned if the request is successful.
-        '401':
-          description: Returned if the authentication credentials are incorrect or missing.
-      security:
-      - basicAuth: []
-      - OAuth2:
-        - read:jira-work
-      - {}
-      summary: Atlassian Get Fields
-      tags:
-      - Issue Fields
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-oauth2-scopes:
-      - scheme: OAuth2
-        scopes:
-        - read:jira-work
-        state: Current
-      - scheme: OAuth2
-        scopes:
-        - read:field:jira
-        - read:avatar:jira
-        - read:project-category:jira
-        - read:project:jira
-        - read:field-configuration:jira
-        state: Beta
-      x-atlassian-connect-scope: READ
-    post:
-      deprecated: false
-      description: Creates a custom field.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
-      operationId: atlassianCreatecustomfield
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            example:
-              description: Custom field for picking groups
-              name: New custom field
-              searcherKey: com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
-              type: com.atlassian.jira.plugin.system.customfieldtypes:grouppicker
-            schema:
-              $ref: '#/components/schemas/CustomFieldDefinitionJsonBean'
-        description: Definition of the custom field to be created
-        required: true
-      responses:
-        '201':
-          content:
-            application/json:
-              example: '{"clauseNames":["cf[10101]","New custom field"],"custom":true,"id":"customfield_10101","key":"customfield_10101","name":"New custom field","navigable":true,"orderable":true,"schema":{"custom":"com.atlassian.jira.plugin.system.customfieldtypes:project","customId":10101,"type":"project"},"searchable":true,"untranslatedName":"New custom field"}'
-              schema:
-                $ref: '#/components/schemas/FieldDetails'
-          description: Returned if the custom field is created.
-        '400':
-          description: "Returned if:\n\n *  the user does not have permission to create custom fields.\n *  any of the request object properties have invalid or missing values."
-      security:
-      - basicAuth: []
-      - OAuth2:
-        - manage:jira-configuration
-      - {}
-      summary: Atlassian Create Custom Field
-      tags:
-      - Issue Fields
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-oauth2-scopes:
-      - scheme: OAuth2
-        scopes:
-        - manage:jira-configuration
-        state: Current
-      - scheme: OAuth2
-        scopes:
-        - write:field:jira
-        - read:avatar:jira
-        - read:field:jira
-        - read:project-category:jira
-        - read:project:jira
-        - read:field-configuration:jira
-        state: Beta
-      x-atlassian-connect-scope: ADMIN
 components:
   schemas:
-    JsonTypeBean:
+    Context:
       additionalProperties: false
-      description: The schema of a field.
+      description: A context.
       properties:
-        configuration:
-          additionalProperties:
-            readOnly: true
-          description: If the field is a custom field, the configuration of the field.
-          readOnly: true
-          type: object
-        custom:
-          description: If the field is a custom field, the URI of the field.
-          readOnly: true
-          type: string
-        customId:
-          description: If the field is a custom field, the custom ID of the field.
+        id:
+          description: The ID of the context.
           format: int64
           readOnly: true
           type: integer
-        items:
-          description: When the data type is an array, the name of the field items within the array.
+        name:
+          description: The name of the context.
           readOnly: true
           type: string
-        system:
-          description: If the field is a system field, the name of the field.
-          readOnly: true
-          type: string
-        type:
-          description: The data type of the field.
-          readOnly: true
-          type: string
-      required:
-      - type
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope of the context.
       type: object
     AvatarUrlsBean:
       additionalProperties: false
@@ -747,48 +725,6 @@ components:
       - name
       - schema
       type: object
-    FieldDetails:
-      additionalProperties: false
-      description: Details about a field.
-      properties:
-        clauseNames:
-          description: The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        custom:
-          description: Whether the field is a custom field.
-          type: boolean
-        id:
-          description: The ID of the field.
-          type: string
-        key:
-          description: The key of the field.
-          type: string
-        name:
-          description: The name of the field.
-          type: string
-        navigable:
-          description: Whether the field can be used as a column on the issue navigator.
-          type: boolean
-        orderable:
-          description: Whether the content of the field can be used to order lists.
-          type: boolean
-        schema:
-          allOf:
-          - $ref: '#/components/schemas/JsonTypeBean'
-          description: The data schema for the field.
-        scope:
-          allOf:
-          - $ref: '#/components/schemas/Scope'
-          description: The scope of the field.
-        searchable:
-          description: Whether the content of the field can be searched.
-          type: boolean
-      type: object
-      xml:
-        name: field
     Scope:
       additionalProperties: true
       description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
@@ -806,23 +742,202 @@ components:
           readOnly: true
           type: string
       type: object
-    Context:
+    PageBeanField:
       additionalProperties: false
-      description: A context.
+      description: A page of items.
       properties:
-        id:
-          description: The ID of the context.
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
           format: int64
           readOnly: true
           type: integer
-        name:
-          description: The name of the context.
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/Field'
+          readOnly: true
+          type: array
+      type: object
+    PageBeanContext:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
           readOnly: true
           type: string
-        scope:
-          allOf:
-          - $ref: '#/components/schemas/Scope'
-          description: The scope of the context.
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/Context'
+          readOnly: true
+          type: array
+      type: object
+    UpdateCustomFieldDetails:
+      additionalProperties: false
+      description: Details of a custom field.
+      properties:
+        description:
+          description: The description of the custom field. The maximum length is 40000 characters.
+          type: string
+        name:
+          description: The name of the custom field. It doesn't have to be unique. The maximum length is 255 characters.
+          type: string
+        searcherKey:
+          description: "The searcher that defines the way the field is searched in Jira. It can be set to `null`, otherwise you must specify the valid searcher for the field type, as listed below (abbreviated values shown):\n\n *  `cascadingselect`: `cascadingselectsearcher`\n *  `datepicker`: `daterange`\n *  `datetime`: `datetimerange`\n *  `float`: `exactnumber` or `numberrange`\n *  `grouppicker`: `grouppickersearcher`\n *  `importid`: `exactnumber` or `numberrange`\n *  `labels`: `labelsearcher`\n *  `multicheckboxes`: `multiselectsearcher`\n *  `multigrouppicker`: `multiselectsearcher`\n *  `multiselect`: `multiselectsearcher`\n *  `multiuserpicker`: `userpickergroupsearcher`\n *  `multiversion`: `versionsearcher`\n *  `project`: `projectsearcher`\n *  `radiobuttons`: `multiselectsearcher`\n *  `readonlyfield`: `textsearcher`\n *  `select`: `multiselectsearcher`\n *  `textarea`: `textsearcher`\n *  `textfield`: `textsearcher`\n *  `url`: `exacttextsearcher`\n *  `userpicker`: `userpickergroupsearcher`\n *  `version`: `versionsearcher`"
+          enum:
+          - com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:daterange
+          - com.atlassian.jira.plugin.system.customfieldtypes:datetimerange
+          - com.atlassian.jira.plugin.system.customfieldtypes:exactnumber
+          - com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:labelsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:numberrange
+          - com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:textsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher
+          type: string
+      type: object
+      writeOnly: true
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    CustomFieldDefinitionJsonBean:
+      additionalProperties: false
+      properties:
+        description:
+          description: The description of the custom field, which is displayed in Jira.
+          type: string
+        name:
+          description: The name of the custom field, which is displayed in Jira. This is not the unique identifier.
+          type: string
+        searcherKey:
+          description: "The searcher defines the way the field is searched in Jira. For example, *com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher*.  \nThe search UI (basic search and JQL search) will display different operations and values for the field, based on the field searcher. You must specify a searcher that is valid for the field type, as listed below (abbreviated values shown):\n\n *  `cascadingselect`: `cascadingselectsearcher`\n *  `datepicker`: `daterange`\n *  `datetime`: `datetimerange`\n *  `float`: `exactnumber` or `numberrange`\n *  `grouppicker`: `grouppickersearcher`\n *  `importid`: `exactnumber` or `numberrange`\n *  `labels`: `labelsearcher`\n *  `multicheckboxes`: `multiselectsearcher`\n *  `multigrouppicker`: `multiselectsearcher`\n *  `multiselect`: `multiselectsearcher`\n *  `multiuserpicker`: `userpickergroupsearcher`\n *  `multiversion`: `versionsearcher`\n *  `project`: `projectsearcher`\n *  `radiobuttons`: `multiselectsearcher`\n *  `readonlyfield`: `textsearcher`\n *  `select`: `multiselectsearcher`\n *  `textarea`: `textsearcher`\n *  `textfield`: `textsearcher`\n *  `url`: `exacttextsearcher`\n *  `userpicker`: `userpickergroupsearcher`\n *  `version`: `versionsearcher`\n\nIf no searcher is provided, the field isn't searchable. However, [Forge custom fields](https://developer.atlassian.com/platform/forge/manifest-reference/modules/#jira-custom-field-type--beta-) have a searcher set automatically, so are always searchable."
+          enum:
+          - com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:daterange
+          - com.atlassian.jira.plugin.system.customfieldtypes:datetimerange
+          - com.atlassian.jira.plugin.system.customfieldtypes:exactnumber
+          - com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:labelsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:numberrange
+          - com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:textsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher
+          - com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher
+          type: string
+        type:
+          description: "The type of the custom field. These built-in custom field types are available:\n\n *  `cascadingselect`: Enables values to be selected from two levels of select lists (value: `com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect`)\n *  `datepicker`: Stores a date using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:datepicker`)\n *  `datetime`: Stores a date with a time component (value: `com.atlassian.jira.plugin.system.customfieldtypes:datetime`)\n *  `float`: Stores and validates a numeric (floating point) input (value: `com.atlassian.jira.plugin.system.customfieldtypes:float`)\n *  `grouppicker`: Stores a user group using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:grouppicker`)\n *  `importid`: A read-only field that stores the ID the issue had in the system it was imported from (value: `com.atlassian.jira.plugin.system.customfieldtypes:importid`)\n *  `labels`: Stores labels (value: `com.atlassian.jira.plugin.system.customfieldtypes:labels`)\n *  `multicheckboxes`: Stores multiple values using checkboxes (value: ``)\n *  `multigrouppicker`: Stores multiple user groups using a picker control (value: ``)\n *  `multiselect`: Stores multiple values using a select list (value: `com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes`)\n *  `multiuserpicker`: Stores multiple users using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:multigrouppicker`)\n *  `multiversion`: Stores multiple versions from the versions available in a project using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:multiversion`)\n *  `project`: Stores a project from a list of projects that the user is permitted to view (value: `com.atlassian.jira.plugin.system.customfieldtypes:project`)\n *  `radiobuttons`: Stores a value using radio buttons (value: `com.atlassian.jira.plugin.system.customfieldtypes:radiobuttons`)\n *  `readonlyfield`: Stores a read-only text value, which can only be populated via the API (value: `com.atlassian.jira.plugin.system.customfieldtypes:readonlyfield`)\n *  `select`: Stores a value from a configurable list of options (value: `com.atlassian.jira.plugin.system.customfieldtypes:select`)\n *  `textarea`: Stores a long text string using a multiline text area (value: `com.atlassian.jira.plugin.system.customfieldtypes:textarea`)\n *  `textfield`: Stores a text string using a single-line text box (value: `com.atlassian.jira.plugin.system.customfieldtypes:textfield`)\n *  `url`: Stores a URL (value: `com.atlassian.jira.plugin.system.customfieldtypes:url`)\n *  `userpicker`: Stores a user using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:userpicker`)\n *  `version`: Stores a version using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:version`)\n\nTo create a field based on a [Forge custom field type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/#jira-custom-field-type--beta-), use the ID of the Forge custom field type as the value. For example, `ari:cloud:ecosystem::extension/e62f20a2-4b61-4dbe-bfb9-9a88b5e3ac84/548c5df1-24aa-4f7c-bbbb-3038d947cb05/static/my-cf-type-key`."
+          type: string
+      required:
+      - name
+      - type
+      type: object
+    FieldLastUsed:
+      additionalProperties: false
+      description: Information about the most recent use of a field.
+      properties:
+        type:
+          description: "Last used value type:\n\n *  *TRACKED*: field is tracked and a last used date is available.\n *  *NOT\\_TRACKED*: field is not tracked, last used date is not available.\n *  *NO\\_INFORMATION*: field is tracked, but no last used date is available."
+          enum:
+          - TRACKED
+          - NOT_TRACKED
+          - NO_INFORMATION
+          type: string
+        value:
+          description: The date when the value of the field last changed.
+          format: date-time
+          type: string
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
       type: object
     TaskProgressBeanObject:
       additionalProperties: false
@@ -892,163 +1007,6 @@ components:
       - submitted
       - submittedBy
       type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
-      properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
-    FieldLastUsed:
-      additionalProperties: false
-      description: Information about the most recent use of a field.
-      properties:
-        type:
-          description: "Last used value type:\n\n *  *TRACKED*: field is tracked and a last used date is available.\n *  *NOT\\_TRACKED*: field is not tracked, last used date is not available.\n *  *NO\\_INFORMATION*: field is tracked, but no last used date is available."
-          enum:
-          - TRACKED
-          - NOT_TRACKED
-          - NO_INFORMATION
-          type: string
-        value:
-          description: The date when the value of the field last changed.
-          format: date-time
-          type: string
-      type: object
-    CustomFieldDefinitionJsonBean:
-      additionalProperties: false
-      properties:
-        description:
-          description: The description of the custom field, which is displayed in Jira.
-          type: string
-        name:
-          description: The name of the custom field, which is displayed in Jira. This is not the unique identifier.
-          type: string
-        searcherKey:
-          description: "The searcher defines the way the field is searched in Jira. For example, *com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher*.  \nThe search UI (basic search and JQL search) will display different operations and values for the field, based on the field searcher. You must specify a searcher that is valid for the field type, as listed below (abbreviated values shown):\n\n *  `cascadingselect`: `cascadingselectsearcher`\n *  `datepicker`: `daterange`\n *  `datetime`: `datetimerange`\n *  `float`: `exactnumber` or `numberrange`\n *  `grouppicker`: `grouppickersearcher`\n *  `importid`: `exactnumber` or `numberrange`\n *  `labels`: `labelsearcher`\n *  `multicheckboxes`: `multiselectsearcher`\n *  `multigrouppicker`: `multiselectsearcher`\n *  `multiselect`: `multiselectsearcher`\n *  `multiuserpicker`: `userpickergroupsearcher`\n *  `multiversion`: `versionsearcher`\n *  `project`: `projectsearcher`\n *  `radiobuttons`: `multiselectsearcher`\n *  `readonlyfield`: `textsearcher`\n *  `select`: `multiselectsearcher`\n *  `textarea`: `textsearcher`\n *  `textfield`: `textsearcher`\n *  `url`: `exacttextsearcher`\n *  `userpicker`: `userpickergroupsearcher`\n *  `version`: `versionsearcher`\n\nIf no searcher is provided, the field isn't searchable. However, [Forge custom fields](https://developer.atlassian.com/platform/forge/manifest-reference/modules/#jira-custom-field-type--beta-) have a searcher set automatically, so are always searchable."
-          enum:
-          - com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:daterange
-          - com.atlassian.jira.plugin.system.customfieldtypes:datetimerange
-          - com.atlassian.jira.plugin.system.customfieldtypes:exactnumber
-          - com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:labelsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:numberrange
-          - com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:textsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher
-          type: string
-        type:
-          description: "The type of the custom field. These built-in custom field types are available:\n\n *  `cascadingselect`: Enables values to be selected from two levels of select lists (value: `com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect`)\n *  `datepicker`: Stores a date using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:datepicker`)\n *  `datetime`: Stores a date with a time component (value: `com.atlassian.jira.plugin.system.customfieldtypes:datetime`)\n *  `float`: Stores and validates a numeric (floating point) input (value: `com.atlassian.jira.plugin.system.customfieldtypes:float`)\n *  `grouppicker`: Stores a user group using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:grouppicker`)\n *  `importid`: A read-only field that stores the ID the issue had in the system it was imported from (value: `com.atlassian.jira.plugin.system.customfieldtypes:importid`)\n *  `labels`: Stores labels (value: `com.atlassian.jira.plugin.system.customfieldtypes:labels`)\n *  `multicheckboxes`: Stores multiple values using checkboxes (value: ``)\n *  `multigrouppicker`: Stores multiple user groups using a picker control (value: ``)\n *  `multiselect`: Stores multiple values using a select list (value: `com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes`)\n *  `multiuserpicker`: Stores multiple users using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:multigrouppicker`)\n *  `multiversion`: Stores multiple versions from the versions available in a project using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:multiversion`)\n *  `project`: Stores a project from a list of projects that the user is permitted to view (value: `com.atlassian.jira.plugin.system.customfieldtypes:project`)\n *  `radiobuttons`: Stores a value using radio buttons (value: `com.atlassian.jira.plugin.system.customfieldtypes:radiobuttons`)\n *  `readonlyfield`: Stores a read-only text value, which can only be populated via the API (value: `com.atlassian.jira.plugin.system.customfieldtypes:readonlyfield`)\n *  `select`: Stores a value from a configurable list of options (value: `com.atlassian.jira.plugin.system.customfieldtypes:select`)\n *  `textarea`: Stores a long text string using a multiline text area (value: `com.atlassian.jira.plugin.system.customfieldtypes:textarea`)\n *  `textfield`: Stores a text string using a single-line text box (value: `com.atlassian.jira.plugin.system.customfieldtypes:textfield`)\n *  `url`: Stores a URL (value: `com.atlassian.jira.plugin.system.customfieldtypes:url`)\n *  `userpicker`: Stores a user using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:userpicker`)\n *  `version`: Stores a version using a picker control (value: `com.atlassian.jira.plugin.system.customfieldtypes:version`)\n\nTo create a field based on a [Forge custom field type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/#jira-custom-field-type--beta-), use the ID of the Forge custom field type as the value. For example, `ari:cloud:ecosystem::extension/e62f20a2-4b61-4dbe-bfb9-9a88b5e3ac84/548c5df1-24aa-4f7c-bbbb-3038d947cb05/static/my-cf-type-key`."
-          type: string
-      required:
-      - name
-      - type
-      type: object
-    UpdateCustomFieldDetails:
-      additionalProperties: false
-      description: Details of a custom field.
-      properties:
-        description:
-          description: The description of the custom field. The maximum length is 40000 characters.
-          type: string
-        name:
-          description: The name of the custom field. It doesn't have to be unique. The maximum length is 255 characters.
-          type: string
-        searcherKey:
-          description: "The searcher that defines the way the field is searched in Jira. It can be set to `null`, otherwise you must specify the valid searcher for the field type, as listed below (abbreviated values shown):\n\n *  `cascadingselect`: `cascadingselectsearcher`\n *  `datepicker`: `daterange`\n *  `datetime`: `datetimerange`\n *  `float`: `exactnumber` or `numberrange`\n *  `grouppicker`: `grouppickersearcher`\n *  `importid`: `exactnumber` or `numberrange`\n *  `labels`: `labelsearcher`\n *  `multicheckboxes`: `multiselectsearcher`\n *  `multigrouppicker`: `multiselectsearcher`\n *  `multiselect`: `multiselectsearcher`\n *  `multiuserpicker`: `userpickergroupsearcher`\n *  `multiversion`: `versionsearcher`\n *  `project`: `projectsearcher`\n *  `radiobuttons`: `multiselectsearcher`\n *  `readonlyfield`: `textsearcher`\n *  `select`: `multiselectsearcher`\n *  `textarea`: `textsearcher`\n *  `textfield`: `textsearcher`\n *  `url`: `exacttextsearcher`\n *  `userpicker`: `userpickergroupsearcher`\n *  `version`: `versionsearcher`"
-          enum:
-          - com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:daterange
-          - com.atlassian.jira.plugin.system.customfieldtypes:datetimerange
-          - com.atlassian.jira.plugin.system.customfieldtypes:exactnumber
-          - com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:labelsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:numberrange
-          - com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:textsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher
-          - com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher
-          type: string
-      type: object
-      writeOnly: true
-    PageBeanContext:
-      additionalProperties: false
-      description: A page of items.
-      properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
-          type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/Context'
-          readOnly: true
-          type: array
-      type: object
-    ErrorCollection:
-      additionalProperties: false
-      description: Error messages from an operation.
-      properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
-          items:
-            type: string
-          type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
-          format: int32
-          type: integer
-      type: object
     ProjectDetails:
       additionalProperties: false
       description: Details about a project.
@@ -1091,67 +1049,337 @@ components:
           readOnly: true
           type: boolean
       type: object
-    PageBeanField:
+    JsonTypeBean:
       additionalProperties: false
-      description: A page of items.
+      description: The schema of a field.
       properties:
-        isLast:
-          description: Whether this is the last page.
+        configuration:
+          additionalProperties:
+            readOnly: true
+          description: If the field is a custom field, the configuration of the field.
           readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
+          type: object
+        custom:
+          description: If the field is a custom field, the URI of the field.
           readOnly: true
           type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
-          type: string
-        startAt:
-          description: The index of the first item returned.
+        customId:
+          description: If the field is a custom field, the custom ID of the field.
           format: int64
           readOnly: true
           type: integer
-        total:
-          description: The number of items returned.
-          format: int64
+        items:
+          description: When the data type is an array, the name of the field items within the array.
           readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/Field'
+          type: string
+        system:
+          description: If the field is a system field, the name of the field.
           readOnly: true
-          type: array
+          type: string
+        type:
+          description: The data type of the field.
+          readOnly: true
+          type: string
+      required:
+      - type
       type: object
+    FieldDetails:
+      additionalProperties: false
+      description: Details about a field.
+      properties:
+        clauseNames:
+          description: The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        custom:
+          description: Whether the field is a custom field.
+          type: boolean
+        id:
+          description: The ID of the field.
+          type: string
+        key:
+          description: The key of the field.
+          type: string
+        name:
+          description: The name of the field.
+          type: string
+        navigable:
+          description: Whether the field can be used as a column on the issue navigator.
+          type: boolean
+        orderable:
+          description: Whether the content of the field can be used to order lists.
+          type: boolean
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/JsonTypeBean'
+          description: The data schema for the field.
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope of the field.
+        searchable:
+          description: Whether the content of the field can be searched.
+          type: boolean
+      type: object
+      xml:
+        name: field
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: API Key
-      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
-    oauth2:
-      type: oauth2
-      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+    OAuth2:
+      description: OAuth2 scopes for Jira
       flows:
         authorizationCode:
           authorizationUrl: https://auth.atlassian.com/authorize
-          tokenUrl: https://auth.atlassian.com/oauth/token
           scopes:
-            read:org:admin: Read organization information.
-            write:org:admin: Modify organization settings.
-            read:user:admin: Read user information.
-            write:user:admin: Modify user accounts.
-            read:policy:admin: Read organization policies.
-            write:policy:admin: Modify organization policies.
-            read:event:admin: Read organization events.
+            delete:async-task:jira: Delete asynchronous task.
+            delete:attachment:jira: Delete issue attachments.
+            delete:avatar:jira: Delete system and custom avatars.
+            delete:comment.property:jira: Delete issue comment properties.
+            delete:comment:jira: Delete issue comments.
+            delete:dashboard.property:jira: Delete dashboard properties.
+            delete:dashboard:jira: Delete dashboards.
+            delete:field-configuration-scheme:jira: Delete field configuration schemes.
+            delete:field-configuration:jira: Delete field configurations.
+            delete:field.option:jira: Delete field options.
+            delete:field:jira: Delete fields.
+            delete:filter.column:jira: Delete filter columns.
+            delete:filter:jira: Delete filters.
+            delete:group:jira: Delete user groups.
+            delete:issue-link-type:jira: Delete issue link types.
+            delete:issue-link:jira: Delete issue links.
+            delete:issue-type-scheme:jira: Delete issue type schemes.
+            delete:issue-type-screen-scheme:jira: Delete issue type screen schemes.
+            delete:issue-type.property:jira: Delete issue type properties.
+            delete:issue-type:jira: Delete issue types.
+            delete:issue-worklog.property:jira: Delete issue worklog properties.
+            delete:issue-worklog:jira: Delete issue worklogs.
+            delete:issue.property:jira: Delete issue properties.
+            delete:issue.remote-link:jira: Delete issue remote links.
+            delete:issue:jira: Delete issues.
+            delete:permission-scheme:jira: Delete permission schemes.
+            delete:permission:jira: Delete permissions.
+            delete:project-category:jira: Delete project categories.
+            delete:project-role:jira: Delete project roles.
+            delete:project-version:jira: Delete project versions.
+            delete:project.avatar:jira: Delete project avatars.
+            delete:project.component:jira: Delete project components.
+            delete:project.property:jira: Delete project properties.
+            delete:project:jira: Delete projects and their details, such as issue types, project lead, and avatars.
+            delete:screen-scheme:jira: Delete screen schemes.
+            delete:screen-tab:jira: Delete screen tabs.
+            delete:screen:jira: Delete screens.
+            delete:screenable-field:jira: Delete screenable fields.
+            delete:user-configuration:jira: Delete user configurations.
+            delete:user.property:jira: Delete user properties.
+            delete:webhook:jira: Delete webhooks.
+            delete:workflow-scheme:jira: Delete workflow schemes.
+            delete:workflow.property:jira: Delete workflow properties.
+            delete:workflow:jira: Delete workflows.
+            manage:jira-configuration: Configure Jira settings that require the Jira administrators permission, for example, create projects and custom fields, view workflows, manage issue link types.
+            manage:jira-project: Create and edit project settings and create new project-level objects, for example, versions, components.
+            manage:jira-webhook: Manage Jira webhooks. Enables an OAuth app to register and unregister dynamic webhooks in Jira. It also provides for fetching of registered webhooks.
+            read:application-role:jira: View application roles.
+            read:attachment:jira: View issue attachments.
+            read:audit-log:jira: View audit logs.
+            read:avatar:jira: View system and custom avatars.
+            read:comment.property:jira: View issue comment properties.
+            read:comment:jira: View issue comments.
+            read:custom-field-contextual-configuration:jira: Read custom field contextual configurations.
+            read:dashboard.property:jira: View dashboard properties.
+            read:dashboard:jira: View dashboards.
+            read:field-configuration-scheme:jira: View field configuration schemes.
+            read:field-configuration:jira: Read field configurations.
+            read:field.default-value:jira: View field default values.
+            read:field.option:jira: View field options.
+            read:field.options:jira: Read field options.
+            read:field:jira: View fields.
+            read:filter.column:jira: View filter columns.
+            read:filter.default-share-scope:jira: View filter default share scopes.
+            read:filter:jira: View filters.
+            read:group:jira: View user groups.
+            read:instance-configuration:jira: View instance configurations.
+            read:issue-details:jira: View issue details.
+            read:issue-event:jira: Read issue events.
+            read:issue-field-values:jira: View issue field valueses.
+            read:issue-link-type:jira: View issue link types.
+            read:issue-link:jira: View issue links.
+            read:issue-meta:jira: View issue meta.
+            read:issue-security-level:jira: View issue security levels.
+            read:issue-security-scheme:jira: View issue security schemes.
+            read:issue-status:jira: View issue statuses.
+            read:issue-type-hierarchy:jira: Read issue type hierarchies.
+            read:issue-type-scheme:jira: View issue type schemes.
+            read:issue-type-screen-scheme:jira: View issue type screen schemes.
+            read:issue-type.property:jira: View issue type properties.
+            read:issue-type:jira: View issue types.
+            read:issue-worklog.property:jira: View issue worklog properties.
+            read:issue-worklog:jira: View issue worklogs.
+            read:issue.changelog:jira: View issue changelogs.
+            read:issue.property:jira: View issue properties.
+            read:issue.remote-link:jira: View issue remote links.
+            read:issue.time-tracking:jira: View issue time trackings.
+            read:issue.transition:jira: View issue transitions.
+            read:issue.vote:jira: View issue votes.
+            read:issue.votes:jira: View issue voteses.
+            read:issue.watcher:jira: View issue watchers.
+            read:issue:jira: View issues.
+            read:jira-expressions:jira: View jira expressions.
+            read:jira-user: View user information in Jira that you have access to, including usernames, email addresses, and avatars.
+            read:jira-work: Read project and issue data. Search for issues and objects associated with issues (such as attachments and worklogs).
+            read:jql:jira: View JQL.
+            read:label:jira: View labels.
+            read:license:jira: View licenses.
+            read:notification-scheme:jira: View notification schemes.
+            read:permission-scheme:jira: View permission schemes.
+            read:permission:jira: View permissions.
+            read:priority:jira: View priorities.
+            read:project-category:jira: View project categories.
+            read:project-role:jira: View project roles.
+            read:project-type:jira: View project types.
+            read:project-version:jira: View project versions.
+            read:project.avatar:jira: Read project avatars.
+            read:project.component:jira: View project components.
+            read:project.email:jira: View project emails.
+            read:project.feature:jira: Read project features.
+            read:project.property:jira: View project properties.
+            read:project:jira: View projects.
+            read:resolution:jira: View resolutions.
+            read:role:jira: View roles.
+            read:screen-field:jira: View screen fields.
+            read:screen-scheme:jira: View screen schemes.
+            read:screen-tab:jira: View screen tabs.
+            read:screen:jira: View screens.
+            read:screenable-field:jira: View screenable fields.
+            read:status:jira: View statuses.
+            read:user-configuration:jira: View user configurations.
+            read:user.columns:jira: View user columnses.
+            read:user.property:jira: View user properties.
+            read:user:jira: View users.
+            read:webhook:jira: View webhooks.
+            read:workflow-scheme:jira: View workflow schemes.
+            read:workflow.property:jira: View workflow properties.
+            read:workflow:jira: View workflows.
+            send:notification:jira: Send notifications.
+            validate:jql:jira: Validate JQL.
+            write:attachment:jira: Create and update issue attachments.
+            write:avatar:jira: Create and update system and custom avatars.
+            write:comment.property:jira: Create and update issue comment properties.
+            write:comment:jira: Create and update issue comments.
+            write:custom-field-contextual-configuration:jira: Save custom field contextual configurations.
+            write:dashboard.property:jira: Create and update dashboard properties.
+            write:dashboard:jira: Create and update dashboards.
+            write:field-configuration-scheme:jira: Create and update field configuration schemes.
+            write:field-configuration:jira: Save field configurations.
+            write:field.default-value:jira: Create and update field default values.
+            write:field.option:jira: Create and update field options.
+            write:field:jira: Create and update fields.
+            write:filter.column:jira: Create and update filter columns.
+            write:filter.default-share-scope:jira: Create and update filter default share scopes.
+            write:filter:jira: Create and update filters.
+            write:group:jira: Create and update user groups.
+            write:instance-configuration:jira: Create and update instance configurations.
+            write:issue-link-type:jira: Create and update issue link types.
+            write:issue-link:jira: Create and update issue links.
+            write:issue-type-scheme:jira: Create and update issue type schemes.
+            write:issue-type-screen-scheme:jira: Create and update issue type screen schemes.
+            write:issue-type.property:jira: Create and update issue type properties.
+            write:issue-type:jira: Create and update issue types.
+            write:issue-worklog.property:jira: Create and update issue worklog properties.
+            write:issue-worklog:jira: Create and update issue worklogs.
+            write:issue.property:jira: Create and update issue properties.
+            write:issue.remote-link:jira: Create and update issue remote links.
+            write:issue.time-tracking:jira: Create and update issue time trackings.
+            write:issue.vote:jira: Create and update issue votes.
+            write:issue.watcher:jira: Create and update issue watchers.
+            write:issue:jira: Create and update issues.
+            write:jira-work: Create and edit issues in Jira, post comments, create worklogs, and delete issues.
+            write:permission-scheme:jira: Create and update permission schemes.
+            write:permission:jira: Create and update permissions.
+            write:project-category:jira: Create and update project categories.
+            write:project-role:jira: Create and update project roles.
+            write:project-version:jira: Create and update project versions.
+            write:project.avatar:jira: Create and update project avatars.
+            write:project.component:jira: Create and update project components.
+            write:project.email:jira: Create and update project emails.
+            write:project.feature:jira: Save project features.
+            write:project.property:jira: Create and update project properties.
+            write:project:jira: Create and update projects.
+            write:screen-scheme:jira: Create and update screen schemes.
+            write:screen-tab:jira: Create and update screen tabs.
+            write:screen:jira: Create and update screens.
+            write:screenable-field:jira: Create and update screenable fields.
+            write:user-configuration:jira: Create and update user configurations.
+            write:user.property:jira: Create and update user properties.
+            write:webhook:jira: Create and update webhooks.
+            write:workflow-scheme:jira: Create and update workflow schemes.
+            write:workflow.property:jira: Create and update workflow properties.
+            write:workflow:jira: Create and update workflows.
+          tokenUrl: https://auth.atlassian.com/oauth/token
+      type: oauth2
+    basicAuth:
+      description: You can access this resource via basic auth.
+      scheme: basic
+      type: http
 externalDocs:
-  description: Atlassian Admin REST API Documentation
-  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
+  description: Find out more about Atlassian products and services.
+  url: http://www.atlassian.com
+x-atlassian-narrative:
+  documents:
+  - anchor: about
+    body: "The Jira REST API enables you to interact with Jira programmatically. Use this API to \n[build apps](https://developer.atlassian.com/cloud/jira/platform/integrating-with-jira-cloud/), script interactions with \nJira, or develop any other type of integration. This page documents the REST resources available in Jira Cloud, including \nthe HTTP response codes and example requests and responses."
+    title: About
+  - anchor: version
+    body: "This documentation is for **version 3** of the Jira Cloud platform REST API, which is the latest version\nbut is in **beta**. [Version 2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) and \nversion 3 of the API offer the same collection of operations. However, version 3 provides support for \nthe [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) \n(ADF) in: \n- `body` in comments, including where comments are used in issue, issue link, and transition resources.\n- `comment` in worklogs.\n- `description` and `environment` fields in issues.\n- `textarea` type custom fields (multi-line text fields) in issues. Single line custom fields \n  (`textfield`) accept a string and don't handle Atlassian Document Format content.\n\nHowever, these new features are under development and may change.\n"
+    title: Version
+  - anchor: authentication
+    body: "### Forge apps\n\nFor Forge apps, [REST API scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) \nare used when authenticating with Jira Cloud platform. See [Add scopes to call an Atlassian REST API](https://developer.atlassian.com/platform/forge/add-scopes-to-call-an-atlassian-rest-api/) for more details.\n\nThe URIs for Forge app REST API calls have this structure:\n\n`/rest/api/3/<resource-name>`\n\nFor example, `/rest/api/3/issue/DEMO-1`\n\n### Connect apps\n\nFor Connect apps, authentication (JWT-based) is built into the Connect libraries. Authorization is implemented using either \nscopes (shown as _App scope required_ for operations on this page) or user impersonation. See \n[Security for Connect apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/) \nfor details.\n\nThe URIs for Connect app REST API calls have this structure:\n\n`https://<site-url>/rest/api/3/<resource-name>`\n\nFor example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`\n\n### Other integrations\n\nFor integrations that are not Forge or Connect apps, use OAuth 2.0 authorization code grants (3LO) for security \n(3LO scopes are shown as for operations _OAuth scopes required_). See \n[OAuth 2.0 (3LO) apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) \nfor details.\n\nThe URIs for OAuth 2.0 (3LO) app REST API calls have this structure:\n\n`https://api.atlassian.com/ex/jira/<cloudId>/rest/api/3/<resource-name>`\n\nFor example, `https://api.atlassian.com/ex/jira/35273b54-3f06-40d2-880f-dd28cf8daafa/rest/api/3/issue/DEMO-1`\n\n### Ad-hoc API calls\n\nFor personal scripts, bots, and ad-hoc execution of the REST APIs use basic authentication. See [Basic auth for REST APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/) for details. \n\nThe URIs for basic authentication REST API calls have this structure:\n\n`https://<site-url>/rest/api/3/<resource-name>`\n\nFor example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`\n"
+    title: Authentication and authorization
+  - anchor: permissions
+    body: "### Operation permissions\n\nMost operations in this API require permissions. The calling user must have the required permissions for an operation to \nuse it. Note that for Connect apps, the app user must have the required permissions for the operation and the app must \nhave scopes that permit the operation.\n\nA permission can be granted to a group, project role, or issue role that the user is a member of, or granted directly to a user. \nSee [Permissions overview](https://confluence.atlassian.com/x/FQiiLQ) for details. The most common permissions are:\n\n- **Administer the Cloud site**: Users in the _site-admins_ group have this \npermission. See [Manage groups](https://confluence.atlassian.com/x/24xjL) for details.\n- **Administer Jira**: Granted by the _Jira Administrators_ global permission. There is a default group for this permission. \nSee [Manage groups](https://confluence.atlassian.com/x/24xjL) and [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg) for details.\n- **Administer a project in Jira**: Granted by the _Administer projects_ project permission for a project. This can be \ngranted to a user, a group, a project role, and more. \nSee [Managing project permissions](https://confluence.atlassian.com/x/yodKLg) for details.\n- **Access a project in Jira**: Granted by the _Browse projects_ project permission for a project. This can be \ngranted to a user, a group, a project role, and more. \nSee [Managing project permissions](https://confluence.atlassian.com/x/yodKLg) for details.\n- **Access Jira**: Granted by the _Jira Users_ global permission. Users in the default product access group (for example, \n_jira-software-users-acmesite_) have this permission. \nSee [Manage groups](https://confluence.atlassian.com/x/24xjL) and \n[Managing global permissions](https://confluence.atlassian.com/x/x4dKLg) for details.\n\n### Anonymous access\n\nSome operations provide support for anonymous access. However, anonymous access is only available if \nthe Jira permission needed to access the object or records returned by the operation is granted to \nthe _Public_ group. See [Allowing anonymous access to your project](https://confluence.atlassian.com/x/GDxxLg) \nfor details.\n\nIf an operation is called anonymously and anonymous access is not available, the operation will return \nan error. Note that not all operations that correspond to objects that can be given public access \nprovide for anonymous access.\n"
+    title: Permissions
+  - anchor: expansion
+    body: "### Expansion\n\nThe Jira REST API uses resource expansion, which means that some parts of a resource are not returned unless specified \nin the request. This simplifies responses and minimizes network traffic.\n\nTo expand part of a resource in a request, use the expand query parameter and specify the object(s) to be expanded. \nIf you need to expand nested objects, use the `.` dot notation. If you need to expand multiple objects, use a \ncomma-separated list. \n\nFor example, the following request expands the `names` and `renderedFields` properties for the _JRACLOUD-34423_ issue:\n\n`GET issue/JRACLOUD-34423?expand=names,renderedFields`\n\nTo discover which object can be expanded, refer to the `expand` property in the object. \nIn the JSON example below, the resource declares `widgets` as expandable.\n\n```json\n{\n  \"expand\": \"widgets\", \n  \"self\": \"https://your-domain.atlassian.net/rest/api/3/resource/KEY-1\", \n  \"widgets\": {\n    \"widgets\": [],\n    \"size\": 5\n   }\n}\n```\n\n### Pagination\n\nThe Jira REST API uses pagination to improve performance. Pagination is enforced for operations that could return a large \ncollection of items. When you make a request to a paginated resource, the response wraps the returned array of values in \na JSON object with paging metadata. For example:\n\n```json\n{\n    \"startAt\" : 0,\n    \"maxResults\" : 10,\n    \"total\": 200,\n    \"isLast\": false,\n    \"values\": [\n        { /* result 0 */ },\n        { /* result 1 */ },\n        { /* result 2 */ }\n    ]\n}\n```\n\n*   `startAt` is the index of the first item returned in the page.\n*   `maxResults` is the maximum number of items that a page can return. Each operation can have a different limit for\n    the number of items returned, and these limits may change without notice. To find the maximum number of items \n    that an operation could return, set `maxResults` to a large number—for example, over 1000—and if the returned value of `maxResults` is less than the requested value, the returned value is the maximum.\n*    `total` is the total number of items contained in all pages. This number **_may change_** as the client \nrequests the subsequent pages, therefore the client should always assume that the requested page can be empty. Note \nthat this property is not returned for all operations.\n*   `isLast` indicates whether the page returned is the last one. Note that this property is not returned for all operations.\n\n### Ordering\n\nSome operations support ordering the elements of a response by a field. Check the documentation for the operation to \nconfirm whether ordering of a response is supported and which fields can be used. Responses are listed in ascending order \nby default. You can change the order using the `orderby` query parameter with a `-` or `+` symbol. For example:\n\n*   `?orderBy=name` to order by `name` field ascending.\n*   `?orderBy=+name` to order by `name` field ascending.\n*   `?orderBy=-name` to order by `name` field descending.\n\n\n"
+    title: Expansion, pagination, and ordering
+  - anchor: timestamps
+    body: 'By default, top-level timestamps (e.g. updated and created) are returned in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format, in the system default user time zone.
+
+
+      To return date time data in the logged in user''s timezone, please refer to `renderedFields` property under the `expand` query parameter in relevant APIs.
+
+      '
+    title: Timestamps
+  - anchor: special-request-headers
+    body: 'The following request and response headers define important metadata for the Jira Cloud REST API resources.
+
+
+      -   `X-Atlassian-Token` (request): Operations that accept multipart/form-data must include the `X-Atlassian-Token: no-check`
+
+      header in requests. Otherwise the request is blocked by cross-site request forgery (CSRF/XSRF) protection.
+
+      -   `X-Force-Accept-Language` (request): controls how the standard HTTP `Accept-Language` header is processed.
+
+      By default `Accept-Language` is ignored and the response is in the language configured in the user''s profile or,
+
+      when no language is configured for the user, the default Jira instance language. For the response to recognize
+
+      `Accept-Language` send `X-Force-Accept-Language = true` as well. If `Accept-Language` requests a language that Jira
+
+      can return the response is in that language, otherwise Jira returns the response in the default language. If
+
+      `Accept-Language` is not specified the response is in the default language.
+
+      -   `X-AAccountId` (response): This response header contains the Atlassian account ID of the authenticated user.'
+    title: Special headers
+  - anchor: anonymous-operations
+    body: " Jira provides for all permissions, except the [global permission](https://confluence.atlassian.com/x/x4dKLg) Administer Jira, to be assigned to *Anyone*. Once a permission is assigned to *Anyone*, anyone knowing a project's URL is able to use the features in Jira enabled by the permission. However, the Jira REST API does not enable anonymous access for operations by default. This means that an anonymous user who may be able to perform an action through Jira, may not be able to perform the same action where it's enabled by the REST API. \n\n The operations that provide anonymous access are annotated \"This operation can be accessed anonymously.\""
+    title: Anonymous operations
+  - anchor: async-operations
+    body: "Some Jira REST API operations may trigger long-running or computationally expensive tasks. In these cases, the operation \nwill schedule an asynchronous task and return a `303 (See Other)` response, indicating the location of the queued task \nin the `Location` header. You can query this task to get progress updates.\n\nWhen the task finishes, the response object will contain the `result` field. The content of the field is specific to the \noperation that created the task. Refer to the operation’s documentation for more information.\n\nNote that asynchronous tasks are not guaranteed to be run in order. In other words, if you need your tasks to execute \nin a certain order, you should start a task only after the prerequisite task(s) have finished."
+    title: Asynchronous operations
+  - anchor: experimental
+    body: "Features and methods marked as experimental may change without notice. Feedback on experimental functionality is welcome. \nReport your suggestions and bugs in the [ACJIRA project](https://ecosystem.atlassian.net/projects/ACJIRA) (preferred) or use the \n**Give docs feedback** link at the top of this page. \n"
+    title: Experimental features
+  - anchor: status-codes
+    body: "The Jira Cloud platform REST API uses the [standard HTTP status codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).\n\nOperations that return an error status code may also return a response body containing details of the error or errors. \nThe schema for the response body is shown below:\n\n\n```json\n{\n  \"id\": \"https://docs.atlassian.com/jira/REST/schema/error-collection#\",\n  \"title\": \"Error Collection\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"errorMessages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"errors\": {\n      \"type\": \"object\",\n      \"patternProperties\": {\n        \".+\": {\n          \"type\": \"string\"\n        }\n      },\n      \"additionalProperties\": false\n    },\n    \"status\": { \n      \"type\": \"integer\"\n    }\n  },\n  \"additionalProperties\": false\n}\n```"
+    title: Status codes

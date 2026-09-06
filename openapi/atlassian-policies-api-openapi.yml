@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Atlassian Admin Account Policies API
+  title: Atlassian Admin Policies API
   description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
   version: 1.0.0
   contact:
@@ -175,43 +175,45 @@ paths:
         dispatcher: FALLBACK
 components:
   schemas:
-    PolicyPage:
+    PaginationLinks:
       type: object
-      description: A paginated list of policies.
+      description: Links for cursor-based pagination.
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Policy'
-          description: The list of policies.
-          example: []
-        links:
-          $ref: '#/components/schemas/PaginationLinks'
-    ErrorResponse:
-      type: object
-      description: Standard error response.
-      properties:
-        code:
-          type: integer
-          description: The HTTP status code.
-          example: 10
-        message:
+        self:
           type: string
-          description: A human-readable error message.
+          format: uri
+          description: Link to the current page.
+          example: https://www.example.com
+        next:
+          type: string
+          format: uri
+          description: Link to the next page of results.
+          example: https://www.example.com
+        prev:
+          type: string
+          format: uri
+          description: Link to the previous page of results.
+          example: https://www.example.com
+    PolicyUpdateRequest:
+      type: object
+      description: Request body for updating a policy.
+      properties:
+        name:
+          type: string
+          description: The updated display name for the policy.
+          example: Example Title
+        status:
+          type: string
+          description: The updated status for the policy.
+          enum:
+          - enabled
+          - disabled
+          example: enabled
+        attributes:
+          type: object
+          description: Updated policy-specific configuration attributes.
+          additionalProperties: true
           example: example_value
-        errors:
-          type: array
-          description: Detailed error information.
-          items:
-            type: object
-            properties:
-              code:
-                type: string
-                description: A machine-readable error code.
-              message:
-                type: string
-                description: A human-readable description of the error.
-          example: []
     Policy:
       type: object
       description: Represents an organization-level policy that defines rules and controls for security, authentication, and governance.
@@ -269,45 +271,43 @@ components:
           format: date-time
           description: When the policy was last updated.
           example: '2026-01-15T10:30:00Z'
-    PaginationLinks:
+    PolicyPage:
       type: object
-      description: Links for cursor-based pagination.
+      description: A paginated list of policies.
       properties:
-        self:
-          type: string
-          format: uri
-          description: Link to the current page.
-          example: https://www.example.com
-        next:
-          type: string
-          format: uri
-          description: Link to the next page of results.
-          example: https://www.example.com
-        prev:
-          type: string
-          format: uri
-          description: Link to the previous page of results.
-          example: https://www.example.com
-    PolicyUpdateRequest:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+          description: The list of policies.
+          example: []
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+    ErrorResponse:
       type: object
-      description: Request body for updating a policy.
+      description: Standard error response.
       properties:
-        name:
+        code:
+          type: integer
+          description: The HTTP status code.
+          example: 10
+        message:
           type: string
-          description: The updated display name for the policy.
-          example: Example Title
-        status:
-          type: string
-          description: The updated status for the policy.
-          enum:
-          - enabled
-          - disabled
-          example: enabled
-        attributes:
-          type: object
-          description: Updated policy-specific configuration attributes.
-          additionalProperties: true
+          description: A human-readable error message.
           example: example_value
+        errors:
+          type: array
+          description: Detailed error information.
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: A machine-readable error code.
+              message:
+                type: string
+                description: A human-readable description of the error.
+          example: []
   parameters:
     orgId:
       name: orgId

@@ -1,633 +1,14 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Atlassian Admin Account Content Watches API
-  description: The Atlassian Admin API provides programmatic access to manage Atlassian organizations, users, domains, policies, and events. It enables administrators to automate organization management tasks, integrate with identity providers, and ensure appropriate access to Atlassian products.
+  title: Atlassian The Confluence Cloud REST Content Watches API
+  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  termsOfService: https://atlassian.com/terms/
   version: 1.0.0
-  contact:
-    name: Atlassian Developer
-    url: https://developer.atlassian.com/cloud/admin/
-  license:
-    name: Atlassian Developer Terms
-    url: https://developer.atlassian.com/platform/marketplace/atlassian-developer-terms/
-  x-logo:
-    url: https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png
 servers:
-- url: https://api.atlassian.com
-  description: Atlassian Cloud API
-security:
-- bearerAuth: []
-- oauth2: []
+- url: //your-domain.atlassian.net
 tags:
 - name: Content Watches
 paths:
-  /wiki/rest/api/space/{spaceKey}/watch:
-    get:
-      tags:
-      - Content Watches
-      summary: Atlassian Get Space Watchers
-      description: Returns a list of watchers of a space
-      operationId: atlassianGetwatchersforspace
-      parameters:
-      - name: spaceKey
-        in: path
-        description: The key of the space to get watchers.
-        required: true
-        schema:
-          type: string
-      - name: start
-        in: query
-        description: The start point of the collection to return.
-        schema:
-          type: string
-      - name: limit
-        in: query
-        description: The limit of the number of items to return, this may be restricted by fixed system limits.
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Returned if watchers list is returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SpaceWatchArray'
-        '404':
-          description: Returned if there is no space with the given key
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:watcher:confluence
-        - read:user:confluence
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:watcher:confluence
-        - read:user:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-  /wiki/rest/api/user/watch/content/{contentId}:
-    get:
-      tags:
-      - Content Watches
-      summary: Atlassian Get Content Watch Status
-      description: 'Returns whether a user is watching a piece of content. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianGetcontentwatchstatus
-      parameters:
-      - name: contentId
-        in: path
-        description: 'The ID of the content to be queried for whether the specified user is
-
-          watching it.'
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '200':
-          description: Returned if the requested watch status is returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserWatch'
-        '403':
-          description: 'Returned if;
-
-
-            - The calling user does not have permission to view the
-
-            content.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No content exists for the specified `contentId`.'
-          content: {}
-        '404':
-          description: Returned if no `contentId` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:confluence-content.summary
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:confluence-content.summary
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - read:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: false
-      x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    post:
-      tags:
-      - Content Watches
-      summary: Atlassian Add Content Watcher
-      description: 'Adds a user as a watcher to a piece of content. Choose the user by doing<br>one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianAddcontentwatcher
-      parameters:
-      - name: contentId
-        in: path
-        description: The ID of the content to add the watcher to.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: 'Returned if the watcher was successfully created. No response body is
-
-            returned.'
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - The calling user does not have permission to view the
-
-            content.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No content exists for the specified `contentId`.'
-          content: {}
-        '404':
-          description: Returned if no `contentId` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: false
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    delete:
-      tags:
-      - Content Watches
-      summary: Atlassian Remove Content Watcher
-      description: 'Removes a user as a watcher from a piece of content. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianRemovecontentwatcher
-      parameters:
-      - name: X-Atlassian-Token
-        in: header
-        description: 'Note, you must add header when making a
-
-          request, as this operation has XSRF protection.'
-        required: true
-        schema:
-          type: string
-          default: no-check
-      - name: contentId
-        in: path
-        description: The ID of the content to remove the watcher from.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: 'Returned if the watcher was successfully deleted. No response body is
-
-            returned.'
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - The calling user does not have permission to view the
-
-            content.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No content exists for the specified `contentId`.'
-          content: {}
-        '404':
-          description: Returned if no `contentId` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: false
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-  /wiki/rest/api/user/watch/label/{labelName}:
-    get:
-      tags:
-      - Content Watches
-      summary: Atlassian Get Label Watch Status
-      description: 'Returns whether a user is watching a label. Choose the user by doing one<br>of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianIswatchinglabel
-      parameters:
-      - name: labelName
-        in: path
-        description: 'The name of the label to be queried for whether the specified user is
-
-          watching it.'
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '200':
-          description: Returned if the requested watch status is returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserWatch'
-        '403':
-          description: 'Returned if;
-
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No label exists for the specified `labelName`.'
-          content: {}
-        '404':
-          description: Returned if no `labelName` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:confluence-content.summary
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:confluence-content.summary
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - read:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    post:
-      tags:
-      - Content Watches
-      summary: Atlassian Add Label Watcher
-      description: 'Adds a user as a watcher to a label. Choose the user by doing one of the<br>following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianAddlabelwatcher
-      parameters:
-      - name: X-Atlassian-Token
-        in: header
-        description: 'Note, you must add header when making a
-
-          request, as this operation has XSRF protection.'
-        required: true
-        schema:
-          type: string
-          default: no-check
-      - name: labelName
-        in: path
-        description: The name of the label to add the watcher to.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: 'Returned if the watcher was successfully created. No response body is
-
-            returned.'
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No label exists for the specified `labelName`.'
-          content: {}
-        '404':
-          description: Returned if no `labelName` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    delete:
-      tags:
-      - Content Watches
-      summary: Atlassian Remove Label Watcher
-      description: 'Removes a user as a watcher from a label. Choose the user by doing one of<br>the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianRemovelabelwatcher
-      parameters:
-      - name: labelName
-        in: path
-        description: The name of the label to remove the watcher from.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: 'Returned if the watcher was successfully deleted. No response body is
-
-            returned.'
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No label exists for the specified `labelName`.'
-          content: {}
-        '404':
-          description: Returned if no `labelName` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-  /wiki/rest/api/user/watch/space/{spaceKey}:
-    get:
-      tags:
-      - Content Watches
-      summary: Atlassian Get Space Watch Status
-      description: 'Returns whether a user is watching a space. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianIswatchingspace
-      parameters:
-      - name: spaceKey
-        in: path
-        description: 'The key of the space to be queried for whether the specified user is
-
-          watching it.'
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '200':
-          description: Returned if the requested watch status is returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserWatch'
-        '403':
-          description: 'Returned if;
-
-
-            - The calling user does not have permission to view the
-
-            space.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No space exists for the specified `spaceKey`.'
-          content: {}
-        '404':
-          description: Returned if no `spaceKey` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - read:confluence-content.summary
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - read:confluence-content.summary
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - read:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: READ
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    post:
-      tags:
-      - Content Watches
-      summary: Atlassian Add Space Watcher
-      description: 'Adds a user as a watcher to a space. Choose the user by doing one of the<br>following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianAddspacewatcher
-      parameters:
-      - name: X-Atlassian-Token
-        in: header
-        description: 'Note, you must add header when making a
-
-          request, as this operation has XSRF protection.'
-        required: true
-        schema:
-          type: string
-          default: no-check
-      - name: spaceKey
-        in: path
-        description: The key of the space to add the watcher to.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: 'Returned if the watcher was successfully created. No response body is
-
-            returned.'
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - The calling user does not have permission to view the
-
-            space.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No space exists for the specified `spaceKey`.'
-          content: {}
-        '404':
-          description: Returned if no `spaceKey` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
-    delete:
-      tags:
-      - Content Watches
-      summary: Atlassian Remove Space Watch
-      description: 'Removes a user as a watcher from a space. Choose the user by doing one of<br>the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
-      operationId: atlassianRemovespacewatch
-      parameters:
-      - name: spaceKey
-        in: path
-        description: The key of the space to remove the watcher from.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/userLookupKey'
-      - $ref: '#/components/parameters/userLookupUsername'
-      - $ref: '#/components/parameters/userLookupAccountId'
-      responses:
-        '204':
-          description: Returned if the watcher was successfully deleted. No response body is returned.
-          content: {}
-        '403':
-          description: 'Returned if;
-
-
-            - The `X-Atlassian-Token: no-check` header is not specified.
-
-            - The calling user does not have permission to view the space.
-
-            - A user is specified via a query parameter and the calling user is
-
-            not a Confluence administrator.
-
-            - No space exists for the specified `spaceKey`.'
-          content: {}
-        '404':
-          description: Returned if no `spaceKey` is specified.
-          content: {}
-      security:
-      - basicAuth: []
-      - oAuthDefinitions:
-        - write:confluence-content
-      x-atlassian-oauth2-scopes:
-      - scheme: oAuthDefinitions
-        state: Current
-        scopes:
-        - write:confluence-content
-      - scheme: oAuthDefinitions
-        state: Beta
-        scopes:
-        - write:watcher:confluence
-      x-atlassian-data-security-policy:
-      - app-access-rule-exempt: true
-      x-atlassian-connect-scope: WRITE
-      x-microcks-operation:
-        delay: 0
-        dispatcher: FALLBACK
   /wiki/rest/api/content/{id}/notification/child-created:
     get:
       tags:
@@ -727,7 +108,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpaceWatchArray_2'
+                $ref: '#/components/schemas/SpaceWatchArray'
         '401':
           description: 'Returned if the authentication credentials are incorrect or missing
 
@@ -750,174 +131,586 @@ paths:
       x-atlassian-data-security-policy:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: READ
+  /wiki/rest/api/space/{spaceKey}/watch:
+    get:
+      tags:
+      - Content Watches
+      summary: Atlassian Get Space Watchers
+      description: Returns a list of watchers of a space
+      operationId: atlassianGetwatchersforspace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to get watchers.
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: The start point of the collection to return.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: The limit of the number of items to return, this may be restricted by fixed system limits.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returned if watchers list is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceWatchArray'
+        '404':
+          description: Returned if there is no space with the given key
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:watcher:confluence
+        - read:user:confluence
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:watcher:confluence
+        - read:user:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+  /wiki/rest/api/user/watch/content/{contentId}:
+    get:
+      tags:
+      - Content Watches
+      summary: Atlassian Get Content Watch Status
+      description: 'Returns whether a user is watching a piece of content. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianGetcontentwatchstatus
+      parameters:
+      - name: contentId
+        in: path
+        description: 'The ID of the content to be queried for whether the specified user is
+
+          watching it.'
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: Returned if the requested watch status is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWatch'
+        '403':
+          description: 'Returned if;
+
+
+            - The calling user does not have permission to view the
+
+            content.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No content exists for the specified `contentId`.'
+          content: {}
+        '404':
+          description: Returned if no `contentId` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+      - Content Watches
+      summary: Atlassian Add Content Watcher
+      description: 'Adds a user as a watcher to a piece of content. Choose the user by doing<br>one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianAddcontentwatcher
+      parameters:
+      - name: contentId
+        in: path
+        description: The ID of the content to add the watcher to.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: 'Returned if the watcher was successfully created. No response body is
+
+            returned.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - The calling user does not have permission to view the
+
+            content.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No content exists for the specified `contentId`.'
+          content: {}
+        '404':
+          description: Returned if no `contentId` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Watches
+      summary: Atlassian Remove Content Watcher
+      description: 'Removes a user as a watcher from a piece of content. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianRemovecontentwatcher
+      parameters:
+      - name: X-Atlassian-Token
+        in: header
+        description: 'Note, you must add header when making a
+
+          request, as this operation has XSRF protection.'
+        required: true
+        schema:
+          type: string
+          default: no-check
+      - name: contentId
+        in: path
+        description: The ID of the content to remove the watcher from.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: 'Returned if the watcher was successfully deleted. No response body is
+
+            returned.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - The calling user does not have permission to view the
+
+            content.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No content exists for the specified `contentId`.'
+          content: {}
+        '404':
+          description: Returned if no `contentId` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/user/watch/label/{labelName}:
+    get:
+      tags:
+      - Content Watches
+      summary: Atlassian Get Label Watch Status
+      description: 'Returns whether a user is watching a label. Choose the user by doing one<br>of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianIswatchinglabel
+      parameters:
+      - name: labelName
+        in: path
+        description: 'The name of the label to be queried for whether the specified user is
+
+          watching it.'
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: Returned if the requested watch status is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWatch'
+        '403':
+          description: 'Returned if;
+
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No label exists for the specified `labelName`.'
+          content: {}
+        '404':
+          description: Returned if no `labelName` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+      - Content Watches
+      summary: Atlassian Add Label Watcher
+      description: 'Adds a user as a watcher to a label. Choose the user by doing one of the<br>following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianAddlabelwatcher
+      parameters:
+      - name: X-Atlassian-Token
+        in: header
+        description: 'Note, you must add header when making a
+
+          request, as this operation has XSRF protection.'
+        required: true
+        schema:
+          type: string
+          default: no-check
+      - name: labelName
+        in: path
+        description: The name of the label to add the watcher to.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: 'Returned if the watcher was successfully created. No response body is
+
+            returned.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No label exists for the specified `labelName`.'
+          content: {}
+        '404':
+          description: Returned if no `labelName` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Watches
+      summary: Atlassian Remove Label Watcher
+      description: 'Removes a user as a watcher from a label. Choose the user by doing one of<br>the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianRemovelabelwatcher
+      parameters:
+      - name: labelName
+        in: path
+        description: The name of the label to remove the watcher from.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: 'Returned if the watcher was successfully deleted. No response body is
+
+            returned.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No label exists for the specified `labelName`.'
+          content: {}
+        '404':
+          description: Returned if no `labelName` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+  /wiki/rest/api/user/watch/space/{spaceKey}:
+    get:
+      tags:
+      - Content Watches
+      summary: Atlassian Get Space Watch Status
+      description: 'Returns whether a user is watching a space. Choose the user by<br>doing one of the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianIswatchingspace
+      parameters:
+      - name: spaceKey
+        in: path
+        description: 'The key of the space to be queried for whether the specified user is
+
+          watching it.'
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '200':
+          description: Returned if the requested watch status is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWatch'
+        '403':
+          description: 'Returned if;
+
+
+            - The calling user does not have permission to view the
+
+            space.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No space exists for the specified `spaceKey`.'
+          content: {}
+        '404':
+          description: Returned if no `spaceKey` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - read:confluence-content.summary
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - read:confluence-content.summary
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - read:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: READ
+    post:
+      tags:
+      - Content Watches
+      summary: Atlassian Add Space Watcher
+      description: 'Adds a user as a watcher to a space. Choose the user by doing one of the<br>following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>Note, you must add the `X-Atlassian-Token: no-check` header when making a<br>request, as this operation has XSRF protection.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianAddspacewatcher
+      parameters:
+      - name: X-Atlassian-Token
+        in: header
+        description: 'Note, you must add header when making a
+
+          request, as this operation has XSRF protection.'
+        required: true
+        schema:
+          type: string
+          default: no-check
+      - name: spaceKey
+        in: path
+        description: The key of the space to add the watcher to.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: 'Returned if the watcher was successfully created. No response body is
+
+            returned.'
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - The calling user does not have permission to view the
+
+            space.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No space exists for the specified `spaceKey`.'
+          content: {}
+        '404':
+          description: Returned if no `spaceKey` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
+    delete:
+      tags:
+      - Content Watches
+      summary: Atlassian Remove Space Watch
+      description: 'Removes a user as a watcher from a space. Choose the user by doing one of<br>the following:<br><br>- Specify a user via a query parameter: Use the `accountId` to identify the user.<br>- Do not specify a user: The currently logged-in user will be used.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>''Confluence Administrator'' global permission if specifying a user, otherwise<br>permission to access the Confluence site (''Can use'' global permission).'
+      operationId: atlassianRemovespacewatch
+      parameters:
+      - name: spaceKey
+        in: path
+        description: The key of the space to remove the watcher from.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/userLookupKey'
+      - $ref: '#/components/parameters/userLookupUsername'
+      - $ref: '#/components/parameters/userLookupAccountId'
+      responses:
+        '204':
+          description: Returned if the watcher was successfully deleted. No response body is returned.
+          content: {}
+        '403':
+          description: 'Returned if;
+
+
+            - The `X-Atlassian-Token: no-check` header is not specified.
+
+            - The calling user does not have permission to view the space.
+
+            - A user is specified via a query parameter and the calling user is
+
+            not a Confluence administrator.
+
+            - No space exists for the specified `spaceKey`.'
+          content: {}
+        '404':
+          description: Returned if no `spaceKey` is specified.
+          content: {}
+      security:
+      - basicAuth: []
+      - oAuthDefinitions:
+        - write:confluence-content
+      x-atlassian-oauth2-scopes:
+      - scheme: oAuthDefinitions
+        state: Current
+        scopes:
+        - write:confluence-content
+      - scheme: oAuthDefinitions
+        state: Beta
+        scopes:
+        - write:watcher:confluence
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-connect-scope: WRITE
 components:
   schemas:
-    GenericUserName:
-      type: string
-      nullable: true
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    GenericUserKey:
-      type: string
-      nullable: true
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    WatchUser:
-      required:
-      - type
-      - accountId
-      - profilePicture
-      - displayName
-      - operations
-      - isExternalCollaborator
-      - accountType
-      - email
-      - publicName
-      - personalSpace
-      - externalCollaborator
-      type: object
-      properties:
-        type:
-          type: string
-        username:
-          $ref: '#/components/schemas/GenericUserName'
-        userKey:
-          $ref: '#/components/schemas/GenericUserKey'
-        accountId:
-          $ref: '#/components/schemas/GenericAccountId'
-        profilePicture:
-          $ref: '#/components/schemas/Icon'
-        displayName:
-          type: string
-        timeZone:
-          nullable: true
-          type: string
-        operations:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/OperationCheckResult'
-        isExternalCollaborator:
-          type: boolean
-        details:
-          $ref: '#/components/schemas/UserDetails'
-        accountType:
-          type: string
-        email:
-          type: string
-        publicName:
-          type: string
-        personalSpace:
-          type: object
-          nullable: true
-        externalCollaborator:
-          type: boolean
-      description: 'This essentially the same as the `User` object, but no `_links` property and
-
-        no `_expandable` property (therefore, different required fields).'
-    SpaceWatchArray:
-      required:
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpaceWatch'
-          example: []
-        start:
-          type: integer
-          format: int32
-          example: 10
-        limit:
-          type: integer
-          format: int32
-          example: 10
-        size:
-          type: integer
-          format: int32
-          example: 10
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    Watch:
-      required:
-      - contentId
-      - type
-      - watcher
-      type: object
-      properties:
-        type:
-          type: string
-        watcher:
-          $ref: '#/components/schemas/WatchUser'
-        contentId:
-          type: integer
-          format: int64
-    Icon:
-      required:
-      - height
-      - isDefault
-      - path
-      - width
-      type: object
-      nullable: true
-      properties:
-        path:
-          type: string
-        width:
-          type: integer
-          format: int32
-        height:
-          type: integer
-          format: int32
-        isDefault:
-          type: boolean
-      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
-    GenericAccountId:
-      type: string
-      nullable: true
-      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
-
-        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
-    SpaceWatchArray_2:
-      required:
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpaceWatch'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
     SpaceWatch:
       required:
       - type
@@ -934,14 +727,13 @@ components:
           type: string
         prefix:
           type: string
-    UserWatch:
-      required:
-      - watching
+    GenericLinks:
       type: object
-      properties:
-        watching:
-          type: boolean
-          example: true
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
     OperationCheckResult:
       required:
       - operation
@@ -972,9 +764,103 @@ components:
           type: string
           description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
       description: An operation and the target entity that it applies to, e.g. create page.
-    WatchArray:
+    GenericAccountId:
+      type:
+      - string
+      - 'null'
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    Watch:
       required:
-      - _links
+      - contentId
+      - type
+      - watcher
+      type: object
+      properties:
+        type:
+          type: string
+        watcher:
+          $ref: '#/components/schemas/WatchUser'
+        contentId:
+          type: integer
+          format: int64
+    WatchUser:
+      required:
+      - type
+      - accountId
+      - profilePicture
+      - displayName
+      - operations
+      - isExternalCollaborator
+      - accountType
+      - email
+      - publicName
+      - personalSpace
+      - externalCollaborator
+      type: object
+      properties:
+        type:
+          type: string
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          type: string
+        timeZone:
+          type:
+          - string
+          - 'null'
+        operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OperationCheckResult'
+        isExternalCollaborator:
+          type: boolean
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        accountType:
+          type: string
+        email:
+          type: string
+        publicName:
+          type: string
+        personalSpace:
+          type:
+          - object
+          - 'null'
+        externalCollaborator:
+          type: boolean
+      description: 'This essentially the same as the `User` object, but no `_links` property and
+
+        no `_expandable` property (therefore, different required fields).'
+    GenericUserName:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    GenericUserKey:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    SpaceWatchArray:
+      required:
       - limit
       - results
       - size
@@ -984,7 +870,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/Watch'
+            $ref: '#/components/schemas/SpaceWatch'
         start:
           type: integer
           format: int32
@@ -1054,16 +940,65 @@ components:
                 [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
 
                 for details.'
+    WatchArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Watch'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type:
+      - object
+      - 'null'
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    UserWatch:
+      required:
+      - watching
+      type: object
+      properties:
+        watching:
+          type: boolean
   parameters:
-    userLookupUsername:
-      name: username
+    userLookupAccountId:
+      name: accountId
       in: query
-      deprecated: true
-      description: 'This parameter is no longer available and will be removed from the documentation soon.
+      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
 
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
       schema:
         type: string
     userLookupKey:
@@ -1077,35 +1012,177 @@ components:
         See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
       schema:
         type: string
-    userLookupAccountId:
-      name: accountId
+    userLookupUsername:
+      name: username
       in: query
-      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
 
-        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
       schema:
         type: string
   securitySchemes:
-    bearerAuth:
+    basicAuth:
       type: http
-      scheme: bearer
-      bearerFormat: API Key
-      description: Use an Atlassian API key as a Bearer token. Create API keys at https://admin.atlassian.com.
-    oauth2:
+      description: You can access this resource via basic auth.
+      scheme: basic
+    oAuthDefinitions:
       type: oauth2
-      description: OAuth 2.0 authorization for Atlassian Cloud APIs.
+      description: This API uses OAuth 2 with the authorizationCode grant flow.
       flows:
         authorizationCode:
           authorizationUrl: https://auth.atlassian.com/authorize
           tokenUrl: https://auth.atlassian.com/oauth/token
           scopes:
-            read:org:admin: Read organization information.
-            write:org:admin: Modify organization settings.
-            read:user:admin: Read user information.
-            write:user:admin: Modify user accounts.
-            read:policy:admin: Read organization policies.
-            write:policy:admin: Modify organization policies.
-            read:event:admin: Read organization events.
+            read:confluence-content.all: Read all content, including content body (expansions permitted). Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            read:confluence-content.permission: Read content permissions.
+            read:confluence-content.summary: Read a summary of the content, which is the content without expansions. Note, APIs using this scope may also return data allowed by read:confluence-space.summary. However, this scope is not a substitute for read:confluence-space.summary.
+            write:confluence-content: Permits the creation of pages, blogs, comments and questions.
+            read:confluence-space.summary: Read a summary of space information without expansions.
+            write:confluence-space: Create, update and delete space information.
+            write:confluence-file: Upload attachments.
+            read:confluence-props: Read content properties.
+            write:confluence-props: Write content properties.
+            search:confluence: Search Confluence. Note, APIs using this scope may also return data allowed by read:confluence-space.summary and read:confluence-content.summary. However, this scope is not a substitute for read:confluence-space.summary or read:confluence-content.summary.
+            manage:confluence-configuration: Manage global settings.
+            read:confluence-groups: Read user groups.
+            write:confluence-groups: Create, remove and update user groups.
+            read:confluence-user: Read users.
+            readonly:content.attachment:confluence: Download attachments of a Confluence page or blogpost that you have access to.
+            read:content:confluence: View content.
+            read:content-details:confluence: View content details.
+            write:content:confluence: Create and update content.
+            delete:content:confluence: Delete content.
+            read:space-details:confluence: View space details.
+            read:analytics.content:confluence: View analytics for content.
+            read:audit-log:confluence: View audit records.
+            write:audit-log:confluence: Create audit records.
+            read:configuration:confluence: View Confluence settings.
+            write:configuration:confluence: Update Confluence settings.
+            read:page:confluence: View pages.
+            write:page:confluence: Create and update pages.
+            delete:page:confluence: Delete pages.
+            read:blogpost:confluence: View blogposts.
+            write:blogpost:confluence: Create and update blogposts.
+            delete:blogpost:confluence: Delete blogposts.
+            read:whiteboard:confluence: View whiteboards.
+            write:whiteboard:confluence: Create and update whiteboards.
+            delete:whiteboard:confluence: Delete whiteboards.
+            read:custom-content:confluence: View custom content.
+            write:custom-content:confluence: Create and update custom content.
+            delete:custom-content:confluence: Delete custom content.
+            read:attachment:confluence: View and download content attachments.
+            write:attachment:confluence: Create and update attachments.
+            delete:attachment:confluence: Delete attachments.
+            read:comment:confluence: View comments.
+            write:comment:confluence: Create and update comments.
+            delete:comment:confluence: Delete comments.
+            read:template:confluence: View content templates.
+            write:template:confluence: Create, update and delete content templates.
+            read:label:confluence: View labels.
+            write:label:confluence: Add and remove labels.
+            read:content.permission:confluence: Check content permissions.
+            read:content.property:confluence: View content properties.
+            write:content.property:confluence: Create, update and delete content properties.
+            read:content.restriction:confluence: View content restrictions.
+            write:content.restriction:confluence: Update content restrictions.
+            read:content.metadata:confluence: View content summaries.
+            read:watcher:confluence: View content watchers.
+            write:watcher:confluence: Add and remove content watchers.
+            read:group:confluence: View groups.
+            write:group:confluence: Create and delete groups.
+            read:inlinetask:confluence: View tasks.
+            write:inlinetask:confluence: Update tasks.
+            read:relation:confluence: View entity relationships.
+            write:relation:confluence: Create and update entity relationships.
+            read:space:confluence: View spaces.
+            write:space:confluence: Create and update spaces.
+            delete:space:confluence: Delete spaces.
+            read:space.permission:confluence: View space permissions.
+            write:space.permission:confluence: Update space permissions.
+            read:space.property:confluence: View space properties.
+            write:space.property:confluence: Create, update and delete space properties.
+            read:user.property:confluence: View user properties.
+            write:user.property:confluence: Create, update and delete user properties.
+            read:space.setting:confluence: View space settings.
+            write:space.setting:confluence: Update space settings.
+            read:user:confluence: View user details.
 externalDocs:
-  description: Atlassian Admin REST API Documentation
-  url: https://developer.atlassian.com/cloud/admin/organization/rest/intro/
+  description: The online and complete version of the Confluence Cloud REST API docs.
+  url: https://developer.atlassian.com/cloud/confluence/rest/
+x-atlassian-narrative:
+  documents:
+  - title: About
+    anchor: about
+    body: 'This is the reference for the Confluence Cloud REST API. This API is the primary way to get and
+
+      modify data in Confluence Cloud, whether you are developing an app or any other integration.
+
+      Use it to interact with Confluence entities, like pages and blog posts, spaces, users, groups,
+
+      and more.'
+  - title: Authentication and authorization
+    anchor: auth
+    body: '**Authentication:** If you are building a Cloud app, authentication is implemented via JWT or OAuth 2.0, depending on what you are building (see [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/)). Otherwise, if you are authenticating directly against the REST API, the REST API supports basic auth (see [Basic auth for REST APIs](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/)).
+
+
+      **Authorization:** If you are building a Cloud app, authorization can be implemented by [scopes](https://developer.atlassian.com/cloud/confluence/scopes/) or by [OAuth 2.0 user impersonation](https://developer.atlassian.com/cloud/confluence/oauth-2-jwt-bearer-tokens-for-apps). Otherwise, if you are making calls directly against the REST API, authorization is based on the user used in the authentication process.
+
+
+      See [Security overview](https://developer.atlassian.com/cloud/confluence/security-overview/) for more details on authentication and authorization.'
+  - title: Status codes
+    anchor: status-code
+    body: "The Confluence REST API uses the [standard HTTP status codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).\n\nResponses that return an error status code will also return a response body, similar to the following:\n```json\n{\n  \"statusCode\": 404,\n  \"data\": {\n    \"authorized\": false,\n    \"valid\": false,\n    \"errors\": [\n      {\n        \"message\": {\n          \"translation\": \"This is an example error message.\",\n          \"args\": []\n        }\n      }\n    ],\n    \"successful\": false\n  },\n  \"message\": \"This is an example error message.\"\n}\n```"
+  - title: Using the REST API
+    anchor: using
+    body: '**Expansion:** The Confluence REST API uses resource expansion: some parts of a resource are not returned unless explicitly specified. This simplifies responses and minimizes network traffic.
+
+
+      To expand part of a resource in a request, use the `expand` query parameter and specify the entities to be expanded. If you need to expand nested entities, use the `.` dot notation. For example, the following request will expand information about the requested content''s space and labels:
+
+      ```
+
+      GET /wiki/rest/api/content/{id}?expand=space,metadata.labels
+
+      ```
+
+      **Pagination:** The Confluence REST API uses pagination: a method that returns a response with multiple objects can only return a limited number at one time. This limits the size of responses and conserves server resources.
+
+
+      Use the ''limit'' and ''start'' query parameters to specify pagination:
+
+
+      - `limit` is the number of objects to return per page. This may be restricted by system limits.
+
+      - `start` is the index of the first item returned in the page of results. The base index is 0.
+
+
+      For example, the following request will return ten content objects, starting from the fifth object.
+
+      ```
+
+      GET /wiki/rest/api/content?start=4&limit=10
+
+      ```
+
+      **Special headers:**
+
+
+      - `X-Atlassian-Token: no-check` request header must be specified for methods
+
+      that are protected from Cross Site Request Forgery (XSRF/CSRF) attacks. This is
+
+      stated in the method description, if required. For more information, see this
+
+      [KB article](https://confluence.atlassian.com/cloudkb/xsrf-check-failed-when-calling-cloud-apis-826874382.html).'
+  - title: Capabilities
+    anchor: capabilities
+    body: '**Webhooks:** A webhook is a user-defined callback over HTTP. You can use Confluence webhooks to notify your app or web application when certain events occur in Confluence. For example, when a page is created or updated. To learn more, see [Webhooks](https://developer.atlassian.com/cloud/confluence/modules/webhook/).
+
+
+      **Content properties:** Content properties are a key-value storage associated with a piece of Confluence content. If you are building an app, this is one form of persistence that you can use. You can use the Confluence REST API to get, update, and delete content properties. To learn more, see [Content properties in the REST API](https://developer.atlassian.com/cloud/confluence/content-properties/).
+
+
+      **CQL:** The Confluence Query Language (CQL) allows you to perform complex searches for content using an SQL-like syntax in the `search` resource. To learn more, see [Advanced searching using CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).'
