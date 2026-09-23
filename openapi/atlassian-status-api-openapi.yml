@@ -17,7 +17,15 @@ paths:
   /rest/api/3/statuses:
     delete:
       deprecated: false
-      description: Deletes statuses by ID.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)<br> *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)
+      description: 'Deletes statuses by ID.
+
+
+        **Permissions required:**
+
+
+        * *Administer projects* project permission.
+
+        * *Administer Jira* project permission.'
       operationId: atlassianDeletestatusesbyid
       parameters:
       - description: 'The list of status IDs. To include multiple IDs, provide an ampersand-separated list. For example, id=10000&id=10001.
@@ -65,7 +73,15 @@ paths:
       x-atlassian-connect-scope: ADMIN
     get:
       deprecated: false
-      description: Returns a list of the statuses specified by one or more status IDs.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)<br> *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)
+      description: 'Returns a list of the statuses specified by one or more status IDs.
+
+
+        **Permissions required:**
+
+
+        * *Administer projects* project permission.
+
+        * *Administer Jira* project permission.'
       operationId: atlassianGetstatusesbyid
       parameters:
       - description: "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `usages` Returns the project and issue types that use the status in their workflow.\n *  `workflowUsages` Returns the workflows that use the status."
@@ -119,7 +135,15 @@ paths:
       x-atlassian-connect-scope: READ
     post:
       deprecated: false
-      description: Creates statuses for a global or project scope.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)<br> *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)
+      description: 'Creates statuses for a global or project scope.
+
+
+        **Permissions required:**
+
+
+        * *Administer projects* project permission.
+
+        * *Administer Jira* project permission.'
       operationId: atlassianCreatestatuses
       parameters: []
       requestBody:
@@ -178,7 +202,15 @@ paths:
       x-atlassian-connect-scope: ADMIN
     put:
       deprecated: false
-      description: Updates statuses by ID.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)<br> *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)
+      description: 'Updates statuses by ID.
+
+
+        **Permissions required:**
+
+
+        * *Administer projects* project permission.
+
+        * *Administer Jira* project permission.'
       operationId: atlassianUpdatestatuses
       parameters: []
       requestBody:
@@ -231,7 +263,15 @@ paths:
   /rest/api/3/statuses/search:
     get:
       deprecated: false
-      description: Returns a [paginated](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#pagination) list of statuses that match a search on name or project.<br><br>**[Permissions](#permissions) required:**<br><br> *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)<br> *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)
+      description: 'Returns a paginated list of statuses that match a search on name or project.
+
+
+        **Permissions required:**
+
+
+        * *Administer projects* project permission.
+
+        * *Administer Jira* project permission.'
       operationId: atlassianSearch
       parameters:
       - description: "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `usages` Returns the project and issue types that use the status in their workflow.\n *  `workflowUsages` Returns the workflows that use the status."
@@ -302,6 +342,21 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
+    StatusScope:
+      additionalProperties: false
+      description: The scope of the status.
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectId'
+        type:
+          description: The scope of the status. `GLOBAL` for company-managed projects and `PROJECT` for team-managed projects.
+          enum:
+          - PROJECT
+          - GLOBAL
+          type: string
+      required:
+      - type
+      type: object
     PageOfStatuses:
       additionalProperties: false
       properties:
@@ -369,24 +424,6 @@ components:
       - name
       - statusCategory
       type: object
-    ProjectIssueTypes:
-      additionalProperties: false
-      description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
-      properties:
-        issueTypes:
-          description: IDs of the issue types
-          items:
-            description: IDs of the issue types
-            type:
-            - string
-            - 'null'
-          type:
-          - array
-          - 'null'
-          uniqueItems: true
-        project:
-          $ref: '#/components/schemas/ProjectId'
-      type: object
     ProjectId:
       additionalProperties: false
       description: Project ID details.
@@ -409,6 +446,21 @@ components:
         workflowName:
           description: Workflow name.
           type: string
+      type: object
+    StatusCreateRequest:
+      additionalProperties: false
+      description: Details of the statuses being created and their scope.
+      properties:
+        scope:
+          $ref: '#/components/schemas/StatusScope'
+        statuses:
+          description: Details of the statuses being created.
+          items:
+            $ref: '#/components/schemas/StatusCreate'
+          type: array
+      required:
+      - scope
+      - statuses
       type: object
     StatusCreate:
       additionalProperties: false
@@ -467,35 +519,23 @@ components:
           type: array
           uniqueItems: true
       type: object
-    StatusCreateRequest:
+    ProjectIssueTypes:
       additionalProperties: false
-      description: Details of the statuses being created and their scope.
+      description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
       properties:
-        scope:
-          $ref: '#/components/schemas/StatusScope'
-        statuses:
-          description: Details of the statuses being created.
+        issueTypes:
+          description: IDs of the issue types
           items:
-            $ref: '#/components/schemas/StatusCreate'
-          type: array
-      required:
-      - scope
-      - statuses
-      type: object
-    StatusScope:
-      additionalProperties: false
-      description: The scope of the status.
-      properties:
+            description: IDs of the issue types
+            type:
+            - string
+            - 'null'
+          type:
+          - array
+          - 'null'
+          uniqueItems: true
         project:
           $ref: '#/components/schemas/ProjectId'
-        type:
-          description: The scope of the status. `GLOBAL` for company-managed projects and `PROJECT` for team-managed projects.
-          enum:
-          - PROJECT
-          - GLOBAL
-          type: string
-      required:
-      - type
       type: object
   securitySchemes:
     OAuth2:

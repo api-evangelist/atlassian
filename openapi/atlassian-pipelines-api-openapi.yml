@@ -16,9 +16,7 @@ tags:
 
     Cloud, empowering teams with full branching to deployment
 
-    visibility and faster feedback loops.
-
-    '
+    visibility and faster feedback loops.'
 paths:
   /repositories/{workspace}/{repo_slug}/deployments_config/environments/{environment_uuid}/variables:
     get:
@@ -262,7 +260,7 @@ paths:
       tags:
       - Pipelines
       summary: Atlassian Run A Pipeline
-      description: 'Endpoint to create and initiate a pipeline.<br>There are a couple of different options to initiate a pipeline, where the payload of the request will determine which type of pipeline will be instantiated.<br># Trigger a Pipeline for a branch<br>One way to trigger pipelines is by specifying the branch for which you want to trigger a pipeline.<br>The specified branch will be used to determine which pipeline definition from the `bitbucket-pipelines.yml` file will be applied to initiate the pipeline. The pipeline will then do a clone of the repository and checkout the latest revision of the specified branch.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br>  -d ''<br>  {<br>    "target": {<br>      "ref_type": "branch",<br>      "type": "pipeline_ref_target",<br>      "ref_name": "master"<br>    }<br>  }''<br>```<br># Trigger a Pipeline for a commit on a branch or tag<br>You can initiate a pipeline for a specific commit and in the context of a specified reference (e.g. a branch, tag or bookmark).<br>The specified reference will be used to determine which pipeline definition from the bitbucket-pipelines.yml file will be applied to initiate the pipeline. The pipeline will clone the repository and then do a checkout the specified reference.<br><br>The following reference types are supported:<br><br>* `branch`<br>* `named_branch`<br>* `bookmark`<br> * `tag`<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br>  https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br>  -d ''<br>  {<br>    "target": {<br>      "commit": {<br>        "type": "commit",<br>        "hash": "ce5b7431602f7cbba007062eeb55225c6e18e956"<br>      },<br>      "ref_type": "branch",<br>      "type": "pipeline_ref_target",<br>      "ref_name": "master"<br>    }<br>  }''<br>```<br># Trigger a specific pipeline definition for a commit<br>You can trigger a specific pipeline that is defined in your `bitbucket-pipelines.yml` file for a specific commit.<br>In addition to the commit revision, you specify the type and pattern of the selector that identifies the pipeline definition. The resulting pipeline will then clone the repository and checkout the specified revision.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br> -d ''<br>  {<br>     "target": {<br>      "commit": {<br>         "hash":"a3c4e02c9a3755eccdc3764e6ea13facdf30f923",<br>         "type":"commit"<br>       },<br>        "selector": {<br>           "type":"custom",<br>              "pattern":"Deploy to production"<br>          },<br>        "type":"pipeline_commit_target"<br>   }<br>  }''<br>```<br># Trigger a specific pipeline definition for a commit on a branch or tag<br>You can trigger a specific pipeline that is defined in your `bitbucket-pipelines.yml` file for a specific commit in the context of a specified reference.<br>In addition to the commit revision, you specify the type and pattern of the selector that identifies the pipeline definition, as well as the reference information. The resulting pipeline will then clone the repository a checkout the specified reference.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/jeroendr/meat-demo2/pipelines/ \<br> -d ''<br>  {<br>     "target": {<br>      "commit": {<br>         "hash":"a3c4e02c9a3755eccdc3764e6ea13facdf30f923",<br>         "type":"commit"<br>       },<br>       "selector": {<br>          "type": "custom",<br>          "pattern": "Deploy to production"<br>       },<br>       "type": "pipeline_ref_target",<br>       "ref_name": "master",<br>       "ref_type": "branch"<br>     }<br>  }''<br>```<br><br><br># Trigger a custom pipeline with variables<br>In addition to triggering a custom pipeline that is defined in your `bitbucket-pipelines.yml` file as shown in the examples above, you can specify variables that will be available for your build. In the request, provide a list of variables, specifying the following for each variable: key, value, and whether it should be secured or not (this field is optional and defaults to not secured).<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pipelines/ \<br> -d ''<br>  {<br>    "target": {<br>      "type": "pipeline_ref_target",<br>      "ref_type": "branch",<br>      "ref_name": "master",<br>      "selector": {<br>        "type": "custom",<br>        "pattern": "Deploy to production"<br>      }<br>    },<br>    "variables": [<br>      {<br>        "key": "var1key",<br>        "value": "var1value",<br>        "secured": true<br>      },<br>      {<br>        "key": "var2key",<br>        "value": "var2value"<br>      }<br>    ]<br>  }''<br>```<br><br># Trigger a pull request pipeline<br><br>You can also initiate a pipeline for a specific pull request.<br><br>### Example<br><br>```<br>$ curl -X POST -is -u username:password \<br>  -H ''Content-Type: application/json'' \<br> https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/pipelines/ \<br> -d ''<br>  {<br>    "target": {<br>      "type": "pipeline_pullrequest_target",<br>      "source": "pull-request-branch",<br>      "destination": "master",<br>      "destination_commit": {<br>        "hash": "9f848b7"<br>      },<br>      "commit": {<br>        "hash": "1a372fc"<br>      },<br>      "pullrequest": {<br>        "id": "3"<br>      },<br>      "selector": {<br>        "type": "pull-requests",<br>        "pattern": "**"<br>      }<br>    }<br>  }''<br>```<br>'
+      description: Endpoint to create and initiate a pipeline.
       operationId: atlassianCreatepipelineforrepository
       parameters:
       - name: workspace
@@ -652,7 +650,10 @@ paths:
       tags:
       - Pipelines
       summary: Atlassian Get Log File For A Step
-      description: Retrieve the log file for a given step of a pipeline.<br><br>This endpoint supports (and encourages!) the use of [HTTP Range requests](https://tools.ietf.org/html/rfc7233) to deal with potentially very large log files.
+      description: 'Retrieve the log file for a given step of a pipeline.
+
+
+        This endpoint supports (and encourages!) the use of HTTP Range requests to deal with potentially very large log files.'
       operationId: atlassianGetpipelinesteplogforrepository
       parameters:
       - name: workspace
@@ -714,8 +715,11 @@ paths:
     get:
       tags:
       - Pipelines
-      summary: Atlassian Get The Logs For The Build Container Or A Service Container For A Given Step Of A Pipeline
-      description: Retrieve the log file for a build container or service container.<br><br>This endpoint supports (and encourages!) the use of [HTTP Range requests](https://tools.ietf.org/html/rfc7233) to deal with potentially very large log files.
+      summary: Atlassian Get The Logs For The Build Container Or A Service Container For A…
+      description: 'Retrieve the log file for a build container or service container.
+
+
+        This endpoint supports (and encourages!) the use of HTTP Range requests to deal with potentially very large log files.'
       operationId: atlassianGetpipelinecontainerlog
       parameters:
       - name: workspace
@@ -873,7 +877,7 @@ paths:
   : get:
       tags:
       - Pipelines
-      summary: Atlassian Get Test Case Reasons Output For A Given Test Case In A Step Of A Pipeline
+      summary: Atlassian Get Test Case Reasons Output For A Given Test Case In A Step Of A…
       operationId: atlassianGetpipelinetestreporttestcasereasons
       parameters:
       - name: workspace
@@ -2042,7 +2046,9 @@ paths:
       - Pipelines
       summary: Atlassian List Variables For An Account
       deprecated: true
-      description: Find account level variables.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Find account level variables.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianGetpipelinevariablesforteam
       parameters:
       - name: username
@@ -2068,7 +2074,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Create A Variable For A User
-      description: Create an account level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Create an account level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianCreatepipelinevariableforteam
       parameters:
       - name: username
@@ -2114,7 +2122,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Get A Variable For A Team
-      description: Retrieve a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Retrieve a team level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianGetpipelinevariableforteam
       parameters:
       - name: username
@@ -2152,7 +2162,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Update A Variable For A Team
-      description: Update a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Update a team level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianUpdatepipelinevariableforteam
       parameters:
       - name: username
@@ -2192,7 +2204,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Delete A Variable For A Team
-      description: Delete a team level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Delete a team level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianDeletepipelinevariableforteam
       parameters:
       - name: username
@@ -2227,7 +2241,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian List Variables For A User
-      description: Find user level variables.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Find user level variables.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianGetpipelinevariablesforuser
       parameters:
       - name: selected_user
@@ -2253,7 +2269,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Create A Variable For A User
-      description: Create a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Create a user level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianCreatepipelinevariableforuser
       parameters:
       - name: selected_user
@@ -2299,7 +2317,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Get A Variable For A User
-      description: Retrieve a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Retrieve a user level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianGetpipelinevariableforuser
       parameters:
       - name: selected_user
@@ -2337,7 +2357,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Update A Variable For A User
-      description: Update a user level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Update a user level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianUpdatepipelinevariableforuser
       parameters:
       - name: selected_user
@@ -2377,7 +2399,9 @@ paths:
       - Pipelines
       deprecated: true
       summary: Atlassian Delete A Variable For A User
-      description: Delete an account level variable.<br>This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see [the announcement](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/).
+      description: 'Delete an account level variable.
+
+        This endpoint has been deprecated, and you should use the new workspaces endpoint. For more information, see the announcement.'
       operationId: atlassianDeletepipelinevariableforuser
       parameters:
       - name: selected_user
@@ -2667,10 +2691,10 @@ paths:
       - api_key: []
 components:
   schemas:
-    paginated_pipeline_caches:
+    paginated_pipelines:
       type: object
-      title: Paginated Pipeline Cache
-      description: A paged list of pipeline caches
+      title: Paginated Pipelines
+      description: A paged list of pipelines
       properties:
         page:
           type: integer
@@ -2679,7 +2703,7 @@ components:
           type: array
           minItems: 0
           items:
-            $ref: '#/components/schemas/pipeline_cache'
+            $ref: '#/components/schemas/pipeline'
           description: The values of the current page.
         size:
           type: integer
@@ -2695,6 +2719,132 @@ components:
           type: string
           format: uri
           description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    paginated_pipeline_variables:
+      type: object
+      title: Paginated Pipeline Variables
+      description: A paged list of variables.
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_variable'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    pipeline_schedule_put_request_body:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Request body for Pipeline Schedule PUT request
+        properties:
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+    ref:
+      type: object
+      title: Ref
+      description: A ref object, representing a branch or tag in a repository.
+      properties:
+        type:
+          type: string
+        links:
+          type: object
+          properties:
+            self:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            commits:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+            html:
+              type: object
+              title: Link
+              description: A link to a resource related to this object.
+              properties:
+                href:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+        name:
+          type: string
+          description: The name of the ref.
+        target:
+          $ref: '#/components/schemas/commit'
+      required:
+      - type
+      additionalProperties: true
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
+    pipeline_ref_target:
+      allOf:
+      - $ref: '#/components/schemas/pipeline_target'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Ref Target
+        description: A Bitbucket Pipelines reference target.
+        properties:
+          ref_type:
+            enum:
+            - branch
+            - tag
+            - named_branch
+            - bookmark
+            type: string
+            description: The type of reference (branch/tag).
+          ref_name:
+            type: string
+            description: The name of the reference.
+          commit:
+            $ref: '#/components/schemas/commit'
+          selector:
+            $ref: '#/components/schemas/pipeline_selector'
     repository:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -2882,58 +3032,44 @@ components:
           mainbranch:
             $ref: '#/components/schemas/branch'
         additionalProperties: true
-    ref:
+    paginated_pipeline_steps:
       type: object
-      title: Ref
-      description: A ref object, representing a branch or tag in a repository.
+      title: Paginated Pipeline Steps
+      description: A paged list of pipeline steps.
       properties:
-        type:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_step'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
           type: string
-        links:
-          type: object
-          properties:
-            self:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-            commits:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-            html:
-              type: object
-              title: Link
-              description: A link to a resource related to this object.
-              properties:
-                href:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-              additionalProperties: false
-          additionalProperties: false
-        name:
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
           type: string
-          description: The name of the ref.
-        target:
-          $ref: '#/components/schemas/commit'
-      required:
-      - type
-      additionalProperties: true
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
     pipeline_schedule_post_request_body:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -2968,222 +3104,26 @@ components:
         required:
         - target
         - cron_pattern
-    pipeline_variable:
+    pipeline_ssh_public_key:
       allOf:
       - $ref: '#/components/schemas/object'
       - additionalProperties: true
         type: object
-        title: Pipeline Variable
-        description: A Pipelines variable.
+        title: Pipeline SSH Public Key
+        description: A Pipelines known host public key.
         properties:
-          uuid:
+          key_type:
             type: string
-            description: The UUID identifying the variable.
+            description: The type of the public key.
           key:
             type: string
-            description: The unique name of the variable.
-          value:
+            description: The base64 encoded public key.
+          md5_fingerprint:
             type: string
-            description: The value of the variable. If the variable is secured, this will be empty.
-          secured:
-            type: boolean
-            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
-    pipeline_ref_target:
-      allOf:
-      - $ref: '#/components/schemas/pipeline_target'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Ref Target
-        description: A Bitbucket Pipelines reference target.
-        properties:
-          ref_type:
-            enum:
-            - branch
-            - tag
-            - named_branch
-            - bookmark
+            description: The MD5 fingerprint of the public key.
+          sha256_fingerprint:
             type: string
-            description: The type of reference (branch/tag).
-          ref_name:
-            type: string
-            description: The name of the reference.
-          commit:
-            $ref: '#/components/schemas/commit'
-          selector:
-            $ref: '#/components/schemas/pipeline_selector'
-    paginated_pipeline_schedules:
-      type: object
-      title: Paginated Pipeline Schedule
-      description: A paged list of schedules
-      properties:
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-        values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/pipeline_schedule'
-          description: The values of the current page.
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-        next:
-          type: string
-          format: uri
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-        previous:
-          type: string
-          format: uri
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    account_links:
-      type: object
-      title: Account Links
-      description: Links related to an Account.
-      properties:
-        avatar:
-          $ref: '#/components/schemas/link'
-      additionalProperties: true
-    author:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Author
-        description: The author of a change in a repository
-        properties:
-          raw:
-            type: string
-            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
-          user:
-            $ref: '#/components/schemas/account'
-        additionalProperties: true
-    error:
-      type: object
-      title: Error
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            detail:
-              type: string
-            data:
-              type: object
-              description: Optional structured data that is endpoint-specific.
-              properties: {}
-              additionalProperties: true
-          required:
-          - message
-          additionalProperties: false
-      required:
-      - type
-      additionalProperties: true
-    pipeline_step_state:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Step State
-        description: The representation of the progress state of a pipeline step.
-        properties: {}
-    base_commit:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Base Commit
-        description: The common base type for both repository and snippet commits.
-        properties:
-          hash:
-            type: string
-            pattern: '[0-9a-f]{7,}?'
-          date:
-            type: string
-            format: date-time
-          author:
-            $ref: '#/components/schemas/author'
-          message:
-            type: string
-          summary:
-            type: object
-            properties:
-              raw:
-                type: string
-                description: The text as it was typed by a user.
-              markup:
-                type: string
-                description: The type of markup language the raw content is to be interpreted in.
-                enum:
-                - markdown
-                - creole
-                - plaintext
-              html:
-                type: string
-                description: The user's content rendered as HTML.
-            additionalProperties: false
-          parents:
-            type: array
-            items:
-              $ref: '#/components/schemas/base_commit'
-            minItems: 0
-        additionalProperties: true
-    deployment_variable:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Deployment Variable
-        description: A Pipelines deployment variable.
-        properties:
-          uuid:
-            type: string
-            description: The UUID identifying the variable.
-          key:
-            type: string
-            description: The unique name of the variable.
-          value:
-            type: string
-            description: The value of the variable. If the variable is secured, this will be empty.
-          secured:
-            type: boolean
-            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
-    pipeline_selector:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Selector
-        description: A representation of the selector that was used to identify the pipeline in the YML file.
-        properties:
-          type:
-            enum:
-            - branches
-            - tags
-            - bookmarks
-            - default
-            - custom
-            type: string
-            description: The type of selector.
-          pattern:
-            type: string
-            description: The name of the matching pipeline definition.
-    pipeline_command:
-      type: object
-      title: Pipeline Command
-      description: An executable pipeline command.
-      properties:
-        name:
-          type: string
-          description: The name of the command.
-        command:
-          type: string
-          description: The executable command.
+            description: The SHA-256 fingerprint of the public key.
     participant:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -3211,34 +3151,6 @@ components:
             description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
             format: date-time
         additionalProperties: true
-    paginated_deployment_variable:
-      type: object
-      title: Paginated Deployment Variables
-      description: A paged list of deployment variables.
-      properties:
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-        values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/deployment_variable'
-          description: The values of the current page.
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-        next:
-          type: string
-          format: uri
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-        previous:
-          type: string
-          format: uri
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
     project:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -3308,77 +3220,166 @@ components:
 
               Note that private projects cannot contain public repositories.'
         additionalProperties: true
-    paginated_pipeline_known_hosts:
+    link:
       type: object
-      title: Paginated Pipeline Known Hosts
-      description: A paged list of known hosts.
+      title: Link
+      description: A link to a resource related to this object.
       properties:
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-        values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/pipeline_known_host'
-          description: The values of the current page.
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-        next:
+        href:
           type: string
           format: uri
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-        previous:
+        name:
           type: string
-          format: uri
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    pipeline_known_host:
+      additionalProperties: false
+    base_commit:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Base Commit
+        description: The common base type for both repository and snippet commits.
+        properties:
+          hash:
+            type: string
+            pattern: '[0-9a-f]{7,}?'
+          date:
+            type: string
+            format: date-time
+          author:
+            $ref: '#/components/schemas/author'
+          message:
+            type: string
+          summary:
+            type: object
+            properties:
+              raw:
+                type: string
+                description: The text as it was typed by a user.
+              markup:
+                type: string
+                description: The type of markup language the raw content is to be interpreted in.
+                enum:
+                - markdown
+                - creole
+                - plaintext
+              html:
+                type: string
+                description: The user's content rendered as HTML.
+            additionalProperties: false
+          parents:
+            type: array
+            items:
+              $ref: '#/components/schemas/base_commit'
+            minItems: 0
+        additionalProperties: true
+    pipeline_build_number:
       allOf:
       - $ref: '#/components/schemas/object'
       - additionalProperties: true
         type: object
-        title: Pipeline Known Host
-        description: A Pipelines known host.
+        title: Pipeline Build Number
+        description: A Pipelines build number.
+        properties:
+          next:
+            type: integer
+            description: The next number that will be used as build number.
+    pipeline:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline
+        description: A Bitbucket Pipeline. This represents an actual pipeline result.
         properties:
           uuid:
             type: string
-            description: The UUID identifying the known host.
-          hostname:
+            description: The UUID identifying the pipeline.
+          build_number:
+            type: integer
+            description: The build number of the pipeline.
+          creator:
+            $ref: '#/components/schemas/account'
+          repository:
+            $ref: '#/components/schemas/repository'
+          target:
+            $ref: '#/components/schemas/pipeline_target'
+          trigger:
+            $ref: '#/components/schemas/pipeline_trigger'
+          state:
+            $ref: '#/components/schemas/pipeline_state'
+          variables:
+            type: array
+            minItems: 0
+            items:
+              $ref: '#/components/schemas/pipeline_variable'
+            description: The variables for the pipeline.
+          created_on:
             type: string
-            description: The hostname of the known host.
-          public_key:
-            $ref: '#/components/schemas/pipeline_ssh_public_key'
-    pipeline_trigger:
+            format: date-time
+            description: The timestamp when the pipeline was created.
+          completed_on:
+            type: string
+            format: date-time
+            description: The timestamp when the Pipeline was completed. This is not set if the pipeline is still in progress.
+          build_seconds_used:
+            type: integer
+            description: The number of build seconds used by this pipeline.
+    pipeline_cache:
       allOf:
       - $ref: '#/components/schemas/object'
       - additionalProperties: true
         type: object
-        title: Pipeline Trigger
-        description: A representation of the trigger used for a pipeline.
-        properties: {}
-    commit:
-      allOf:
-      - $ref: '#/components/schemas/base_commit'
-      - type: object
-        title: Commit
-        description: A repository commit object.
+        title: Pipeline Cache
+        description: A representation of metadata for a pipeline cache for given repository.
         properties:
-          repository:
-            $ref: '#/components/schemas/repository'
-          participants:
-            type: array
-            items:
-              $ref: '#/components/schemas/participant'
-            minItems: 0
-        additionalProperties: true
-    paginated_pipelines:
+          uuid:
+            type: string
+            description: The UUID identifying the pipeline cache.
+          pipeline_uuid:
+            type: string
+            description: The UUID of the pipeline that created the cache.
+          step_uuid:
+            type: string
+            description: The uuid of the step that created the cache.
+          name:
+            type: string
+            description: The name of the cache.
+          key_hash:
+            type: string
+            description: The key hash of the cache version.
+          path:
+            type: string
+            description: The path where the cache contents were retrieved from.
+          file_size_bytes:
+            type: integer
+            description: The size of the file containing the archive of the cache.
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the cache was created.
+    deployment_variable:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Deployment Variable
+        description: A Pipelines deployment variable.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the variable.
+          key:
+            type: string
+            description: The unique name of the variable.
+          value:
+            type: string
+            description: The value of the variable. If the variable is secured, this will be empty.
+          secured:
+            type: boolean
+            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+    paginated_deployment_variable:
       type: object
-      title: Paginated Pipelines
-      description: A paged list of pipelines
+      title: Paginated Deployment Variables
+      description: A paged list of deployment variables.
       properties:
         page:
           type: integer
@@ -3387,7 +3388,7 @@ components:
           type: array
           minItems: 0
           items:
-            $ref: '#/components/schemas/pipeline'
+            $ref: '#/components/schemas/deployment_variable'
           description: The values of the current page.
         size:
           type: integer
@@ -3403,33 +3404,6 @@ components:
           type: string
           format: uri
           description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    pipelines_config:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipelines Configuration
-        description: The Pipelines configuration for a repository.
-        properties:
-          enabled:
-            type: boolean
-            description: Whether Pipelines is enabled for the repository.
-          repository:
-            $ref: '#/components/schemas/repository'
-    pipeline_ssh_key_pair:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline SSH Key Pair
-        description: A Pipelines SSH key pair.
-        properties:
-          private_key:
-            type: string
-            description: The SSH private key. This value will be empty when retrieving the SSH key pair.
-          public_key:
-            type: string
-            description: The SSH public key.
     pipeline_step:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -3468,100 +3442,22 @@ components:
       x-bb-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/{pipeline.uuid}/steps/{uuid}
       x-bb-batch-url: /rest/1.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/pipelines/steps_batch
       x-bb-batch-max-size: 100
-    link:
+    account_links:
       type: object
-      title: Link
-      description: A link to a resource related to this object.
+      title: Account Links
+      description: Links related to an Account.
       properties:
-        href:
-          type: string
-          format: uri
-        name:
-          type: string
-      additionalProperties: false
-    branch:
-      allOf:
-      - $ref: '#/components/schemas/ref'
-      - type: object
-        title: Branch
-        description: A branch object, representing a branch in a repository.
-        properties:
-          merge_strategies:
-            type: array
-            description: Available merge strategies for pull requests targeting this branch.
-            items:
-              type: string
-              enum:
-              - merge_commit
-              - squash
-              - fast_forward
-          default_merge_strategy:
-            type: string
-            description: The default merge strategy for pull requests targeting this branch.
-        additionalProperties: true
-    pipeline_state:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    pipeline_step_state:
       allOf:
       - $ref: '#/components/schemas/object'
       - additionalProperties: true
         type: object
-        title: Pipeline State
-        description: The representation of the progress state of a pipeline.
+        title: Pipeline Step State
+        description: The representation of the progress state of a pipeline step.
         properties: {}
-    team:
-      allOf:
-      - $ref: '#/components/schemas/account'
-      - type: object
-        title: Team
-        description: A team object.
-        properties:
-          links:
-            $ref: '#/components/schemas/team_links'
-        additionalProperties: true
-    pipeline_schedule_execution:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Schedule Execution
-        description: A Pipelines schedule execution.
-        properties: {}
-    pipeline_cache_content_uri:
-      type: object
-      title: Pipeline Cache Content URI
-      description: A representation of the location of pipeline cache content.
-      properties:
-        uri:
-          type: string
-          format: uri
-          description: The uri for pipeline cache content.
-    pipeline_image:
-      type: object
-      title: Pipeline Image
-      description: The definition of a Docker image that can be used for a Bitbucket Pipelines step execution context.
-      properties:
-        name:
-          type: string
-          description: The name of the image. If the image is hosted on DockerHub the short name can be used, otherwise the fully qualified name is required here.
-        username:
-          type: string
-          description: The username needed to authenticate with the Docker registry. Only required when using a private Docker image.
-        password:
-          type: string
-          description: The password needed to authenticate with the Docker registry. Only required when using a private Docker image.
-        email:
-          type: string
-          description: The email needed to authenticate with the Docker registry. Only required when using a private Docker image.
-    pipeline_build_number:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Build Number
-        description: A Pipelines build number.
-        properties:
-          next:
-            type: integer
-            description: The next number that will be used as build number.
     account:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -3582,37 +3478,21 @@ components:
           uuid:
             type: string
         additionalProperties: true
-    pipeline_schedule:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline Schedule
-        description: A Pipelines schedule.
-        properties:
-          uuid:
-            type: string
-            description: The UUID identifying the schedule.
-          enabled:
-            type: boolean
-            description: Whether the schedule is enabled.
-          target:
-            $ref: '#/components/schemas/pipeline_ref_target'
-          cron_pattern:
-            type: string
-            description: 'The cron expression with second precision (7 fields) that the schedule applies. For example, for expression: 0 0 12 * * ? *, will execute at 12pm UTC every day.'
-          created_on:
-            type: string
-            format: date-time
-            description: The timestamp when the schedule was created.
-          updated_on:
-            type: string
-            format: date-time
-            description: The timestamp when the schedule was updated.
-    paginated_pipeline_variables:
+    object:
       type: object
-      title: Paginated Pipeline Variables
-      description: A paged list of variables.
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_pipeline_known_hosts:
+      type: object
+      title: Paginated Pipeline Known Hosts
+      description: A paged list of known hosts.
       properties:
         page:
           type: integer
@@ -3621,7 +3501,7 @@ components:
           type: array
           minItems: 0
           items:
-            $ref: '#/components/schemas/pipeline_variable'
+            $ref: '#/components/schemas/pipeline_known_host'
           description: The values of the current page.
         size:
           type: integer
@@ -3665,149 +3545,82 @@ components:
           type: string
           format: uri
           description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    paginated_pipeline_steps:
+    pipeline_selector:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Selector
+        description: A representation of the selector that was used to identify the pipeline in the YML file.
+        properties:
+          type:
+            enum:
+            - branches
+            - tags
+            - bookmarks
+            - default
+            - custom
+            type: string
+            description: The type of selector.
+          pattern:
+            type: string
+            description: The name of the matching pipeline definition.
+    pipeline_command:
       type: object
-      title: Paginated Pipeline Steps
-      description: A paged list of pipeline steps.
+      title: Pipeline Command
+      description: An executable pipeline command.
       properties:
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-        values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/pipeline_step'
-          description: The values of the current page.
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-        next:
+        name:
           type: string
-          format: uri
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-        previous:
+          description: The name of the command.
+        command:
           type: string
-          format: uri
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    pipeline_cache:
+          description: The executable command.
+    pipeline_variable:
       allOf:
       - $ref: '#/components/schemas/object'
       - additionalProperties: true
         type: object
-        title: Pipeline Cache
-        description: A representation of metadata for a pipeline cache for given repository.
+        title: Pipeline Variable
+        description: A Pipelines variable.
         properties:
           uuid:
             type: string
-            description: The UUID identifying the pipeline cache.
-          pipeline_uuid:
-            type: string
-            description: The UUID of the pipeline that created the cache.
-          step_uuid:
-            type: string
-            description: The uuid of the step that created the cache.
-          name:
-            type: string
-            description: The name of the cache.
-          key_hash:
-            type: string
-            description: The key hash of the cache version.
-          path:
-            type: string
-            description: The path where the cache contents were retrieved from.
-          file_size_bytes:
-            type: integer
-            description: The size of the file containing the archive of the cache.
-          created_on:
-            type: string
-            format: date-time
-            description: The timestamp when the cache was created.
-    pipeline_schedule_put_request_body:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Request body for Pipeline Schedule PUT request
-        properties:
-          enabled:
-            type: boolean
-            description: Whether the schedule is enabled.
-    pipeline:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline
-        description: A Bitbucket Pipeline. This represents an actual pipeline result.
-        properties:
-          uuid:
-            type: string
-            description: The UUID identifying the pipeline.
-          build_number:
-            type: integer
-            description: The build number of the pipeline.
-          creator:
-            $ref: '#/components/schemas/account'
-          repository:
-            $ref: '#/components/schemas/repository'
-          target:
-            $ref: '#/components/schemas/pipeline_target'
-          trigger:
-            $ref: '#/components/schemas/pipeline_trigger'
-          state:
-            $ref: '#/components/schemas/pipeline_state'
-          variables:
-            type: array
-            minItems: 0
-            items:
-              $ref: '#/components/schemas/pipeline_variable'
-            description: The variables for the pipeline.
-          created_on:
-            type: string
-            format: date-time
-            description: The timestamp when the pipeline was created.
-          completed_on:
-            type: string
-            format: date-time
-            description: The timestamp when the Pipeline was completed. This is not set if the pipeline is still in progress.
-          build_seconds_used:
-            type: integer
-            description: The number of build seconds used by this pipeline.
-    pipeline_ssh_public_key:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - additionalProperties: true
-        type: object
-        title: Pipeline SSH Public Key
-        description: A Pipelines known host public key.
-        properties:
-          key_type:
-            type: string
-            description: The type of the public key.
+            description: The UUID identifying the variable.
           key:
             type: string
-            description: The base64 encoded public key.
-          md5_fingerprint:
+            description: The unique name of the variable.
+          value:
             type: string
-            description: The MD5 fingerprint of the public key.
-          sha256_fingerprint:
-            type: string
-            description: The SHA-256 fingerprint of the public key.
-    object:
+            description: The value of the variable. If the variable is secured, this will be empty.
+          secured:
+            type: boolean
+            description: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+    error:
       type: object
+      title: Error
       description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
       properties:
         type:
           type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
       required:
       - type
       additionalProperties: true
-      discriminator:
-        propertyName: type
     pipeline_target:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -3834,13 +3647,218 @@ components:
           repositories:
             $ref: '#/components/schemas/link'
         additionalProperties: true
+    pipeline_state:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline State
+        description: The representation of the progress state of a pipeline.
+        properties: {}
+    branch:
+      allOf:
+      - $ref: '#/components/schemas/ref'
+      - type: object
+        title: Branch
+        description: A branch object, representing a branch in a repository.
+        properties:
+          merge_strategies:
+            type: array
+            description: Available merge strategies for pull requests targeting this branch.
+            items:
+              type: string
+              enum:
+              - merge_commit
+              - squash
+              - fast_forward
+          default_merge_strategy:
+            type: string
+            description: The default merge strategy for pull requests targeting this branch.
+        additionalProperties: true
+    pipeline_ssh_key_pair:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline SSH Key Pair
+        description: A Pipelines SSH key pair.
+        properties:
+          private_key:
+            type: string
+            description: The SSH private key. This value will be empty when retrieving the SSH key pair.
+          public_key:
+            type: string
+            description: The SSH public key.
+    pipeline_schedule_execution:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule Execution
+        description: A Pipelines schedule execution.
+        properties: {}
+    pipeline_known_host:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Known Host
+        description: A Pipelines known host.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the known host.
+          hostname:
+            type: string
+            description: The hostname of the known host.
+          public_key:
+            $ref: '#/components/schemas/pipeline_ssh_public_key'
+    pipeline_cache_content_uri:
+      type: object
+      title: Pipeline Cache Content URI
+      description: A representation of the location of pipeline cache content.
+      properties:
+        uri:
+          type: string
+          format: uri
+          description: The uri for pipeline cache content.
+    paginated_pipeline_caches:
+      type: object
+      title: Paginated Pipeline Cache
+      description: A paged list of pipeline caches
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_cache'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    pipeline_trigger:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Trigger
+        description: A representation of the trigger used for a pipeline.
+        properties: {}
+    pipeline_schedule:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipeline Schedule
+        description: A Pipelines schedule.
+        properties:
+          uuid:
+            type: string
+            description: The UUID identifying the schedule.
+          enabled:
+            type: boolean
+            description: Whether the schedule is enabled.
+          target:
+            $ref: '#/components/schemas/pipeline_ref_target'
+          cron_pattern:
+            type: string
+            description: 'The cron expression with second precision (7 fields) that the schedule applies. For example, for expression: 0 0 12 * * ? *, will execute at 12pm UTC every day.'
+          created_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was created.
+          updated_on:
+            type: string
+            format: date-time
+            description: The timestamp when the schedule was updated.
+    pipelines_config:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - additionalProperties: true
+        type: object
+        title: Pipelines Configuration
+        description: The Pipelines configuration for a repository.
+        properties:
+          enabled:
+            type: boolean
+            description: Whether Pipelines is enabled for the repository.
+          repository:
+            $ref: '#/components/schemas/repository'
+    paginated_pipeline_schedules:
+      type: object
+      title: Paginated Pipeline Schedule
+      description: A paged list of schedules
+      properties:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/pipeline_schedule'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
+          type: string
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    pipeline_image:
+      type: object
+      title: Pipeline Image
+      description: The definition of a Docker image that can be used for a Bitbucket Pipelines step execution context.
+      properties:
+        name:
+          type: string
+          description: The name of the image. If the image is hosted on DockerHub the short name can be used, otherwise the fully qualified name is required here.
+        username:
+          type: string
+          description: The username needed to authenticate with the Docker registry. Only required when using a private Docker image.
+        password:
+          type: string
+          description: The password needed to authenticate with the Docker registry. Only required when using a private Docker image.
+        email:
+          type: string
+          description: The email needed to authenticate with the Docker registry. Only required when using a private Docker image.
   requestBodies:
-    pipeline_variable2:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/pipeline_variable'
-      description: The variable to create.
     pipeline_variable:
       content:
         application/json:
@@ -3848,6 +3866,12 @@ components:
             $ref: '#/components/schemas/pipeline_variable'
       description: The updated variable.
       required: true
+    pipeline_variable2:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/pipeline_variable'
+      description: The variable to create.
   securitySchemes:
     basic:
       type: http

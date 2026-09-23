@@ -1,7 +1,7 @@
 openapi: 3.2.0
 info:
   title: Atlassian The Confluence Cloud REST Content Permissions API
-  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  description: This document describes the REST API and resources provided by Confluence.
   termsOfService: https://atlassian.com/terms/
   version: 1.0.0
 servers:
@@ -14,7 +14,27 @@ paths:
       tags:
       - Content Permissions
       summary: Atlassian Check Content Permissions
-      description: Check if a user or a group can perform an operation to the specified content. The `operation` to check<br>must be provided. The user’s account ID or the ID of the group can be provided in the `subject` to check<br>permissions against a specified user or group. The following permission checks are done to make sure that the<br>user or group has the proper access:<br><br>- site permissions<br>- space permissions<br>- content restrictions<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>Permission to access the Confluence site ('Can use' global permission) if checking permission for self,<br>otherwise 'Confluence Administrator' global permission is required.
+      description: 'Check if a user or a group can perform an operation to the specified content. The `operation` to check
+
+        must be provided. The user’s account ID or the ID of the group can be provided in the `subject` to check
+
+        permissions against a specified user or group. The following permission checks are done to make sure that the
+
+        user or group has the proper access:
+
+
+        - site permissions
+
+        - space permissions
+
+        - content restrictions
+
+
+        **Permissions required**:
+
+        Permission to access the Confluence site (''Can use'' global permission) if checking permission for self,
+
+        otherwise ''Confluence Administrator'' global permission is required.'
       operationId: atlassianCheckcontentpermission
       parameters:
       - name: id
@@ -75,13 +95,22 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    GenericLinks:
+    ContentPermissionRequest:
+      required:
+      - operation
+      - subject
       type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
+        operation:
+          type: string
+          description: The content permission operation to check.
+          enum:
+          - read
+          - update
+          - delete
+      description: This object represents the request for the content permission check API.
     PermissionSubjectWithGroupId:
       required:
       - identifier
@@ -100,22 +129,6 @@ components:
 
             for `type=group`, identifier should be ID of the group'
       description: The user or group that the permission applies to.
-    ContentPermissionRequest:
-      required:
-      - operation
-      - subject
-      type: object
-      properties:
-        subject:
-          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
-        operation:
-          type: string
-          description: The content permission operation to check.
-          enum:
-          - read
-          - update
-          - delete
-      description: This object represents the request for the content permission check API.
     Message:
       required:
       - args
@@ -164,6 +177,13 @@ components:
         - Anonymous user does not have permission to the space
 
         - Anonymous user does not have permission to the content'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
   securitySchemes:
     basicAuth:
       type: http

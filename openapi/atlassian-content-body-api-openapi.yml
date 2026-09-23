@@ -1,7 +1,7 @@
 openapi: 3.2.0
 info:
   title: Atlassian The Confluence Cloud REST Content Body API
-  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  description: This document describes the REST API and resources provided by Confluence.
   termsOfService: https://atlassian.com/terms/
   version: 1.0.0
 servers:
@@ -14,7 +14,26 @@ paths:
       tags:
       - Content Body
       summary: Atlassian Convert Content Body
-      description: 'Converts a content body from one format to another format.<br><br>Supported conversions:<br><br>- storage: view, export_view, styled_view, editor<br>- editor: storage<br>- view: none<br>- export_view: none<br>- styled_view: none<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>If request specifies ''contentIdContext'', ''View'' permission for the space, and permission to view the content.'
+      description: 'Converts a content body from one format to another format.
+
+
+        Supported conversions:
+
+
+        - storage: view, export_view, styled_view, editor
+
+        - editor: storage
+
+        - view: none
+
+        - export_view: none
+
+        - styled_view: none
+
+
+        **Permissions required**:
+
+        If request specifies ''contentIdContext'', ''View'' permission for the space, and permission to view the content.'
       operationId: atlassianConvertcontentbody
       parameters:
       - name: to
@@ -112,7 +131,25 @@ paths:
       tags:
       - Content Body
       summary: Atlassian Asynchronously Convert Content Body
-      description: 'Converts a content body from one format to another format asynchronously.<br>Returns the asyncId for the asynchronous task.<br><br>Supported conversions:<br><br>- storage: export_view<br><br>No other conversions are supported at the moment.<br>Once a conversion is completed, it will be available for 5 minutes at the result endpoint.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>If request specifies ''contentIdContext'', ''View'' permission for the space, and permission to view the content.'
+      description: 'Converts a content body from one format to another format asynchronously.
+
+        Returns the asyncId for the asynchronous task.
+
+
+        Supported conversions:
+
+
+        - storage: export_view
+
+
+        No other conversions are supported at the moment.
+
+        Once a conversion is completed, it will be available for 5 minutes at the result endpoint.
+
+
+        **Permissions required**:
+
+        If request specifies ''contentIdContext'', ''View'' permission for the space, and permission to view the content.'
       operationId: atlassianAsyncconvertcontentbodyrequest
       parameters:
       - name: to
@@ -223,8 +260,20 @@ paths:
     get:
       tags:
       - Content Body
-      summary: Atlassian Get Asynchronously Converted Content Body From The Id Or The Current Status Of The Task
-      description: Returns the asynchronous content body for the corresponding id if the task is complete <br>or returns the status of the task.<br><br>After the task is completed, the result can be obtained for 5 minutes, or until an identical conversion request is made again,<br>with allowCache query param set to false.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>If request specifies 'contentIdContext', 'View' permission for the space, and permission to view the content.
+      summary: Atlassian Get Asynchronously Converted Content Body From The Id Or The Current…
+      description: 'Returns the asynchronous content body for the corresponding id if the task is complete
+
+        or returns the status of the task.
+
+
+        After the task is completed, the result can be obtained for 5 minutes, or until an identical conversion request is made again,
+
+        with allowCache query param set to false.
+
+
+        **Permissions required**:
+
+        If request specifies ''contentIdContext'', ''View'' permission for the space, and permission to view the content.'
       operationId: atlassianAsyncconvertcontentbodyresponse
       parameters:
       - name: id
@@ -271,13 +320,110 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    GenericLinks:
+    ContentBodyCreate:
+      required:
+      - representation
+      - value
       type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+          description: The body of the content in the relevant format.
+        representation:
+          type: string
+          description: 'The content format type. Set the value of this property to
+
+            the name of the format being used, e.g. ''storage''.'
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - plain
+          - raw
+      description: This object is used when creating or updating content.
+    AsyncContentBody:
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+        renderTaskId:
+          type: string
+        error:
+          type: string
+        status:
+          description: Rerunning is reserved for when the job is working, but there is a previous run's value in the cache. You may choose to continue polling, or use the cached value.
+          type: string
+          enum:
+          - WORKING
+          - QUEUED
+          - FAILED
+          - COMPLETED
+          - RERUNNING
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    AsyncId:
+      required:
+      - asyncId
+      type: object
+      properties:
+        asyncId:
+          type: string
+    Embeddable:
+      type: object
+      additionalProperties: true
     SuperBatchWebResources:
       type: object
       properties:
@@ -318,13 +464,6 @@ components:
         _expandable:
           type: object
           additionalProperties: true
-    AsyncId:
-      required:
-      - asyncId
-      type: object
-      properties:
-        asyncId:
-          type: string
     ContentBody:
       required:
       - representation
@@ -382,6 +521,17 @@ components:
               type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
     WebResourceDependencies:
       type: object
       properties:
@@ -455,114 +605,13 @@ components:
               additionalProperties: true
         superbatch:
           $ref: '#/components/schemas/SuperBatchWebResources'
-    Embeddable:
+    GenericLinks:
       type: object
-      additionalProperties: true
-    AsyncContentBody:
-      type: object
-      properties:
-        value:
-          type: string
-        representation:
-          type: string
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-        renderTaskId:
-          type: string
-        error:
-          type: string
-        status:
-          description: Rerunning is reserved for when the job is working, but there is a previous run's value in the cache. You may choose to continue polling, or use the cached value.
-          type: string
-          enum:
-          - WORKING
-          - QUEUED
-          - FAILED
-          - COMPLETED
-          - RERUNNING
-        embeddedContent:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbeddedContent'
-        webresource:
-          $ref: '#/components/schemas/WebResourceDependencies'
-        mediaToken:
-          type: object
-          properties:
-            collectionIds:
-              type: array
-              items:
-                type: string
-            contentId:
-              type: string
-            expiryDateTime:
-              type: string
-            fileIds:
-              type: array
-              items:
-                type: string
-            token:
-              type: string
-        _expandable:
-          type: object
-          properties:
-            content:
-              type: string
-            embeddedContent:
-              type: string
-            webresource:
-              type: string
-            mediaToken:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    EmbeddedContent:
-      type: object
-      additionalProperties: true
-      properties:
-        entityId:
-          type: integer
-          format: int64
-        entityType:
-          type: string
-        entity:
-          $ref: '#/components/schemas/Embeddable'
-    ContentBodyCreate:
-      required:
-      - representation
-      - value
-      type: object
-      additionalProperties: true
-      properties:
-        value:
-          type: string
-          description: The body of the content in the relevant format.
-        representation:
-          type: string
-          description: 'The content format type. Set the value of this property to
-
-            the name of the format being used, e.g. ''storage''.'
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-          - plain
-          - raw
-      description: This object is used when creating or updating content.
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
   parameters:
     bodyConversionExpand:
       name: expand

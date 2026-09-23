@@ -60,7 +60,95 @@ paths:
     put:
       tags:
       - Reports - Commits
-      description: "Creates or updates a report for the specified commit.<br>To upload a report, make sure to generate an ID that is unique across all reports for that commit. If you want to use an existing id from your own system, we recommend prefixing it with your system's name to avoid collisions, for example, mySystem-001.<br><br>### Sample cURL request:<br>```<br>curl --request PUT 'https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001' \\<br>--header 'Content-Type: application/json' \\<br>--data-raw '{<br>    \"title\": \"Security scan report\",<br>    \"details\": \"This pull request introduces 10 new dependency vulnerabilities.\",<br>    \"report_type\": \"SECURITY\",<br>    \"reporter\": \"mySystem\",<br>    \"link\": \"http://www.mysystem.com/reports/001\",<br>    \"result\": \"FAILED\",<br>    \"data\": [<br>        {<br>            \"title\": \"Duration (seconds)\",<br>            \"type\": \"DURATION\",<br>            \"value\": 14<br>        },<br>        {<br>            \"title\": \"Safe to merge?\",<br>            \"type\": \"BOOLEAN\",<br>            \"value\": false<br>        }<br>    ]<br>}'<br>```<br><br>### Possible field values:<br>report_type: SECURITY, COVERAGE, TEST, BUG<br>result: PASSED, FAILED, PENDING<br>data.type: BOOLEAN, DATE, DURATION, LINK, NUMBER, PERCENTAGE, TEXT<br><br>#### Data field formats<br>| Type  Field   | Value Field Type  | Value Field Display |<br>|:--|:|:--|<br>| None/ Omitted | Number, String or Boolean (not an array or object) | Plain text |<br>| BOOLEAN\t| Boolean | The value will be read as a JSON boolean and displayed as 'Yes' or 'No'. |<br>| DATE  | Number | The value will be read as a JSON number in the form of a Unix timestamp (milliseconds) and will be displayed as a relative date if the date is less than one week ago, otherwise  it will be displayed as an absolute date. |<br>| DURATION | Number | The value will be read as a JSON number in milliseconds and will be displayed in a human readable duration format. |<br>| LINK | Object: `{\"text\": \"Link text here\", \"href\": \"https://link.to.annotation/in/external/tool\"}` | The value will be read as a JSON object containing the fields \"text\" and \"href\" and will be displayed as a clickable link on the report. |<br>| NUMBER | Number | The value will be read as a JSON number and large numbers will be  displayed in a human readable format (e.g. 14.3k). |<br>| PERCENTAGE | Number (between 0 and 100) | The value will be read as a JSON number between 0 and 100 and will be displayed with a percentage sign. |<br>| TEXT | String | The value will be read as a JSON string and will be displayed as-is |<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>"
+      description: 'Creates or updates a report for the specified commit.
+
+        To upload a report, make sure to generate an ID that is unique across all reports for that commit. If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-001.
+
+
+        ### Sample cURL request:
+
+        ```
+
+        curl --request PUT ''https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001'' \
+
+        --header ''Content-Type: application/json'' \
+
+        --data-raw ''{
+
+        "title": "Security scan report",
+
+        "details": "This pull request introduces 10 new dependency vulnerabilities.",
+
+        "report_type": "SECURITY",
+
+        "reporter": "mySystem",
+
+        "link": "http://www.mysystem.com/reports/001",
+
+        "result": "FAILED",
+
+        "data": [
+
+        {
+
+        "title": "Duration (seconds)",
+
+        "type": "DURATION",
+
+        "value": 14
+
+        },
+
+        {
+
+        "title": "Safe to merge?",
+
+        "type": "BOOLEAN",
+
+        "value": false
+
+        }
+
+        ]
+
+        }''
+
+        ```
+
+
+        ### Possible field values:
+
+        report_type: SECURITY, COVERAGE, TEST, BUG
+
+        result: PASSED, FAILED, PENDING
+
+        data.type: BOOLEAN, DATE, DURATION, LINK, NUMBER, PERCENTAGE, TEXT
+
+
+        #### Data field formats
+
+        | Type Field | Value Field Type | Value Field Display |
+
+        |:--|:|:--|
+
+        | None/ Omitted | Number, String or Boolean (not an array or object) | Plain text |
+
+        | BOOLEAN | Boolean | The value will be read as a JSON boolean and displayed as ''Yes'' or ''No''. |
+
+        | DATE | Number | The value will be read as a JSON number in the form of a Unix timestamp (milliseconds) and will be displayed as a relative date if the date is less than one week ago, otherwise it will be displayed as an absolute date. |
+
+        | DURATION | Number | The value will be read as a JSON number in milliseconds and will be displayed in a human readable duration format. |
+
+        | LINK | Object: `{"text": "Link text here", "href": "https://link.to.annotation/in/external/tool"}` | The value will be read as a JSON object containing the fields "text" and "href" and will be displayed as a clickable link on the report. |
+
+        | NUMBER | Number | The value will be read as a JSON number and large numbers will be displayed in a human readable format (e.g. 14.3k). |
+
+        | PERCENTAGE | Number (between 0 and 100) | The value will be read as a JSON number between 0 and 100 and will be displayed with a percentage sign. |
+
+        | TEXT | String | The value will be read as a JSON string and will be displayed as-is |
+
+
+        Please refer to the Code Insights documentation for more information.'
       operationId: atlassianCreateorupdatereport
       summary: Atlassian Create Or Update A Report
       parameters:
@@ -258,7 +346,77 @@ paths:
     post:
       tags:
       - Reports - Commits
-      description: 'Bulk upload of annotations.<br>Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.<br><br>Add the annotations you want to upload as objects in a JSON array and make sure each annotation has the external_id field set to a unique value. If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001. The external id can later be used to identify the report as an alternative to the generated [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid). You can upload up to 100 annotations per POST request.<br><br>### Sample cURL request:<br>```<br>curl --location ''https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001/annotations'' \<br>--header ''Content-Type: application/json'' \<br>--data-raw ''[<br>  {<br>        "external_id": "mysystem-annotation001",<br>        "title": "Security scan report",<br>        "annotation_type": "VULNERABILITY",<br>        "summary": "This line represents a security threat.",<br>        "severity": "HIGH",<br>      "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",<br>        "line": 42<br>  },<br>  {<br>        "external_id": "mySystem-annotation002",<br>        "title": "Bug report",<br>        "annotation_type": "BUG",<br>        "result": "FAILED",<br>        "summary": "This line might introduce a bug.",<br>        "severity": "MEDIUM",<br>      "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Helper.java",<br>        "line": 13<br>  }<br>]''<br>```<br><br>### Possible field values:<br>annotation_type: VULNERABILITY, CODE_SMELL, BUG<br>result: PASSED, FAILED, IGNORED, SKIPPED<br>severity: HIGH, MEDIUM, LOW, CRITICAL<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>'
+      description: 'Bulk upload of annotations.
+
+        Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.
+
+
+        Add the annotations you want to upload as objects in a JSON array and make sure each annotation has the external_id field set to a unique value. If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001. The external id can later be used to identify the report as an alternative to the generated UUID. You can upload up to 100 annotations per POST request.
+
+
+        ### Sample cURL request:
+
+        ```
+
+        curl --location ''https://api.bitbucket.org/2.0/repositories///commit//reports/mysystem-001/annotations'' \
+
+        --header ''Content-Type: application/json'' \
+
+        --data-raw ''[
+
+        {
+
+        "external_id": "mysystem-annotation001",
+
+        "title": "Security scan report",
+
+        "annotation_type": "VULNERABILITY",
+
+        "summary": "This line represents a security threat.",
+
+        "severity": "HIGH",
+
+        "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",
+
+        "line": 42
+
+        },
+
+        {
+
+        "external_id": "mySystem-annotation002",
+
+        "title": "Bug report",
+
+        "annotation_type": "BUG",
+
+        "result": "FAILED",
+
+        "summary": "This line might introduce a bug.",
+
+        "severity": "MEDIUM",
+
+        "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Helper.java",
+
+        "line": 13
+
+        }
+
+        ]''
+
+        ```
+
+
+        ### Possible field values:
+
+        annotation_type: VULNERABILITY, CODE_SMELL, BUG
+
+        result: PASSED, FAILED, IGNORED, SKIPPED
+
+        severity: HIGH, MEDIUM, LOW, CRITICAL
+
+
+        Please refer to the Code Insights documentation for more information.'
       operationId: atlassianBulkcreateorupdateannotations
       summary: Atlassian Bulk Create Or Update Annotations
       parameters:
@@ -375,7 +533,51 @@ paths:
     put:
       tags:
       - Reports - Commits
-      description: 'Creates or updates an individual annotation for the specified report.<br>Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.<br><br>Just as reports, annotation needs to be uploaded with a unique ID that can later be used to identify the report as an alternative to the generated [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid). If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001.<br><br>### Sample cURL request:<br>```<br>curl --request PUT ''https://api.bitbucket.org/2.0/repositories///commit//reports/mySystem-001/annotations/mysystem-annotation001'' \<br>--header ''Content-Type: application/json'' \<br>--data-raw ''{<br>    "title": "Security scan report",<br>    "annotation_type": "VULNERABILITY",<br>    "summary": "This line represents a security thread.",<br>    "severity": "HIGH",<br>    "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",<br>    "line": 42<br>}''<br>```<br><br>### Possible field values:<br>annotation_type: VULNERABILITY, CODE_SMELL, BUG<br>result: PASSED, FAILED, IGNORED, SKIPPED<br>severity: HIGH, MEDIUM, LOW, CRITICAL<br><br>Please refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.<br>'
+      description: 'Creates or updates an individual annotation for the specified report.
+
+        Annotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.
+
+
+        Just as reports, annotation needs to be uploaded with a unique ID that can later be used to identify the report as an alternative to the generated UUID. If you want to use an existing id from your own system, we recommend prefixing it with your system''s name to avoid collisions, for example, mySystem-annotation001.
+
+
+        ### Sample cURL request:
+
+        ```
+
+        curl --request PUT ''https://api.bitbucket.org/2.0/repositories///commit//reports/mySystem-001/annotations/mysystem-annotation001'' \
+
+        --header ''Content-Type: application/json'' \
+
+        --data-raw ''{
+
+        "title": "Security scan report",
+
+        "annotation_type": "VULNERABILITY",
+
+        "summary": "This line represents a security thread.",
+
+        "severity": "HIGH",
+
+        "path": "my-service/src/main/java/com/myCompany/mysystem/logic/Main.java",
+
+        "line": 42
+
+        }''
+
+        ```
+
+
+        ### Possible field values:
+
+        annotation_type: VULNERABILITY, CODE_SMELL, BUG
+
+        result: PASSED, FAILED, IGNORED, SKIPPED
+
+        severity: HIGH, MEDIUM, LOW, CRITICAL
+
+
+        Please refer to the Code Insights documentation for more information.'
       operationId: atlassianCreateorupdateannotation
       summary: Atlassian Create Or Update An Annotation
       parameters:
@@ -481,56 +683,17 @@ paths:
       - api_key: []
 components:
   schemas:
-    paginated_reports:
+    object:
       type: object
-      title: Paginated Reports
-      description: A paginated list of reports.
-      properties:
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-        values:
-          type: array
-          minItems: 0
-          items:
-            $ref: '#/components/schemas/report'
-          description: The values of the current page.
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-        next:
-          type: string
-          format: uri
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-        previous:
-          type: string
-          format: uri
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-    report_data:
-      type: object
-      title: Report Data
-      description: A key-value element that will be displayed along with the report.
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
       properties:
         type:
-          enum:
-          - BOOLEAN
-          - DATE
-          - DURATION
-          - LINK
-          - NUMBER
-          - PERCENTAGE
-          - TEXT
           type: string
-          description: The type of data contained in the value field. If not provided, then the value will be detected as a boolean, number or string.
-        title:
-          type: string
-          description: A string describing what this data field represents.
-        value:
-          type: object
-          description: The value of the data element.
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
     report_annotation:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -596,31 +759,34 @@ components:
       x-bb-default-fields:
       - uuid
       x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commit.hash}/reports/{reportUuid}/annotations/{uuid}
-    error:
+    paginated_reports:
       type: object
-      title: Error
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      title: Paginated Reports
+      description: A paginated list of reports.
       properties:
-        type:
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+        values:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/report'
+          description: The values of the current page.
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+        next:
           type: string
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            detail:
-              type: string
-            data:
-              type: object
-              description: Optional structured data that is endpoint-specific.
-              properties: {}
-              additionalProperties: true
-          required:
-          - message
-          additionalProperties: false
-      required:
-      - type
-      additionalProperties: true
+          format: uri
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+        previous:
+          type: string
+          format: uri
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
     paginated_annotations:
       type: object
       title: Paginated Annotations
@@ -715,17 +881,53 @@ components:
       - uuid
       - commitHash
       x-bb-url: /rest/2.0/accounts/{target_user.uuid}/repositories/{repository.uuid}/commits/{commitHash}/reports/{uuid}
-    object:
+    error:
       type: object
+      title: Error
       description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
       properties:
         type:
           type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
       required:
       - type
       additionalProperties: true
-      discriminator:
-        propertyName: type
+    report_data:
+      type: object
+      title: Report Data
+      description: A key-value element that will be displayed along with the report.
+      properties:
+        type:
+          enum:
+          - BOOLEAN
+          - DATE
+          - DURATION
+          - LINK
+          - NUMBER
+          - PERCENTAGE
+          - TEXT
+          type: string
+          description: The type of data contained in the value field. If not provided, then the value will be detected as a boolean, number or string.
+        title:
+          type: string
+          description: A string describing what this data field represents.
+        value:
+          type: object
+          description: The value of the data element.
   securitySchemes:
     basic:
       type: http

@@ -1,7 +1,7 @@
 openapi: 3.2.0
 info:
   title: Atlassian The Confluence Cloud REST Audit API
-  description: This document describes the REST API and resources provided by Confluence. The REST APIs are for developers who want to integrate Confluence into their application and for administrators who want to script interactions with the Confluence server.Confluence's REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTP request and parse the response. The response format is JSON. Your methods will be the standard HTTP methods like GET, PUT, POST and DELETE. Because the REST API is based on open standards, you can use any web development language to access the API.
+  description: This document describes the REST API and resources provided by Confluence.
   termsOfService: https://atlassian.com/terms/
   version: 1.0.0
 servers:
@@ -15,7 +15,20 @@ paths:
       tags:
       - Audit
       summary: Atlassian Get Audit Records
-      description: Returns all records in the audit log, optionally for a certain date range.<br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Returns all records in the audit log, optionally for a certain date range.
+
+        This contains information about events like space exports, group membership
+
+        changes, app installations, etc. For more information, see
+
+        Audit log
+
+        in the Confluence administrator''s guide.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianGetauditrecords
       parameters:
       - name: startDate
@@ -90,7 +103,12 @@ paths:
       tags:
       - Audit
       summary: Atlassian Create Audit Record
-      description: Creates a record in the audit log.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Creates a record in the audit log.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianCreateauditrecord
       requestBody:
         description: The record to be created in the audit log.
@@ -134,7 +152,12 @@ paths:
       tags:
       - Audit
       summary: Atlassian Export Audit Records
-      description: Exports audit records as a CSV file or ZIP file.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Exports audit records as a CSV file or ZIP file.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianExportauditrecords
       parameters:
       - name: startDate
@@ -201,7 +224,16 @@ paths:
       tags:
       - Audit
       summary: Atlassian Get Retention Period
-      description: Returns the retention period for records in the audit log. The retention<br>period is how long an audit record is kept for, from creation date until<br>it is deleted.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Returns the retention period for records in the audit log. The retention
+
+        period is how long an audit record is kept for, from creation date until
+
+        it is deleted.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianGetretentionperiod
       responses:
         '200':
@@ -231,7 +263,14 @@ paths:
       tags:
       - Audit
       summary: Atlassian Set Retention Period
-      description: Sets the retention period for records in the audit log. The retention period<br>can be set to a maximum of 1 year.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Sets the retention period for records in the audit log. The retention period
+
+        can be set to a maximum of 1 year.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianSetretentionperiod
       requestBody:
         description: The updated retention period.
@@ -270,7 +309,23 @@ paths:
       tags:
       - Audit
       summary: Atlassian Get Audit Records For Time Period
-      description: Returns records from the audit log, for a time period back from the current<br>date. For example, you can use this method to get the last 3 months of records.<br><br>This contains information about events like space exports, group membership<br>changes, app installations, etc. For more information, see<br>[Audit log](https://confluence.atlassian.com/confcloud/audit-log-802164269.html)<br>in the Confluence administrator's guide.<br><br>**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**:<br>'Confluence Administrator' global permission.
+      description: 'Returns records from the audit log, for a time period back from the current
+
+        date. For example, you can use this method to get the last 3 months of records.
+
+
+        This contains information about events like space exports, group membership
+
+        changes, app installations, etc. For more information, see
+
+        Audit log
+
+        in the Confluence administrator''s guide.
+
+
+        **Permissions required**:
+
+        ''Confluence Administrator'' global permission.'
       operationId: atlassianGetauditrecordsfortimeperiod
       parameters:
       - name: number
@@ -351,13 +406,84 @@ paths:
       x-atlassian-connect-scope: INACCESSIBLE
 components:
   schemas:
-    GenericLinks:
+    AuditRecordCreate:
+      required:
+      - remoteAddress
       type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
+      properties:
+        author:
+          required:
+          - type
+          type: object
+          properties:
+            type:
+              type: string
+              description: Set to 'user'.
+              default: user
+              enum:
+              - user
+            displayName:
+              type: string
+              description: The name that is displayed on the audit log in the Confluence UI.
+            operations:
+              type: object
+              properties: {}
+              description: Always defaults to null.
+            username:
+              $ref: '#/components/schemas/GenericUserName'
+            userKey:
+              $ref: '#/components/schemas/GenericUserKey'
+          description: 'The user that actioned the event. If `author` is not specified, then all
+
+            `author` properties will be set to null/empty, except for `type` which
+
+            will be set to ''user''.'
+        remoteAddress:
+          type: string
+          description: The IP address of the computer where the event was initiated from.
+        creationDate:
+          type: integer
+          description: 'The creation date-time of the audit record, as a timestamp. This is converted
+
+            to a date-time display in the Confluence UI. If the `creationDate` is not
+
+            specified, then it will be set to the timestamp for the current date-time.'
+          format: int64
+        summary:
+          type: string
+          description: 'The summary of the event, which is displayed in the ''Change'' column on
+
+            the audit log in the Confluence UI.'
+        description:
+          type: string
+          description: 'A long description of the event, which is displayed in the ''Description''
+
+            field on the audit log in the Confluence UI.'
+        category:
+          type: string
+          description: 'The category of the event, which is displayed in the ''Event type'' column
+
+            on the audit log in the Confluence UI.'
+        sysAdmin:
+          type: boolean
+          description: Indicates whether the event was actioned by a system administrator.
+          default: false
+        affectedObject:
+          $ref: '#/components/schemas/AffectedObject'
+        changedValues:
+          type: array
+          description: The values that were changed in the event.
+          items:
+            $ref: '#/components/schemas/ChangedValue'
+        associatedObjects:
+          type: array
+          description: 'Objects that were associated with the event. For example, if the event
+
+            was a space permission change then the associated object would be the
+
+            space.'
+          items:
+            $ref: '#/components/schemas/AffectedObject'
     GenericAccountId:
       type:
       - string
@@ -365,6 +491,72 @@ components:
       description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
 
         For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+    GenericUserKey:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    RetentionPeriod:
+      required:
+      - number
+      - units
+      type: object
+      properties:
+        number:
+          type: integer
+          description: The number of units for the retention period.
+          format: int32
+        units:
+          type: string
+          description: The unit of time that the retention period is measured in.
+          enum:
+          - NANOS
+          - MICROS
+          - MILLIS
+          - SECONDS
+          - MINUTES
+          - HOURS
+          - HALF_DAYS
+          - DAYS
+          - WEEKS
+          - MONTHS
+          - YEARS
+          - DECADES
+          - CENTURIES
+          - MILLENNIA
+          - ERAS
+          - FOREVER
+    ChangedValue:
+      required:
+      - name
+      - newValue
+      - oldValue
+      type: object
+      properties:
+        name:
+          type: string
+        oldValue:
+          type: string
+        hiddenOldValue:
+          type: string
+        newValue:
+          type: string
+        hiddenNewValue:
+          type: string
+    AffectedObject:
+      required:
+      - name
+      - objectType
+      type: object
+      properties:
+        name:
+          type: string
+        objectType:
+          type: string
     AuditRecord:
       required:
       - affectedObject
@@ -449,62 +641,6 @@ components:
         Use `accountId` instead.
 
         See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    GenericUserKey:
-      type:
-      - string
-      - 'null'
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    RetentionPeriod:
-      required:
-      - number
-      - units
-      type: object
-      properties:
-        number:
-          type: integer
-          description: The number of units for the retention period.
-          format: int32
-        units:
-          type: string
-          description: The unit of time that the retention period is measured in.
-          enum:
-          - NANOS
-          - MICROS
-          - MILLIS
-          - SECONDS
-          - MINUTES
-          - HOURS
-          - HALF_DAYS
-          - DAYS
-          - WEEKS
-          - MONTHS
-          - YEARS
-          - DECADES
-          - CENTURIES
-          - MILLENNIA
-          - ERAS
-          - FOREVER
-    ChangedValue:
-      required:
-      - name
-      - newValue
-      - oldValue
-      type: object
-      properties:
-        name:
-          type: string
-        oldValue:
-          type: string
-        hiddenOldValue:
-          type: string
-        newValue:
-          type: string
-        hiddenNewValue:
-          type: string
     AuditRecordArray:
       required:
       - _links
@@ -529,94 +665,13 @@ components:
           format: int32
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    AffectedObject:
-      required:
-      - name
-      - objectType
+    GenericLinks:
       type: object
-      properties:
-        name:
-          type: string
-        objectType:
-          type: string
-    AuditRecordCreate:
-      required:
-      - remoteAddress
-      type: object
-      properties:
-        author:
-          required:
-          - type
-          type: object
-          properties:
-            type:
-              type: string
-              description: Set to 'user'.
-              default: user
-              enum:
-              - user
-            displayName:
-              type: string
-              description: The name that is displayed on the audit log in the Confluence UI.
-            operations:
-              type: object
-              properties: {}
-              description: Always defaults to null.
-            username:
-              $ref: '#/components/schemas/GenericUserName'
-            userKey:
-              $ref: '#/components/schemas/GenericUserKey'
-          description: 'The user that actioned the event. If `author` is not specified, then all
-
-            `author` properties will be set to null/empty, except for `type` which
-
-            will be set to ''user''.'
-        remoteAddress:
-          type: string
-          description: The IP address of the computer where the event was initiated from.
-        creationDate:
-          type: integer
-          description: 'The creation date-time of the audit record, as a timestamp. This is converted
-
-            to a date-time display in the Confluence UI. If the `creationDate` is not
-
-            specified, then it will be set to the timestamp for the current date-time.'
-          format: int64
-        summary:
-          type: string
-          description: 'The summary of the event, which is displayed in the ''Change'' column on
-
-            the audit log in the Confluence UI.'
-        description:
-          type: string
-          description: 'A long description of the event, which is displayed in the ''Description''
-
-            field on the audit log in the Confluence UI.'
-        category:
-          type: string
-          description: 'The category of the event, which is displayed in the ''Event type'' column
-
-            on the audit log in the Confluence UI.'
-        sysAdmin:
-          type: boolean
-          description: Indicates whether the event was actioned by a system administrator.
-          default: false
-        affectedObject:
-          $ref: '#/components/schemas/AffectedObject'
-        changedValues:
-          type: array
-          description: The values that were changed in the event.
-          items:
-            $ref: '#/components/schemas/ChangedValue'
-        associatedObjects:
-          type: array
-          description: 'Objects that were associated with the event. For example, if the event
-
-            was a space permission change then the associated object would be the
-
-            space.'
-          items:
-            $ref: '#/components/schemas/AffectedObject'
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
   securitySchemes:
     basicAuth:
       type: http

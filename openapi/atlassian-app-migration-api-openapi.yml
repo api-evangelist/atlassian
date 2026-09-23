@@ -17,7 +17,12 @@ paths:
   /rest/atlassian-connect/1/migration/field:
     put:
       deprecated: false
-      description: Updates the value of a custom field added by Connect apps on one or more issues.<br>The values of up to 200 custom fields can be updated.<br><br>**[Permissions](#permissions) required:** Only Connect apps can make this request
+      description: 'Updates the value of a custom field added by Connect apps on one or more issues.
+
+        The values of up to 200 custom fields can be updated.
+
+
+        **Permissions required:** Only Connect apps can make this request'
       operationId: atlassianAppissuefieldvalueupdateresourceUpdateissuefieldsPut
       parameters:
       - description: The ID of the transfer.
@@ -193,6 +198,21 @@ paths:
       x-atlassian-connect-scope: NONE
 components:
   schemas:
+    WorkflowTransition:
+      additionalProperties: false
+      description: A workflow transition.
+      properties:
+        id:
+          description: The transition ID.
+          format: int32
+          type: integer
+        name:
+          description: The transition name.
+          type: string
+      required:
+      - id
+      - name
+      type: object
     AppWorkflowTransitionRule:
       additionalProperties: false
       description: A workflow transition rule.
@@ -214,6 +234,20 @@ components:
       - configuration
       - id
       - key
+      type: object
+    WorkflowId:
+      additionalProperties: false
+      description: Properties that identify a workflow.
+      properties:
+        draft:
+          description: Whether the workflow is in the draft state.
+          type: boolean
+        name:
+          description: The name of the workflow.
+          type: string
+      required:
+      - draft
+      - name
       type: object
     WorkflowRulesSearch:
       description: Details of the workflow and its transition rules.
@@ -240,6 +274,76 @@ components:
       required:
       - ruleIds
       - workflowEntityId
+      type: object
+    WorkflowRulesSearchDetails:
+      description: Details of workflow transition rules.
+      properties:
+        invalidRules:
+          description: List of workflow rule IDs that do not belong to the workflow or can not be found.
+          items:
+            description: Workflow rule ID.
+            example: 55d44f1d-c859-42e5-9c27-2c5ec3f340b1
+            format: uuid
+            type: string
+          type: array
+        validRules:
+          description: List of valid workflow transition rules.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          type: array
+        workflowEntityId:
+          description: The workflow ID.
+          example: a498d711-685d-428d-8c3e-bc03bb450ea7
+          format: uuid
+          type: string
+      type: object
+    ConnectCustomFieldValues:
+      additionalProperties: false
+      description: Details of updates for a custom field.
+      properties:
+        updateValueList:
+          description: The list of custom field update details.
+          items:
+            $ref: '#/components/schemas/ConnectCustomFieldValue'
+          type: array
+      type: object
+      writeOnly: true
+    EntityPropertyDetails:
+      properties:
+        entityId:
+          description: The entity property ID.
+          example: 123
+          type: number
+        key:
+          description: The entity property key.
+          example: mykey
+          type: string
+        value:
+          description: The new value of the entity property.
+          example: newValue
+          type: string
+      required:
+      - entityId
+      - key
+      - value
+      type: object
+    RuleConfiguration:
+      additionalProperties: false
+      description: A rule configuration.
+      properties:
+        disabled:
+          default: false
+          description: Whether the rule is disabled.
+          type: boolean
+        tag:
+          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
+          maxLength: 255
+          type: string
+        value:
+          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
+          type: string
+      required:
+      - value
       type: object
     ConnectCustomFieldValue:
       description: A list of custom field details.
@@ -284,47 +388,6 @@ components:
       - issueID
       type: object
       writeOnly: true
-    WorkflowRulesSearchDetails:
-      description: Details of workflow transition rules.
-      properties:
-        invalidRules:
-          description: List of workflow rule IDs that do not belong to the workflow or can not be found.
-          items:
-            description: Workflow rule ID.
-            example: 55d44f1d-c859-42e5-9c27-2c5ec3f340b1
-            format: uuid
-            type: string
-          type: array
-        validRules:
-          description: List of valid workflow transition rules.
-          items:
-            $ref: '#/components/schemas/WorkflowTransitionRules'
-          type: array
-        workflowEntityId:
-          description: The workflow ID.
-          example: a498d711-685d-428d-8c3e-bc03bb450ea7
-          format: uuid
-          type: string
-      type: object
-    EntityPropertyDetails:
-      properties:
-        entityId:
-          description: The entity property ID.
-          example: 123
-          type: number
-        key:
-          description: The entity property key.
-          example: mykey
-          type: string
-        value:
-          description: The new value of the entity property.
-          example: newValue
-          type: string
-      required:
-      - entityId
-      - key
-      - value
-      type: object
     WorkflowTransitionRules:
       additionalProperties: false
       description: A workflow with transition rules.
@@ -348,64 +411,6 @@ components:
           $ref: '#/components/schemas/WorkflowId'
       required:
       - workflowId
-      type: object
-    WorkflowTransition:
-      additionalProperties: false
-      description: A workflow transition.
-      properties:
-        id:
-          description: The transition ID.
-          format: int32
-          type: integer
-        name:
-          description: The transition name.
-          type: string
-      required:
-      - id
-      - name
-      type: object
-    WorkflowId:
-      additionalProperties: false
-      description: Properties that identify a workflow.
-      properties:
-        draft:
-          description: Whether the workflow is in the draft state.
-          type: boolean
-        name:
-          description: The name of the workflow.
-          type: string
-      required:
-      - draft
-      - name
-      type: object
-    ConnectCustomFieldValues:
-      additionalProperties: false
-      description: Details of updates for a custom field.
-      properties:
-        updateValueList:
-          description: The list of custom field update details.
-          items:
-            $ref: '#/components/schemas/ConnectCustomFieldValue'
-          type: array
-      type: object
-      writeOnly: true
-    RuleConfiguration:
-      additionalProperties: false
-      description: A rule configuration.
-      properties:
-        disabled:
-          default: false
-          description: Whether the rule is disabled.
-          type: boolean
-        tag:
-          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
-          maxLength: 255
-          type: string
-        value:
-          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
-          type: string
-      required:
-      - value
       type: object
   securitySchemes:
     OAuth2:

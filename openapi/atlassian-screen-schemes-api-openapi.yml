@@ -18,7 +18,13 @@ paths:
   /rest/api/3/screenscheme:
     get:
       deprecated: false
-      description: Returns a [paginated](#pagination) list of screen schemes.<br><br>Only screen schemes used in classic projects are returned.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      description: 'Returns a paginated list of screen schemes.
+
+
+        Only screen schemes used in classic projects are returned.
+
+
+        **Permissions required:** *Administer Jira* global permission.'
       operationId: atlassianGetscreenschemes
       parameters:
       - description: The index of the first item to return in a page of results (page offset).
@@ -102,7 +108,10 @@ paths:
       x-atlassian-connect-scope: ADMIN
     post:
       deprecated: false
-      description: Creates a screen scheme.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      description: 'Creates a screen scheme.
+
+
+        **Permissions required:** *Administer Jira* global permission.'
       operationId: atlassianCreatescreenscheme
       parameters: []
       requestBody:
@@ -165,7 +174,13 @@ paths:
   /rest/api/3/screenscheme/{screenSchemeId}:
     delete:
       deprecated: false
-      description: Deletes a screen scheme. A screen scheme cannot be deleted if it is used in an issue type screen scheme.<br><br>Only screens schemes used in classic projects can be deleted.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      description: 'Deletes a screen scheme. A screen scheme cannot be deleted if it is used in an issue type screen scheme.
+
+
+        Only screens schemes used in classic projects can be deleted.
+
+
+        **Permissions required:** *Administer Jira* global permission.'
       operationId: atlassianDeletescreenscheme
       parameters:
       - description: The ID of the screen scheme.
@@ -215,7 +230,10 @@ paths:
       x-atlassian-connect-scope: ADMIN
     put:
       deprecated: false
-      description: Updates a screen scheme. Only screen schemes used in classic projects can be updated.<br><br>**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).
+      description: 'Updates a screen scheme. Only screen schemes used in classic projects can be updated.
+
+
+        **Permissions required:** *Administer Jira* global permission.'
       operationId: atlassianUpdatescreenscheme
       parameters:
       - description: The ID of the screen scheme.
@@ -280,6 +298,141 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    ScreenSchemeDetails:
+      additionalProperties: false
+      description: Details of a screen scheme.
+      properties:
+        description:
+          description: The description of the screen scheme. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        screens:
+          allOf:
+          - $ref: '#/components/schemas/ScreenTypes'
+          description: The IDs of the screens for the screen types of the screen scheme. Only screens used in classic projects are accepted.
+      required:
+      - name
+      - screens
+      type: object
+    ScreenSchemeId:
+      additionalProperties: false
+      description: The ID of a screen scheme.
+      properties:
+        id:
+          description: The ID of the screen scheme.
+          format: int64
+          readOnly: true
+          type: integer
+      required:
+      - id
+      type: object
+    ScreenTypes:
+      additionalProperties: false
+      description: The IDs of the screens for the screen types of the screen scheme.
+      properties:
+        create:
+          description: The ID of the create screen.
+          format: int64
+          type: integer
+        default:
+          description: The ID of the default screen. Required when creating a screen scheme.
+          format: int64
+          type: integer
+        edit:
+          description: The ID of the edit screen.
+          format: int64
+          type: integer
+        view:
+          description: The ID of the view screen.
+          format: int64
+          type: integer
+      required:
+      - defaultScreen
+      type: object
+      writeOnly: true
+    UpdateScreenTypes:
+      additionalProperties: false
+      description: The IDs of the screens for the screen types of the screen scheme.
+      properties:
+        create:
+          description: The ID of the create screen. To remove the screen association, pass a null.
+          type: string
+          writeOnly: true
+        default:
+          description: The ID of the default screen. When specified, must include a screen ID as a default screen is required.
+          type: string
+          writeOnly: true
+        edit:
+          description: The ID of the edit screen. To remove the screen association, pass a null.
+          type: string
+          writeOnly: true
+        view:
+          description: The ID of the view screen. To remove the screen association, pass a null.
+          type: string
+          writeOnly: true
+      type: object
+      writeOnly: true
+    UpdateScreenSchemeDetails:
+      additionalProperties: false
+      description: Details of a screen scheme.
+      properties:
+        description:
+          description: The description of the screen scheme. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        screens:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScreenTypes'
+          description: The IDs of the screens for the screen types of the screen scheme. Only screens used in classic projects are accepted.
+      type: object
+    ScreenScheme:
+      additionalProperties: false
+      description: A screen scheme.
+      properties:
+        description:
+          description: The description of the screen scheme.
+          type: string
+        id:
+          description: The ID of the screen scheme.
+          format: int64
+          type: integer
+        issueTypeScreenSchemes:
+          allOf:
+          - $ref: '#/components/schemas/PageBeanIssueTypeScreenScheme'
+          description: Details of the issue type screen schemes associated with the screen scheme.
+        name:
+          description: The name of the screen scheme.
+          type: string
+        screens:
+          allOf:
+          - $ref: '#/components/schemas/ScreenTypes'
+          description: The IDs of the screens for the screen types of the screen scheme.
+      type: object
+    IssueTypeScreenScheme:
+      additionalProperties: false
+      description: Details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme.
+          type: string
+        id:
+          description: The ID of the issue type screen scheme.
+          type: string
+        name:
+          description: The name of the issue type screen scheme.
+          type: string
+      required:
+      - id
+      - name
+      type: object
     PageBeanScreenScheme:
       additionalProperties: false
       description: A page of items.
@@ -320,76 +473,6 @@ components:
           readOnly: true
           type: array
       type: object
-    UpdateScreenSchemeDetails:
-      additionalProperties: false
-      description: Details of a screen scheme.
-      properties:
-        description:
-          description: The description of the screen scheme. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        name:
-          description: The name of the screen scheme. The name must be unique. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        screens:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScreenTypes'
-          description: The IDs of the screens for the screen types of the screen scheme. Only screens used in classic projects are accepted.
-      type: object
-    ScreenTypes:
-      additionalProperties: false
-      description: The IDs of the screens for the screen types of the screen scheme.
-      properties:
-        create:
-          description: The ID of the create screen.
-          format: int64
-          type: integer
-        default:
-          description: The ID of the default screen. Required when creating a screen scheme.
-          format: int64
-          type: integer
-        edit:
-          description: The ID of the edit screen.
-          format: int64
-          type: integer
-        view:
-          description: The ID of the view screen.
-          format: int64
-          type: integer
-      required:
-      - defaultScreen
-      type: object
-      writeOnly: true
-    ScreenSchemeId:
-      additionalProperties: false
-      description: The ID of a screen scheme.
-      properties:
-        id:
-          description: The ID of the screen scheme.
-          format: int64
-          readOnly: true
-          type: integer
-      required:
-      - id
-      type: object
-    IssueTypeScreenScheme:
-      additionalProperties: false
-      description: Details of an issue type screen scheme.
-      properties:
-        description:
-          description: The description of the issue type screen scheme.
-          type: string
-        id:
-          description: The ID of the issue type screen scheme.
-          type: string
-        name:
-          description: The name of the issue type screen scheme.
-          type: string
-      required:
-      - id
-      - name
-      type: object
     PageBeanIssueTypeScreenScheme:
       additionalProperties: false
       description: A page of items.
@@ -429,71 +512,6 @@ components:
             $ref: '#/components/schemas/IssueTypeScreenScheme'
           readOnly: true
           type: array
-      type: object
-    UpdateScreenTypes:
-      additionalProperties: false
-      description: The IDs of the screens for the screen types of the screen scheme.
-      properties:
-        create:
-          description: The ID of the create screen. To remove the screen association, pass a null.
-          type: string
-          writeOnly: true
-        default:
-          description: The ID of the default screen. When specified, must include a screen ID as a default screen is required.
-          type: string
-          writeOnly: true
-        edit:
-          description: The ID of the edit screen. To remove the screen association, pass a null.
-          type: string
-          writeOnly: true
-        view:
-          description: The ID of the view screen. To remove the screen association, pass a null.
-          type: string
-          writeOnly: true
-      type: object
-      writeOnly: true
-    ScreenSchemeDetails:
-      additionalProperties: false
-      description: Details of a screen scheme.
-      properties:
-        description:
-          description: The description of the screen scheme. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        name:
-          description: The name of the screen scheme. The name must be unique. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        screens:
-          allOf:
-          - $ref: '#/components/schemas/ScreenTypes'
-          description: The IDs of the screens for the screen types of the screen scheme. Only screens used in classic projects are accepted.
-      required:
-      - name
-      - screens
-      type: object
-    ScreenScheme:
-      additionalProperties: false
-      description: A screen scheme.
-      properties:
-        description:
-          description: The description of the screen scheme.
-          type: string
-        id:
-          description: The ID of the screen scheme.
-          format: int64
-          type: integer
-        issueTypeScreenSchemes:
-          allOf:
-          - $ref: '#/components/schemas/PageBeanIssueTypeScreenScheme'
-          description: Details of the issue type screen schemes associated with the screen scheme.
-        name:
-          description: The name of the screen scheme.
-          type: string
-        screens:
-          allOf:
-          - $ref: '#/components/schemas/ScreenTypes'
-          description: The IDs of the screens for the screen types of the screen scheme.
       type: object
   securitySchemes:
     OAuth2:
