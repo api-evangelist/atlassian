@@ -524,6 +524,24 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
     UpdatePriorityDetails:
       additionalProperties: true
       description: Details of an issue priority.
@@ -558,28 +576,6 @@ components:
           description: The status color of the priority in 3-digit or 6-digit hexadecimal format.
           type: string
           writeOnly: true
-      type: object
-    ReorderIssuePriorities:
-      additionalProperties: false
-      description: Change the order of issue priorities.
-      properties:
-        after:
-          description: The ID of the priority. Required if `position` isn't provided.
-          type: string
-          writeOnly: true
-        ids:
-          description: The list of issue IDs to be reordered. Cannot contain duplicates nor after ID.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        position:
-          description: The position for issue priorities to be moved to. Required if `after` isn't provided.
-          type: string
-          writeOnly: true
-      required:
-      - ids
       type: object
     PageBeanPriority:
       additionalProperties: false
@@ -659,6 +655,17 @@ components:
       - name
       - statusColor
       type: object
+    SetDefaultPriorityRequest:
+      additionalProperties: false
+      description: The new default issue priority.
+      properties:
+        id:
+          description: The ID of the new default issue priority. Must be an existing ID or null. Setting this to null erases the default priority setting.
+          type: string
+          writeOnly: true
+      required:
+      - id
+      type: object
     Priority:
       additionalProperties: true
       description: An issue priority.
@@ -684,6 +691,17 @@ components:
         statusColor:
           description: The color used to indicate the issue priority.
           type: string
+      type: object
+    PriorityId:
+      additionalProperties: true
+      description: The ID of an issue priority.
+      properties:
+        id:
+          description: The ID of the issue priority.
+          readOnly: true
+          type: string
+      required:
+      - id
       type: object
     TaskProgressBeanObject:
       additionalProperties: false
@@ -753,45 +771,27 @@ components:
       - submitted
       - submittedBy
       type: object
-    SetDefaultPriorityRequest:
+    ReorderIssuePriorities:
       additionalProperties: false
-      description: The new default issue priority.
+      description: Change the order of issue priorities.
       properties:
-        id:
-          description: The ID of the new default issue priority. Must be an existing ID or null. Setting this to null erases the default priority setting.
+        after:
+          description: The ID of the priority. Required if `position` isn't provided.
+          type: string
+          writeOnly: true
+        ids:
+          description: The list of issue IDs to be reordered. Cannot contain duplicates nor after ID.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position for issue priorities to be moved to. Required if `after` isn't provided.
           type: string
           writeOnly: true
       required:
-      - id
-      type: object
-    ErrorCollection:
-      additionalProperties: false
-      description: Error messages from an operation.
-      properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
-          items:
-            type: string
-          type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
-          format: int32
-          type: integer
-      type: object
-    PriorityId:
-      additionalProperties: true
-      description: The ID of an issue priority.
-      properties:
-        id:
-          description: The ID of the issue priority.
-          readOnly: true
-          type: string
-      required:
-      - id
+      - ids
       type: object
   securitySchemes:
     OAuth2:

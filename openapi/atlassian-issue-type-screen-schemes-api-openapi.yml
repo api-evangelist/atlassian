@@ -781,23 +781,57 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
-    IssueTypeScreenSchemeMapping:
+    UpdateDefaultScreenScheme:
       additionalProperties: false
-      description: The IDs of the screen schemes for the issue type IDs.
+      description: The ID of a screen scheme.
       properties:
-        issueTypeId:
-          description: The ID of the issue type or *default*. Only issue types used in classic projects are accepted. An entry for *default* must be provided and defines the mapping for all issue types without a screen scheme.
-          type: string
-          writeOnly: true
         screenSchemeId:
-          description: The ID of the screen scheme. Only screen schemes used in classic projects are accepted.
+          description: The ID of the screen scheme.
           type: string
           writeOnly: true
       required:
-      - issueTypeId
       - screenSchemeId
       type: object
-      writeOnly: true
+    PageBeanIssueTypeScreenSchemeItem:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeItem'
+          readOnly: true
+          type: array
+      type: object
     ProjectDetails:
       additionalProperties: false
       description: Details about a project.
@@ -840,114 +874,70 @@ components:
           readOnly: true
           type: boolean
       type: object
-    UpdatedProjectCategory:
+    IssueTypeScreenSchemeMapping:
       additionalProperties: false
-      description: A project category.
+      description: The IDs of the screen schemes for the issue type IDs.
       properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
+        issueTypeId:
+          description: The ID of the issue type or *default*. Only issue types used in classic projects are accepted. An entry for *default* must be provided and defines the mapping for all issue types without a screen scheme.
           type: string
+          writeOnly: true
+        screenSchemeId:
+          description: The ID of the screen scheme. Only screen schemes used in classic projects are accepted.
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeId
+      - screenSchemeId
+      type: object
+      writeOnly: true
+    IssueTypeScreenSchemeId:
+      additionalProperties: false
+      description: The ID of an issue type screen scheme.
+      properties:
         id:
-          description: The ID of the project category.
+          description: The ID of the issue type screen scheme.
           readOnly: true
           type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
-    IssueTypeScreenSchemeMappingDetails:
-      additionalProperties: false
-      description: A list of issue type screen scheme mappings.
-      properties:
-        issueTypeMappings:
-          description: The list of issue type to screen scheme mappings. A *default* entry cannot be specified because a default entry is added when an issue type screen scheme is created.
-          items:
-            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
-          type: array
-          writeOnly: true
       required:
-      - issueTypeMappings
+      - id
       type: object
-    PageBeanProjectDetails:
+    IssueTypeScreenSchemesProjects:
       additionalProperties: false
-      description: A page of items.
+      description: Issue type screen scheme with a list of the projects that use it.
       properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
-          type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
+        issueTypeScreenScheme:
+          allOf:
+          - $ref: '#/components/schemas/IssueTypeScreenScheme'
+          description: Details of an issue type screen scheme.
+        projectIds:
+          description: The IDs of the projects using the issue type screen scheme.
           items:
-            $ref: '#/components/schemas/ProjectDetails'
-          readOnly: true
+            type: string
           type: array
-      type: object
-    IssueTypeScreenSchemeUpdateDetails:
-      additionalProperties: false
-      description: Details of an issue type screen scheme.
-      properties:
-        description:
-          description: The description of the issue type screen scheme. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        name:
-          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-      type: object
-    IssueTypeScreenSchemeDetails:
-      additionalProperties: false
-      description: The details of an issue type screen scheme.
-      properties:
-        description:
-          description: The description of the issue type screen scheme. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-        issueTypeMappings:
-          description: The IDs of the screen schemes for the issue type IDs and *default*. A *default* entry is required to create an issue type screen scheme, it defines the mapping for all issue types without a screen scheme.
-          items:
-            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
-          type: array
-          writeOnly: true
-        name:
-          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
       required:
-      - issueTypeMappings
-      - name
+      - issueTypeScreenScheme
+      - projectIds
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
       type: object
     PageBeanIssueTypeScreenSchemesProjects:
       additionalProperties: false
@@ -989,16 +979,18 @@ components:
           readOnly: true
           type: array
       type: object
-    UpdateDefaultScreenScheme:
+    IssueTypeScreenSchemeUpdateDetails:
       additionalProperties: false
-      description: The ID of a screen scheme.
+      description: Details of an issue type screen scheme.
       properties:
-        screenSchemeId:
-          description: The ID of the screen scheme.
+        description:
+          description: The description of the issue type screen scheme. The maximum length is 255 characters.
           type: string
           writeOnly: true
-      required:
-      - screenSchemeId
+        name:
+          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
       type: object
     IssueTypeScreenSchemeItem:
       additionalProperties: false
@@ -1017,68 +1009,6 @@ components:
       - issueTypeId
       - issueTypeScreenSchemeId
       - screenSchemeId
-      type: object
-    IssueTypeIds:
-      additionalProperties: false
-      description: The list of issue type IDs.
-      properties:
-        issueTypeIds:
-          description: The list of issue type IDs.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-      required:
-      - issueTypeIds
-      type: object
-    AvatarUrlsBean:
-      additionalProperties: false
-      properties:
-        16x16:
-          description: The URL of the item's 16x16 pixel avatar.
-          format: uri
-          type: string
-        24x24:
-          description: The URL of the item's 24x24 pixel avatar.
-          format: uri
-          type: string
-        32x32:
-          description: The URL of the item's 32x32 pixel avatar.
-          format: uri
-          type: string
-        48x48:
-          description: The URL of the item's 48x48 pixel avatar.
-          format: uri
-          type: string
-      type: object
-    IssueTypeScreenSchemesProjects:
-      additionalProperties: false
-      description: Issue type screen scheme with a list of the projects that use it.
-      properties:
-        issueTypeScreenScheme:
-          allOf:
-          - $ref: '#/components/schemas/IssueTypeScreenScheme'
-          description: Details of an issue type screen scheme.
-        projectIds:
-          description: The IDs of the projects using the issue type screen scheme.
-          items:
-            type: string
-          type: array
-      required:
-      - issueTypeScreenScheme
-      - projectIds
-      type: object
-    IssueTypeScreenSchemeId:
-      additionalProperties: false
-      description: The ID of an issue type screen scheme.
-      properties:
-        id:
-          description: The ID of the issue type screen scheme.
-          readOnly: true
-          type: string
-      required:
-      - id
       type: object
     PageBeanIssueTypeScreenScheme:
       additionalProperties: false
@@ -1120,7 +1050,107 @@ components:
           readOnly: true
           type: array
       type: object
-    PageBeanIssueTypeScreenSchemeItem:
+    IssueTypeScreenSchemeMappingDetails:
+      additionalProperties: false
+      description: A list of issue type screen scheme mappings.
+      properties:
+        issueTypeMappings:
+          description: The list of issue type to screen scheme mappings. A *default* entry cannot be specified because a default entry is added when an issue type screen scheme is created.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
+          type: array
+          writeOnly: true
+      required:
+      - issueTypeMappings
+      type: object
+    IssueTypeScreenSchemeProjectAssociation:
+      additionalProperties: false
+      description: Associated issue type screen scheme and project.
+      properties:
+        issueTypeScreenSchemeId:
+          description: The ID of the issue type screen scheme.
+          type: string
+          writeOnly: true
+        projectId:
+          description: The ID of the project.
+          type: string
+          writeOnly: true
+      type: object
+    IssueTypeScreenScheme:
+      additionalProperties: false
+      description: Details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme.
+          type: string
+        id:
+          description: The ID of the issue type screen scheme.
+          type: string
+        name:
+          description: The name of the issue type screen scheme.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    IssueTypeIds:
+      additionalProperties: false
+      description: The list of issue type IDs.
+      properties:
+        issueTypeIds:
+          description: The list of issue type IDs.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+      required:
+      - issueTypeIds
+      type: object
+    IssueTypeScreenSchemeDetails:
+      additionalProperties: false
+      description: The details of an issue type screen scheme.
+      properties:
+        description:
+          description: The description of the issue type screen scheme. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+        issueTypeMappings:
+          description: The IDs of the screen schemes for the issue type IDs and *default*. A *default* entry is required to create an issue type screen scheme, it defines the mapping for all issue types without a screen scheme.
+          items:
+            $ref: '#/components/schemas/IssueTypeScreenSchemeMapping'
+          type: array
+          writeOnly: true
+        name:
+          description: The name of the issue type screen scheme. The name must be unique. The maximum length is 255 characters.
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeMappings
+      - name
+      type: object
+    PageBeanProjectDetails:
       additionalProperties: false
       description: A page of items.
       properties:
@@ -1156,39 +1186,9 @@ components:
         values:
           description: The list of items.
           items:
-            $ref: '#/components/schemas/IssueTypeScreenSchemeItem'
+            $ref: '#/components/schemas/ProjectDetails'
           readOnly: true
           type: array
-      type: object
-    IssueTypeScreenScheme:
-      additionalProperties: false
-      description: Details of an issue type screen scheme.
-      properties:
-        description:
-          description: The description of the issue type screen scheme.
-          type: string
-        id:
-          description: The ID of the issue type screen scheme.
-          type: string
-        name:
-          description: The name of the issue type screen scheme.
-          type: string
-      required:
-      - id
-      - name
-      type: object
-    IssueTypeScreenSchemeProjectAssociation:
-      additionalProperties: false
-      description: Associated issue type screen scheme and project.
-      properties:
-        issueTypeScreenSchemeId:
-          description: The ID of the issue type screen scheme.
-          type: string
-          writeOnly: true
-        projectId:
-          description: The ID of the project.
-          type: string
-          writeOnly: true
       type: object
   securitySchemes:
     OAuth2:

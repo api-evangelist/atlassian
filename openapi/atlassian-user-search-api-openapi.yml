@@ -900,66 +900,29 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    PageBeanUserKey:
+    UserPickerUser:
       additionalProperties: false
-      description: A page of items.
+      description: A user found in a search.
       properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
           type: string
-        self:
-          description: The URL of the page.
+        avatarUrl:
+          description: The avatar URL of the user.
           format: uri
-          readOnly: true
           type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/UserKey'
-          readOnly: true
-          type: array
-      type: object
-    GroupName:
-      additionalProperties: false
-      description: Details about a group.
-      properties:
-        groupId:
-          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
-          type:
-          - string
-          - 'null'
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy setting, this may be returned as null.
+          type: string
+        html:
+          description: The display name, email address, and key of the user with the matched query string highlighted with the HTML bold tag.
+          type: string
+        key:
+          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          type: string
         name:
-          description: The name of group.
+          description: This property is no longer available . See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
           type: string
-        self:
-          description: The URL for these group details.
-          format: uri
-          readOnly: true
-          type: string
-      type: object
-    ListWrapperCallbackApplicationRole:
-      additionalProperties: false
       type: object
     PageBeanUser:
       additionalProperties: false
@@ -1001,6 +964,52 @@ components:
           readOnly: true
           type: array
       type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    ListWrapperCallbackGroupName:
+      additionalProperties: false
+      type: object
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
     SimpleListWrapperApplicationRole:
       additionalProperties: false
       properties:
@@ -1026,21 +1035,43 @@ components:
       type: object
       xml:
         name: list
-    FoundUsers:
+    GroupName:
       additionalProperties: false
-      description: The list of users found in a search, including header text (Showing X of Y matching users) and total of matched users.
+      description: Details about a group.
       properties:
-        header:
-          description: Header text indicating the number of users in the response and the total number of users found in the search.
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type:
+          - string
+          - 'null'
+        name:
+          description: The name of group.
           type: string
-        total:
-          description: The total number of users found in the search.
-          format: int32
-          type: integer
-        users:
-          items:
-            $ref: '#/components/schemas/UserPickerUser'
-          type: array
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
       type: object
     User:
       additionalProperties: false
@@ -1114,6 +1145,22 @@ components:
       type: object
       xml:
         name: user
+    FoundUsers:
+      additionalProperties: false
+      description: The list of users found in a search, including header text (Showing X of Y matching users) and total of matched users.
+      properties:
+        header:
+          description: Header text indicating the number of users in the response and the total number of users found in the search.
+          type: string
+        total:
+          description: The total number of users found in the search.
+          format: int32
+          type: integer
+        users:
+          items:
+            $ref: '#/components/schemas/UserPickerUser'
+          type: array
+      type: object
     UserKey:
       additionalProperties: false
       description: List of user account IDs.
@@ -1126,31 +1173,6 @@ components:
           description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
           type: string
       type: object
-    SimpleListWrapperGroupName:
-      additionalProperties: false
-      properties:
-        callback:
-          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
-        items:
-          items:
-            $ref: '#/components/schemas/GroupName'
-          type: array
-        max-results:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
-            name: max-results
-        pagingCallback:
-          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
-        size:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
-      type: object
-      xml:
-        name: list
     ApplicationRole:
       additionalProperties: false
       description: Details of an application role.
@@ -1210,70 +1232,48 @@ components:
           description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
           type: string
       type: object
-    AvatarUrlsBean:
+    PageBeanUserKey:
       additionalProperties: false
+      description: A page of items.
       properties:
-        16x16:
-          description: The URL of the item's 16x16 pixel avatar.
-          format: uri
-          type: string
-        24x24:
-          description: The URL of the item's 24x24 pixel avatar.
-          format: uri
-          type: string
-        32x32:
-          description: The URL of the item's 32x32 pixel avatar.
-          format: uri
-          type: string
-        48x48:
-          description: The URL of the item's 48x48 pixel avatar.
-          format: uri
-          type: string
-      type: object
-    ErrorCollection:
-      additionalProperties: false
-      description: Error messages from an operation.
-      properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
-          items:
-            type: string
-          type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
           format: int32
+          readOnly: true
           type: integer
-      type: object
-    ListWrapperCallbackGroupName:
-      additionalProperties: false
-      type: object
-    UserPickerUser:
-      additionalProperties: false
-      description: A user found in a search.
-      properties:
-        accountId:
-          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
-          type: string
-        avatarUrl:
-          description: The avatar URL of the user.
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
           format: uri
+          readOnly: true
           type: string
-        displayName:
-          description: The display name of the user. Depending on the user’s privacy setting, this may be returned as null.
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
           type: string
-        html:
-          description: The display name, email address, and key of the user with the matched query string highlighted with the HTML bold tag.
-          type: string
-        key:
-          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          type: string
-        name:
-          description: This property is no longer available . See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/UserKey'
+          readOnly: true
+          type: array
+      type: object
+    ListWrapperCallbackApplicationRole:
+      additionalProperties: false
       type: object
   securitySchemes:
     OAuth2:

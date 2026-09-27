@@ -78,6 +78,43 @@ paths:
       operationId: atlassianGetAProjectForAWorkspace
 components:
   schemas:
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
     account:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -98,17 +135,6 @@ components:
           uuid:
             type: string
         additionalProperties: true
-    object:
-      type: object
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-      required:
-      - type
-      additionalProperties: true
-      discriminator:
-        propertyName: type
     team:
       allOf:
       - $ref: '#/components/schemas/account'
@@ -119,6 +145,42 @@ components:
           links:
             $ref: '#/components/schemas/team_links'
         additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+        name:
+          type: string
+      additionalProperties: false
+    error:
+      type: object
+      title: Error
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
+      required:
+      - type
+      additionalProperties: true
     project:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -188,68 +250,6 @@ components:
 
               Note that private projects cannot contain public repositories.'
         additionalProperties: true
-    error:
-      type: object
-      title: Error
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            detail:
-              type: string
-            data:
-              type: object
-              description: Optional structured data that is endpoint-specific.
-              properties: {}
-              additionalProperties: true
-          required:
-          - message
-          additionalProperties: false
-      required:
-      - type
-      additionalProperties: true
-    link:
-      type: object
-      title: Link
-      description: A link to a resource related to this object.
-      properties:
-        href:
-          type: string
-          format: uri
-        name:
-          type: string
-      additionalProperties: false
-    team_links:
-      allOf:
-      - $ref: '#/components/schemas/account_links'
-      - type: object
-        title: Team Links
-        description: Links related to a Team.
-        properties:
-          self:
-            $ref: '#/components/schemas/link'
-          html:
-            $ref: '#/components/schemas/link'
-          members:
-            $ref: '#/components/schemas/link'
-          projects:
-            $ref: '#/components/schemas/link'
-          repositories:
-            $ref: '#/components/schemas/link'
-        additionalProperties: true
-    account_links:
-      type: object
-      title: Account Links
-      description: Links related to an Account.
-      properties:
-        avatar:
-          $ref: '#/components/schemas/link'
-      additionalProperties: true
   securitySchemes:
     basic:
       type: http

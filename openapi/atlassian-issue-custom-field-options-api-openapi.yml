@@ -498,6 +498,31 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    OrderOfCustomFieldOptions:
+      additionalProperties: false
+      description: An ordered list of custom field option IDs and information on where to move them.
+      properties:
+        after:
+          description: The ID of the custom field option or cascading option to place the moved options after. Required if `position` isn't provided.
+          type: string
+          writeOnly: true
+        customFieldOptionIds:
+          description: A list of IDs of custom field options to move. The order of the custom field option IDs in the list is the order they are given after the move. The list must contain custom field options or cascading options, but not both.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position the custom field options should be moved to. Required if `after` isn't provided.
+          enum:
+          - First
+          - Last
+          type: string
+          writeOnly: true
+      required:
+      - customFieldOptionIds
+      type: object
     CustomFieldOptionUpdate:
       additionalProperties: false
       description: Details of a custom field option for a context.
@@ -514,30 +539,25 @@ components:
       required:
       - id
       type: object
-    CustomFieldCreatedContextOptionsList:
+    CustomFieldContextOption:
       additionalProperties: false
-      description: A list of custom field options for a context.
-      properties:
-        options:
-          description: The created custom field options.
-          items:
-            $ref: '#/components/schemas/CustomFieldContextOption'
-          type: array
-      type: object
-    CustomFieldOptionCreate:
-      additionalProperties: false
-      description: Details of a custom field option to create.
+      description: Details of the custom field options for a context.
       properties:
         disabled:
           description: Whether the option is disabled.
           type: boolean
+        id:
+          description: The ID of the custom field option.
+          type: string
         optionId:
-          description: For cascading options, the ID of the custom field object containing the cascading option.
+          description: For cascading options, the ID of the custom field option containing the cascading option.
           type: string
         value:
           description: The value of the custom field option.
           type: string
       required:
+      - disabled
+      - id
       - value
       type: object
     PageBeanCustomFieldContextOption:
@@ -580,63 +600,6 @@ components:
           readOnly: true
           type: array
       type: object
-    CustomFieldContextOption:
-      additionalProperties: false
-      description: Details of the custom field options for a context.
-      properties:
-        disabled:
-          description: Whether the option is disabled.
-          type: boolean
-        id:
-          description: The ID of the custom field option.
-          type: string
-        optionId:
-          description: For cascading options, the ID of the custom field option containing the cascading option.
-          type: string
-        value:
-          description: The value of the custom field option.
-          type: string
-      required:
-      - disabled
-      - id
-      - value
-      type: object
-    BulkCustomFieldOptionUpdateRequest:
-      additionalProperties: false
-      description: Details of the options to update for a custom field.
-      properties:
-        options:
-          description: Details of the options to update.
-          items:
-            $ref: '#/components/schemas/CustomFieldOptionUpdate'
-          type: array
-      type: object
-      writeOnly: true
-    OrderOfCustomFieldOptions:
-      additionalProperties: false
-      description: An ordered list of custom field option IDs and information on where to move them.
-      properties:
-        after:
-          description: The ID of the custom field option or cascading option to place the moved options after. Required if `position` isn't provided.
-          type: string
-          writeOnly: true
-        customFieldOptionIds:
-          description: A list of IDs of custom field options to move. The order of the custom field option IDs in the list is the order they are given after the move. The list must contain custom field options or cascading options, but not both.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        position:
-          description: The position the custom field options should be moved to. Required if `after` isn't provided.
-          enum:
-          - First
-          - Last
-          type: string
-          writeOnly: true
-      required:
-      - customFieldOptionIds
-      type: object
     BulkCustomFieldOptionCreateRequest:
       additionalProperties: false
       description: Details of the options to create for a custom field.
@@ -648,15 +611,21 @@ components:
           type: array
       type: object
       writeOnly: true
-    CustomFieldUpdatedContextOptionsList:
+    CustomFieldOptionCreate:
       additionalProperties: false
-      description: A list of custom field options for a context.
+      description: Details of a custom field option to create.
       properties:
-        options:
-          description: The updated custom field options.
-          items:
-            $ref: '#/components/schemas/CustomFieldOptionUpdate'
-          type: array
+        disabled:
+          description: Whether the option is disabled.
+          type: boolean
+        optionId:
+          description: For cascading options, the ID of the custom field object containing the cascading option.
+          type: string
+        value:
+          description: The value of the custom field option.
+          type: string
+      required:
+      - value
       type: object
     CustomFieldOption:
       additionalProperties: false
@@ -674,6 +643,37 @@ components:
       type: object
       xml:
         name: customFieldOption
+    CustomFieldCreatedContextOptionsList:
+      additionalProperties: false
+      description: A list of custom field options for a context.
+      properties:
+        options:
+          description: The created custom field options.
+          items:
+            $ref: '#/components/schemas/CustomFieldContextOption'
+          type: array
+      type: object
+    BulkCustomFieldOptionUpdateRequest:
+      additionalProperties: false
+      description: Details of the options to update for a custom field.
+      properties:
+        options:
+          description: Details of the options to update.
+          items:
+            $ref: '#/components/schemas/CustomFieldOptionUpdate'
+          type: array
+      type: object
+      writeOnly: true
+    CustomFieldUpdatedContextOptionsList:
+      additionalProperties: false
+      description: A list of custom field options for a context.
+      properties:
+        options:
+          description: The updated custom field options.
+          items:
+            $ref: '#/components/schemas/CustomFieldOptionUpdate'
+          type: array
+      type: object
   securitySchemes:
     OAuth2:
       description: OAuth2 scopes for Jira

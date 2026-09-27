@@ -740,22 +740,6 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
-    IssueTypeSchemeProjectAssociation:
-      additionalProperties: false
-      description: Details of the association between an issue type scheme and project.
-      properties:
-        issueTypeSchemeId:
-          description: The ID of the issue type scheme.
-          type: string
-          writeOnly: true
-        projectId:
-          description: The ID of the project.
-          type: string
-          writeOnly: true
-      required:
-      - issueTypeSchemeId
-      - projectId
-      type: object
     IssueTypeSchemeUpdateDetails:
       additionalProperties: false
       description: Details of the name, description, and default issue type for an issue type scheme.
@@ -772,71 +756,6 @@ components:
           description: The name of the issue type scheme. The name must be unique. The maximum length is 255 characters.
           type: string
           writeOnly: true
-      type: object
-    PageBeanIssueTypeSchemeMapping:
-      additionalProperties: false
-      description: A page of items.
-      properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
-          type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/IssueTypeSchemeMapping'
-          readOnly: true
-          type: array
-      type: object
-    OrderOfIssueTypes:
-      additionalProperties: false
-      description: An ordered list of issue type IDs and information about where to move them.
-      properties:
-        after:
-          description: The ID of the issue type to place the moved issue types after. Required if `position` isn't provided.
-          type: string
-          writeOnly: true
-        issueTypeIds:
-          description: A list of the issue type IDs to move. The order of the issue type IDs in the list is the order they are given after the move.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        position:
-          description: The position the issue types should be moved to. Required if `after` isn't provided.
-          enum:
-          - First
-          - Last
-          type: string
-          writeOnly: true
-      required:
-      - issueTypeIds
       type: object
     PageBeanIssueTypeScheme:
       additionalProperties: false
@@ -878,28 +797,57 @@ components:
           readOnly: true
           type: array
       type: object
-    IssueTypeScheme:
+    IssueTypeSchemeDetails:
       additionalProperties: false
-      description: Details of an issue type scheme.
+      description: Details of an issue type scheme and its associated issue types.
       properties:
         defaultIssueTypeId:
-          description: The ID of the default issue type of the issue type scheme.
+          description: The ID of the default issue type of the issue type scheme. This ID must be included in `issueTypeIds`.
           type: string
+          writeOnly: true
         description:
-          description: The description of the issue type scheme.
+          description: The description of the issue type scheme. The maximum length is 4000 characters.
           type: string
-        id:
-          description: The ID of the issue type scheme.
-          type: string
-        isDefault:
-          description: Whether the issue type scheme is the default.
-          type: boolean
+          writeOnly: true
+        issueTypeIds:
+          description: The list of issue types IDs of the issue type scheme. At least one standard issue type ID is required.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
         name:
-          description: The name of the issue type scheme.
+          description: The name of the issue type scheme. The name must be unique. The maximum length is 255 characters.
           type: string
+          writeOnly: true
       required:
-      - id
+      - issueTypeIds
       - name
+      type: object
+    OrderOfIssueTypes:
+      additionalProperties: false
+      description: An ordered list of issue type IDs and information about where to move them.
+      properties:
+        after:
+          description: The ID of the issue type to place the moved issue types after. Required if `position` isn't provided.
+          type: string
+          writeOnly: true
+        issueTypeIds:
+          description: A list of the issue type IDs to move. The order of the issue type IDs in the list is the order they are given after the move.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position the issue types should be moved to. Required if `after` isn't provided.
+          enum:
+          - First
+          - Last
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeIds
       type: object
     PageBeanIssueTypeSchemeProjects:
       additionalProperties: false
@@ -941,6 +889,113 @@ components:
           readOnly: true
           type: array
       type: object
+    IssueTypeSchemeProjects:
+      additionalProperties: false
+      description: Issue type scheme with a list of the projects that use it.
+      properties:
+        issueTypeScheme:
+          allOf:
+          - $ref: '#/components/schemas/IssueTypeScheme'
+          description: Details of an issue type scheme.
+        projectIds:
+          description: The IDs of the projects using the issue type scheme.
+          items:
+            type: string
+          type: array
+      required:
+      - issueTypeScheme
+      - projectIds
+      type: object
+    IssueTypeScheme:
+      additionalProperties: false
+      description: Details of an issue type scheme.
+      properties:
+        defaultIssueTypeId:
+          description: The ID of the default issue type of the issue type scheme.
+          type: string
+        description:
+          description: The description of the issue type scheme.
+          type: string
+        id:
+          description: The ID of the issue type scheme.
+          type: string
+        isDefault:
+          description: Whether the issue type scheme is the default.
+          type: boolean
+        name:
+          description: The name of the issue type scheme.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    IssueTypeSchemeID:
+      additionalProperties: false
+      description: The ID of an issue type scheme.
+      properties:
+        issueTypeSchemeId:
+          description: The ID of the issue type scheme.
+          readOnly: true
+          type: string
+      required:
+      - issueTypeSchemeId
+      type: object
+    PageBeanIssueTypeSchemeMapping:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/IssueTypeSchemeMapping'
+          readOnly: true
+          type: array
+      type: object
+    IssueTypeSchemeProjectAssociation:
+      additionalProperties: false
+      description: Details of the association between an issue type scheme and project.
+      properties:
+        issueTypeSchemeId:
+          description: The ID of the issue type scheme.
+          type: string
+          writeOnly: true
+        projectId:
+          description: The ID of the project.
+          type: string
+          writeOnly: true
+      required:
+      - issueTypeSchemeId
+      - projectId
+      type: object
     IssueTypeIds:
       additionalProperties: false
       description: The list of issue type IDs.
@@ -967,61 +1022,6 @@ components:
           type: string
       required:
       - issueTypeId
-      - issueTypeSchemeId
-      type: object
-    IssueTypeSchemeProjects:
-      additionalProperties: false
-      description: Issue type scheme with a list of the projects that use it.
-      properties:
-        issueTypeScheme:
-          allOf:
-          - $ref: '#/components/schemas/IssueTypeScheme'
-          description: Details of an issue type scheme.
-        projectIds:
-          description: The IDs of the projects using the issue type scheme.
-          items:
-            type: string
-          type: array
-      required:
-      - issueTypeScheme
-      - projectIds
-      type: object
-    IssueTypeSchemeDetails:
-      additionalProperties: false
-      description: Details of an issue type scheme and its associated issue types.
-      properties:
-        defaultIssueTypeId:
-          description: The ID of the default issue type of the issue type scheme. This ID must be included in `issueTypeIds`.
-          type: string
-          writeOnly: true
-        description:
-          description: The description of the issue type scheme. The maximum length is 4000 characters.
-          type: string
-          writeOnly: true
-        issueTypeIds:
-          description: The list of issue types IDs of the issue type scheme. At least one standard issue type ID is required.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        name:
-          description: The name of the issue type scheme. The name must be unique. The maximum length is 255 characters.
-          type: string
-          writeOnly: true
-      required:
-      - issueTypeIds
-      - name
-      type: object
-    IssueTypeSchemeID:
-      additionalProperties: false
-      description: The ID of an issue type scheme.
-      properties:
-        issueTypeSchemeId:
-          description: The ID of the issue type scheme.
-          readOnly: true
-          type: string
-      required:
       - issueTypeSchemeId
       type: object
   securitySchemes:

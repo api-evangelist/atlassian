@@ -427,327 +427,23 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
-    JqlQueryFieldEntityProperty:
-      description: Details of an entity property.
+    JqlQueryField:
+      additionalProperties: false
+      description: A field used in a JQL query. See [Advanced searching - fields reference](https://confluence.atlassian.com/x/dAiiLQ) for more information about fields in JQL queries.
       properties:
-        entity:
-          description: The object on which the property is set.
-          example: issue
+        encodedName:
+          description: The encoded name of the field, which can be used directly in a JQL query.
           type: string
-        key:
-          description: The key of the property.
-          example: stats
+        name:
+          description: The name of the field.
           type: string
-        path:
-          description: The path in the property value to query.
-          example: comments.count
-          type: string
-        type:
-          description: The type of the property value extraction. Not available if the extraction for the property is not registered on the instance with the [Entity property](https://developer.atlassian.com/cloud/jira/platform/modules/entity-property/) module.
-          enum:
-          - number
-          - string
-          - text
-          - date
-          - user
-          example: number
-          type: string
-      required:
-      - entity
-      - key
-      - path
-      type: object
-    AutoCompleteSuggestions:
-      additionalProperties: false
-      description: The results from a JQL query.
-      properties:
-        results:
-          description: The list of suggested item.
+        property:
+          description: When the field refers to a value in an entity property, details of the entity property value.
           items:
-            $ref: '#/components/schemas/AutoCompleteSuggestion'
-          type: array
-      type: object
-    JQLReferenceData:
-      additionalProperties: false
-      description: Lists of JQL reference data.
-      properties:
-        jqlReservedWords:
-          description: List of JQL query reserved words.
-          items:
-            type: string
-          type: array
-        visibleFieldNames:
-          description: List of fields usable in JQL queries.
-          items:
-            $ref: '#/components/schemas/FieldReferenceData'
-          type: array
-        visibleFunctionNames:
-          description: List of functions usable in JQL queries.
-          items:
-            $ref: '#/components/schemas/FunctionReferenceData'
-          type: array
-      type: object
-    JQLPersonalDataMigrationRequest:
-      additionalProperties: false
-      description: The JQL queries to be converted.
-      properties:
-        queryStrings:
-          description: A list of queries with user identifiers. Maximum of 100 queries.
-          items:
-            type: string
-          type: array
-      type: object
-    JqlQuery:
-      additionalProperties: false
-      description: A parsed JQL query.
-      properties:
-        orderBy:
-          $ref: '#/components/schemas/JqlQueryOrderByClause'
-        where:
-          $ref: '#/components/schemas/JqlQueryClause'
-      type: object
-    JqlQueryOrderByClauseElement:
-      additionalProperties: false
-      description: An element of the order-by JQL clause.
-      properties:
-        direction:
-          description: The direction in which to order the results.
-          enum:
-          - asc
-          - desc
-          type: string
-        field:
-          $ref: '#/components/schemas/JqlQueryField'
-      required:
-      - field
-      type: object
-    JqlQueriesToSanitize:
-      additionalProperties: false
-      description: The list of JQL queries to sanitize for the given account IDs.
-      properties:
-        queries:
-          description: The list of JQL queries to sanitize. Must contain unique values. Maximum of 20 queries.
-          items:
-            $ref: '#/components/schemas/JqlQueryToSanitize'
+            $ref: '#/components/schemas/JqlQueryFieldEntityProperty'
           type: array
       required:
-      - queries
-      type: object
-      writeOnly: true
-    ValueOperand:
-      description: An operand that is a user-provided value.
-      properties:
-        encodedValue:
-          description: Encoded value, which can be used directly in a JQL query.
-          type: string
-        value:
-          description: The operand value.
-          type: string
-      required:
-      - value
-      type: object
-    JqlQueryUnitaryOperand:
-      anyOf:
-      - $ref: '#/components/schemas/ValueOperand'
-      - $ref: '#/components/schemas/FunctionOperand'
-      - $ref: '#/components/schemas/KeywordOperand'
-      description: An operand that can be part of a list operand.
-      type: object
-    SanitizedJqlQueries:
-      additionalProperties: false
-      description: The sanitized JQL queries for the given account IDs.
-      properties:
-        queries:
-          description: The list of sanitized JQL queries.
-          items:
-            $ref: '#/components/schemas/SanitizedJqlQuery'
-          type: array
-      type: object
-    FieldChangedClause:
-      description: A clause that asserts whether a field was changed. For example, `status CHANGED AFTER startOfMonth(-1M)`.See [CHANGED](https://confluence.atlassian.com/x/dgiiLQ#Advancedsearching-operatorsreference-CHANGEDCHANGED) for more information about the CHANGED operator.
-      properties:
-        field:
-          $ref: '#/components/schemas/JqlQueryField'
-        operator:
-          description: The operator applied to the field.
-          enum:
-          - changed
-          type: string
-        predicates:
-          description: The list of time predicates.
-          items:
-            $ref: '#/components/schemas/JqlQueryClauseTimePredicate'
-          type: array
-      required:
-      - field
-      - operator
-      - predicates
-      type: object
-    FieldValueClause:
-      description: A clause that asserts the current value of a field. For example, `summary ~ test`.
-      properties:
-        field:
-          $ref: '#/components/schemas/JqlQueryField'
-        operand:
-          $ref: '#/components/schemas/JqlQueryClauseOperand'
-        operator:
-          description: The operator between the field and operand.
-          enum:
-          - '='
-          - '!='
-          - '>'
-          - <
-          - '>='
-          - <=
-          - in
-          - not in
-          - '~'
-          - ~=
-          - is
-          - is not
-          type: string
-      required:
-      - field
-      - operand
-      - operator
-      type: object
-    SearchAutoCompleteFilter:
-      additionalProperties: false
-      description: Details of how to filter and list search auto complete information.
-      properties:
-        includeCollapsedFields:
-          default: false
-          description: Include collapsed fields for fields that have non-unique names.
-          type: boolean
-        projectIds:
-          description: List of project IDs used to filter the visible field details returned.
-          items:
-            format: int64
-            type: integer
-          type: array
-      type: object
-    ParsedJqlQuery:
-      additionalProperties: false
-      description: Details of a parsed JQL query.
-      minLength: 1
-      properties:
-        errors:
-          description: The list of syntax or validation errors.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        query:
-          description: The JQL query that was parsed and validated.
-          type: string
-        structure:
-          allOf:
-          - $ref: '#/components/schemas/JqlQuery'
-          description: The syntax tree of the query. Empty if the query was invalid.
-      required:
-      - query
-      type: object
-    JqlQueryClauseOperand:
-      anyOf:
-      - $ref: '#/components/schemas/ListOperand'
-      - $ref: '#/components/schemas/ValueOperand'
-      - $ref: '#/components/schemas/FunctionOperand'
-      - $ref: '#/components/schemas/KeywordOperand'
-      description: Details of an operand in a JQL clause.
-      type: object
-    FunctionReferenceData:
-      additionalProperties: false
-      description: Details of functions that can be used in advanced searches.
-      properties:
-        displayName:
-          description: The display name of the function.
-          type: string
-        isList:
-          description: Whether the function can take a list of arguments.
-          enum:
-          - 'true'
-          - 'false'
-          type: string
-        supportsListAndSingleValueOperators:
-          description: Whether the function supports both single and list value operators.
-          enum:
-          - 'true'
-          - 'false'
-          type: string
-        types:
-          description: The data types returned by the function.
-          items:
-            type: string
-          type: array
-        value:
-          description: The function identifier.
-          type: string
-      type: object
-    CompoundClause:
-      description: A JQL query clause that consists of nested clauses. For example, `(labels in (urgent, blocker) OR lastCommentedBy = currentUser()). Note that, where nesting is not defined, the parser nests JQL clauses based on the operator precedence. For example, "A OR B AND C" is parsed as "(A OR B) AND C". See Setting the precedence of operators for more information about precedence in JQL queries.`
-      properties:
-        clauses:
-          description: The list of nested clauses.
-          items:
-            $ref: '#/components/schemas/JqlQueryClause'
-          type: array
-        operator:
-          description: The operator between the clauses.
-          enum:
-          - and
-          - or
-          - not
-          type: string
-      required:
-      - clauses
-      - operator
-      type: object
-    ErrorCollection:
-      additionalProperties: false
-      description: Error messages from an operation.
-      properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
-          items:
-            type: string
-          type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
-          format: int32
-          type: integer
-      type: object
-    AutoCompleteSuggestion:
-      additionalProperties: false
-      description: A field auto-complete suggestion.
-      properties:
-        displayName:
-          description: The display name of a suggested item. If `fieldValue` or `predicateValue` are provided, the matching text is highlighted with the HTML bold tag.
-          type: string
-        value:
-          description: The value of a suggested item.
-          type: string
-      type: object
-    FunctionOperand:
-      description: An operand that is a function. See [Advanced searching - functions reference](https://confluence.atlassian.com/x/dwiiLQ) for more information about JQL functions.
-      properties:
-        arguments:
-          description: The list of function arguments.
-          items:
-            type: string
-          type: array
-        encodedOperand:
-          description: Encoded operand, which can be used directly in a JQL query.
-          type: string
-        function:
-          description: The name of the function.
-          type: string
-      required:
-      - arguments
-      - function
+      - name
       type: object
     FieldReferenceData:
       additionalProperties: false
@@ -800,81 +496,154 @@ components:
           description: The field identifier.
           type: string
       type: object
-    JqlQueryOrderByClause:
+    ConvertedJQLQueries:
       additionalProperties: false
-      description: Details of the order-by JQL clause.
+      description: The converted JQL queries.
       properties:
-        fields:
-          description: The list of order-by clause fields and their ordering directives.
+        queriesWithUnknownUsers:
+          description: List of queries containing user information that could not be mapped to an existing user
           items:
-            $ref: '#/components/schemas/JqlQueryOrderByClauseElement'
+            $ref: '#/components/schemas/JQLQueryWithUnknownUsers'
           type: array
-      required:
-      - fields
+        queryStrings:
+          description: The list of converted query strings with account IDs in place of user identifiers.
+          items:
+            type: string
+          type: array
       type: object
-    JqlQueryToSanitize:
+    JqlQueriesToSanitize:
       additionalProperties: false
-      description: The JQL query to sanitize for the account ID. If the account ID is null, sanitizing is performed for an anonymous user.
-      properties:
-        accountId:
-          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
-          maxLength: 128
-          type:
-          - string
-          - 'null'
-        query:
-          description: The query to sanitize.
-          type: string
-      required:
-      - query
-      type: object
-      writeOnly: true
-    JQLQueryWithUnknownUsers:
-      additionalProperties: false
-      description: JQL queries that contained users that could not be found
-      properties:
-        convertedQuery:
-          description: The converted query, with accountIDs instead of user identifiers, or 'unknown' for users that could not be found
-          type: string
-        originalQuery:
-          description: The original query, for reference
-          type: string
-      type: object
-    SanitizedJqlQuery:
-      additionalProperties: false
-      description: Details of the sanitized JQL query.
-      properties:
-        accountId:
-          description: The account ID of the user for whom sanitization was performed.
-          maxLength: 128
-          type:
-          - string
-          - 'null'
-        errors:
-          allOf:
-          - $ref: '#/components/schemas/ErrorCollection'
-          description: The list of errors.
-        initialQuery:
-          description: The initial query.
-          type: string
-        sanitizedQuery:
-          description: The sanitized query, if there were no errors.
-          type:
-          - string
-          - 'null'
-      type: object
-    ParsedJqlQueries:
-      additionalProperties: false
-      description: A list of parsed JQL queries.
+      description: The list of JQL queries to sanitize for the given account IDs.
       properties:
         queries:
-          description: A list of parsed JQL queries.
+          description: The list of JQL queries to sanitize. Must contain unique values. Maximum of 20 queries.
           items:
-            $ref: '#/components/schemas/ParsedJqlQuery'
-          minLength: 1
+            $ref: '#/components/schemas/JqlQueryToSanitize'
           type: array
       required:
       - queries
+      type: object
+      writeOnly: true
+    FunctionOperand:
+      description: An operand that is a function. See [Advanced searching - functions reference](https://confluence.atlassian.com/x/dwiiLQ) for more information about JQL functions.
+      properties:
+        arguments:
+          description: The list of function arguments.
+          items:
+            type: string
+          type: array
+        encodedOperand:
+          description: Encoded operand, which can be used directly in a JQL query.
+          type: string
+        function:
+          description: The name of the function.
+          type: string
+      required:
+      - arguments
+      - function
+      type: object
+    FunctionReferenceData:
+      additionalProperties: false
+      description: Details of functions that can be used in advanced searches.
+      properties:
+        displayName:
+          description: The display name of the function.
+          type: string
+        isList:
+          description: Whether the function can take a list of arguments.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        supportsListAndSingleValueOperators:
+          description: Whether the function supports both single and list value operators.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        types:
+          description: The data types returned by the function.
+          items:
+            type: string
+          type: array
+        value:
+          description: The function identifier.
+          type: string
+      type: object
+    AutoCompleteSuggestions:
+      additionalProperties: false
+      description: The results from a JQL query.
+      properties:
+        results:
+          description: The list of suggested item.
+          items:
+            $ref: '#/components/schemas/AutoCompleteSuggestion'
+          type: array
+      type: object
+    JqlQueryOrderByClauseElement:
+      additionalProperties: false
+      description: An element of the order-by JQL clause.
+      properties:
+        direction:
+          description: The direction in which to order the results.
+          enum:
+          - asc
+          - desc
+          type: string
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+      required:
+      - field
+      type: object
+    JqlQueryFieldEntityProperty:
+      description: Details of an entity property.
+      properties:
+        entity:
+          description: The object on which the property is set.
+          example: issue
+          type: string
+        key:
+          description: The key of the property.
+          example: stats
+          type: string
+        path:
+          description: The path in the property value to query.
+          example: comments.count
+          type: string
+        type:
+          description: The type of the property value extraction. Not available if the extraction for the property is not registered on the instance with the [Entity property](https://developer.atlassian.com/cloud/jira/platform/modules/entity-property/) module.
+          enum:
+          - number
+          - string
+          - text
+          - date
+          - user
+          example: number
+          type: string
+      required:
+      - entity
+      - key
+      - path
+      type: object
+    JqlQueryClause:
+      additionalProperties: false
+      anyOf:
+      - $ref: '#/components/schemas/CompoundClause'
+      - $ref: '#/components/schemas/FieldValueClause'
+      - $ref: '#/components/schemas/FieldWasClause'
+      - $ref: '#/components/schemas/FieldChangedClause'
+      description: A JQL query clause.
+      type: object
+    AutoCompleteSuggestion:
+      additionalProperties: false
+      description: A field auto-complete suggestion.
+      properties:
+        displayName:
+          description: The display name of a suggested item. If `fieldValue` or `predicateValue` are provided, the matching text is highlighted with the HTML bold tag.
+          type: string
+        value:
+          description: The value of a suggested item.
+          type: string
       type: object
     FieldWasClause:
       description: A clause that asserts a previous value of a field. For example, `status WAS "Resolved" BY currentUser() BEFORE "2019/02/02"`. See [WAS](https://confluence.atlassian.com/x/dgiiLQ#Advancedsearching-operatorsreference-WASWAS) for more information about the WAS operator.
@@ -902,31 +671,33 @@ components:
       - operator
       - predicates
       type: object
-    ConvertedJQLQueries:
-      additionalProperties: false
-      description: The converted JQL queries.
+    FieldValueClause:
+      description: A clause that asserts the current value of a field. For example, `summary ~ test`.
       properties:
-        queriesWithUnknownUsers:
-          description: List of queries containing user information that could not be mapped to an existing user
-          items:
-            $ref: '#/components/schemas/JQLQueryWithUnknownUsers'
-          type: array
-        queryStrings:
-          description: The list of converted query strings with account IDs in place of user identifiers.
-          items:
-            type: string
-          type: array
-      type: object
-    KeywordOperand:
-      description: An operand that is a JQL keyword. See [Advanced searching - keywords reference](https://confluence.atlassian.com/jiracorecloud/advanced-searching-keywords-reference-765593717.html#Advancedsearching-keywordsreference-EMPTYEMPTY) for more information about operand keywords.
-      properties:
-        keyword:
-          description: The keyword that is the operand value.
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+        operand:
+          $ref: '#/components/schemas/JqlQueryClauseOperand'
+        operator:
+          description: The operator between the field and operand.
           enum:
-          - empty
+          - '='
+          - '!='
+          - '>'
+          - <
+          - '>='
+          - <=
+          - in
+          - not in
+          - '~'
+          - ~=
+          - is
+          - is not
           type: string
       required:
-      - keyword
+      - field
+      - operand
+      - operator
       type: object
     JqlQueryClauseTimePredicate:
       description: A time predicate for a temporal JQL clause.
@@ -948,15 +719,6 @@ components:
       - operand
       - operator
       type: object
-    JqlQueryClause:
-      additionalProperties: false
-      anyOf:
-      - $ref: '#/components/schemas/CompoundClause'
-      - $ref: '#/components/schemas/FieldValueClause'
-      - $ref: '#/components/schemas/FieldWasClause'
-      - $ref: '#/components/schemas/FieldChangedClause'
-      description: A JQL query clause.
-      type: object
     JqlQueriesToParse:
       additionalProperties: false
       description: A list of JQL queries to parse.
@@ -972,23 +734,261 @@ components:
       - queries
       type: object
       writeOnly: true
-    JqlQueryField:
-      additionalProperties: false
-      description: A field used in a JQL query. See [Advanced searching - fields reference](https://confluence.atlassian.com/x/dAiiLQ) for more information about fields in JQL queries.
+    JqlQueryClauseOperand:
+      anyOf:
+      - $ref: '#/components/schemas/ListOperand'
+      - $ref: '#/components/schemas/ValueOperand'
+      - $ref: '#/components/schemas/FunctionOperand'
+      - $ref: '#/components/schemas/KeywordOperand'
+      description: Details of an operand in a JQL clause.
+      type: object
+    ValueOperand:
+      description: An operand that is a user-provided value.
       properties:
-        encodedName:
-          description: The encoded name of the field, which can be used directly in a JQL query.
+        encodedValue:
+          description: Encoded value, which can be used directly in a JQL query.
           type: string
-        name:
-          description: The name of the field.
+        value:
+          description: The operand value.
           type: string
-        property:
-          description: When the field refers to a value in an entity property, details of the entity property value.
+      required:
+      - value
+      type: object
+    JQLPersonalDataMigrationRequest:
+      additionalProperties: false
+      description: The JQL queries to be converted.
+      properties:
+        queryStrings:
+          description: A list of queries with user identifiers. Maximum of 100 queries.
           items:
-            $ref: '#/components/schemas/JqlQueryFieldEntityProperty'
+            type: string
+          type: array
+      type: object
+    ParsedJqlQueries:
+      additionalProperties: false
+      description: A list of parsed JQL queries.
+      properties:
+        queries:
+          description: A list of parsed JQL queries.
+          items:
+            $ref: '#/components/schemas/ParsedJqlQuery'
+          minLength: 1
           type: array
       required:
-      - name
+      - queries
+      type: object
+    FieldChangedClause:
+      description: A clause that asserts whether a field was changed. For example, `status CHANGED AFTER startOfMonth(-1M)`.See [CHANGED](https://confluence.atlassian.com/x/dgiiLQ#Advancedsearching-operatorsreference-CHANGEDCHANGED) for more information about the CHANGED operator.
+      properties:
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+        operator:
+          description: The operator applied to the field.
+          enum:
+          - changed
+          type: string
+        predicates:
+          description: The list of time predicates.
+          items:
+            $ref: '#/components/schemas/JqlQueryClauseTimePredicate'
+          type: array
+      required:
+      - field
+      - operator
+      - predicates
+      type: object
+    CompoundClause:
+      description: A JQL query clause that consists of nested clauses. For example, `(labels in (urgent, blocker) OR lastCommentedBy = currentUser()). Note that, where nesting is not defined, the parser nests JQL clauses based on the operator precedence. For example, "A OR B AND C" is parsed as "(A OR B) AND C". See Setting the precedence of operators for more information about precedence in JQL queries.`
+      properties:
+        clauses:
+          description: The list of nested clauses.
+          items:
+            $ref: '#/components/schemas/JqlQueryClause'
+          type: array
+        operator:
+          description: The operator between the clauses.
+          enum:
+          - and
+          - or
+          - not
+          type: string
+      required:
+      - clauses
+      - operator
+      type: object
+    JqlQueryUnitaryOperand:
+      anyOf:
+      - $ref: '#/components/schemas/ValueOperand'
+      - $ref: '#/components/schemas/FunctionOperand'
+      - $ref: '#/components/schemas/KeywordOperand'
+      description: An operand that can be part of a list operand.
+      type: object
+    JqlQuery:
+      additionalProperties: false
+      description: A parsed JQL query.
+      properties:
+        orderBy:
+          $ref: '#/components/schemas/JqlQueryOrderByClause'
+        where:
+          $ref: '#/components/schemas/JqlQueryClause'
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    JQLQueryWithUnknownUsers:
+      additionalProperties: false
+      description: JQL queries that contained users that could not be found
+      properties:
+        convertedQuery:
+          description: The converted query, with accountIDs instead of user identifiers, or 'unknown' for users that could not be found
+          type: string
+        originalQuery:
+          description: The original query, for reference
+          type: string
+      type: object
+    ParsedJqlQuery:
+      additionalProperties: false
+      description: Details of a parsed JQL query.
+      minLength: 1
+      properties:
+        errors:
+          description: The list of syntax or validation errors.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        query:
+          description: The JQL query that was parsed and validated.
+          type: string
+        structure:
+          allOf:
+          - $ref: '#/components/schemas/JqlQuery'
+          description: The syntax tree of the query. Empty if the query was invalid.
+      required:
+      - query
+      type: object
+    JQLReferenceData:
+      additionalProperties: false
+      description: Lists of JQL reference data.
+      properties:
+        jqlReservedWords:
+          description: List of JQL query reserved words.
+          items:
+            type: string
+          type: array
+        visibleFieldNames:
+          description: List of fields usable in JQL queries.
+          items:
+            $ref: '#/components/schemas/FieldReferenceData'
+          type: array
+        visibleFunctionNames:
+          description: List of functions usable in JQL queries.
+          items:
+            $ref: '#/components/schemas/FunctionReferenceData'
+          type: array
+      type: object
+    SanitizedJqlQueries:
+      additionalProperties: false
+      description: The sanitized JQL queries for the given account IDs.
+      properties:
+        queries:
+          description: The list of sanitized JQL queries.
+          items:
+            $ref: '#/components/schemas/SanitizedJqlQuery'
+          type: array
+      type: object
+    JqlQueryToSanitize:
+      additionalProperties: false
+      description: The JQL query to sanitize for the account ID. If the account ID is null, sanitizing is performed for an anonymous user.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
+          type:
+          - string
+          - 'null'
+        query:
+          description: The query to sanitize.
+          type: string
+      required:
+      - query
+      type: object
+      writeOnly: true
+    SearchAutoCompleteFilter:
+      additionalProperties: false
+      description: Details of how to filter and list search auto complete information.
+      properties:
+        includeCollapsedFields:
+          default: false
+          description: Include collapsed fields for fields that have non-unique names.
+          type: boolean
+        projectIds:
+          description: List of project IDs used to filter the visible field details returned.
+          items:
+            format: int64
+            type: integer
+          type: array
+      type: object
+    JqlQueryOrderByClause:
+      additionalProperties: false
+      description: Details of the order-by JQL clause.
+      properties:
+        fields:
+          description: The list of order-by clause fields and their ordering directives.
+          items:
+            $ref: '#/components/schemas/JqlQueryOrderByClauseElement'
+          type: array
+      required:
+      - fields
+      type: object
+    SanitizedJqlQuery:
+      additionalProperties: false
+      description: Details of the sanitized JQL query.
+      properties:
+        accountId:
+          description: The account ID of the user for whom sanitization was performed.
+          maxLength: 128
+          type:
+          - string
+          - 'null'
+        errors:
+          allOf:
+          - $ref: '#/components/schemas/ErrorCollection'
+          description: The list of errors.
+        initialQuery:
+          description: The initial query.
+          type: string
+        sanitizedQuery:
+          description: The sanitized query, if there were no errors.
+          type:
+          - string
+          - 'null'
+      type: object
+    KeywordOperand:
+      description: An operand that is a JQL keyword. See [Advanced searching - keywords reference](https://confluence.atlassian.com/jiracorecloud/advanced-searching-keywords-reference-765593717.html#Advancedsearching-keywordsreference-EMPTYEMPTY) for more information about operand keywords.
+      properties:
+        keyword:
+          description: The keyword that is the operand value.
+          enum:
+          - empty
+          type: string
+      required:
+      - keyword
       type: object
     ListOperand:
       description: An operand that is a list of values.
