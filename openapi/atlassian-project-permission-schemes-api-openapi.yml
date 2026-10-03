@@ -258,6 +258,189 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
+    SecurityScheme:
+      additionalProperties: false
+      description: Details about a security scheme.
+      properties:
+        defaultSecurityLevelId:
+          description: The ID of the default security level.
+          format: int64
+          readOnly: true
+          type: integer
+        description:
+          description: The description of the issue security scheme.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue security scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        levels:
+          items:
+            $ref: '#/components/schemas/SecurityLevel'
+          type: array
+        name:
+          description: The name of the issue security scheme.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the issue security scheme.
+          readOnly: true
+          type: string
+      type: object
+    IdBean:
+      additionalProperties: false
+      properties:
+        id:
+          description: The ID of the permission scheme to associate with the project. Use the [Get all permission schemes](#api-rest-api-3-permissionscheme-get) resource to get a list of permission scheme IDs.
+          format: int64
+          type: integer
+      required:
+      - id
+      type: object
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
+          type: string
+      type: object
+    SecurityLevel:
+      additionalProperties: false
+      description: Details of an issue level security item.
+      properties:
+        description:
+          description: The description of the issue level security item.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the issue level security item.
+          readOnly: true
+          type: string
+        isDefault:
+          description: Whether the issue level security item is the default.
+          readOnly: true
+          type: boolean
+        issueSecuritySchemeId:
+          description: The ID of the issue level security scheme.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the issue level security item.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the issue level security item.
+          readOnly: true
+          type: string
+      type: object
+    ProjectIssueSecurityLevels:
+      additionalProperties: false
+      description: List of issue level security items in a project.
+      properties:
+        levels:
+          description: Issue level security items list.
+          items:
+            $ref: '#/components/schemas/SecurityLevel'
+          readOnly: true
+          type: array
+      required:
+      - levels
+      type: object
+    PermissionGrant:
+      additionalProperties: true
+      description: Details about a permission granted to a user or group.
+      properties:
+        holder:
+          allOf:
+          - $ref: '#/components/schemas/PermissionHolder'
+          description: The user or group being granted the permission. It consists of a `type`, a type-dependent `parameter` and a type-dependent `value`. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+        id:
+          description: The ID of the permission granted details.
+          format: int64
+          readOnly: true
+          type: integer
+        permission:
+          description: The permission to grant. This permission can be one of the built-in permissions or a custom permission added by an app. See [Built-in permissions](../api-group-permission-schemes/#built-in-permissions) in *Get all permission schemes* for more information about the built-in permissions. See the [project permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/) and [global permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/) module documentation for more information about custom permissions.
+          type: string
+        self:
+          description: The URL of the permission granted details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    PermissionHolder:
+      additionalProperties: false
+      description: Details of a user, group, field, or project role that holds a permission. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
+      properties:
+        expand:
+          description: Expand options that include additional permission holder details in the response.
+          readOnly: true
+          type: string
+        parameter:
+          description: As a group's name can change, use of `value` is recommended. The identifier associated withthe `type` value that defines the holder of the permission.
+          type: string
+        type:
+          description: The type of permission holder.
+          type: string
+        value:
+          description: The identifier associated with the `type` value that defines the holder of the permission.
+          type: string
+      required:
+      - type
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
     ProjectDetails:
       additionalProperties: false
       description: Details about a project.
@@ -300,148 +483,6 @@ components:
           readOnly: true
           type: boolean
       type: object
-    ProjectIssueSecurityLevels:
-      additionalProperties: false
-      description: List of issue level security items in a project.
-      properties:
-        levels:
-          description: Issue level security items list.
-          items:
-            $ref: '#/components/schemas/SecurityLevel'
-          readOnly: true
-          type: array
-      required:
-      - levels
-      type: object
-    SecurityLevel:
-      additionalProperties: false
-      description: Details of an issue level security item.
-      properties:
-        description:
-          description: The description of the issue level security item.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the issue level security item.
-          readOnly: true
-          type: string
-        isDefault:
-          description: Whether the issue level security item is the default.
-          readOnly: true
-          type: boolean
-        issueSecuritySchemeId:
-          description: The ID of the issue level security scheme.
-          readOnly: true
-          type: string
-        name:
-          description: The name of the issue level security item.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the issue level security item.
-          readOnly: true
-          type: string
-      type: object
-    IdBean:
-      additionalProperties: false
-      properties:
-        id:
-          description: The ID of the permission scheme to associate with the project. Use the [Get all permission schemes](#api-rest-api-3-permissionscheme-get) resource to get a list of permission scheme IDs.
-          format: int64
-          type: integer
-      required:
-      - id
-      type: object
-    PermissionGrant:
-      additionalProperties: true
-      description: Details about a permission granted to a user or group.
-      properties:
-        holder:
-          allOf:
-          - $ref: '#/components/schemas/PermissionHolder'
-          description: The user or group being granted the permission. It consists of a `type`, a type-dependent `parameter` and a type-dependent `value`. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
-        id:
-          description: The ID of the permission granted details.
-          format: int64
-          readOnly: true
-          type: integer
-        permission:
-          description: The permission to grant. This permission can be one of the built-in permissions or a custom permission added by an app. See [Built-in permissions](../api-group-permission-schemes/#built-in-permissions) in *Get all permission schemes* for more information about the built-in permissions. See the [project permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/) and [global permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/) module documentation for more information about custom permissions.
-          type: string
-        self:
-          description: The URL of the permission granted details.
-          format: uri
-          readOnly: true
-          type: string
-      type: object
-    AvatarUrlsBean:
-      additionalProperties: false
-      properties:
-        16x16:
-          description: The URL of the item's 16x16 pixel avatar.
-          format: uri
-          type: string
-        24x24:
-          description: The URL of the item's 24x24 pixel avatar.
-          format: uri
-          type: string
-        32x32:
-          description: The URL of the item's 32x32 pixel avatar.
-          format: uri
-          type: string
-        48x48:
-          description: The URL of the item's 48x48 pixel avatar.
-          format: uri
-          type: string
-      type: object
-    Scope:
-      additionalProperties: true
-      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
-      properties:
-        project:
-          allOf:
-          - $ref: '#/components/schemas/ProjectDetails'
-          description: The project the item has scope in.
-          readOnly: true
-        type:
-          description: The type of scope.
-          enum:
-          - PROJECT
-          - TEMPLATE
-          readOnly: true
-          type: string
-      type: object
-    SecurityScheme:
-      additionalProperties: false
-      description: Details about a security scheme.
-      properties:
-        defaultSecurityLevelId:
-          description: The ID of the default security level.
-          format: int64
-          readOnly: true
-          type: integer
-        description:
-          description: The description of the issue security scheme.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the issue security scheme.
-          format: int64
-          readOnly: true
-          type: integer
-        levels:
-          items:
-            $ref: '#/components/schemas/SecurityLevel'
-          type: array
-        name:
-          description: The name of the issue security scheme.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the issue security scheme.
-          readOnly: true
-          type: string
-      type: object
     PermissionScheme:
       additionalProperties: true
       description: Details of a permission scheme.
@@ -477,47 +518,6 @@ components:
           type: string
       required:
       - name
-      type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
-      properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
-    PermissionHolder:
-      additionalProperties: false
-      description: Details of a user, group, field, or project role that holds a permission. See [Holder object](../api-group-permission-schemes/#holder-object) in *Get all permission schemes* for more information.
-      properties:
-        expand:
-          description: Expand options that include additional permission holder details in the response.
-          readOnly: true
-          type: string
-        parameter:
-          description: As a group's name can change, use of `value` is recommended. The identifier associated withthe `type` value that defines the holder of the permission.
-          type: string
-        type:
-          description: The type of permission holder.
-          type: string
-        value:
-          description: The identifier associated with the `type` value that defines the holder of the permission.
-          type: string
-      required:
-      - type
       type: object
   securitySchemes:
     OAuth2:

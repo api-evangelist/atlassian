@@ -524,6 +524,32 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    Priority:
+      additionalProperties: true
+      description: An issue priority.
+      properties:
+        description:
+          description: The description of the issue priority.
+          type: string
+        iconUrl:
+          description: The URL of the icon for the issue priority.
+          type: string
+        id:
+          description: The ID of the issue priority.
+          type: string
+        isDefault:
+          description: Whether this priority is the default.
+          type: boolean
+        name:
+          description: The name of the issue priority.
+          type: string
+        self:
+          description: The URL of the issue priority.
+          type: string
+        statusColor:
+          description: The color used to indicate the issue priority.
+          type: string
+      type: object
     ErrorCollection:
       additionalProperties: false
       description: Error messages from an operation.
@@ -542,40 +568,27 @@ components:
           format: int32
           type: integer
       type: object
-    UpdatePriorityDetails:
-      additionalProperties: true
-      description: Details of an issue priority.
+    ReorderIssuePriorities:
+      additionalProperties: false
+      description: Change the order of issue priorities.
       properties:
-        description:
-          description: The description of the priority.
-          maxLength: 255
+        after:
+          description: The ID of the priority. Required if `position` isn't provided.
           type: string
           writeOnly: true
-        iconUrl:
-          description: The URL of an icon for the priority. Accepted protocols are HTTP and HTTPS. Built in icons can also be used.
-          enum:
-          - /images/icons/priorities/blocker.png
-          - /images/icons/priorities/critical.png
-          - /images/icons/priorities/high.png
-          - /images/icons/priorities/highest.png
-          - /images/icons/priorities/low.png
-          - /images/icons/priorities/lowest.png
-          - /images/icons/priorities/major.png
-          - /images/icons/priorities/medium.png
-          - /images/icons/priorities/minor.png
-          - /images/icons/priorities/trivial.png
-          maxLength: 255
+        ids:
+          description: The list of issue IDs to be reordered. Cannot contain duplicates nor after ID.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position for issue priorities to be moved to. Required if `after` isn't provided.
           type: string
           writeOnly: true
-        name:
-          description: The name of the priority. Must be unique.
-          maxLength: 60
-          type: string
-          writeOnly: true
-        statusColor:
-          description: The status color of the priority in 3-digit or 6-digit hexadecimal format.
-          type: string
-          writeOnly: true
+      required:
+      - ids
       type: object
     PageBeanPriority:
       additionalProperties: false
@@ -617,6 +630,28 @@ components:
           readOnly: true
           type: array
       type: object
+    SetDefaultPriorityRequest:
+      additionalProperties: false
+      description: The new default issue priority.
+      properties:
+        id:
+          description: The ID of the new default issue priority. Must be an existing ID or null. Setting this to null erases the default priority setting.
+          type: string
+          writeOnly: true
+      required:
+      - id
+      type: object
+    PriorityId:
+      additionalProperties: true
+      description: The ID of an issue priority.
+      properties:
+        id:
+          description: The ID of the issue priority.
+          readOnly: true
+          type: string
+      required:
+      - id
+      type: object
     CreatePriorityDetails:
       additionalProperties: true
       description: Details of an issue priority.
@@ -654,54 +689,6 @@ components:
       required:
       - name
       - statusColor
-      type: object
-    SetDefaultPriorityRequest:
-      additionalProperties: false
-      description: The new default issue priority.
-      properties:
-        id:
-          description: The ID of the new default issue priority. Must be an existing ID or null. Setting this to null erases the default priority setting.
-          type: string
-          writeOnly: true
-      required:
-      - id
-      type: object
-    Priority:
-      additionalProperties: true
-      description: An issue priority.
-      properties:
-        description:
-          description: The description of the issue priority.
-          type: string
-        iconUrl:
-          description: The URL of the icon for the issue priority.
-          type: string
-        id:
-          description: The ID of the issue priority.
-          type: string
-        isDefault:
-          description: Whether this priority is the default.
-          type: boolean
-        name:
-          description: The name of the issue priority.
-          type: string
-        self:
-          description: The URL of the issue priority.
-          type: string
-        statusColor:
-          description: The color used to indicate the issue priority.
-          type: string
-      type: object
-    PriorityId:
-      additionalProperties: true
-      description: The ID of an issue priority.
-      properties:
-        id:
-          description: The ID of the issue priority.
-          readOnly: true
-          type: string
-      required:
-      - id
       type: object
     TaskProgressBeanObject:
       additionalProperties: false
@@ -771,27 +758,40 @@ components:
       - submitted
       - submittedBy
       type: object
-    ReorderIssuePriorities:
-      additionalProperties: false
-      description: Change the order of issue priorities.
+    UpdatePriorityDetails:
+      additionalProperties: true
+      description: Details of an issue priority.
       properties:
-        after:
-          description: The ID of the priority. Required if `position` isn't provided.
+        description:
+          description: The description of the priority.
+          maxLength: 255
           type: string
           writeOnly: true
-        ids:
-          description: The list of issue IDs to be reordered. Cannot contain duplicates nor after ID.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        position:
-          description: The position for issue priorities to be moved to. Required if `after` isn't provided.
+        iconUrl:
+          description: The URL of an icon for the priority. Accepted protocols are HTTP and HTTPS. Built in icons can also be used.
+          enum:
+          - /images/icons/priorities/blocker.png
+          - /images/icons/priorities/critical.png
+          - /images/icons/priorities/high.png
+          - /images/icons/priorities/highest.png
+          - /images/icons/priorities/low.png
+          - /images/icons/priorities/lowest.png
+          - /images/icons/priorities/major.png
+          - /images/icons/priorities/medium.png
+          - /images/icons/priorities/minor.png
+          - /images/icons/priorities/trivial.png
+          maxLength: 255
           type: string
           writeOnly: true
-      required:
-      - ids
+        name:
+          description: The name of the priority. Must be unique.
+          maxLength: 60
+          type: string
+          writeOnly: true
+        statusColor:
+          description: The status color of the priority in 3-digit or 6-digit hexadecimal format.
+          type: string
+          writeOnly: true
       type: object
   securitySchemes:
     OAuth2:

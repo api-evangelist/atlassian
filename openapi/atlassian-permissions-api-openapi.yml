@@ -367,31 +367,6 @@ components:
       - permission
       - projects
       type: object
-    PermissionsKeysBean:
-      additionalProperties: false
-      properties:
-        permissions:
-          description: A list of permission keys.
-          items:
-            type: string
-          type: array
-      required:
-      - permissions
-      type: object
-    ProjectIdentifierBean:
-      additionalProperties: false
-      description: The identifiers for a project.
-      properties:
-        id:
-          description: The ID of the project.
-          format: int64
-          readOnly: true
-          type: integer
-        key:
-          description: The key of the project.
-          readOnly: true
-          type: string
-      type: object
     ErrorCollection:
       additionalProperties: false
       description: Error messages from an operation.
@@ -409,6 +384,95 @@ components:
         status:
           format: int32
           type: integer
+      type: object
+    PermittedProjects:
+      additionalProperties: false
+      description: A list of projects in which a user is granted permissions.
+      properties:
+        projects:
+          description: A list of projects.
+          items:
+            $ref: '#/components/schemas/ProjectIdentifierBean'
+          readOnly: true
+          type: array
+      type: object
+    PermissionsKeysBean:
+      additionalProperties: false
+      properties:
+        permissions:
+          description: A list of permission keys.
+          items:
+            type: string
+          type: array
+      required:
+      - permissions
+      type: object
+    BulkPermissionsRequestBean:
+      additionalProperties: false
+      description: Details of global permissions to look up and project permissions with associated projects and issues to look up.
+      properties:
+        accountId:
+          description: The account ID of a user.
+          type: string
+        globalPermissions:
+          description: Global permissions to look up.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        projectPermissions:
+          description: Project permissions with associated projects and issues to look up.
+          items:
+            $ref: '#/components/schemas/BulkProjectPermissions'
+          type: array
+          uniqueItems: true
+      type: object
+    BulkPermissionGrants:
+      additionalProperties: false
+      description: Details of global and project permissions granted to the user.
+      properties:
+        globalPermissions:
+          description: List of permissions granted to the user.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        projectPermissions:
+          description: List of project permissions and the projects and issues those permissions provide access to.
+          items:
+            $ref: '#/components/schemas/BulkProjectPermissionGrants'
+          type: array
+          uniqueItems: true
+      required:
+      - globalPermissions
+      - projectPermissions
+      type: object
+    BulkProjectPermissions:
+      additionalProperties: false
+      description: Details of project permissions and associated issues and projects to look up.
+      properties:
+        issues:
+          description: List of issue IDs.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+        permissions:
+          description: List of project permissions.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        projects:
+          description: List of project IDs.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      required:
+      - permissions
       type: object
     UserPermission:
       additionalProperties: true
@@ -439,63 +503,19 @@ components:
           - PROJECT
           type: string
       type: object
-    BulkProjectPermissions:
+    ProjectIdentifierBean:
       additionalProperties: false
-      description: Details of project permissions and associated issues and projects to look up.
+      description: The identifiers for a project.
       properties:
-        issues:
-          description: List of issue IDs.
-          items:
-            format: int64
-            type: integer
-          type: array
-          uniqueItems: true
-        permissions:
-          description: List of project permissions.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        projects:
-          description: List of project IDs.
-          items:
-            format: int64
-            type: integer
-          type: array
-          uniqueItems: true
-      required:
-      - permissions
-      type: object
-    BulkPermissionsRequestBean:
-      additionalProperties: false
-      description: Details of global permissions to look up and project permissions with associated projects and issues to look up.
-      properties:
-        accountId:
-          description: The account ID of a user.
-          type: string
-        globalPermissions:
-          description: Global permissions to look up.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        projectPermissions:
-          description: Project permissions with associated projects and issues to look up.
-          items:
-            $ref: '#/components/schemas/BulkProjectPermissions'
-          type: array
-          uniqueItems: true
-      type: object
-    PermittedProjects:
-      additionalProperties: false
-      description: A list of projects in which a user is granted permissions.
-      properties:
-        projects:
-          description: A list of projects.
-          items:
-            $ref: '#/components/schemas/ProjectIdentifierBean'
+        id:
+          description: The ID of the project.
+          format: int64
           readOnly: true
-          type: array
+          type: integer
+        key:
+          description: The key of the project.
+          readOnly: true
+          type: string
       type: object
     Permissions:
       additionalProperties: false
@@ -507,26 +527,6 @@ components:
           description: List of permissions.
           readOnly: true
           type: object
-      type: object
-    BulkPermissionGrants:
-      additionalProperties: false
-      description: Details of global and project permissions granted to the user.
-      properties:
-        globalPermissions:
-          description: List of permissions granted to the user.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        projectPermissions:
-          description: List of project permissions and the projects and issues those permissions provide access to.
-          items:
-            $ref: '#/components/schemas/BulkProjectPermissionGrants'
-          type: array
-          uniqueItems: true
-      required:
-      - globalPermissions
-      - projectPermissions
       type: object
   securitySchemes:
     OAuth2:

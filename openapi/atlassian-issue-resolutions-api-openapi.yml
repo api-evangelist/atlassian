@@ -506,46 +506,37 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
-    ErrorCollection:
+    SetDefaultResolutionRequest:
       additionalProperties: false
-      description: Error messages from an operation.
+      description: The new default issue resolution.
       properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
-          items:
-            type: string
-          type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
-          format: int32
-          type: integer
-      type: object
-    ReorderIssueResolutionsRequest:
-      additionalProperties: false
-      description: Change the order of issue resolutions.
-      properties:
-        after:
-          description: The ID of the resolution. Required if `position` isn't provided.
-          type: string
-          writeOnly: true
-        ids:
-          description: The list of resolution IDs to be reordered. Cannot contain duplicates nor after ID.
-          items:
-            type: string
-            writeOnly: true
-          type: array
-          writeOnly: true
-        position:
-          description: The position for issue resolutions to be moved to. Required if `after` isn't provided.
+        id:
+          description: The ID of the new default issue resolution. Must be an existing ID or null. Setting this to null erases the default resolution setting.
           type: string
           writeOnly: true
       required:
-      - ids
+      - id
       type: object
+    Resolution:
+      additionalProperties: false
+      description: Details of an issue resolution.
+      properties:
+        description:
+          description: The description of the issue resolution.
+          type: string
+        id:
+          description: The ID of the issue resolution.
+          type: string
+        name:
+          description: The name of the issue resolution.
+          type: string
+        self:
+          description: The URL of the issue resolution.
+          format: uri
+          type: string
+      type: object
+      xml:
+        name: resolution
     PageBeanResolutionJsonBean:
       additionalProperties: false
       description: A page of items.
@@ -586,22 +577,23 @@ components:
           readOnly: true
           type: array
       type: object
-    UpdateResolutionDetails:
-      additionalProperties: true
-      description: Details of an issue resolution.
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
       properties:
-        description:
-          description: The description of the resolution.
-          maxLength: 255
-          type: string
-          writeOnly: true
-        name:
-          description: The name of the resolution. Must be unique.
-          maxLength: 60
-          type: string
-          writeOnly: true
-      required:
-      - name
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
       type: object
     CreateResolutionDetails:
       additionalProperties: true
@@ -620,6 +612,28 @@ components:
       required:
       - name
       type: object
+    ReorderIssueResolutionsRequest:
+      additionalProperties: false
+      description: Change the order of issue resolutions.
+      properties:
+        after:
+          description: The ID of the resolution. Required if `position` isn't provided.
+          type: string
+          writeOnly: true
+        ids:
+          description: The list of resolution IDs to be reordered. Cannot contain duplicates nor after ID.
+          items:
+            type: string
+            writeOnly: true
+          type: array
+          writeOnly: true
+        position:
+          description: The position for issue resolutions to be moved to. Required if `after` isn't provided.
+          type: string
+          writeOnly: true
+      required:
+      - ids
+      type: object
     ResolutionJsonBean:
       additionalProperties: false
       properties:
@@ -636,26 +650,6 @@ components:
         self:
           type: string
       type: object
-    Resolution:
-      additionalProperties: false
-      description: Details of an issue resolution.
-      properties:
-        description:
-          description: The description of the issue resolution.
-          type: string
-        id:
-          description: The ID of the issue resolution.
-          type: string
-        name:
-          description: The name of the issue resolution.
-          type: string
-        self:
-          description: The URL of the issue resolution.
-          format: uri
-          type: string
-      type: object
-      xml:
-        name: resolution
     ResolutionId:
       additionalProperties: true
       description: The ID of an issue resolution.
@@ -664,17 +658,6 @@ components:
           description: The ID of the issue resolution.
           readOnly: true
           type: string
-      required:
-      - id
-      type: object
-    SetDefaultResolutionRequest:
-      additionalProperties: false
-      description: The new default issue resolution.
-      properties:
-        id:
-          description: The ID of the new default issue resolution. Must be an existing ID or null. Setting this to null erases the default resolution setting.
-          type: string
-          writeOnly: true
       required:
       - id
       type: object
@@ -745,6 +728,23 @@ components:
       - status
       - submitted
       - submittedBy
+      type: object
+    UpdateResolutionDetails:
+      additionalProperties: true
+      description: Details of an issue resolution.
+      properties:
+        description:
+          description: The description of the resolution.
+          maxLength: 255
+          type: string
+          writeOnly: true
+        name:
+          description: The name of the resolution. Must be unique.
+          maxLength: 60
+          type: string
+          writeOnly: true
+      required:
+      - name
       type: object
   securitySchemes:
     OAuth2:

@@ -446,6 +446,184 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    ProjectRoleUser:
+      additionalProperties: false
+      description: Details of the user associated with the role.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Returns *unknown* if the record is deleted and corrupted, for example, as the result of a server import.
+          maxLength: 128
+          readOnly: true
+          type: string
+      type: object
+    RoleActor:
+      additionalProperties: false
+      description: Details about a user assigned to a project role.
+      properties:
+        actorGroup:
+          allOf:
+          - $ref: '#/components/schemas/ProjectRoleGroup'
+          readOnly: true
+        actorUser:
+          allOf:
+          - $ref: '#/components/schemas/ProjectRoleUser'
+          readOnly: true
+        avatarUrl:
+          description: The avatar of the role actor.
+          format: uri
+          readOnly: true
+          type: string
+        displayName:
+          description: The display name of the role actor. For users, depending on the user’s privacy setting, this may return an alternative value for the user's name.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the role actor.
+          format: int64
+          readOnly: true
+          type: integer
+        name:
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
+          type: string
+        type:
+          description: The type of role actor.
+          enum:
+          - atlassian-group-role-actor
+          - atlassian-user-role-actor
+          readOnly: true
+          type: string
+      type: object
+      xml:
+        name: projectRoleActor
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
+          type: string
+      type: object
+    ProjectRoleActorsUpdateBean:
+      additionalProperties: false
+      properties:
+        categorisedActors:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          description: "The actors to add to the project role.\n\nAdd groups using:\n\n *  `atlassian-group-role-actor` and a list of group names.\n *  `atlassian-group-role-actor-id` and a list of group IDs.\n\nAs a group's name can change, use of `atlassian-group-role-actor-id` is recommended. For example, `\"atlassian-group-role-actor-id\":[\"eef79f81-0b89-4fca-a736-4be531a10869\",\"77f6ab39-e755-4570-a6ae-2d7a8df0bcb8\"]`.\n\nAdd users using `atlassian-user-role-actor` and a list of account IDs. For example, `\"atlassian-user-role-actor\":[\"12345678-9abc-def1-2345-6789abcdef12\", \"abcdef12-3456-789a-bcde-f123456789ab\"]`."
+          type: object
+        id:
+          description: The ID of the project role. Use [Get all project roles](#api-rest-api-3-role-get) to get a list of project role IDs.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+      xml:
+        name: actor
+    ActorInputBean:
+      additionalProperties: false
+      properties:
+        group:
+          description: The name of the group to add as a default actor. This parameter cannot be used with the `groupId` parameter. As a group's name can change,use of `groupId` is recommended. This parameter accepts a comma-separated list. For example, `"group":["project-admin", "jira-developers"]`.
+          items:
+            type: string
+          type: array
+        groupId:
+          description: The ID of the group to add as a default actor. This parameter cannot be used with the `group` parameter This parameter accepts a comma-separated list. For example, `"groupId":["77f6ab39-e755-4570-a6ae-2d7a8df0bcb8", "0c011f85-69ed-49c4-a801-3b18d0f771bc"]`.
+          items:
+            type: string
+          type: array
+        user:
+          description: The account IDs of the users to add as default actors. This parameter accepts a comma-separated list. For example, `"user":["5b10a2844c20165700ede21g", "5b109f2e9729b51b54dc274d"]`.
+          items:
+            type: string
+          type: array
+      type: object
+    ProjectRoleGroup:
+      additionalProperties: false
+      description: Details of the group associated with the role.
+      properties:
+        displayName:
+          description: The display name of the group.
+          type: string
+        groupId:
+          description: The ID of the group.
+          type: string
+        name:
+          description: The name of the group. As a group's name can change, use of `groupId` is recommended to identify the group.
+          type: string
+      type: object
+    ActorsMap:
+      additionalProperties: false
+      properties:
+        group:
+          description: The name of the group to add. This parameter cannot be used with the `groupId` parameter. As a group's name can change, use of `groupId` is recommended.
+          items:
+            type: string
+          type: array
+        groupId:
+          description: The ID of the group to add. This parameter cannot be used with the `group` parameter.
+          items:
+            type: string
+          type: array
+        user:
+          description: The user account ID of the user to add.
+          items:
+            type: string
+          type: array
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
+      type: object
+    AvatarUrlsBean:
+      additionalProperties: false
+      properties:
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
+      type: object
     ProjectDetails:
       additionalProperties: false
       description: Details about a project.
@@ -488,43 +666,6 @@ components:
           readOnly: true
           type: boolean
       type: object
-    ActorInputBean:
-      additionalProperties: false
-      properties:
-        group:
-          description: The name of the group to add as a default actor. This parameter cannot be used with the `groupId` parameter. As a group's name can change,use of `groupId` is recommended. This parameter accepts a comma-separated list. For example, `"group":["project-admin", "jira-developers"]`.
-          items:
-            type: string
-          type: array
-        groupId:
-          description: The ID of the group to add as a default actor. This parameter cannot be used with the `group` parameter This parameter accepts a comma-separated list. For example, `"groupId":["77f6ab39-e755-4570-a6ae-2d7a8df0bcb8", "0c011f85-69ed-49c4-a801-3b18d0f771bc"]`.
-          items:
-            type: string
-          type: array
-        user:
-          description: The account IDs of the users to add as default actors. This parameter accepts a comma-separated list. For example, `"user":["5b10a2844c20165700ede21g", "5b109f2e9729b51b54dc274d"]`.
-          items:
-            type: string
-          type: array
-      type: object
-    ProjectRoleActorsUpdateBean:
-      additionalProperties: false
-      properties:
-        categorisedActors:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          description: "The actors to add to the project role.\n\nAdd groups using:\n\n *  `atlassian-group-role-actor` and a list of group names.\n *  `atlassian-group-role-actor-id` and a list of group IDs.\n\nAs a group's name can change, use of `atlassian-group-role-actor-id` is recommended. For example, `\"atlassian-group-role-actor-id\":[\"eef79f81-0b89-4fca-a736-4be531a10869\",\"77f6ab39-e755-4570-a6ae-2d7a8df0bcb8\"]`.\n\nAdd users using `atlassian-user-role-actor` and a list of account IDs. For example, `\"atlassian-user-role-actor\":[\"12345678-9abc-def1-2345-6789abcdef12\", \"abcdef12-3456-789a-bcde-f123456789ab\"]`."
-          type: object
-        id:
-          description: The ID of the project role. Use [Get all project roles](#api-rest-api-3-role-get) to get a list of project role IDs.
-          format: int64
-          readOnly: true
-          type: integer
-      type: object
-      xml:
-        name: actor
     ProjectRole:
       additionalProperties: false
       description: Details about the roles in a project.
@@ -574,147 +715,6 @@ components:
           type: string
         translatedName:
           description: The translated name of the project role.
-          type: string
-      type: object
-    RoleActor:
-      additionalProperties: false
-      description: Details about a user assigned to a project role.
-      properties:
-        actorGroup:
-          allOf:
-          - $ref: '#/components/schemas/ProjectRoleGroup'
-          readOnly: true
-        actorUser:
-          allOf:
-          - $ref: '#/components/schemas/ProjectRoleUser'
-          readOnly: true
-        avatarUrl:
-          description: The avatar of the role actor.
-          format: uri
-          readOnly: true
-          type: string
-        displayName:
-          description: The display name of the role actor. For users, depending on the user’s privacy setting, this may return an alternative value for the user's name.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the role actor.
-          format: int64
-          readOnly: true
-          type: integer
-        name:
-          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          readOnly: true
-          type: string
-        type:
-          description: The type of role actor.
-          enum:
-          - atlassian-group-role-actor
-          - atlassian-user-role-actor
-          readOnly: true
-          type: string
-      type: object
-      xml:
-        name: projectRoleActor
-    AvatarUrlsBean:
-      additionalProperties: false
-      properties:
-        16x16:
-          description: The URL of the item's 16x16 pixel avatar.
-          format: uri
-          type: string
-        24x24:
-          description: The URL of the item's 24x24 pixel avatar.
-          format: uri
-          type: string
-        32x32:
-          description: The URL of the item's 32x32 pixel avatar.
-          format: uri
-          type: string
-        48x48:
-          description: The URL of the item's 48x48 pixel avatar.
-          format: uri
-          type: string
-      type: object
-    Scope:
-      additionalProperties: true
-      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
-      properties:
-        project:
-          allOf:
-          - $ref: '#/components/schemas/ProjectDetails'
-          description: The project the item has scope in.
-          readOnly: true
-        type:
-          description: The type of scope.
-          enum:
-          - PROJECT
-          - TEMPLATE
-          readOnly: true
-          type: string
-      type: object
-    ActorsMap:
-      additionalProperties: false
-      properties:
-        group:
-          description: The name of the group to add. This parameter cannot be used with the `groupId` parameter. As a group's name can change, use of `groupId` is recommended.
-          items:
-            type: string
-          type: array
-        groupId:
-          description: The ID of the group to add. This parameter cannot be used with the `group` parameter.
-          items:
-            type: string
-          type: array
-        user:
-          description: The user account ID of the user to add.
-          items:
-            type: string
-          type: array
-      type: object
-    ProjectRoleGroup:
-      additionalProperties: false
-      description: Details of the group associated with the role.
-      properties:
-        displayName:
-          description: The display name of the group.
-          type: string
-        groupId:
-          description: The ID of the group.
-          type: string
-        name:
-          description: The name of the group. As a group's name can change, use of `groupId` is recommended to identify the group.
-          type: string
-      type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
-      properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
-    ProjectRoleUser:
-      additionalProperties: false
-      description: Details of the user associated with the role.
-      properties:
-        accountId:
-          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Returns *unknown* if the record is deleted and corrupted, for example, as the result of a server import.
-          maxLength: 128
-          readOnly: true
           type: string
       type: object
   securitySchemes:

@@ -126,6 +126,30 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
+    LongTaskStatusArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LongTaskStatus'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
     GenericLinks:
       type: object
       additionalProperties:
@@ -133,6 +157,122 @@ components:
         - type: object
           additionalProperties: true
         - type: string
+    LongTaskStatus:
+      required:
+      - elapsedTime
+      - finished
+      - id
+      - messages
+      - name
+      - percentageComplete
+      - successful
+      type: object
+      properties:
+        ari:
+          type: string
+          description: the ARI for the long task, based on its ID
+        id:
+          type: string
+        name:
+          required:
+          - args
+          - key
+          type: object
+          properties:
+            key:
+              type: string
+            args:
+              type: array
+              items:
+                type: object
+                properties: {}
+        elapsedTime:
+          type: integer
+          format: int64
+        percentageComplete:
+          type: integer
+          format: int32
+        successful:
+          type: boolean
+        finished:
+          type: boolean
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        status:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        additionalDetails:
+          type: object
+          properties:
+            destinationId:
+              type: string
+            destinationUrl:
+              type: string
+            totalPageNeedToCopy:
+              type: integer
+            additionalProperties:
+              type: string
+      description: 'Current status of a long running task
+
+
+        Status keys:
+
+
+        - `ERROR_UNKNOWN` - Generic error
+
+        - `ERROR_LOCK_FAILED` - Could not get the lock on destination space
+
+        - `ERROR_RELINK` - Error when relink pages/attachments
+
+        - `ERROR_COPY_PAGE` - Error while copying 1 page
+
+        - `WARN_RENAME_PAGE` - Warning page is rename during copy
+
+        - `WARN_IGNORE_COPY_PERMISSION` - Warning could not copy permission
+
+        - `WARN_IGNORE_COPY_ATTACHMENT` - Warning could not copy attachment
+
+        - `WARN_IGNORE_DELETE_PAGE` - Warning ignoring delete of a non agreed on page
+
+        - `STATUS_COPIED_PAGES` - Message total pages are copied
+
+        - `STATUS_COPYING_PAGES` - Message copy pages
+
+        - `STATUS_RELINK_PAGES` - Message relink pages/attachments
+
+        - `STATUS_DELETING_PAGES` - Message delete pages
+
+        - `STATUS_DELETED_PAGES` - Message total pages are deleted
+
+        - `STATUS_MOVING_PAGES` - Message move pages
+
+        - `WARN_IGNORE_VIEW_RESTRICTED` - Permission changed - view restricted
+
+        - `WARN_IGNORE_EDIT_RESTRICTED` - Permission changed - edit restricted
+
+        - `INITIALIZING_TASK` - Message when initializing task
+
+        - `UNKNOWN_STATUS` - Message when status is unknown'
+    Message:
+      required:
+      - args
+      type: object
+      additionalProperties: true
+      properties:
+        translation:
+          type: string
+        args:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
     LongTaskStatusWithLinks:
       required:
       - _links
@@ -239,146 +379,6 @@ components:
         - `INITIALIZING_TASK` - Message when initializing task
 
         - `UNKNOWN_STATUS` - Message when status is unknown'
-    Message:
-      required:
-      - args
-      type: object
-      additionalProperties: true
-      properties:
-        translation:
-          type: string
-        args:
-          type: array
-          items:
-            oneOf:
-            - type: string
-            - type: object
-              additionalProperties: true
-    LongTaskStatus:
-      required:
-      - elapsedTime
-      - finished
-      - id
-      - messages
-      - name
-      - percentageComplete
-      - successful
-      type: object
-      properties:
-        ari:
-          type: string
-          description: the ARI for the long task, based on its ID
-        id:
-          type: string
-        name:
-          required:
-          - args
-          - key
-          type: object
-          properties:
-            key:
-              type: string
-            args:
-              type: array
-              items:
-                type: object
-                properties: {}
-        elapsedTime:
-          type: integer
-          format: int64
-        percentageComplete:
-          type: integer
-          format: int32
-        successful:
-          type: boolean
-        finished:
-          type: boolean
-        messages:
-          type: array
-          items:
-            $ref: '#/components/schemas/Message'
-        status:
-          type: string
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Message'
-        additionalDetails:
-          type: object
-          properties:
-            destinationId:
-              type: string
-            destinationUrl:
-              type: string
-            totalPageNeedToCopy:
-              type: integer
-            additionalProperties:
-              type: string
-      description: 'Current status of a long running task
-
-
-        Status keys:
-
-
-        - `ERROR_UNKNOWN` - Generic error
-
-        - `ERROR_LOCK_FAILED` - Could not get the lock on destination space
-
-        - `ERROR_RELINK` - Error when relink pages/attachments
-
-        - `ERROR_COPY_PAGE` - Error while copying 1 page
-
-        - `WARN_RENAME_PAGE` - Warning page is rename during copy
-
-        - `WARN_IGNORE_COPY_PERMISSION` - Warning could not copy permission
-
-        - `WARN_IGNORE_COPY_ATTACHMENT` - Warning could not copy attachment
-
-        - `WARN_IGNORE_DELETE_PAGE` - Warning ignoring delete of a non agreed on page
-
-        - `STATUS_COPIED_PAGES` - Message total pages are copied
-
-        - `STATUS_COPYING_PAGES` - Message copy pages
-
-        - `STATUS_RELINK_PAGES` - Message relink pages/attachments
-
-        - `STATUS_DELETING_PAGES` - Message delete pages
-
-        - `STATUS_DELETED_PAGES` - Message total pages are deleted
-
-        - `STATUS_MOVING_PAGES` - Message move pages
-
-        - `WARN_IGNORE_VIEW_RESTRICTED` - Permission changed - view restricted
-
-        - `WARN_IGNORE_EDIT_RESTRICTED` - Permission changed - edit restricted
-
-        - `INITIALIZING_TASK` - Message when initializing task
-
-        - `UNKNOWN_STATUS` - Message when status is unknown'
-    LongTaskStatusArray:
-      required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/LongTaskStatus'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
   securitySchemes:
     basicAuth:
       type: http

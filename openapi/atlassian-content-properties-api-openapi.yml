@@ -555,6 +555,37 @@ paths:
       x-atlassian-connect-scope: WRITE
 components:
   schemas:
+    ContentPropertyArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProperty'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
     ContentPropertyCreate:
       required:
       - key
@@ -594,13 +625,51 @@ components:
             properties: {}
           - type: string
           description: The value of the content property. This can be empty or a complex object.
-    GenericLinks:
+    ContentPropertyUpdate:
+      required:
+      - value
+      - version
       type: object
-      additionalProperties:
-        oneOf:
-        - type: object
+      additionalProperties: true
+      properties:
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
+        version:
+          required:
+          - number
+          type:
+          - object
+          - 'null'
           additionalProperties: true
-        - type: string
+          properties:
+            number:
+              oneOf:
+              - type: integer
+              - type: string
+              description: 'The new version for the updated content property. Set this to the
+
+                current version number incremented by one. To get the current
+
+                version number, use ''Get content property'' and retrieve
+
+                `version.number`.'
+              format: int32
+            minorEdit:
+              type: boolean
+              description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+                stream will be generated for the change.'
+              default: true
+          description: The version number of the property.
     ContentProperty:
       required:
       - _links
@@ -656,75 +725,6 @@ components:
               type: string
             additionalProperties:
               type: string
-    ContentPropertyUpdate:
-      required:
-      - value
-      - version
-      type: object
-      additionalProperties: true
-      properties:
-        value:
-          oneOf:
-          - type: array
-            items:
-              type: string
-          - type: boolean
-          - type: object
-            additionalProperties: true
-            properties: {}
-          - type: string
-          description: The value of the content property. This can be empty or a complex object.
-        version:
-          required:
-          - number
-          type:
-          - object
-          - 'null'
-          additionalProperties: true
-          properties:
-            number:
-              oneOf:
-              - type: integer
-              - type: string
-              description: 'The new version for the updated content property. Set this to the
-
-                current version number incremented by one. To get the current
-
-                version number, use ''Get content property'' and retrieve
-
-                `version.number`.'
-              format: int32
-            minorEdit:
-              type: boolean
-              description: 'If `minorEdit` is set to ''true'', no notification email or activity
-
-                stream will be generated for the change.'
-              default: true
-          description: The version number of the property.
-    ContentPropertyArray:
-      required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ContentProperty'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
   securitySchemes:
     basicAuth:
       type: http

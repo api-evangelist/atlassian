@@ -612,19 +612,26 @@ paths:
       x-atlassian-connect-scope: WRITE
 components:
   schemas:
-    BulkIssuePropertyUpdateRequest:
+    IssueEntityProperties:
       additionalProperties: false
-      description: Bulk issue property update request details.
+      description: Lists of issues and entity properties. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
       properties:
-        expression:
-          description: EXPERIMENTAL. The Jira expression to calculate the value of the property. The value of the expression must be an object that can be converted to JSON, such as a number, boolean, string, list, or map. The context variables available to the expression are `issue` and `user`. Issues for which the expression returns a value whose JSON representation is longer than 32768 characters are ignored.
-          type: string
-        filter:
-          allOf:
-          - $ref: '#/components/schemas/IssueFilterForBulkPropertySet'
-          description: The bulk operation filter.
-        value:
-          description: The value of the property. The value must be a [valid](https://tools.ietf.org/html/rfc4627), non-empty JSON blob. The maximum length is 32768 characters.
+        entitiesIds:
+          description: A list of entity property IDs.
+          items:
+            format: int64
+            type: integer
+          maxItems: 10000
+          minItems: 1
+          type: array
+          uniqueItems: true
+        properties:
+          additionalProperties:
+            $ref: '#/components/schemas/JsonNode'
+          description: A list of entity property keys and values.
+          maxProperties: 10
+          minProperties: 1
+          type: object
       type: object
     ErrorCollection:
       additionalProperties: false
@@ -654,41 +661,6 @@ components:
         value:
           description: The value of the property. Required on create and update.
       type: object
-    IssueFilterForBulkPropertySet:
-      additionalProperties: false
-      description: Bulk operation filter details.
-      properties:
-        currentValue:
-          description: The value of properties to perform the bulk operation on.
-        entityIds:
-          description: List of issues to perform the bulk operation on.
-          items:
-            format: int64
-            type: integer
-          type: array
-          uniqueItems: true
-        hasProperty:
-          description: Whether the bulk operation occurs only when the property is present on or absent from an issue.
-          type: boolean
-      type: object
-    IssueEntityPropertiesForMultiUpdate:
-      additionalProperties: false
-      description: An issue ID with entity property values. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
-      maxProperties: 100
-      minProperties: 1
-      properties:
-        issueID:
-          description: The ID of the issue.
-          format: int64
-          type: integer
-        properties:
-          additionalProperties:
-            $ref: '#/components/schemas/JsonNode'
-          description: Entity properties to set on the issue. The maximum length of an issue property value is 32768 characters.
-          maxProperties: 10
-          minProperties: 1
-          type: object
-      type: object
     IssueFilterForBulkPropertyDelete:
       additionalProperties: false
       description: Bulk operation filter details.
@@ -703,16 +675,18 @@ components:
           type: array
           uniqueItems: true
       type: object
-    PropertyKeys:
+    PropertyKey:
       additionalProperties: false
-      description: List of property keys.
+      description: Property key details.
       properties:
-        keys:
-          description: Property key details.
-          items:
-            $ref: '#/components/schemas/PropertyKey'
+        key:
+          description: The key of the property.
           readOnly: true
-          type: array
+          type: string
+        self:
+          description: The URL of the property.
+          readOnly: true
+          type: string
       type: object
     JsonNode:
       additionalProperties: false
@@ -808,39 +782,65 @@ components:
         valueNode:
           type: boolean
       type: object
-    IssueEntityProperties:
+    PropertyKeys:
       additionalProperties: false
-      description: Lists of issues and entity properties. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
+      description: List of property keys.
       properties:
-        entitiesIds:
-          description: A list of entity property IDs.
+        keys:
+          description: Property key details.
           items:
-            format: int64
-            type: integer
-          maxItems: 10000
-          minItems: 1
+            $ref: '#/components/schemas/PropertyKey'
+          readOnly: true
           type: array
-          uniqueItems: true
+      type: object
+    IssueEntityPropertiesForMultiUpdate:
+      additionalProperties: false
+      description: An issue ID with entity property values. See [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/) for more information.
+      maxProperties: 100
+      minProperties: 1
+      properties:
+        issueID:
+          description: The ID of the issue.
+          format: int64
+          type: integer
         properties:
           additionalProperties:
             $ref: '#/components/schemas/JsonNode'
-          description: A list of entity property keys and values.
+          description: Entity properties to set on the issue. The maximum length of an issue property value is 32768 characters.
           maxProperties: 10
           minProperties: 1
           type: object
       type: object
-    PropertyKey:
+    IssueFilterForBulkPropertySet:
       additionalProperties: false
-      description: Property key details.
+      description: Bulk operation filter details.
       properties:
-        key:
-          description: The key of the property.
-          readOnly: true
+        currentValue:
+          description: The value of properties to perform the bulk operation on.
+        entityIds:
+          description: List of issues to perform the bulk operation on.
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+        hasProperty:
+          description: Whether the bulk operation occurs only when the property is present on or absent from an issue.
+          type: boolean
+      type: object
+    BulkIssuePropertyUpdateRequest:
+      additionalProperties: false
+      description: Bulk issue property update request details.
+      properties:
+        expression:
+          description: EXPERIMENTAL. The Jira expression to calculate the value of the property. The value of the expression must be an object that can be converted to JSON, such as a number, boolean, string, list, or map. The context variables available to the expression are `issue` and `user`. Issues for which the expression returns a value whose JSON representation is longer than 32768 characters are ignored.
           type: string
-        self:
-          description: The URL of the property.
-          readOnly: true
-          type: string
+        filter:
+          allOf:
+          - $ref: '#/components/schemas/IssueFilterForBulkPropertySet'
+          description: The bulk operation filter.
+        value:
+          description: The value of the property. The value must be a [valid](https://tools.ietf.org/html/rfc4627), non-empty JSON blob. The maximum length is 32768 characters.
       type: object
     MultiIssueEntityProperties:
       additionalProperties: false

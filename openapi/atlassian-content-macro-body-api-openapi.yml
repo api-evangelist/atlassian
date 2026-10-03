@@ -414,7 +414,21 @@ paths:
       - app-access-rule-exempt: false
       x-atlassian-connect-scope: READ
 components:
+  parameters:
+    bodyConversionExpand:
+      name: expand
+      in: query
+      description: "A multi-value parameter indicating which properties of the content to expand and populate. Expands are dependent on the\n`to` conversion format and may be irrelevant for certain conversions (e.g. `macroRenderedOutput` is redundant when\nconverting to `view` format). \n\nIf rendering to `view` format, and the body content being converted includes arbitrary nested content (such as macros); then it is \nnecessary to include webresource expands in the request. Webresources for content body are the batched JS and CSS dependencies for\nany nested dynamic content (i.e. macros).\n\n- `embeddedContent` returns metadata for nested content (e.g. page included using page include macro)\n- `mediaToken` returns JWT token for retrieving attachment data from Media API\n- `macroRenderedOutput` additionally converts body to view format\n- `webresource.superbatch.uris.js` returns all common JS dependencies as static URLs\n- `webresource.superbatch.uris.css` returns all common CSS dependencies as static URLs\n- `webresource.superbatch.uris.all` returns all common dependencies as static URLs\n- `webresource.superbatch.tags.all` returns all common JS dependencies as html `<script>` tags\n- `webresource.superbatch.tags.css` returns all common CSS dependencies as html `<style>` tags\n- `webresource.superbatch.tags.js` returns all common dependencies as html `<script>` and `<style>` tags\n- `webresource.uris.js` returns JS dependencies specific to conversion\n- `webresource.uris.css` returns CSS dependencies specific to conversion\n- `webresource.uris.all` returns all dependencies specific to conversion     \n- `webresource.tags.all` returns common JS dependencies as html `<script>` tags\n- `webresource.tags.css` returns common CSS dependencies as html `<style>` tags\n- `webresource.tags.js` returns common dependencies as html `<script>` and `<style>` tags"
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
   schemas:
+    Embeddable:
+      type: object
+      additionalProperties: true
     SuperBatchWebResources:
       type: object
       properties:
@@ -455,24 +469,6 @@ components:
         _expandable:
           type: object
           additionalProperties: true
-    AsyncId:
-      required:
-      - asyncId
-      type: object
-      properties:
-        asyncId:
-          type: string
-    MacroInstance:
-      type: object
-      properties:
-        name:
-          type: string
-        body:
-          type: string
-        parameters:
-          type: object
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
     GenericLinks:
       type: object
       additionalProperties:
@@ -480,6 +476,81 @@ components:
         - type: object
           additionalProperties: true
         - type: string
+    AsyncId:
+      required:
+      - asyncId
+      type: object
+      properties:
+        asyncId:
+          type: string
+    EmbeddedContent:
+      type: object
+      additionalProperties: true
+      properties:
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
     WebResourceDependencies:
       type: object
       properties:
@@ -553,88 +624,17 @@ components:
               additionalProperties: true
         superbatch:
           $ref: '#/components/schemas/SuperBatchWebResources'
-    ContentBody:
-      required:
-      - representation
-      - value
+    MacroInstance:
       type: object
       properties:
-        value:
+        name:
           type: string
-        representation:
+        body:
           type: string
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-          - raw
-        embeddedContent:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbeddedContent'
-        webresource:
-          $ref: '#/components/schemas/WebResourceDependencies'
-        mediaToken:
+        parameters:
           type: object
-          properties:
-            collectionIds:
-              type: array
-              items:
-                type: string
-            contentId:
-              type: string
-            expiryDateTime:
-              type: string
-            fileIds:
-              type: array
-              items:
-                type: string
-            token:
-              type: string
-        _expandable:
-          type: object
-          properties:
-            content:
-              type: string
-            embeddedContent:
-              type: string
-            webresource:
-              type: string
-            mediaToken:
-              type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    Embeddable:
-      type: object
-      additionalProperties: true
-    EmbeddedContent:
-      type: object
-      additionalProperties: true
-      properties:
-        entityId:
-          type: integer
-          format: int64
-        entityType:
-          type: string
-        entity:
-          $ref: '#/components/schemas/Embeddable'
-  parameters:
-    bodyConversionExpand:
-      name: expand
-      in: query
-      description: "A multi-value parameter indicating which properties of the content to expand and populate. Expands are dependent on the\n`to` conversion format and may be irrelevant for certain conversions (e.g. `macroRenderedOutput` is redundant when\nconverting to `view` format). \n\nIf rendering to `view` format, and the body content being converted includes arbitrary nested content (such as macros); then it is \nnecessary to include webresource expands in the request. Webresources for content body are the batched JS and CSS dependencies for\nany nested dynamic content (i.e. macros).\n\n- `embeddedContent` returns metadata for nested content (e.g. page included using page include macro)\n- `mediaToken` returns JWT token for retrieving attachment data from Media API\n- `macroRenderedOutput` additionally converts body to view format\n- `webresource.superbatch.uris.js` returns all common JS dependencies as static URLs\n- `webresource.superbatch.uris.css` returns all common CSS dependencies as static URLs\n- `webresource.superbatch.uris.all` returns all common dependencies as static URLs\n- `webresource.superbatch.tags.all` returns all common JS dependencies as html `<script>` tags\n- `webresource.superbatch.tags.css` returns all common CSS dependencies as html `<style>` tags\n- `webresource.superbatch.tags.js` returns all common dependencies as html `<script>` and `<style>` tags\n- `webresource.uris.js` returns JS dependencies specific to conversion\n- `webresource.uris.css` returns CSS dependencies specific to conversion\n- `webresource.uris.all` returns all dependencies specific to conversion     \n- `webresource.tags.all` returns common JS dependencies as html `<script>` tags\n- `webresource.tags.css` returns common CSS dependencies as html `<style>` tags\n- `webresource.tags.js` returns common dependencies as html `<script>` and `<style>` tags"
-      style: form
-      explode: false
-      schema:
-        type: array
-        items:
-          type: string
   securitySchemes:
     basicAuth:
       type: http

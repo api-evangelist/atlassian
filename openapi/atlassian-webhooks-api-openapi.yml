@@ -482,51 +482,37 @@ paths:
     - url: https://your-domain.atlassian.net
 components:
   schemas:
-    hook_event:
+    paginated_hook_events:
       type: object
-      title: Hook Event
-      description: An event, associated with a resource or subject type.
+      title: Paginated Hook Events
+      description: A paginated list of webhook types available to subscribe on.
       properties:
-        event:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+        next:
           type: string
-          description: The event identifier.
-          enum:
-          - pullrequest:comment_reopened
-          - pullrequest:approved
-          - issue:comment_created
-          - repo:push
-          - pullrequest:comment_deleted
-          - pullrequest:fulfilled
-          - pullrequest:comment_created
-          - pullrequest:comment_updated
-          - pullrequest:updated
-          - repo:commit_status_created
-          - pullrequest:unapproved
-          - repo:updated
-          - pullrequest:comment_resolved
-          - repo:transfer
-          - repo:commit_status_updated
-          - pullrequest:changes_request_created
-          - issue:updated
-          - repo:created
-          - pullrequest:changes_request_removed
-          - pullrequest:rejected
-          - pullrequest:created
-          - issue:created
-          - repo:imported
-          - repo:commit_comment_created
-          - project:updated
-          - repo:fork
-          - repo:deleted
-        category:
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        previous:
           type: string
-          description: The category this event belongs to.
-        label:
-          type: string
-          description: Summary of the webhook event type.
-        description:
-          type: string
-          description: More detailed description of the webhook event type.
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/hook_event'
+          minItems: 0
+          uniqueItems: true
       additionalProperties: false
     subject_types:
       type: object
@@ -589,38 +575,66 @@ components:
       required:
       - type
       additionalProperties: true
-    paginated_hook_events:
+    hook_event:
       type: object
-      title: Paginated Hook Events
-      description: A paginated list of webhook types available to subscribe on.
+      title: Hook Event
+      description: An event, associated with a resource or subject type.
       properties:
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-          minimum: 0
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-          minimum: 1
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-          minimum: 1
-        next:
+        event:
           type: string
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        previous:
+          description: The event identifier.
+          enum:
+          - pullrequest:comment_reopened
+          - pullrequest:approved
+          - issue:comment_created
+          - repo:push
+          - pullrequest:comment_deleted
+          - pullrequest:fulfilled
+          - pullrequest:comment_created
+          - pullrequest:comment_updated
+          - pullrequest:updated
+          - repo:commit_status_created
+          - pullrequest:unapproved
+          - repo:updated
+          - pullrequest:comment_resolved
+          - repo:transfer
+          - repo:commit_status_updated
+          - pullrequest:changes_request_created
+          - issue:updated
+          - repo:created
+          - pullrequest:changes_request_removed
+          - pullrequest:rejected
+          - pullrequest:created
+          - issue:created
+          - repo:imported
+          - repo:commit_comment_created
+          - project:updated
+          - repo:fork
+          - repo:deleted
+        category:
           type: string
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/hook_event'
-          minItems: 0
-          uniqueItems: true
+          description: The category this event belongs to.
+        label:
+          type: string
+          description: Summary of the webhook event type.
+        description:
+          type: string
+          description: More detailed description of the webhook event type.
       additionalProperties: false
+    ContainerForWebhookIDs:
+      additionalProperties: false
+      description: Container for a list of webhook IDs.
+      properties:
+        webhookIds:
+          description: A list of webhook IDs.
+          items:
+            description: A list of webhook IDs.
+            format: int64
+            type: integer
+          type: array
+      required:
+      - webhookIds
+      type: object
     ErrorCollection:
       additionalProperties: false
       description: Error messages from an operation.
@@ -639,41 +653,17 @@ components:
           format: int32
           type: integer
       type: object
-    ContainerForWebhookIDs:
+    WebhooksExpirationDate:
       additionalProperties: false
-      description: Container for a list of webhook IDs.
+      description: The date the refreshed webhooks expire.
       properties:
-        webhookIds:
-          description: A list of webhook IDs.
-          items:
-            description: A list of webhook IDs.
-            format: int64
-            type: integer
-          type: array
-      required:
-      - webhookIds
-      type: object
-    FailedWebhook:
-      additionalProperties: false
-      description: Details about a failed webhook.
-      properties:
-        body:
-          description: The webhook body.
-          type: string
-        failureTime:
-          description: The time the webhook was added to the list of failed webhooks (that is, the time of the last failed retry).
+        expirationDate:
+          description: The expiration date of all the refreshed webhooks.
           format: int64
+          readOnly: true
           type: integer
-        id:
-          description: The webhook ID, as sent in the `X-Atlassian-Webhook-Identifier` header with the webhook.
-          type: string
-        url:
-          description: The original webhook destination.
-          type: string
       required:
-      - failureTime
-      - id
-      - url
+      - expirationDate
       type: object
     PageBeanWebhook:
       additionalProperties: false
@@ -714,6 +704,54 @@ components:
             $ref: '#/components/schemas/Webhook'
           readOnly: true
           type: array
+      type: object
+    ContainerForRegisteredWebhooks:
+      additionalProperties: false
+      description: Container for a list of registered webhooks. Webhook details are returned in the same order as the request.
+      properties:
+        webhookRegistrationResult:
+          description: A list of registered webhooks.
+          items:
+            $ref: '#/components/schemas/RegisteredWebhook'
+          type: array
+      type: object
+    WebhookRegistrationDetails:
+      additionalProperties: false
+      description: Details of webhooks to register.
+      properties:
+        url:
+          description: The URL that specifies where to send the webhooks. This URL must use the same base URL as the Connect app. Only a single URL per app is allowed to be registered.
+          type: string
+        webhooks:
+          description: A list of webhooks.
+          items:
+            $ref: '#/components/schemas/WebhookDetails'
+          type: array
+      required:
+      - url
+      - webhooks
+      type: object
+    FailedWebhook:
+      additionalProperties: false
+      description: Details about a failed webhook.
+      properties:
+        body:
+          description: The webhook body.
+          type: string
+        failureTime:
+          description: The time the webhook was added to the list of failed webhooks (that is, the time of the last failed retry).
+          format: int64
+          type: integer
+        id:
+          description: The webhook ID, as sent in the `X-Atlassian-Webhook-Identifier` header with the webhook.
+          type: string
+        url:
+          description: The original webhook destination.
+          type: string
+      required:
+      - failureTime
+      - id
+      - url
       type: object
     Webhook:
       additionalProperties: false
@@ -777,17 +815,26 @@ components:
             type: string
           type: array
       type: object
-    WebhooksExpirationDate:
+    FailedWebhooks:
       additionalProperties: false
-      description: The date the refreshed webhooks expire.
+      description: A page of failed webhooks.
       properties:
-        expirationDate:
-          description: The expiration date of all the refreshed webhooks.
-          format: int64
-          readOnly: true
+        maxResults:
+          description: The maximum number of items on the page. If the list of values is shorter than this number, then there are no more pages.
+          format: int32
           type: integer
+        next:
+          description: The URL to the next page of results. Present only if the request returned at least one result.The next page may be empty at the time of receiving the response, but new failed webhooks may appear in time. You can save the URL to the next page and query for new results periodically (for example, every hour).
+          format: uri
+          type: string
+        values:
+          description: The list of webhooks.
+          items:
+            $ref: '#/components/schemas/FailedWebhook'
+          type: array
       required:
-      - expirationDate
+      - maxResults
+      - values
       type: object
     WebhookDetails:
       additionalProperties: false
@@ -825,53 +872,6 @@ components:
       required:
       - events
       - jqlFilter
-      type: object
-    FailedWebhooks:
-      additionalProperties: false
-      description: A page of failed webhooks.
-      properties:
-        maxResults:
-          description: The maximum number of items on the page. If the list of values is shorter than this number, then there are no more pages.
-          format: int32
-          type: integer
-        next:
-          description: The URL to the next page of results. Present only if the request returned at least one result.The next page may be empty at the time of receiving the response, but new failed webhooks may appear in time. You can save the URL to the next page and query for new results periodically (for example, every hour).
-          format: uri
-          type: string
-        values:
-          description: The list of webhooks.
-          items:
-            $ref: '#/components/schemas/FailedWebhook'
-          type: array
-      required:
-      - maxResults
-      - values
-      type: object
-    ContainerForRegisteredWebhooks:
-      additionalProperties: false
-      description: Container for a list of registered webhooks. Webhook details are returned in the same order as the request.
-      properties:
-        webhookRegistrationResult:
-          description: A list of registered webhooks.
-          items:
-            $ref: '#/components/schemas/RegisteredWebhook'
-          type: array
-      type: object
-    WebhookRegistrationDetails:
-      additionalProperties: false
-      description: Details of webhooks to register.
-      properties:
-        url:
-          description: The URL that specifies where to send the webhooks. This URL must use the same base URL as the Connect app. Only a single URL per app is allowed to be registered.
-          type: string
-        webhooks:
-          description: A list of webhooks.
-          items:
-            $ref: '#/components/schemas/WebhookDetails'
-          type: array
-      required:
-      - url
-      - webhooks
       type: object
   securitySchemes:
     basic:

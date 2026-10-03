@@ -1438,6 +1438,185 @@ paths:
       operationId: atlassianGetSnippetPatchBetweenVersions
 components:
   schemas:
+    snippet:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Snippet
+        description: A snippet object.
+        properties:
+          id:
+            type: integer
+            minimum: 0
+          title:
+            type: string
+          scm:
+            type: string
+            description: The DVCS used to store the snippet.
+            enum:
+            - git
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          owner:
+            $ref: '#/components/schemas/account'
+          creator:
+            $ref: '#/components/schemas/account'
+          is_private:
+            type: boolean
+        additionalProperties: true
+    account:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Account
+        description: An account object.
+        properties:
+          links:
+            $ref: '#/components/schemas/account_links'
+          created_on:
+            type: string
+            format: date-time
+          display_name:
+            type: string
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_\-]+$
+          uuid:
+            type: string
+        additionalProperties: true
+    object:
+      type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
+      properties:
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+    paginated_snippet_comments:
+      type: object
+      title: Paginated Snippet Comments
+      description: A paginated list of snippet comments.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/snippet_comment'
+          minItems: 0
+          uniqueItems: true
+      additionalProperties: false
+    paginated_snippet_commit:
+      type: object
+      title: Paginated Snippet Commits
+      description: A paginated list of snippet commits.
+      properties:
+        size:
+          type: integer
+          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
+          minimum: 0
+        page:
+          type: integer
+          description: Page number of the current results. This is an optional element that is not provided in all responses.
+          minimum: 1
+        pagelen:
+          type: integer
+          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
+          minimum: 1
+        next:
+          type: string
+          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        previous:
+          type: string
+          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
+          format: uri
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/snippet_commit'
+          minItems: 0
+      additionalProperties: false
+    snippet_comment:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Snippet Comment
+        description: A comment on a snippet.
+        properties:
+          links:
+            type: object
+            properties:
+              self:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          snippet:
+            $ref: '#/components/schemas/snippet'
+        additionalProperties: true
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+        name:
+          type: string
+      additionalProperties: false
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
     snippet_commit:
       allOf:
       - $ref: '#/components/schemas/base_commit'
@@ -1485,34 +1664,10 @@ components:
           snippet:
             $ref: '#/components/schemas/snippet'
         additionalProperties: true
-    object:
+    paginated_accounts:
       type: object
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-      required:
-      - type
-      additionalProperties: true
-      discriminator:
-        propertyName: type
-    author:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Author
-        description: The author of a change in a repository
-        properties:
-          raw:
-            type: string
-            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
-          user:
-            $ref: '#/components/schemas/account'
-        additionalProperties: true
-    paginated_snippet_commit:
-      type: object
-      title: Paginated Snippet Commits
-      description: A paginated list of snippet commits.
+      title: Paginated Accounts
+      description: A paginated list of accounts.
       properties:
         size:
           type: integer
@@ -1537,8 +1692,9 @@ components:
         values:
           type: array
           items:
-            $ref: '#/components/schemas/snippet_commit'
+            $ref: '#/components/schemas/account'
           minItems: 0
+          uniqueItems: true
       additionalProperties: false
     base_commit:
       allOf:
@@ -1580,75 +1736,19 @@ components:
               $ref: '#/components/schemas/base_commit'
             minItems: 0
         additionalProperties: true
-    snippet:
+    author:
       allOf:
       - $ref: '#/components/schemas/object'
       - type: object
-        title: Snippet
-        description: A snippet object.
+        title: Author
+        description: The author of a change in a repository
         properties:
-          id:
-            type: integer
-            minimum: 0
-          title:
+          raw:
             type: string
-          scm:
-            type: string
-            description: The DVCS used to store the snippet.
-            enum:
-            - git
-          created_on:
-            type: string
-            format: date-time
-          updated_on:
-            type: string
-            format: date-time
-          owner:
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
             $ref: '#/components/schemas/account'
-          creator:
-            $ref: '#/components/schemas/account'
-          is_private:
-            type: boolean
         additionalProperties: true
-    account_links:
-      type: object
-      title: Account Links
-      description: Links related to an Account.
-      properties:
-        avatar:
-          $ref: '#/components/schemas/link'
-      additionalProperties: true
-    account:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Account
-        description: An account object.
-        properties:
-          links:
-            $ref: '#/components/schemas/account_links'
-          created_on:
-            type: string
-            format: date-time
-          display_name:
-            type: string
-          username:
-            type: string
-            pattern: ^[a-zA-Z0-9_\-]+$
-          uuid:
-            type: string
-        additionalProperties: true
-    link:
-      type: object
-      title: Link
-      description: A link to a resource related to this object.
-      properties:
-        href:
-          type: string
-          format: uri
-        name:
-          type: string
-      additionalProperties: false
     paginated_snippets:
       type: object
       title: Paginated Snippets
@@ -1681,74 +1781,6 @@ components:
           minItems: 0
           uniqueItems: true
       additionalProperties: false
-    paginated_snippet_comments:
-      type: object
-      title: Paginated Snippet Comments
-      description: A paginated list of snippet comments.
-      properties:
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-          minimum: 0
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-          minimum: 1
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-          minimum: 1
-        next:
-          type: string
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        previous:
-          type: string
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/snippet_comment'
-          minItems: 0
-          uniqueItems: true
-      additionalProperties: false
-    snippet_comment:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Snippet Comment
-        description: A comment on a snippet.
-        properties:
-          links:
-            type: object
-            properties:
-              self:
-                type: object
-                title: Link
-                description: A link to a resource related to this object.
-                properties:
-                  href:
-                    type: string
-                    format: uri
-                  name:
-                    type: string
-                additionalProperties: false
-              html:
-                type: object
-                title: Link
-                description: A link to a resource related to this object.
-                properties:
-                  href:
-                    type: string
-                    format: uri
-                  name:
-                    type: string
-                additionalProperties: false
-            additionalProperties: false
-          snippet:
-            $ref: '#/components/schemas/snippet'
-        additionalProperties: true
     error:
       type: object
       title: Error
@@ -1774,38 +1806,6 @@ components:
       required:
       - type
       additionalProperties: true
-    paginated_accounts:
-      type: object
-      title: Paginated Accounts
-      description: A paginated list of accounts.
-      properties:
-        size:
-          type: integer
-          description: Total number of objects in the response. This is an optional element that is not provided in all responses, as it can be expensive to compute.
-          minimum: 0
-        page:
-          type: integer
-          description: Page number of the current results. This is an optional element that is not provided in all responses.
-          minimum: 1
-        pagelen:
-          type: integer
-          description: Current number of objects on the existing page. The default value is 10 with 100 being the maximum allowed value. Individual APIs may enforce different values.
-          minimum: 1
-        next:
-          type: string
-          description: Link to the next page if it exists. The last page of a collection does not have this value. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        previous:
-          type: string
-          description: Link to previous page if it exists. A collections first page does not have this value. This is an optional element that is not provided in all responses. Some result sets strictly support forward navigation and never provide previous links. Clients must anticipate that backwards navigation is not always available. Use this link to navigate the result set and refrain from constructing your own URLs.
-          format: uri
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/account'
-          minItems: 0
-          uniqueItems: true
-      additionalProperties: false
   requestBodies:
     snippet:
       content:

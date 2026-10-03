@@ -785,132 +785,6 @@ paths:
     - url: //your-domain.atlassian.net
 components:
   schemas:
-    search_segment:
-      type: object
-      properties:
-        text:
-          type: string
-          readOnly: true
-        match:
-          type: boolean
-          readOnly: true
-    team_links:
-      allOf:
-      - $ref: '#/components/schemas/account_links'
-      - type: object
-        title: Team Links
-        description: Links related to a Team.
-        properties:
-          self:
-            $ref: '#/components/schemas/link'
-          html:
-            $ref: '#/components/schemas/link'
-          members:
-            $ref: '#/components/schemas/link'
-          projects:
-            $ref: '#/components/schemas/link'
-          repositories:
-            $ref: '#/components/schemas/link'
-        additionalProperties: true
-    account_links:
-      type: object
-      title: Account Links
-      description: Links related to an Account.
-      properties:
-        avatar:
-          $ref: '#/components/schemas/link'
-      additionalProperties: true
-    team:
-      allOf:
-      - $ref: '#/components/schemas/account'
-      - type: object
-        title: Team
-        description: A team object.
-        properties:
-          links:
-            $ref: '#/components/schemas/team_links'
-        additionalProperties: true
-    project:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Project
-        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
-        properties:
-          links:
-            type: object
-            properties:
-              html:
-                type: object
-                title: Link
-                description: A link to a resource related to this object.
-                properties:
-                  href:
-                    type: string
-                    format: uri
-                  name:
-                    type: string
-                additionalProperties: false
-              avatar:
-                type: object
-                title: Link
-                description: A link to a resource related to this object.
-                properties:
-                  href:
-                    type: string
-                    format: uri
-                  name:
-                    type: string
-                additionalProperties: false
-            additionalProperties: false
-          uuid:
-            type: string
-            description: The project's immutable id.
-          key:
-            type: string
-            description: The project's key.
-          owner:
-            $ref: '#/components/schemas/team'
-          name:
-            type: string
-            description: The name of the project.
-          description:
-            type: string
-          is_private:
-            type: boolean
-            description: '
-
-              Indicates whether the project is publicly accessible, or whether it is
-
-              private to the team and consequently only visible to team members.
-
-              Note that private projects cannot contain public repositories.'
-          created_on:
-            type: string
-            format: date-time
-          updated_on:
-            type: string
-            format: date-time
-          has_publicly_visible_repos:
-            type: boolean
-            description: '
-
-              Indicates whether the project contains publicly visible repositories.
-
-              Note that private projects cannot contain public repositories.'
-        additionalProperties: true
-    search_line:
-      type: object
-      properties:
-        line:
-          type: integer
-          format: int32
-          readOnly: true
-        segments:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_segment'
     account:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -931,105 +805,6 @@ components:
           uuid:
             type: string
         additionalProperties: true
-    participant:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Participant
-        description: Object describing a user's role on resources like commits or pull requests.
-        properties:
-          user:
-            $ref: '#/components/schemas/account'
-          role:
-            type: string
-            enum:
-            - PARTICIPANT
-            - REVIEWER
-          approved:
-            type: boolean
-          state:
-            type: string
-            enum:
-            - approved
-            - changes_requested
-            - null
-          participated_on:
-            type: string
-            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
-            format: date-time
-        additionalProperties: true
-    link:
-      type: object
-      title: Link
-      description: A link to a resource related to this object.
-      properties:
-        href:
-          type: string
-          format: uri
-        name:
-          type: string
-      additionalProperties: false
-    commit_file:
-      type: object
-      title: Commit File
-      description: A file object, representing a file at a commit in a repository
-      properties:
-        type:
-          type: string
-        path:
-          type: string
-          description: The path in the repository
-        commit:
-          $ref: '#/components/schemas/commit'
-        attributes:
-          type: string
-          enum:
-          - link
-          - executable
-          - subrepository
-          - binary
-          - lfs
-        escaped_path:
-          type: string
-          description: The escaped version of the path as it appears in a diff. If the path does not require escaping this will be the same as path.
-      required:
-      - type
-      additionalProperties: true
-    author:
-      allOf:
-      - $ref: '#/components/schemas/object'
-      - type: object
-        title: Author
-        description: The author of a change in a repository
-        properties:
-          raw:
-            type: string
-            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
-          user:
-            $ref: '#/components/schemas/account'
-        additionalProperties: true
-    search_code_search_result:
-      type: object
-      properties:
-        type:
-          type: string
-          readOnly: true
-        content_match_count:
-          type: integer
-          format: int64
-          readOnly: true
-        content_matches:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_content_match'
-        path_matches:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_segment'
-        file:
-          $ref: '#/components/schemas/commit_file'
     repository:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -1217,6 +992,38 @@ components:
           mainbranch:
             $ref: '#/components/schemas/branch'
         additionalProperties: true
+    search_content_match:
+      type: object
+      properties:
+        lines:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_line'
+    link:
+      type: object
+      title: Link
+      description: A link to a resource related to this object.
+      properties:
+        href:
+          type: string
+          format: uri
+        name:
+          type: string
+      additionalProperties: false
+    author:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Author
+        description: The author of a change in a repository
+        properties:
+          raw:
+            type: string
+            description: The raw author value from the repository. This may be the only value available if the author does not match a user in Bitbucket.
+          user:
+            $ref: '#/components/schemas/account'
+        additionalProperties: true
     branch:
       allOf:
       - $ref: '#/components/schemas/ref'
@@ -1237,17 +1044,269 @@ components:
             type: string
             description: The default merge strategy for pull requests targeting this branch.
         additionalProperties: true
-    object:
+    commit_file:
       type: object
+      title: Commit File
+      description: A file object, representing a file at a commit in a repository
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+          description: The path in the repository
+        commit:
+          $ref: '#/components/schemas/commit'
+        attributes:
+          type: string
+          enum:
+          - link
+          - executable
+          - subrepository
+          - binary
+          - lfs
+        escaped_path:
+          type: string
+          description: The escaped version of the path as it appears in a diff. If the path does not require escaping this will be the same as path.
+      required:
+      - type
+      additionalProperties: true
+    team:
+      allOf:
+      - $ref: '#/components/schemas/account'
+      - type: object
+        title: Team
+        description: A team object.
+        properties:
+          links:
+            $ref: '#/components/schemas/team_links'
+        additionalProperties: true
+    error:
+      type: object
+      title: Error
       description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
       properties:
         type:
           type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            detail:
+              type: string
+            data:
+              type: object
+              description: Optional structured data that is endpoint-specific.
+              properties: {}
+              additionalProperties: true
+          required:
+          - message
+          additionalProperties: false
       required:
       - type
       additionalProperties: true
-      discriminator:
-        propertyName: type
+    project:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Project
+        description: "A Bitbucket project.\n            Projects are used by teams to organize repositories."
+        properties:
+          links:
+            type: object
+            properties:
+              html:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+              avatar:
+                type: object
+                title: Link
+                description: A link to a resource related to this object.
+                properties:
+                  href:
+                    type: string
+                    format: uri
+                  name:
+                    type: string
+                additionalProperties: false
+            additionalProperties: false
+          uuid:
+            type: string
+            description: The project's immutable id.
+          key:
+            type: string
+            description: The project's key.
+          owner:
+            $ref: '#/components/schemas/team'
+          name:
+            type: string
+            description: The name of the project.
+          description:
+            type: string
+          is_private:
+            type: boolean
+            description: '
+
+              Indicates whether the project is publicly accessible, or whether it is
+
+              private to the team and consequently only visible to team members.
+
+              Note that private projects cannot contain public repositories.'
+          created_on:
+            type: string
+            format: date-time
+          updated_on:
+            type: string
+            format: date-time
+          has_publicly_visible_repos:
+            type: boolean
+            description: '
+
+              Indicates whether the project contains publicly visible repositories.
+
+              Note that private projects cannot contain public repositories.'
+        additionalProperties: true
+    search_code_search_result:
+      type: object
+      properties:
+        type:
+          type: string
+          readOnly: true
+        content_match_count:
+          type: integer
+          format: int64
+          readOnly: true
+        content_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_content_match'
+        path_matches:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+        file:
+          $ref: '#/components/schemas/commit_file'
+    participant:
+      allOf:
+      - $ref: '#/components/schemas/object'
+      - type: object
+        title: Participant
+        description: Object describing a user's role on resources like commits or pull requests.
+        properties:
+          user:
+            $ref: '#/components/schemas/account'
+          role:
+            type: string
+            enum:
+            - PARTICIPANT
+            - REVIEWER
+          approved:
+            type: boolean
+          state:
+            type: string
+            enum:
+            - approved
+            - changes_requested
+            - null
+          participated_on:
+            type: string
+            description: The ISO8601 timestamp of the participant's action. For approvers, this is the time of their approval. For commenters and pull request reviewers who are not approvers, this is the time they last commented, or null if they have not commented.
+            format: date-time
+        additionalProperties: true
+    team_links:
+      allOf:
+      - $ref: '#/components/schemas/account_links'
+      - type: object
+        title: Team Links
+        description: Links related to a Team.
+        properties:
+          self:
+            $ref: '#/components/schemas/link'
+          html:
+            $ref: '#/components/schemas/link'
+          members:
+            $ref: '#/components/schemas/link'
+          projects:
+            $ref: '#/components/schemas/link'
+          repositories:
+            $ref: '#/components/schemas/link'
+        additionalProperties: true
+    commit:
+      allOf:
+      - $ref: '#/components/schemas/base_commit'
+      - type: object
+        title: Commit
+        description: A repository commit object.
+        properties:
+          repository:
+            $ref: '#/components/schemas/repository'
+          participants:
+            type: array
+            items:
+              $ref: '#/components/schemas/participant'
+            minItems: 0
+        additionalProperties: true
+    account_links:
+      type: object
+      title: Account Links
+      description: Links related to an Account.
+      properties:
+        avatar:
+          $ref: '#/components/schemas/link'
+      additionalProperties: true
+    search_line:
+      type: object
+      properties:
+        line:
+          type: integer
+          format: int32
+          readOnly: true
+        segments:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_segment'
+    search_result_page:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+          readOnly: true
+        page:
+          type: integer
+          format: int32
+          readOnly: true
+        pagelen:
+          type: integer
+          format: int32
+          readOnly: true
+        query_substituted:
+          type: boolean
+          readOnly: true
+        next:
+          type: string
+          format: uri
+          readOnly: true
+        previous:
+          type: string
+          format: uri
+          readOnly: true
+        values:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/search_code_search_result'
     base_commit:
       allOf:
       - $ref: '#/components/schemas/object'
@@ -1288,14 +1347,17 @@ components:
               $ref: '#/components/schemas/base_commit'
             minItems: 0
         additionalProperties: true
-    search_content_match:
+    object:
       type: object
+      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
       properties:
-        lines:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_line'
+        type:
+          type: string
+      required:
+      - type
+      additionalProperties: true
+      discriminator:
+        propertyName: type
     ref:
       type: object
       title: Ref
@@ -1348,206 +1410,15 @@ components:
       required:
       - type
       additionalProperties: true
-    search_result_page:
+    search_segment:
       type: object
       properties:
-        size:
-          type: integer
-          format: int64
+        text:
+          type: string
           readOnly: true
-        page:
-          type: integer
-          format: int32
-          readOnly: true
-        pagelen:
-          type: integer
-          format: int32
-          readOnly: true
-        query_substituted:
+        match:
           type: boolean
           readOnly: true
-        next:
-          type: string
-          format: uri
-          readOnly: true
-        previous:
-          type: string
-          format: uri
-          readOnly: true
-        values:
-          type: array
-          readOnly: true
-          items:
-            $ref: '#/components/schemas/search_code_search_result'
-    commit:
-      allOf:
-      - $ref: '#/components/schemas/base_commit'
-      - type: object
-        title: Commit
-        description: A repository commit object.
-        properties:
-          repository:
-            $ref: '#/components/schemas/repository'
-          participants:
-            type: array
-            items:
-              $ref: '#/components/schemas/participant'
-            minItems: 0
-        additionalProperties: true
-    error:
-      type: object
-      title: Error
-      description: Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.
-      properties:
-        type:
-          type: string
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            detail:
-              type: string
-            data:
-              type: object
-              description: Optional structured data that is endpoint-specific.
-              properties: {}
-              additionalProperties: true
-          required:
-          - message
-          additionalProperties: false
-      required:
-      - type
-      additionalProperties: true
-    GenericUserName:
-      type:
-      - string
-      - 'null'
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    SuperBatchWebResources:
-      type: object
-      properties:
-        uris:
-          type: object
-          properties:
-            all:
-              oneOf:
-              - type: array
-                items:
-                  type: string
-              - type: string
-            css:
-              oneOf:
-              - type: array
-                items:
-                  type: string
-              - type: string
-            js:
-              oneOf:
-              - type: array
-                items:
-                  type: string
-              - type: string
-        tags:
-          type: object
-          properties:
-            all:
-              type: string
-            css:
-              type: string
-            data:
-              type: string
-            js:
-              type: string
-        metatags:
-          type: string
-        _expandable:
-          type: object
-          additionalProperties: true
-    MenusLookAndFeel:
-      required:
-      - color
-      - hoverOrFocus
-      type: object
-      properties:
-        hoverOrFocus:
-          required:
-          - backgroundColor
-          type: object
-          properties:
-            backgroundColor:
-              type: string
-        color:
-          type: string
-    Version:
-      required:
-      - minorEdit
-      - number
-      - when
-      type:
-      - object
-      - 'null'
-      additionalProperties: true
-      properties:
-        by:
-          $ref: '#/components/schemas/User'
-        when:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        friendlyWhen:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
-        number:
-          type: integer
-          format: int32
-          description: Set this to the current version number incremented by one
-        minorEdit:
-          description: 'If `minorEdit` is set to ''true'', no notification email or activity
-
-            stream will be generated for the change.'
-          type: boolean
-        content:
-          $ref: '#/components/schemas/Content'
-        collaborators:
-          $ref: '#/components/schemas/UsersUserKeys'
-        _expandable:
-          type: object
-          properties:
-            content:
-              type: string
-            collaborators:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-        contentTypeModified:
-          type: boolean
-          description: True if content type is modifed in this version (e.g. page to blog)
-        confRev:
-          type:
-          - string
-          - 'null'
-          description: The revision id provided by confluence to be used as a revision in Synchrony
-        syncRev:
-          type:
-          - string
-          - 'null'
-          description: The revision id provided by Synchrony
-        syncRevSource:
-          type:
-          - string
-          - 'null'
-          description: Source of the synchrony revision
     UserDetails:
       type: object
       properties:
@@ -1606,75 +1477,173 @@ components:
                 [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
 
                 for details.'
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    ButtonLookAndFeel:
+    Breadcrumb:
       required:
-      - backgroundColor
-      - color
+      - label
+      - separator
+      - url
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+        separator:
+          type: string
+    GenericUserName:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    LabelArray:
+      required:
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Group:
+      required:
+      - name
+      - type
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+          default: group
+          enum:
+          - group
+        name:
+          type: string
+        id:
+          type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GroupArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+    Container:
       type:
       - object
       - 'null'
-      properties:
-        backgroundColor:
-          type: string
-        color:
-          type: string
-    ContentChildType:
+      additionalProperties: true
+      description: 'Container for content. This can be either a space (containing a page or blogpost)
+
+        or a page/blog post (containing an attachment or comment)'
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
       type: object
       properties:
-        attachment:
+        headings:
           required:
-          - _links
-          - value
+          - color
           type: object
           properties:
-            value:
-              type: boolean
-            _links:
-              $ref: '#/components/schemas/GenericLinks'
-        comment:
+            color:
+              type: string
+        links:
           required:
-          - _links
-          - value
+          - color
           type: object
           properties:
-            value:
-              type: boolean
-            _links:
-              $ref: '#/components/schemas/GenericLinks'
-        page:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
           required:
-          - _links
-          - value
+          - color
           type: object
           properties:
-            value:
-              type: boolean
-            _links:
-              $ref: '#/components/schemas/GenericLinks'
-        _expandable:
-          type: object
-          properties:
-            all:
+            color:
               type: string
-            attachment:
-              type: string
-            comment:
-              type: string
-            page:
-              type: string
-            whiteboard:
-              type: string
-      additionalProperties: true
-      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+        spaceReference:
+          type:
+          - object
+          - 'null'
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    GenericAccountId:
+      type:
+      - string
+      - 'null'
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
 
-        Note, this doesn''t actually contain the child objects.'
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
     UsersUserKeys:
       required:
       - userAccountIds
@@ -1693,6 +1662,54 @@ components:
             type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
+    OperationCheckResult:
+      required:
+      - operation
+      - targetType
+      type: object
+      properties:
+        operation:
+          type: string
+          description: The operation itself.
+          enum:
+          - administer
+          - archive
+          - clear_permissions
+          - copy
+          - create
+          - create_space
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - restrict_content
+          - update
+          - use
+        targetType:
+          type: string
+          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
+      description: An operation and the target entity that it applies to, e.g. create page.
+    TopNavigationLookAndFeel:
+      required:
+      - highlightColor
+      type: object
+      properties:
+        color:
+          type:
+          - string
+          - 'null'
+        highlightColor:
+          type: string
+        hoverOrFocus:
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
     WebResourceDependencies:
       type: object
       properties:
@@ -1766,6 +1783,222 @@ components:
               additionalProperties: true
         superbatch:
           $ref: '#/components/schemas/SuperBatchWebResources'
+    SpaceDescription:
+      required:
+      - embeddedContent
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - plain
+          - view
+        embeddedContent:
+          type: array
+          items:
+            type: object
+            properties: {}
+    ContentMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        currentuser:
+          type: object
+          properties:
+            favourited:
+              type: object
+              properties:
+                isFavourite:
+                  type: boolean
+                favouritedDate:
+                  type: string
+                  format: date-time
+            lastmodified:
+              type: object
+              properties:
+                version:
+                  $ref: '#/components/schemas/Version'
+                friendlyLastModified:
+                  type: string
+            lastcontributed:
+              type: object
+              properties:
+                status:
+                  type: string
+                when:
+                  type: string
+                  format: date-time
+            viewed:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  format: date-time
+                friendlyLastSeen:
+                  type: string
+            scheduled:
+              type: object
+            _expandable:
+              type: object
+              properties:
+                favourited:
+                  type: string
+                lastmodified:
+                  type: string
+                lastcontributed:
+                  type: string
+                viewed:
+                  type: string
+                scheduled:
+                  type: string
+        properties:
+          $ref: '#/components/schemas/GenericLinks'
+        frontend:
+          type: object
+          additionalProperties: true
+        labels:
+          oneOf:
+          - $ref: '#/components/schemas/LabelArray'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Label'
+      description: Metadata object for page, blogpost, comment content
+    Embeddable:
+      type: object
+      additionalProperties: true
+    ContentArray:
+      required:
+      - _links
+      - results
+      - size
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Content'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentRestriction:
+      required:
+      - _expandable
+      - _links
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+          enum:
+          - administer
+          - copy
+          - create
+          - delete
+          - export
+          - move
+          - purge
+          - purge_version
+          - read
+          - restore
+          - update
+          - use
+        restrictions:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserArray'
+            group:
+              $ref: '#/components/schemas/GroupArray'
+            _expandable:
+              type: object
+              properties:
+                user:
+                  type: string
+                group:
+                  type: string
+        content:
+          $ref: '#/components/schemas/Content'
+        _expandable:
+          type: object
+          properties:
+            restrictions:
+              type: string
+            content:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentChildren:
+      type: object
+      additionalProperties: true
+      properties:
+        attachment:
+          $ref: '#/components/schemas/ContentArray'
+        comment:
+          $ref: '#/components/schemas/ContentArray'
+        page:
+          $ref: '#/components/schemas/ContentArray'
+        _expandable:
+          type: object
+          additionalProperties: true
+          properties:
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type:
+      - object
+      - 'null'
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
     SpacePermission:
       required:
       - anonymousAccess
@@ -1838,78 +2071,549 @@ components:
             with the ''read space'' operation.'
           default: false
       description: "This object represents a permission for given space. Permissions consist of\nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are\nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'"
-    User:
+    ContainerSummary:
       required:
+      - displayUrl
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        displayUrl:
+          type: string
+    GenericUserKey:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+    ScreenLookAndFeel:
+      required:
+      - background
+      type: object
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type:
+          - string
+          - 'null'
+        backgroundBlendMode:
+          type:
+          - string
+          - 'null'
+        backgroundClip:
+          type:
+          - string
+          - 'null'
+        backgroundColor:
+          type:
+          - string
+          - 'null'
+        backgroundImage:
+          type:
+          - string
+          - 'null'
+        backgroundOrigin:
+          type:
+          - string
+          - 'null'
+        backgroundPosition:
+          type:
+          - string
+          - 'null'
+        backgroundRepeat:
+          type:
+          - string
+          - 'null'
+        backgroundSize:
+          type:
+          - string
+          - 'null'
+        layer:
+          type:
+          - object
+          - 'null'
+          properties:
+            width:
+              type: string
+            height:
+              type: string
+        gutterTop:
+          type:
+          - string
+          - 'null'
+        gutterRight:
+          type:
+          - string
+          - 'null'
+        gutterBottom:
+          type:
+          - string
+          - 'null'
+        gutterLeft:
+          type:
+          - string
+          - 'null'
+    SearchResult:
+      required:
+      - breadcrumbs
+      - entityType
+      - excerpt
+      - iconCssClass
+      - lastModified
+      - title
+      - url
+      type: object
+      properties:
+        content:
+          $ref: '#/components/schemas/Content'
+        user:
+          $ref: '#/components/schemas/User'
+        space:
+          $ref: '#/components/schemas/Space'
+        title:
+          type: string
+        excerpt:
+          type: string
+        url:
+          type: string
+        resultParentContainer:
+          $ref: '#/components/schemas/ContainerSummary'
+        resultGlobalContainer:
+          $ref: '#/components/schemas/ContainerSummary'
+        breadcrumbs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Breadcrumb'
+        entityType:
+          type: string
+        iconCssClass:
+          type: string
+        lastModified:
+          type: string
+          format: date-time
+        friendlyLastModified:
+          type: string
+        score:
+          type: number
+    UserArray:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+          default: 0
+          description: 'This property will return total count of the objects before pagination is applied.
+
+            This value is returned if `shouldReturnTotalSize` is set to `true`.'
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SearchPageResponseSearchResult:
+      required:
+      - _links
+      - cqlQuery
+      - limit
+      - results
+      - searchDuration
+      - size
+      - start
+      - totalSize
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int32
+        cqlQuery:
+          type: string
+        searchDuration:
+          type: integer
+          format: int32
+        archivedResultCount:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    HeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - button
+      - primaryNavigation
+      - search
+      - secondaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type:
+      - object
+      - 'null'
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type:
+          - string
+          - 'null'
+        backgroundBlendMode:
+          type:
+          - string
+          - 'null'
+        backgroundClip:
+          type:
+          - string
+          - 'null'
+        backgroundColor:
+          type:
+          - string
+          - 'null'
+        backgroundImage:
+          type:
+          - string
+          - 'null'
+        backgroundOrigin:
+          type:
+          - string
+          - 'null'
+        backgroundPosition:
+          type:
+          - string
+          - 'null'
+        backgroundRepeat:
+          type:
+          - string
+          - 'null'
+        backgroundSize:
+          type:
+          - string
+          - 'null'
+        padding:
+          type: string
+        borderRadius:
+          type: string
+    MenusLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type: object
+      properties:
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+        color:
+          type: string
+    ContentChildType:
+      type: object
+      properties:
+        attachment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        comment:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        page:
+          required:
+          - _links
+          - value
+          type: object
+          properties:
+            value:
+              type: boolean
+            _links:
+              $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            all:
+              type: string
+            attachment:
+              type: string
+            comment:
+              type: string
+            page:
+              type: string
+            whiteboard:
+              type: string
+      additionalProperties: true
+      description: 'Shows whether a piece of content has attachments, comments, or child pages/whiteboards.
+
+        Note, this doesn''t actually contain the child objects.'
+    ContentBody:
+      required:
+      - representation
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+        representation:
+          type: string
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - raw
+        embeddedContent:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbeddedContent'
+        webresource:
+          $ref: '#/components/schemas/WebResourceDependencies'
+        mediaToken:
+          type: object
+          properties:
+            collectionIds:
+              type: array
+              items:
+                type: string
+            contentId:
+              type: string
+            expiryDateTime:
+              type: string
+            fileIds:
+              type: array
+              items:
+                type: string
+            token:
+              type: string
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            embeddedContent:
+              type: string
+            webresource:
+              type: string
+            mediaToken:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    Space:
+      required:
+      - _expandable
+      - _links
+      - key
+      - name
+      - status
       - type
       type:
       - object
       - 'null'
-      additionalProperties: true
       properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+        name:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          type: object
+          properties:
+            plain:
+              $ref: '#/components/schemas/SpaceDescription'
+            view:
+              $ref: '#/components/schemas/SpaceDescription'
+            _expandable:
+              type: object
+              properties:
+                view:
+                  type: string
+                plain:
+                  type: string
+        homepage:
+          $ref: '#/components/schemas/Content'
         type:
           type: string
-          enum:
-          - known
-          - unknown
-          - anonymous
-          - user
-        username:
-          $ref: '#/components/schemas/GenericUserName'
-        userKey:
-          $ref: '#/components/schemas/GenericUserKey'
-        accountId:
-          $ref: '#/components/schemas/GenericAccountId'
-        accountType:
-          type: string
-          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
-          enum:
-          - atlassian
-          - app
-          - ''
-        email:
-          type:
-          - string
-          - 'null'
-          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
-        publicName:
-          type: string
-          description: The public name or nickname of the user. Will always contain a value.
-        profilePicture:
-          $ref: '#/components/schemas/Icon'
-        displayName:
-          type:
-          - string
-          - 'null'
-          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
-        timeZone:
-          type:
-          - string
-          - 'null'
-          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
-        isExternalCollaborator:
-          type: boolean
-          description: Whether the user is an external collaborator user
-        externalCollaborator:
-          type: boolean
-          description: Whether the user is an external collaborator user
+        metadata:
+          type: object
+          properties:
+            labels:
+              $ref: '#/components/schemas/LabelArray'
+            _expandable:
+              type: object
         operations:
-          type:
-          - array
-          - 'null'
+          type: array
           items:
             $ref: '#/components/schemas/OperationCheckResult'
-        details:
-          $ref: '#/components/schemas/UserDetails'
-        personalSpace:
-          $ref: '#/components/schemas/Space'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacePermission'
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/SpaceSettings'
+        theme:
+          $ref: '#/components/schemas/Theme'
+        lookAndFeel:
+          $ref: '#/components/schemas/LookAndFeel'
+        history:
+          required:
+          - createdDate
+          type: object
+          properties:
+            createdDate:
+              type: string
+              format: date-time
+            createdBy:
+              $ref: '#/components/schemas/User'
         _expandable:
           type: object
           properties:
+            settings:
+              type: string
+            metadata:
+              type: string
             operations:
               type: string
-            details:
+            lookAndFeel:
               type: string
-            personalSpace:
+            permissions:
+              type: string
+            icon:
+              type: string
+            description:
+              type: string
+            theme:
+              type: string
+            history:
+              type: string
+            homepage:
+              type: string
+            identifiers:
+              type: string
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ButtonLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type:
+      - object
+      - 'null'
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
+    ContentHistory:
+      required:
+      - latest
+      type:
+      - object
+      - 'null'
+      properties:
+        latest:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/User'
+        ownedBy:
+          $ref: '#/components/schemas/User'
+        lastOwnedBy:
+          $ref: '#/components/schemas/User'
+        createdDate:
+          type: string
+          format: date-time
+        lastUpdated:
+          $ref: '#/components/schemas/Version'
+        previousVersion:
+          $ref: '#/components/schemas/Version'
+        contributors:
+          type: object
+          properties:
+            publishers:
+              $ref: '#/components/schemas/UsersUserKeys'
+        nextVersion:
+          $ref: '#/components/schemas/Version'
+        _expandable:
+          type: object
+          properties:
+            lastUpdated:
+              type: string
+            previousVersion:
+              type: string
+            contributors:
+              type: string
+            nextVersion:
+              type: string
+            ownedBy:
+              type: string
+            lastOwnedBy:
               type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
@@ -2067,511 +2771,68 @@ components:
         _links:
           $ref: '#/components/schemas/GenericLinks'
       description: Base object for all content types.
-    Breadcrumb:
-      required:
-      - label
-      - separator
-      - url
+    SuperBatchWebResources:
       type: object
       properties:
-        label:
-          type: string
-        url:
-          type: string
-        separator:
-          type: string
-    GenericUserKey:
-      type:
-      - string
-      - 'null'
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    SearchFieldLookAndFeel:
-      required:
-      - backgroundColor
-      - color
-      type:
-      - object
-      - 'null'
-      properties:
-        backgroundColor:
-          type: string
-        color:
-          type: string
-    SearchPageResponseSearchResult:
-      required:
-      - _links
-      - cqlQuery
-      - limit
-      - results
-      - searchDuration
-      - size
-      - start
-      - totalSize
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchResult'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        totalSize:
-          type: integer
-          format: int32
-        cqlQuery:
-          type: string
-        searchDuration:
-          type: integer
-          format: int32
-        archivedResultCount:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    TopNavigationLookAndFeel:
-      required:
-      - highlightColor
-      type: object
-      properties:
-        color:
-          type:
-          - string
-          - 'null'
-        highlightColor:
-          type: string
-        hoverOrFocus:
+        uris:
           type: object
           properties:
-            backgroundColor:
-              type: string
-            color:
-              type: string
-    ContentLookAndFeel:
-      type: object
-      properties:
-        screen:
-          $ref: '#/components/schemas/ScreenLookAndFeel'
-        container:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
-        header:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
-        body:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
-    OperationCheckResult:
-      required:
-      - operation
-      - targetType
-      type: object
-      properties:
-        operation:
-          type: string
-          description: The operation itself.
-          enum:
-          - administer
-          - archive
-          - clear_permissions
-          - copy
-          - create
-          - create_space
-          - delete
-          - export
-          - move
-          - purge
-          - purge_version
-          - read
-          - restore
-          - restrict_content
-          - update
-          - use
-        targetType:
-          type: string
-          description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
-      description: An operation and the target entity that it applies to, e.g. create page.
-    GroupArray:
-      required:
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Group'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-    Embeddable:
-      type: object
-      additionalProperties: true
-    GenericAccountId:
-      type:
-      - string
-      - 'null'
-      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
-
-        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
-    UserArray:
-      required:
-      - results
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        totalSize:
-          type: integer
-          format: int64
-          default: 0
-          description: 'This property will return total count of the objects before pagination is applied.
-
-            This value is returned if `shouldReturnTotalSize` is set to `true`.'
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    ContentRestriction:
-      required:
-      - _expandable
-      - _links
-      - operation
-      type: object
-      properties:
-        operation:
-          type: string
-          enum:
-          - administer
-          - copy
-          - create
-          - delete
-          - export
-          - move
-          - purge
-          - purge_version
-          - read
-          - restore
-          - update
-          - use
-        restrictions:
-          type: object
-          properties:
-            user:
-              $ref: '#/components/schemas/UserArray'
-            group:
-              $ref: '#/components/schemas/GroupArray'
-            _expandable:
-              type: object
-              properties:
-                user:
+            all:
+              oneOf:
+              - type: array
+                items:
                   type: string
-                group:
+              - type: string
+            css:
+              oneOf:
+              - type: array
+                items:
                   type: string
-        content:
-          $ref: '#/components/schemas/Content'
-        _expandable:
+              - type: string
+            js:
+              oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: string
+        tags:
           type: object
           properties:
-            restrictions:
+            all:
               type: string
-            content:
+            css:
               type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    ContentArray:
-      required:
-      - _links
-      - results
-      - size
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Content'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    HorizontalHeaderLookAndFeel:
-      required:
-      - backgroundColor
-      - primaryNavigation
-      type: object
-      properties:
-        backgroundColor:
+            data:
+              type: string
+            js:
+              type: string
+        metatags:
           type: string
-        button:
-          $ref: '#/components/schemas/ButtonLookAndFeel'
-        primaryNavigation:
-          $ref: '#/components/schemas/TopNavigationLookAndFeel'
-        secondaryNavigation:
-          $ref: '#/components/schemas/NavigationLookAndFeel'
-        search:
-          $ref: '#/components/schemas/SearchFieldLookAndFeel'
-    ContentHistory:
-      required:
-      - latest
-      type:
-      - object
-      - 'null'
-      properties:
-        latest:
-          type: boolean
-        createdBy:
-          $ref: '#/components/schemas/User'
-        ownedBy:
-          $ref: '#/components/schemas/User'
-        lastOwnedBy:
-          $ref: '#/components/schemas/User'
-        createdDate:
-          type: string
-          format: date-time
-        lastUpdated:
-          $ref: '#/components/schemas/Version'
-        previousVersion:
-          $ref: '#/components/schemas/Version'
-        contributors:
-          type: object
-          properties:
-            publishers:
-              $ref: '#/components/schemas/UsersUserKeys'
-        nextVersion:
-          $ref: '#/components/schemas/Version'
-        _expandable:
-          type: object
-          properties:
-            lastUpdated:
-              type: string
-            previousVersion:
-              type: string
-            contributors:
-              type: string
-            nextVersion:
-              type: string
-            ownedBy:
-              type: string
-            lastOwnedBy:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    SpaceDescription:
-      required:
-      - embeddedContent
-      - representation
-      - value
-      type: object
-      additionalProperties: true
-      properties:
-        value:
-          type: string
-        representation:
-          type: string
-          enum:
-          - plain
-          - view
-        embeddedContent:
-          type: array
-          items:
-            type: object
-            properties: {}
-    ScreenLookAndFeel:
-      required:
-      - background
-      type: object
-      properties:
-        background:
-          type: string
-        backgroundAttachment:
-          type:
-          - string
-          - 'null'
-        backgroundBlendMode:
-          type:
-          - string
-          - 'null'
-        backgroundClip:
-          type:
-          - string
-          - 'null'
-        backgroundColor:
-          type:
-          - string
-          - 'null'
-        backgroundImage:
-          type:
-          - string
-          - 'null'
-        backgroundOrigin:
-          type:
-          - string
-          - 'null'
-        backgroundPosition:
-          type:
-          - string
-          - 'null'
-        backgroundRepeat:
-          type:
-          - string
-          - 'null'
-        backgroundSize:
-          type:
-          - string
-          - 'null'
-        layer:
-          type:
-          - object
-          - 'null'
-          properties:
-            width:
-              type: string
-            height:
-              type: string
-        gutterTop:
-          type:
-          - string
-          - 'null'
-        gutterRight:
-          type:
-          - string
-          - 'null'
-        gutterBottom:
-          type:
-          - string
-          - 'null'
-        gutterLeft:
-          type:
-          - string
-          - 'null'
-    ContainerSummary:
-      required:
-      - displayUrl
-      - title
-      type: object
-      properties:
-        title:
-          type: string
-        displayUrl:
-          type: string
-    ContentBody:
-      required:
-      - representation
-      - value
-      type: object
-      properties:
-        value:
-          type: string
-        representation:
-          type: string
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-          - raw
-        embeddedContent:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbeddedContent'
-        webresource:
-          $ref: '#/components/schemas/WebResourceDependencies'
-        mediaToken:
-          type: object
-          properties:
-            collectionIds:
-              type: array
-              items:
-                type: string
-            contentId:
-              type: string
-            expiryDateTime:
-              type: string
-            fileIds:
-              type: array
-              items:
-                type: string
-            token:
-              type: string
-        _expandable:
-          type: object
-          properties:
-            content:
-              type: string
-            embeddedContent:
-              type: string
-            webresource:
-              type: string
-            mediaToken:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    Container:
-      type:
-      - object
-      - 'null'
-      additionalProperties: true
-      description: 'Container for content. This can be either a space (containing a page or blogpost)
-
-        or a page/blog post (containing an attachment or comment)'
-    ContentChildren:
-      type: object
-      additionalProperties: true
-      properties:
-        attachment:
-          $ref: '#/components/schemas/ContentArray'
-        comment:
-          $ref: '#/components/schemas/ContentArray'
-        page:
-          $ref: '#/components/schemas/ContentArray'
         _expandable:
           type: object
           additionalProperties: true
-          properties:
-            attachment:
-              type: string
-            comment:
-              type: string
-            page:
-              type: string
+    Theme:
+      required:
+      - themeKey
+      type: object
+      properties:
+        themeKey:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Icon'
         _links:
           $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
     NavigationLookAndFeel:
       required:
       - color
@@ -2596,209 +2857,6 @@ components:
               type: string
             color:
               type: string
-    ContentMetadata:
-      type: object
-      additionalProperties: true
-      properties:
-        currentuser:
-          type: object
-          properties:
-            favourited:
-              type: object
-              properties:
-                isFavourite:
-                  type: boolean
-                favouritedDate:
-                  type: string
-                  format: date-time
-            lastmodified:
-              type: object
-              properties:
-                version:
-                  $ref: '#/components/schemas/Version'
-                friendlyLastModified:
-                  type: string
-            lastcontributed:
-              type: object
-              properties:
-                status:
-                  type: string
-                when:
-                  type: string
-                  format: date-time
-            viewed:
-              type: object
-              properties:
-                lastSeen:
-                  type: string
-                  format: date-time
-                friendlyLastSeen:
-                  type: string
-            scheduled:
-              type: object
-            _expandable:
-              type: object
-              properties:
-                favourited:
-                  type: string
-                lastmodified:
-                  type: string
-                lastcontributed:
-                  type: string
-                viewed:
-                  type: string
-                scheduled:
-                  type: string
-        properties:
-          $ref: '#/components/schemas/GenericLinks'
-        frontend:
-          type: object
-          additionalProperties: true
-        labels:
-          oneOf:
-          - $ref: '#/components/schemas/LabelArray'
-          - type: array
-            items:
-              $ref: '#/components/schemas/Label'
-      description: Metadata object for page, blogpost, comment content
-    LabelArray:
-      required:
-      - results
-      - size
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    ContainerLookAndFeel:
-      required:
-      - background
-      - backgroundColor
-      - backgroundImage
-      - backgroundSize
-      - borderRadius
-      - padding
-      type:
-      - object
-      - 'null'
-      properties:
-        background:
-          type: string
-        backgroundAttachment:
-          type:
-          - string
-          - 'null'
-        backgroundBlendMode:
-          type:
-          - string
-          - 'null'
-        backgroundClip:
-          type:
-          - string
-          - 'null'
-        backgroundColor:
-          type:
-          - string
-          - 'null'
-        backgroundImage:
-          type:
-          - string
-          - 'null'
-        backgroundOrigin:
-          type:
-          - string
-          - 'null'
-        backgroundPosition:
-          type:
-          - string
-          - 'null'
-        backgroundRepeat:
-          type:
-          - string
-          - 'null'
-        backgroundSize:
-          type:
-          - string
-          - 'null'
-        padding:
-          type: string
-        borderRadius:
-          type: string
-    SearchResult:
-      required:
-      - breadcrumbs
-      - entityType
-      - excerpt
-      - iconCssClass
-      - lastModified
-      - title
-      - url
-      type: object
-      properties:
-        content:
-          $ref: '#/components/schemas/Content'
-        user:
-          $ref: '#/components/schemas/User'
-        space:
-          $ref: '#/components/schemas/Space'
-        title:
-          type: string
-        excerpt:
-          type: string
-        url:
-          type: string
-        resultParentContainer:
-          $ref: '#/components/schemas/ContainerSummary'
-        resultGlobalContainer:
-          $ref: '#/components/schemas/ContainerSummary'
-        breadcrumbs:
-          type: array
-          items:
-            $ref: '#/components/schemas/Breadcrumb'
-        entityType:
-          type: string
-        iconCssClass:
-          type: string
-        lastModified:
-          type: string
-          format: date-time
-        friendlyLastModified:
-          type: string
-        score:
-          type: number
-    Icon:
-      required:
-      - height
-      - isDefault
-      - path
-      - width
-      type:
-      - object
-      - 'null'
-      properties:
-        path:
-          type: string
-        width:
-          type: integer
-          format: int32
-        height:
-          type: integer
-          format: int32
-        isDefault:
-          type: boolean
-      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
     SpaceSettings:
       required:
       - _links
@@ -2837,83 +2895,6 @@ components:
           type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    LookAndFeel:
-      required:
-      - bordersAndDividers
-      - content
-      - header
-      - headings
-      - links
-      - menus
-      type: object
-      properties:
-        headings:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        links:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        menus:
-          $ref: '#/components/schemas/MenusLookAndFeel'
-        header:
-          $ref: '#/components/schemas/HeaderLookAndFeel'
-        horizontalHeader:
-          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
-        content:
-          $ref: '#/components/schemas/ContentLookAndFeel'
-        bordersAndDividers:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        spaceReference:
-          type:
-          - object
-          - 'null'
-    Group:
-      required:
-      - name
-      - type
-      - id
-      type: object
-      properties:
-        type:
-          type: string
-          default: group
-          enum:
-          - group
-        name:
-          type: string
-        id:
-          type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    Label:
-      required:
-      - id
-      - label
-      - name
-      - prefix
-      type: object
-      properties:
-        prefix:
-          type: string
-        name:
-          type: string
-        id:
-          type: string
-        label:
-          type: string
     EmbeddedContent:
       type: object
       additionalProperties: true
@@ -2925,139 +2906,158 @@ components:
           type: string
         entity:
           $ref: '#/components/schemas/Embeddable'
-    HeaderLookAndFeel:
+    Version:
       required:
-      - backgroundColor
-      - button
-      - primaryNavigation
-      - search
-      - secondaryNavigation
-      type: object
+      - minorEdit
+      - number
+      - when
+      type:
+      - object
+      - 'null'
+      additionalProperties: true
       properties:
-        backgroundColor:
-          type: string
-        button:
-          $ref: '#/components/schemas/ButtonLookAndFeel'
-        primaryNavigation:
-          $ref: '#/components/schemas/NavigationLookAndFeel'
-        secondaryNavigation:
-          $ref: '#/components/schemas/NavigationLookAndFeel'
-        search:
-          $ref: '#/components/schemas/SearchFieldLookAndFeel'
-    Theme:
-      required:
-      - themeKey
-      type: object
-      properties:
-        themeKey:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        icon:
-          $ref: '#/components/schemas/Icon'
+        by:
+          $ref: '#/components/schemas/User'
+        when:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        friendlyWhen:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+        number:
+          type: integer
+          format: int32
+          description: Set this to the current version number incremented by one
+        minorEdit:
+          description: 'If `minorEdit` is set to ''true'', no notification email or activity
+
+            stream will be generated for the change.'
+          type: boolean
+        content:
+          $ref: '#/components/schemas/Content'
+        collaborators:
+          $ref: '#/components/schemas/UsersUserKeys'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            collaborators:
+              type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    Space:
+        contentTypeModified:
+          type: boolean
+          description: True if content type is modifed in this version (e.g. page to blog)
+        confRev:
+          type:
+          - string
+          - 'null'
+          description: The revision id provided by confluence to be used as a revision in Synchrony
+        syncRev:
+          type:
+          - string
+          - 'null'
+          description: The revision id provided by Synchrony
+        syncRevSource:
+          type:
+          - string
+          - 'null'
+          description: Source of the synchrony revision
+    User:
       required:
-      - _expandable
-      - _links
-      - key
-      - name
-      - status
       - type
       type:
       - object
       - 'null'
+      additionalProperties: true
       properties:
-        id:
-          type: integer
-          format: int64
-        key:
-          type: string
-        name:
-          type: string
-        icon:
-          $ref: '#/components/schemas/Icon'
-        description:
-          type: object
-          properties:
-            plain:
-              $ref: '#/components/schemas/SpaceDescription'
-            view:
-              $ref: '#/components/schemas/SpaceDescription'
-            _expandable:
-              type: object
-              properties:
-                view:
-                  type: string
-                plain:
-                  type: string
-        homepage:
-          $ref: '#/components/schemas/Content'
         type:
           type: string
-        metadata:
-          type: object
-          properties:
-            labels:
-              $ref: '#/components/schemas/LabelArray'
-            _expandable:
-              type: object
+          enum:
+          - known
+          - unknown
+          - anonymous
+          - user
+        username:
+          $ref: '#/components/schemas/GenericUserName'
+        userKey:
+          $ref: '#/components/schemas/GenericUserKey'
+        accountId:
+          $ref: '#/components/schemas/GenericAccountId'
+        accountType:
+          type: string
+          description: The account type of the user, may return empty string if unavailable. App is if the user is a bot user created on behalf of an Atlassian app.
+          enum:
+          - atlassian
+          - app
+          - ''
+        email:
+          type:
+          - string
+          - 'null'
+          description: The email address of the user. Depending on the user's privacy setting, this may return an empty string.
+        publicName:
+          type: string
+          description: The public name or nickname of the user. Will always contain a value.
+        profilePicture:
+          $ref: '#/components/schemas/Icon'
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The displays name of the user. Depending on the user's privacy setting, this may be the same as publicName.
+        timeZone:
+          type:
+          - string
+          - 'null'
+          description: This displays user time zone. Depending on the user's privacy setting, this may return null.
+        isExternalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
+        externalCollaborator:
+          type: boolean
+          description: Whether the user is an external collaborator user
         operations:
-          type: array
+          type:
+          - array
+          - 'null'
           items:
             $ref: '#/components/schemas/OperationCheckResult'
-        permissions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpacePermission'
-        status:
-          type: string
-        settings:
-          $ref: '#/components/schemas/SpaceSettings'
-        theme:
-          $ref: '#/components/schemas/Theme'
-        lookAndFeel:
-          $ref: '#/components/schemas/LookAndFeel'
-        history:
-          required:
-          - createdDate
-          type: object
-          properties:
-            createdDate:
-              type: string
-              format: date-time
-            createdBy:
-              $ref: '#/components/schemas/User'
+        details:
+          $ref: '#/components/schemas/UserDetails'
+        personalSpace:
+          $ref: '#/components/schemas/Space'
         _expandable:
           type: object
           properties:
-            settings:
-              type: string
-            metadata:
-              type: string
             operations:
               type: string
-            lookAndFeel:
+            details:
               type: string
-            permissions:
-              type: string
-            icon:
-              type: string
-            description:
-              type: string
-            theme:
-              type: string
-            history:
-              type: string
-            homepage:
-              type: string
-            identifiers:
+            personalSpace:
               type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type:
+      - object
+      - 'null'
+      properties:
+        backgroundColor:
+          type: string
+        color:
+          type: string
   securitySchemes:
     basic:
       type: http

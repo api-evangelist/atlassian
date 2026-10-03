@@ -419,10 +419,48 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    HorizontalHeaderLookAndFeel:
+    SystemInfoEntity:
+      required:
+      - cloudId
+      - commitHash
+      type:
+      - object
+      - 'null'
+      properties:
+        cloudId:
+          type: string
+        commitHash:
+          type: string
+        baseUrl:
+          type: string
+        edition:
+          type: string
+        siteTitle:
+          type: string
+        defaultLocale:
+          type: string
+        defaultTimeZone:
+          type: string
+        microsPerimeter:
+          type: string
+    ContentLookAndFeel:
+      type: object
+      properties:
+        screen:
+          $ref: '#/components/schemas/ScreenLookAndFeel'
+        container:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        header:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+        body:
+          $ref: '#/components/schemas/ContainerLookAndFeel'
+    HeaderLookAndFeel:
       required:
       - backgroundColor
+      - button
       - primaryNavigation
+      - search
+      - secondaryNavigation
       type: object
       properties:
         backgroundColor:
@@ -430,11 +468,65 @@ components:
         button:
           $ref: '#/components/schemas/ButtonLookAndFeel'
         primaryNavigation:
-          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+          $ref: '#/components/schemas/NavigationLookAndFeel'
         secondaryNavigation:
           $ref: '#/components/schemas/NavigationLookAndFeel'
         search:
           $ref: '#/components/schemas/SearchFieldLookAndFeel'
+    ContainerLookAndFeel:
+      required:
+      - background
+      - backgroundColor
+      - backgroundImage
+      - backgroundSize
+      - borderRadius
+      - padding
+      type:
+      - object
+      - 'null'
+      properties:
+        background:
+          type: string
+        backgroundAttachment:
+          type:
+          - string
+          - 'null'
+        backgroundBlendMode:
+          type:
+          - string
+          - 'null'
+        backgroundClip:
+          type:
+          - string
+          - 'null'
+        backgroundColor:
+          type:
+          - string
+          - 'null'
+        backgroundImage:
+          type:
+          - string
+          - 'null'
+        backgroundOrigin:
+          type:
+          - string
+          - 'null'
+        backgroundPosition:
+          type:
+          - string
+          - 'null'
+        backgroundRepeat:
+          type:
+          - string
+          - 'null'
+        backgroundSize:
+          type:
+          - string
+          - 'null'
+        padding:
+          type: string
+        borderRadius:
+          type: string
     MenusLookAndFeel:
       required:
       - color
@@ -448,6 +540,92 @@ components:
           properties:
             backgroundColor:
               type: string
+        color:
+          type: string
+    NavigationLookAndFeel:
+      required:
+      - color
+      - hoverOrFocus
+      type:
+      - object
+      - 'null'
+      properties:
+        color:
+          type: string
+        highlightColor:
+          type:
+          - string
+          - 'null'
+        hoverOrFocus:
+          required:
+          - backgroundColor
+          - color
+          type: object
+          properties:
+            backgroundColor:
+              type: string
+            color:
+              type: string
+    LookAndFeel:
+      required:
+      - bordersAndDividers
+      - content
+      - header
+      - headings
+      - links
+      - menus
+      type: object
+      properties:
+        headings:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        links:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        menus:
+          $ref: '#/components/schemas/MenusLookAndFeel'
+        header:
+          $ref: '#/components/schemas/HeaderLookAndFeel'
+        horizontalHeader:
+          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
+        content:
+          $ref: '#/components/schemas/ContentLookAndFeel'
+        bordersAndDividers:
+          required:
+          - color
+          type: object
+          properties:
+            color:
+              type: string
+        spaceReference:
+          type:
+          - object
+          - 'null'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    SearchFieldLookAndFeel:
+      required:
+      - backgroundColor
+      - color
+      type:
+      - object
+      - 'null'
+      properties:
+        backgroundColor:
+          type: string
         color:
           type: string
     LookAndFeelSettings:
@@ -468,6 +646,48 @@ components:
           $ref: '#/components/schemas/LookAndFeel'
         custom:
           $ref: '#/components/schemas/LookAndFeel'
+    LookAndFeelWithLinks:
+      description: Look and feel settings returned after an update.
+      allOf:
+      - $ref: '#/components/schemas/LookAndFeel'
+      - type: object
+        properties:
+          _links:
+            $ref: '#/components/schemas/GenericLinks'
+    LookAndFeelSelection:
+      required:
+      - lookAndFeelType
+      - spaceKey
+      type: object
+      properties:
+        spaceKey:
+          type: string
+          description: 'The key of the space for which the look and feel settings will be
+
+            set.'
+        lookAndFeelType:
+          type: string
+          enum:
+          - global
+          - custom
+          - theme
+      description: Look and feel selection
+    HorizontalHeaderLookAndFeel:
+      required:
+      - backgroundColor
+      - primaryNavigation
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+        button:
+          $ref: '#/components/schemas/ButtonLookAndFeel'
+        primaryNavigation:
+          $ref: '#/components/schemas/TopNavigationLookAndFeel'
+        secondaryNavigation:
+          $ref: '#/components/schemas/NavigationLookAndFeel'
+        search:
+          $ref: '#/components/schemas/SearchFieldLookAndFeel'
     TopNavigationLookAndFeel:
       required:
       - highlightColor
@@ -486,14 +706,6 @@ components:
               type: string
             color:
               type: string
-    LookAndFeelWithLinks:
-      description: Look and feel settings returned after an update.
-      allOf:
-      - $ref: '#/components/schemas/LookAndFeel'
-      - type: object
-        properties:
-          _links:
-            $ref: '#/components/schemas/GenericLinks'
     ScreenLookAndFeel:
       required:
       - background
@@ -562,67 +774,6 @@ components:
           type:
           - string
           - 'null'
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    ContainerLookAndFeel:
-      required:
-      - background
-      - backgroundColor
-      - backgroundImage
-      - backgroundSize
-      - borderRadius
-      - padding
-      type:
-      - object
-      - 'null'
-      properties:
-        background:
-          type: string
-        backgroundAttachment:
-          type:
-          - string
-          - 'null'
-        backgroundBlendMode:
-          type:
-          - string
-          - 'null'
-        backgroundClip:
-          type:
-          - string
-          - 'null'
-        backgroundColor:
-          type:
-          - string
-          - 'null'
-        backgroundImage:
-          type:
-          - string
-          - 'null'
-        backgroundOrigin:
-          type:
-          - string
-          - 'null'
-        backgroundPosition:
-          type:
-          - string
-          - 'null'
-        backgroundRepeat:
-          type:
-          - string
-          - 'null'
-        backgroundSize:
-          type:
-          - string
-          - 'null'
-        padding:
-          type: string
-        borderRadius:
-          type: string
     ButtonLookAndFeel:
       required:
       - backgroundColor
@@ -635,157 +786,6 @@ components:
           type: string
         color:
           type: string
-    LookAndFeelSelection:
-      required:
-      - lookAndFeelType
-      - spaceKey
-      type: object
-      properties:
-        spaceKey:
-          type: string
-          description: 'The key of the space for which the look and feel settings will be
-
-            set.'
-        lookAndFeelType:
-          type: string
-          enum:
-          - global
-          - custom
-          - theme
-      description: Look and feel selection
-    LookAndFeel:
-      required:
-      - bordersAndDividers
-      - content
-      - header
-      - headings
-      - links
-      - menus
-      type: object
-      properties:
-        headings:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        links:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        menus:
-          $ref: '#/components/schemas/MenusLookAndFeel'
-        header:
-          $ref: '#/components/schemas/HeaderLookAndFeel'
-        horizontalHeader:
-          $ref: '#/components/schemas/HorizontalHeaderLookAndFeel'
-        content:
-          $ref: '#/components/schemas/ContentLookAndFeel'
-        bordersAndDividers:
-          required:
-          - color
-          type: object
-          properties:
-            color:
-              type: string
-        spaceReference:
-          type:
-          - object
-          - 'null'
-    SystemInfoEntity:
-      required:
-      - cloudId
-      - commitHash
-      type:
-      - object
-      - 'null'
-      properties:
-        cloudId:
-          type: string
-        commitHash:
-          type: string
-        baseUrl:
-          type: string
-        edition:
-          type: string
-        siteTitle:
-          type: string
-        defaultLocale:
-          type: string
-        defaultTimeZone:
-          type: string
-        microsPerimeter:
-          type: string
-    NavigationLookAndFeel:
-      required:
-      - color
-      - hoverOrFocus
-      type:
-      - object
-      - 'null'
-      properties:
-        color:
-          type: string
-        highlightColor:
-          type:
-          - string
-          - 'null'
-        hoverOrFocus:
-          required:
-          - backgroundColor
-          - color
-          type: object
-          properties:
-            backgroundColor:
-              type: string
-            color:
-              type: string
-    HeaderLookAndFeel:
-      required:
-      - backgroundColor
-      - button
-      - primaryNavigation
-      - search
-      - secondaryNavigation
-      type: object
-      properties:
-        backgroundColor:
-          type: string
-        button:
-          $ref: '#/components/schemas/ButtonLookAndFeel'
-        primaryNavigation:
-          $ref: '#/components/schemas/NavigationLookAndFeel'
-        secondaryNavigation:
-          $ref: '#/components/schemas/NavigationLookAndFeel'
-        search:
-          $ref: '#/components/schemas/SearchFieldLookAndFeel'
-    SearchFieldLookAndFeel:
-      required:
-      - backgroundColor
-      - color
-      type:
-      - object
-      - 'null'
-      properties:
-        backgroundColor:
-          type: string
-        color:
-          type: string
-    ContentLookAndFeel:
-      type: object
-      properties:
-        screen:
-          $ref: '#/components/schemas/ScreenLookAndFeel'
-        container:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
-        header:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
-        body:
-          $ref: '#/components/schemas/ContainerLookAndFeel'
   securitySchemes:
     basicAuth:
       type: http
