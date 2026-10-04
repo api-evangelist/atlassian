@@ -310,6 +310,48 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    WorkflowTransitionRules:
+      additionalProperties: false
+      description: A workflow with transition rules.
+      properties:
+        conditions:
+          description: The list of conditions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        postFunctions:
+          description: The list of post functions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        validators:
+          description: The list of validators within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+      required:
+      - workflowId
+      type: object
+    RuleConfiguration:
+      additionalProperties: false
+      description: A rule configuration.
+      properties:
+        disabled:
+          default: false
+          description: Whether the rule is disabled.
+          type: boolean
+        tag:
+          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
+          maxLength: 255
+          type: string
+        value:
+          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
+          type: string
+      required:
+      - value
+      type: object
     WorkflowTransitionRulesUpdateErrorDetails:
       additionalProperties: false
       description: Details of any errors encountered while updating workflow transition rules for a workflow.
@@ -338,23 +380,17 @@ components:
       - updateErrors
       - workflowId
       type: object
-    ErrorCollection:
+    WorkflowsWithTransitionRulesDetails:
       additionalProperties: false
-      description: Error messages from an operation.
+      description: Details of workflows and their transition rules to delete.
       properties:
-        errorMessages:
-          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+        workflows:
+          description: The list of workflows with transition rules to delete.
           items:
-            type: string
+            $ref: '#/components/schemas/WorkflowTransitionRulesDetails'
           type: array
-        errors:
-          additionalProperties:
-            type: string
-          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
-          type: object
-        status:
-          format: int32
-          type: integer
+      required:
+      - workflows
       type: object
     WorkflowTransitionRulesUpdateErrors:
       additionalProperties: false
@@ -389,30 +425,6 @@ components:
       - configuration
       - id
       - key
-      type: object
-    WorkflowTransitionRulesUpdate:
-      additionalProperties: false
-      description: Details about a workflow configuration update request.
-      properties:
-        workflows:
-          description: The list of workflows with transition rules to update.
-          items:
-            $ref: '#/components/schemas/WorkflowTransitionRules'
-          type: array
-      required:
-      - workflows
-      type: object
-    WorkflowsWithTransitionRulesDetails:
-      additionalProperties: false
-      description: Details of workflows and their transition rules to delete.
-      properties:
-        workflows:
-          description: The list of workflows with transition rules to delete.
-          items:
-            $ref: '#/components/schemas/WorkflowTransitionRulesDetails'
-          type: array
-      required:
-      - workflows
       type: object
     PageBeanWorkflowTransitionRules:
       additionalProperties: false
@@ -454,62 +466,23 @@ components:
           readOnly: true
           type: array
       type: object
-    RuleConfiguration:
+    ErrorCollection:
       additionalProperties: false
-      description: A rule configuration.
+      description: Error messages from an operation.
       properties:
-        disabled:
-          default: false
-          description: Whether the rule is disabled.
-          type: boolean
-        tag:
-          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
-          maxLength: 255
-          type: string
-        value:
-          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
-          type: string
-      required:
-      - value
-      type: object
-    WorkflowTransition:
-      additionalProperties: false
-      description: A workflow transition.
-      properties:
-        id:
-          description: The transition ID.
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
           format: int32
           type: integer
-        name:
-          description: The transition name.
-          type: string
-      required:
-      - id
-      - name
-      type: object
-    WorkflowTransitionRules:
-      additionalProperties: false
-      description: A workflow with transition rules.
-      properties:
-        conditions:
-          description: The list of conditions within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        postFunctions:
-          description: The list of post functions within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        validators:
-          description: The list of validators within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        workflowId:
-          $ref: '#/components/schemas/WorkflowId'
-      required:
-      - workflowId
       type: object
     WorkflowTransitionRulesDetails:
       additionalProperties: false
@@ -527,6 +500,33 @@ components:
       required:
       - workflowId
       - workflowRuleIds
+      type: object
+    WorkflowTransition:
+      additionalProperties: false
+      description: A workflow transition.
+      properties:
+        id:
+          description: The transition ID.
+          format: int32
+          type: integer
+        name:
+          description: The transition name.
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    WorkflowTransitionRulesUpdate:
+      additionalProperties: false
+      description: Details about a workflow configuration update request.
+      properties:
+        workflows:
+          description: The list of workflows with transition rules to update.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          type: array
+      required:
+      - workflows
       type: object
     WorkflowId:
       additionalProperties: false

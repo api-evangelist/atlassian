@@ -724,22 +724,31 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    Scope:
-      additionalProperties: true
-      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+    PermissionSchemes:
+      additionalProperties: false
+      description: List of all permission schemes.
       properties:
-        project:
-          allOf:
-          - $ref: '#/components/schemas/ProjectDetails'
-          description: The project the item has scope in.
+        permissionSchemes:
+          description: Permission schemes list.
+          items:
+            $ref: '#/components/schemas/PermissionScheme'
           readOnly: true
-        type:
-          description: The type of scope.
-          enum:
-          - PROJECT
-          - TEMPLATE
+          type: array
+      type: object
+    PermissionGrants:
+      additionalProperties: false
+      description: List of permission grants.
+      properties:
+        expand:
+          description: Expand options that include additional permission grant details in the response.
           readOnly: true
           type: string
+        permissions:
+          description: Permission grants list.
+          items:
+            $ref: '#/components/schemas/PermissionGrant'
+          readOnly: true
+          type: array
       type: object
     PermissionGrant:
       additionalProperties: true
@@ -783,6 +792,42 @@ components:
       required:
       - type
       type: object
+    PermissionScheme:
+      additionalProperties: true
+      description: Details of a permission scheme.
+      properties:
+        description:
+          description: A description for the permission scheme.
+          type: string
+        expand:
+          description: The expand options available for the permission scheme.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the permission scheme.
+          format: int64
+          readOnly: true
+          type: integer
+        name:
+          description: The name of the permission scheme. Must be unique.
+          type: string
+        permissions:
+          description: The permission scheme to create or update. See [About permission schemes and grants](../api-group-permission-schemes/#about-permission-schemes-and-grants) for more information.
+          items:
+            $ref: '#/components/schemas/PermissionGrant'
+          type: array
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope of the permission scheme.
+        self:
+          description: The URL of the permission scheme.
+          format: uri
+          readOnly: true
+          type: string
+      required:
+      - name
+      type: object
     AvatarUrlsBean:
       additionalProperties: false
       properties:
@@ -803,41 +848,22 @@ components:
           format: uri
           type: string
       type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
       properties:
-        description:
-          description: The name of the project category.
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
           readOnly: true
           type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
-    PermissionGrants:
-      additionalProperties: false
-      description: List of permission grants.
-      properties:
-        expand:
-          description: Expand options that include additional permission grant details in the response.
-          readOnly: true
-          type: string
-        permissions:
-          description: Permission grants list.
-          items:
-            $ref: '#/components/schemas/PermissionGrant'
-          readOnly: true
-          type: array
       type: object
     ProjectDetails:
       additionalProperties: false
@@ -881,52 +907,26 @@ components:
           readOnly: true
           type: boolean
       type: object
-    PermissionSchemes:
+    UpdatedProjectCategory:
       additionalProperties: false
-      description: List of all permission schemes.
-      properties:
-        permissionSchemes:
-          description: Permission schemes list.
-          items:
-            $ref: '#/components/schemas/PermissionScheme'
-          readOnly: true
-          type: array
-      type: object
-    PermissionScheme:
-      additionalProperties: true
-      description: Details of a permission scheme.
+      description: A project category.
       properties:
         description:
-          description: A description for the permission scheme.
-          type: string
-        expand:
-          description: The expand options available for the permission scheme.
+          description: The name of the project category.
           readOnly: true
           type: string
         id:
-          description: The ID of the permission scheme.
-          format: int64
+          description: The ID of the project category.
           readOnly: true
-          type: integer
+          type: string
         name:
-          description: The name of the permission scheme. Must be unique.
-          type: string
-        permissions:
-          description: The permission scheme to create or update. See [About permission schemes and grants](../api-group-permission-schemes/#about-permission-schemes-and-grants) for more information.
-          items:
-            $ref: '#/components/schemas/PermissionGrant'
-          type: array
-        scope:
-          allOf:
-          - $ref: '#/components/schemas/Scope'
-          description: The scope of the permission scheme.
-        self:
-          description: The URL of the permission scheme.
-          format: uri
+          description: The description of the project category.
           readOnly: true
           type: string
-      required:
-      - name
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
       type: object
   securitySchemes:
     OAuth2:

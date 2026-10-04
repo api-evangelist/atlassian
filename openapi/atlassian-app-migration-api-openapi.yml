@@ -198,38 +198,92 @@ paths:
       x-atlassian-connect-scope: NONE
 components:
   schemas:
-    ConnectCustomFieldValues:
-      additionalProperties: false
-      description: Details of updates for a custom field.
+    WorkflowRulesSearch:
+      description: Details of the workflow and its transition rules.
       properties:
-        updateValueList:
-          description: The list of custom field update details.
-          items:
-            $ref: '#/components/schemas/ConnectCustomFieldValue'
-          type: array
-      type: object
-      writeOnly: true
-    WorkflowRulesSearchDetails:
-      description: Details of workflow transition rules.
-      properties:
-        invalidRules:
-          description: List of workflow rule IDs that do not belong to the workflow or can not be found.
+        expand:
+          description: Use expand to include additional information in the response. This parameter accepts `transition` which, for each rule, returns information about the transition the rule is assigned to.
+          example: transition
+          type: string
+        ruleIds:
+          description: The list of workflow rule IDs.
           items:
             description: Workflow rule ID.
             example: 55d44f1d-c859-42e5-9c27-2c5ec3f340b1
             format: uuid
             type: string
-          type: array
-        validRules:
-          description: List of valid workflow transition rules.
-          items:
-            $ref: '#/components/schemas/WorkflowTransitionRules'
+          maxItems: 10
+          minItems: 1
           type: array
         workflowEntityId:
           description: The workflow ID.
           example: a498d711-685d-428d-8c3e-bc03bb450ea7
           format: uuid
           type: string
+      required:
+      - ruleIds
+      - workflowEntityId
+      type: object
+    EntityPropertyDetails:
+      properties:
+        entityId:
+          description: The entity property ID.
+          example: 123
+          type: number
+        key:
+          description: The entity property key.
+          example: mykey
+          type: string
+        value:
+          description: The new value of the entity property.
+          example: newValue
+          type: string
+      required:
+      - entityId
+      - key
+      - value
+      type: object
+    WorkflowTransitionRules:
+      additionalProperties: false
+      description: A workflow with transition rules.
+      properties:
+        conditions:
+          description: The list of conditions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        postFunctions:
+          description: The list of post functions within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        validators:
+          description: The list of validators within the workflow.
+          items:
+            $ref: '#/components/schemas/AppWorkflowTransitionRule'
+          type: array
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+      required:
+      - workflowId
+      type: object
+    RuleConfiguration:
+      additionalProperties: false
+      description: A rule configuration.
+      properties:
+        disabled:
+          default: false
+          description: Whether the rule is disabled.
+          type: boolean
+        tag:
+          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
+          maxLength: 255
+          type: string
+        value:
+          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
+          type: string
+      required:
+      - value
       type: object
     ConnectCustomFieldValue:
       description: A list of custom field details.
@@ -274,32 +328,6 @@ components:
       - issueID
       type: object
       writeOnly: true
-    WorkflowRulesSearch:
-      description: Details of the workflow and its transition rules.
-      properties:
-        expand:
-          description: Use expand to include additional information in the response. This parameter accepts `transition` which, for each rule, returns information about the transition the rule is assigned to.
-          example: transition
-          type: string
-        ruleIds:
-          description: The list of workflow rule IDs.
-          items:
-            description: Workflow rule ID.
-            example: 55d44f1d-c859-42e5-9c27-2c5ec3f340b1
-            format: uuid
-            type: string
-          maxItems: 10
-          minItems: 1
-          type: array
-        workflowEntityId:
-          description: The workflow ID.
-          example: a498d711-685d-428d-8c3e-bc03bb450ea7
-          format: uuid
-          type: string
-      required:
-      - ruleIds
-      - workflowEntityId
-      type: object
     AppWorkflowTransitionRule:
       additionalProperties: false
       description: A workflow transition rule.
@@ -322,43 +350,39 @@ components:
       - id
       - key
       type: object
-    EntityPropertyDetails:
+    WorkflowRulesSearchDetails:
+      description: Details of workflow transition rules.
       properties:
-        entityId:
-          description: The entity property ID.
-          example: 123
-          type: number
-        key:
-          description: The entity property key.
-          example: mykey
+        invalidRules:
+          description: List of workflow rule IDs that do not belong to the workflow or can not be found.
+          items:
+            description: Workflow rule ID.
+            example: 55d44f1d-c859-42e5-9c27-2c5ec3f340b1
+            format: uuid
+            type: string
+          type: array
+        validRules:
+          description: List of valid workflow transition rules.
+          items:
+            $ref: '#/components/schemas/WorkflowTransitionRules'
+          type: array
+        workflowEntityId:
+          description: The workflow ID.
+          example: a498d711-685d-428d-8c3e-bc03bb450ea7
+          format: uuid
           type: string
-        value:
-          description: The new value of the entity property.
-          example: newValue
-          type: string
-      required:
-      - entityId
-      - key
-      - value
       type: object
-    RuleConfiguration:
+    ConnectCustomFieldValues:
       additionalProperties: false
-      description: A rule configuration.
+      description: Details of updates for a custom field.
       properties:
-        disabled:
-          default: false
-          description: Whether the rule is disabled.
-          type: boolean
-        tag:
-          description: A tag used to filter rules in [Get workflow transition rule configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-transition-rules/#api-rest-api-3-workflow-rule-config-get).
-          maxLength: 255
-          type: string
-        value:
-          description: Configuration of the rule, as it is stored by the Connect or the Forge app on the rule configuration page.
-          type: string
-      required:
-      - value
+        updateValueList:
+          description: The list of custom field update details.
+          items:
+            $ref: '#/components/schemas/ConnectCustomFieldValue'
+          type: array
       type: object
+      writeOnly: true
     WorkflowTransition:
       additionalProperties: false
       description: A workflow transition.
@@ -373,30 +397,6 @@ components:
       required:
       - id
       - name
-      type: object
-    WorkflowTransitionRules:
-      additionalProperties: false
-      description: A workflow with transition rules.
-      properties:
-        conditions:
-          description: The list of conditions within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        postFunctions:
-          description: The list of post functions within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        validators:
-          description: The list of validators within the workflow.
-          items:
-            $ref: '#/components/schemas/AppWorkflowTransitionRule'
-          type: array
-        workflowId:
-          $ref: '#/components/schemas/WorkflowId'
-      required:
-      - workflowId
       type: object
     WorkflowId:
       additionalProperties: false

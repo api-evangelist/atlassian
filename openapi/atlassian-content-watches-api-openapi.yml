@@ -887,38 +887,74 @@ paths:
       - app-access-rule-exempt: true
       x-atlassian-connect-scope: WRITE
 components:
-  parameters:
-    userLookupKey:
-      name: key
-      in: query
-      deprecated: true
-      description: 'This parameter is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-      schema:
-        type: string
-    userLookupUsername:
-      name: username
-      in: query
-      deprecated: true
-      description: 'This parameter is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-      schema:
-        type: string
-    userLookupAccountId:
-      name: accountId
-      in: query
-      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
+  schemas:
+    SpaceWatchArray:
+      required:
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpaceWatch'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    SpaceWatch:
+      required:
+      - type
+      - watcher
+      type: object
+      properties:
+        type:
+          type: string
+        watcher:
+          $ref: '#/components/schemas/WatchUser'
+        spaceKey:
+          type: string
+        labelName:
+          type: string
+        prefix:
+          type: string
+    Watch:
+      required:
+      - contentId
+      - type
+      - watcher
+      type: object
+      properties:
+        type:
+          type: string
+        watcher:
+          $ref: '#/components/schemas/WatchUser'
+        contentId:
+          type: integer
+          format: int64
+    UserWatch:
+      required:
+      - watching
+      type: object
+      properties:
+        watching:
+          type: boolean
+    GenericAccountId:
+      type:
+      - string
+      - 'null'
+      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
 
         For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
-      schema:
-        type: string
-  schemas:
     UserDetails:
       type: object
       properties:
@@ -977,45 +1013,9 @@ components:
                 [migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)
 
                 for details.'
-    GenericUserName:
-      type:
-      - string
-      - 'null'
-      description: 'This property is no longer available and will be removed from the documentation soon.
-
-        Use `accountId` instead.
-
-        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    UserWatch:
+    WatchArray:
       required:
-      - watching
-      type: object
-      properties:
-        watching:
-          type: boolean
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    Watch:
-      required:
-      - contentId
-      - type
-      - watcher
-      type: object
-      properties:
-        type:
-          type: string
-        watcher:
-          $ref: '#/components/schemas/WatchUser'
-        contentId:
-          type: integer
-          format: int64
-    SpaceWatchArray:
-      required:
+      - _links
       - limit
       - results
       - size
@@ -1025,7 +1025,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/SpaceWatch'
+            $ref: '#/components/schemas/Watch'
         start:
           type: integer
           format: int32
@@ -1037,6 +1037,43 @@ components:
           format: int32
         _links:
           $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    Icon:
+      required:
+      - height
+      - isDefault
+      - path
+      - width
+      type:
+      - object
+      - 'null'
+      properties:
+        path:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        isDefault:
+          type: boolean
+      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
+    GenericUserKey:
+      type:
+      - string
+      - 'null'
+      description: 'This property is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
     WatchUser:
       required:
       - type
@@ -1093,50 +1130,6 @@ components:
       description: 'This essentially the same as the `User` object, but no `_links` property and
 
         no `_expandable` property (therefore, different required fields).'
-    GenericAccountId:
-      type:
-      - string
-      - 'null'
-      description: 'The account ID of the user, which uniquely identifies the user across all Atlassian products.
-
-        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
-    SpaceWatch:
-      required:
-      - type
-      - watcher
-      type: object
-      properties:
-        type:
-          type: string
-        watcher:
-          $ref: '#/components/schemas/WatchUser'
-        spaceKey:
-          type: string
-        labelName:
-          type: string
-        prefix:
-          type: string
-    Icon:
-      required:
-      - height
-      - isDefault
-      - path
-      - width
-      type:
-      - object
-      - 'null'
-      properties:
-        path:
-          type: string
-        width:
-          type: integer
-          format: int32
-        height:
-          type: integer
-          format: int32
-        isDefault:
-          type: boolean
-      description: This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.
     OperationCheckResult:
       required:
       - operation
@@ -1167,7 +1160,7 @@ components:
           type: string
           description: The space or content type that the operation applies to. Could be one of- - application - page - blogpost - comment - attachment - space
       description: An operation and the target entity that it applies to, e.g. create page.
-    GenericUserKey:
+    GenericUserName:
       type:
       - string
       - 'null'
@@ -1176,30 +1169,37 @@ components:
         Use `accountId` instead.
 
         See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
-    WatchArray:
-      required:
-      - _links
-      - limit
-      - results
-      - size
-      - start
-      type: object
-      properties:
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Watch'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
+  parameters:
+    userLookupUsername:
+      name: username
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
+    userLookupAccountId:
+      name: accountId
+      in: query
+      description: 'The account ID of the user. The accountId uniquely identifies the user across all Atlassian products.
+
+        For example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.'
+      schema:
+        type: string
+    userLookupKey:
+      name: key
+      in: query
+      deprecated: true
+      description: 'This parameter is no longer available and will be removed from the documentation soon.
+
+        Use `accountId` instead.
+
+        See the [deprecation notice](/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/) for details.'
+      schema:
+        type: string
   securitySchemes:
     basicAuth:
       type: http

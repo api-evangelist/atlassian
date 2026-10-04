@@ -95,6 +95,62 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
+    ContentPermissionRequest:
+      required:
+      - operation
+      - subject
+      type: object
+      properties:
+        subject:
+          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
+        operation:
+          type: string
+          description: The content permission operation to check.
+          enum:
+          - read
+          - update
+          - delete
+      description: This object represents the request for the content permission check API.
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
+    PermissionSubjectWithGroupId:
+      required:
+      - identifier
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - user
+          - group
+        identifier:
+          type: string
+          description: 'for `type=user`, identifier should be user''s accountId or `anonymous` for anonymous users
+
+
+            for `type=group`, identifier should be ID of the group'
+      description: The user or group that the permission applies to.
+    Message:
+      required:
+      - args
+      type: object
+      additionalProperties: true
+      properties:
+        translation:
+          type: string
+        args:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
     PermissionCheckResponse:
       required:
       - hasPermission
@@ -128,62 +184,6 @@ components:
         - Anonymous user does not have permission to the space
 
         - Anonymous user does not have permission to the content'
-    ContentPermissionRequest:
-      required:
-      - operation
-      - subject
-      type: object
-      properties:
-        subject:
-          $ref: '#/components/schemas/PermissionSubjectWithGroupId'
-        operation:
-          type: string
-          description: The content permission operation to check.
-          enum:
-          - read
-          - update
-          - delete
-      description: This object represents the request for the content permission check API.
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    Message:
-      required:
-      - args
-      type: object
-      additionalProperties: true
-      properties:
-        translation:
-          type: string
-        args:
-          type: array
-          items:
-            oneOf:
-            - type: string
-            - type: object
-              additionalProperties: true
-    PermissionSubjectWithGroupId:
-      required:
-      - identifier
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - user
-          - group
-        identifier:
-          type: string
-          description: 'for `type=user`, identifier should be user''s accountId or `anonymous` for anonymous users
-
-
-            for `type=group`, identifier should be ID of the group'
-      description: The user or group that the permission applies to.
   securitySchemes:
     basicAuth:
       type: http

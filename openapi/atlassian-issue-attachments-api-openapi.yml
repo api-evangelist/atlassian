@@ -516,161 +516,121 @@ paths:
       x-atlassian-connect-scope: WRITE
 components:
   schemas:
-    UserDetails:
+    ListWrapperCallbackApplicationRole:
       additionalProperties: false
-      description: "User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
-      properties:
-        accountId:
-          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
-          maxLength: 128
-          type: string
-        accountType:
-          description: The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)
-          readOnly: true
-          type: string
-        active:
-          description: Whether the user is active.
-          readOnly: true
-          type: boolean
-        avatarUrls:
-          allOf:
-          - $ref: '#/components/schemas/AvatarUrlsBean'
-          description: The avatars of the user.
-          readOnly: true
-        displayName:
-          description: The display name of the user. Depending on the user’s privacy settings, this may return an alternative value.
-          readOnly: true
-          type: string
-        emailAddress:
-          description: The email address of the user. Depending on the user’s privacy settings, this may be returned as null.
-          readOnly: true
-          type: string
-        key:
-          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          readOnly: true
-          type: string
-        name:
-          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the user.
-          readOnly: true
-          type: string
-        timeZone:
-          description: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null.
-          readOnly: true
-          type: string
       type: object
     ListWrapperCallbackGroupName:
       additionalProperties: false
       type: object
-    ListWrapperCallbackApplicationRole:
-      additionalProperties: false
-      type: object
-    SimpleListWrapperApplicationRole:
+    AvatarUrlsBean:
       additionalProperties: false
       properties:
-        callback:
-          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
-        items:
-          items:
-            $ref: '#/components/schemas/ApplicationRole'
-          type: array
-        max-results:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
-            name: max-results
-        pagingCallback:
-          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
-        size:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
+        16x16:
+          description: The URL of the item's 16x16 pixel avatar.
+          format: uri
+          type: string
+        24x24:
+          description: The URL of the item's 24x24 pixel avatar.
+          format: uri
+          type: string
+        32x32:
+          description: The URL of the item's 32x32 pixel avatar.
+          format: uri
+          type: string
+        48x48:
+          description: The URL of the item's 48x48 pixel avatar.
+          format: uri
+          type: string
       type: object
-      xml:
-        name: list
-    MultipartFile:
+    ApplicationRole:
       additionalProperties: false
+      description: Details of an application role.
       properties:
-        bytes:
+        defaultGroups:
+          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
           items:
-            format: byte
             type: string
           type: array
-        contentType:
-          type: string
-        empty:
+          uniqueItems: true
+        defaultGroupsDetails:
+          description: The groups that are granted default access for this application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        defined:
+          description: Deprecated.
           type: boolean
-        inputStream:
-          type: object
+        groupDetails:
+          description: The groups associated with the application role.
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        groups:
+          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        hasUnlimitedSeats:
+          type: boolean
+        key:
+          description: The key of the application role.
+          type: string
+        name:
+          description: The display name of the application role.
+          type: string
+        numberOfSeats:
+          description: The maximum count of users on your license.
+          format: int32
+          type: integer
+        platform:
+          description: Indicates if the application role belongs to Jira platform (`jira-core`).
+          type: boolean
+        remainingSeats:
+          description: The count of users remaining on your license.
+          format: int32
+          type: integer
+        selectedByDefault:
+          description: Determines whether this application role should be selected by default on user creation.
+          type: boolean
+        userCount:
+          description: The number of users counting against your license.
+          format: int32
+          type: integer
+        userCountDescription:
+          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+          type: string
+      type: object
+    AttachmentSettings:
+      additionalProperties: false
+      description: Details of the instance's attachment settings.
+      properties:
+        enabled:
+          description: Whether the ability to add attachments is enabled.
+          readOnly: true
+          type: boolean
+        uploadLimit:
+          description: The maximum size of attachments permitted, in bytes.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    AttachmentArchiveEntry:
+      additionalProperties: false
+      properties:
+        abbreviatedName:
+          type: string
+        entryIndex:
+          format: int64
+          type: integer
+        mediaType:
+          type: string
         name:
           type: string
-        originalFilename:
-          type: string
-        resource:
-          $ref: '#/components/schemas/Resource'
         size:
           format: int64
           type: integer
       type: object
-    AttachmentMetadata:
-      additionalProperties: false
-      description: Metadata for an issue attachment.
-      properties:
-        author:
-          allOf:
-          - $ref: '#/components/schemas/User'
-          description: Details of the user who attached the file.
-          readOnly: true
-        content:
-          description: The URL of the attachment.
-          readOnly: true
-          type: string
-        created:
-          description: The datetime the attachment was created.
-          format: date-time
-          readOnly: true
-          type: string
-        filename:
-          description: The name of the attachment file.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the attachment.
-          format: int64
-          readOnly: true
-          type: integer
-        mimeType:
-          description: The MIME type of the attachment.
-          readOnly: true
-          type: string
-        properties:
-          additionalProperties:
-            readOnly: true
-          description: Additional properties of the attachment.
-          readOnly: true
-          type: object
-        self:
-          description: The URL of the attachment metadata details.
-          format: uri
-          readOnly: true
-          type: string
-        size:
-          description: The size of the attachment.
-          format: int64
-          readOnly: true
-          type: integer
-        thumbnail:
-          description: The URL of a thumbnail representing the attachment.
-          readOnly: true
-          type: string
-      type: object
-      xml:
-        name: attachment
     AttachmentArchiveMetadataReadable:
       additionalProperties: false
       description: Metadata for an archive (for example a zip) and its contents.
@@ -700,59 +660,59 @@ components:
           readOnly: true
           type: integer
       type: object
-    AttachmentArchiveEntry:
+    SimpleListWrapperApplicationRole:
       additionalProperties: false
       properties:
-        abbreviatedName:
-          type: string
-        entryIndex:
-          format: int64
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
+        items:
+          items:
+            $ref: '#/components/schemas/ApplicationRole'
+          type: array
+        max-results:
+          format: int32
           type: integer
-        mediaType:
-          type: string
-        name:
-          type: string
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackApplicationRole'
         size:
-          format: int64
+          format: int32
           type: integer
+          xml:
+            attribute: true
       type: object
-    AvatarUrlsBean:
+      xml:
+        name: list
+    AttachmentArchiveItemReadable:
       additionalProperties: false
+      description: Metadata for an item in an attachment archive.
       properties:
-        16x16:
-          description: The URL of the item's 16x16 pixel avatar.
-          format: uri
-          type: string
-        24x24:
-          description: The URL of the item's 24x24 pixel avatar.
-          format: uri
-          type: string
-        32x32:
-          description: The URL of the item's 32x32 pixel avatar.
-          format: uri
-          type: string
-        48x48:
-          description: The URL of the item's 48x48 pixel avatar.
-          format: uri
-          type: string
-      type: object
-    GroupName:
-      additionalProperties: false
-      description: Details about a group.
-      properties:
-        groupId:
-          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
-          type:
-          - string
-          - 'null'
-        name:
-          description: The name of group.
-          type: string
-        self:
-          description: The URL for these group details.
-          format: uri
+        index:
+          description: The position of the item within the archive.
+          format: int64
+          readOnly: true
+          type: integer
+        label:
+          description: The label for the archive item.
           readOnly: true
           type: string
+        mediaType:
+          description: The MIME type of the archive item.
+          readOnly: true
+          type: string
+        path:
+          description: The path of the archive item.
+          readOnly: true
+          type: string
+        size:
+          description: The size of the archive item.
+          readOnly: true
+          type: string
+      type: object
+    StreamingResponseBody:
+      additionalProperties: false
       type: object
     Attachment:
       additionalProperties: true
@@ -834,82 +794,95 @@ components:
           format: url
           type: string
       type: object
-    AttachmentSettings:
+    UserDetails:
       additionalProperties: false
-      description: Details of the instance's attachment settings.
+      description: "User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
       properties:
-        enabled:
-          description: Whether the ability to add attachments is enabled.
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
+          type: string
+        accountType:
+          description: The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)
+          readOnly: true
+          type: string
+        active:
+          description: Whether the user is active.
           readOnly: true
           type: boolean
-        uploadLimit:
-          description: The maximum size of attachments permitted, in bytes.
-          format: int64
+        avatarUrls:
+          allOf:
+          - $ref: '#/components/schemas/AvatarUrlsBean'
+          description: The avatars of the user.
           readOnly: true
-          type: integer
-      type: object
-    StreamingResponseBody:
-      additionalProperties: false
-      type: object
-    ApplicationRole:
-      additionalProperties: false
-      description: Details of an application role.
-      properties:
-        defaultGroups:
-          description: The groups that are granted default access for this application role. As a group's name can change, use of `defaultGroupsDetails` is recommended to identify a groups.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        defaultGroupsDetails:
-          description: The groups that are granted default access for this application role.
-          items:
-            $ref: '#/components/schemas/GroupName'
-          type: array
-        defined:
-          description: Deprecated.
-          type: boolean
-        groupDetails:
-          description: The groups associated with the application role.
-          items:
-            $ref: '#/components/schemas/GroupName'
-          type: array
-        groups:
-          description: The groups associated with the application role. As a group's name can change, use of `groupDetails` is recommended to identify a groups.
-          items:
-            type: string
-          type: array
-          uniqueItems: true
-        hasUnlimitedSeats:
-          type: boolean
+        displayName:
+          description: The display name of the user. Depending on the user’s privacy settings, this may return an alternative value.
+          readOnly: true
+          type: string
+        emailAddress:
+          description: The email address of the user. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
+          type: string
         key:
-          description: The key of the application role.
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
           type: string
         name:
-          description: The display name of the application role.
+          description: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
+          readOnly: true
           type: string
-        numberOfSeats:
-          description: The maximum count of users on your license.
-          format: int32
-          type: integer
-        platform:
-          description: Indicates if the application role belongs to Jira platform (`jira-core`).
-          type: boolean
-        remainingSeats:
-          description: The count of users remaining on your license.
-          format: int32
-          type: integer
-        selectedByDefault:
-          description: Determines whether this application role should be selected by default on user creation.
-          type: boolean
-        userCount:
-          description: The number of users counting against your license.
-          format: int32
-          type: integer
-        userCountDescription:
-          description: The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.
+        self:
+          description: The URL of the user.
+          readOnly: true
+          type: string
+        timeZone:
+          description: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null.
+          readOnly: true
           type: string
       type: object
+    GroupName:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type:
+          - string
+          - 'null'
+        name:
+          description: The name of group.
+          type: string
+        self:
+          description: The URL for these group details.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    SimpleListWrapperGroupName:
+      additionalProperties: false
+      properties:
+        callback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        items:
+          items:
+            $ref: '#/components/schemas/GroupName'
+          type: array
+        max-results:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+            name: max-results
+        pagingCallback:
+          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
+        size:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+      type: object
+      xml:
+        name: list
     User:
       additionalProperties: false
       description: "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
@@ -982,57 +955,84 @@ components:
       type: object
       xml:
         name: user
-    AttachmentArchiveItemReadable:
+    AttachmentMetadata:
       additionalProperties: false
-      description: Metadata for an item in an attachment archive.
+      description: Metadata for an issue attachment.
       properties:
-        index:
-          description: The position of the item within the archive.
+        author:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          description: Details of the user who attached the file.
+          readOnly: true
+        content:
+          description: The URL of the attachment.
+          readOnly: true
+          type: string
+        created:
+          description: The datetime the attachment was created.
+          format: date-time
+          readOnly: true
+          type: string
+        filename:
+          description: The name of the attachment file.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the attachment.
           format: int64
           readOnly: true
           type: integer
-        label:
-          description: The label for the archive item.
+        mimeType:
+          description: The MIME type of the attachment.
           readOnly: true
           type: string
-        mediaType:
-          description: The MIME type of the archive item.
+        properties:
+          additionalProperties:
+            readOnly: true
+          description: Additional properties of the attachment.
           readOnly: true
-          type: string
-        path:
-          description: The path of the archive item.
+          type: object
+        self:
+          description: The URL of the attachment metadata details.
+          format: uri
           readOnly: true
           type: string
         size:
-          description: The size of the archive item.
+          description: The size of the attachment.
+          format: int64
+          readOnly: true
+          type: integer
+        thumbnail:
+          description: The URL of a thumbnail representing the attachment.
           readOnly: true
           type: string
-      type: object
-    SimpleListWrapperGroupName:
-      additionalProperties: false
-      properties:
-        callback:
-          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
-        items:
-          items:
-            $ref: '#/components/schemas/GroupName'
-          type: array
-        max-results:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
-            name: max-results
-        pagingCallback:
-          $ref: '#/components/schemas/ListWrapperCallbackGroupName'
-        size:
-          format: int32
-          type: integer
-          xml:
-            attribute: true
       type: object
       xml:
-        name: list
+        name: attachment
+    MultipartFile:
+      additionalProperties: false
+      properties:
+        bytes:
+          items:
+            format: byte
+            type: string
+          type: array
+        contentType:
+          type: string
+        empty:
+          type: boolean
+        inputStream:
+          type: object
+        name:
+          type: string
+        originalFilename:
+          type: string
+        resource:
+          $ref: '#/components/schemas/Resource'
+        size:
+          format: int64
+          type: integer
+      type: object
   securitySchemes:
     OAuth2:
       description: OAuth2 scopes for Jira

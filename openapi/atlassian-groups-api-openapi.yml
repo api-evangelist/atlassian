@@ -644,14 +644,6 @@ paths:
     servers:
     - url: https://your-domain.atlassian.net
 components:
-  parameters:
-    orgId:
-      name: orgId
-      in: path
-      required: true
-      description: The unique identifier of the organization.
-      schema:
-        type: string
   schemas:
     Group:
       type: object
@@ -693,6 +685,25 @@ components:
           example: []
         links:
           $ref: '#/components/schemas/PaginationLinks'
+    PaginationLinks:
+      type: object
+      description: Links for cursor-based pagination.
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link to the current page.
+          example: https://www.example.com
+        next:
+          type: string
+          format: uri
+          description: Link to the next page of results.
+          example: https://www.example.com
+        prev:
+          type: string
+          format: uri
+          description: Link to the previous page of results.
+          example: https://www.example.com
     ErrorResponse:
       type: object
       description: Standard error response.
@@ -718,25 +729,54 @@ components:
                 type: string
                 description: A human-readable description of the error.
           example: []
-    PaginationLinks:
-      type: object
-      description: Links for cursor-based pagination.
+    FoundGroup:
+      additionalProperties: false
+      description: A group found in a search.
       properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type: string
+        html:
+          description: The group name with the matched query string highlighted with the HTML bold tag.
+          type: string
+        labels:
+          items:
+            $ref: '#/components/schemas/GroupLabel'
+          type: array
+        name:
+          description: The name of the group. The name of a group is mutable, to reliably identify a group use ``groupId`.`
+          type: string
+      type: object
+      xml:
+        name: group
+    Group_2:
+      additionalProperties: false
+      properties:
+        expand:
+          description: Expand options that include additional group details in the response.
+          readOnly: true
+          type: string
+          xml:
+            attribute: true
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type:
+          - string
+          - 'null'
+        name:
+          description: The name of group.
+          type: string
         self:
-          type: string
+          description: The URL for these group details.
           format: uri
-          description: Link to the current page.
-          example: https://www.example.com
-        next:
+          readOnly: true
           type: string
-          format: uri
-          description: Link to the next page of results.
-          example: https://www.example.com
-        prev:
-          type: string
-          format: uri
-          description: Link to the previous page of results.
-          example: https://www.example.com
+        users:
+          allOf:
+          - $ref: '#/components/schemas/PagedListUserDetailsApplicationUser'
+          description: A paginated list of the users that are members of the group. A maximum of 50 users is returned in the list, to access additional users append `[start-index:end-index]` to the expand request. For example, to access the next 50 users, use`?expand=users[51:100]`.
+          readOnly: true
+      type: object
     UserDetails:
       additionalProperties: false
       description: "User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
@@ -783,75 +823,54 @@ components:
           readOnly: true
           type: string
       type: object
-    GroupDetails:
+    PageBeanGroupDetails:
       additionalProperties: false
-      description: Details about a group.
+      description: A page of items.
       properties:
-        groupId:
-          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
-          type:
-          - string
-          - 'null'
-        name:
-          description: The name of the group.
-          type: string
-      type: object
-    UpdateUserToGroupBean:
-      additionalProperties: true
-      properties:
-        accountId:
-          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
-          maxLength: 128
-          type: string
-        name:
-          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
-          type: string
-      type: object
-    FoundGroups:
-      additionalProperties: false
-      description: The list of groups found in a search, including header text (Showing X of Y matching groups) and total of matched groups.
-      properties:
-        groups:
-          items:
-            $ref: '#/components/schemas/FoundGroup'
-          type: array
-        header:
-          description: Header text indicating the number of groups in the response and the total number of groups found in the search.
-          type: string
-        total:
-          description: The total number of groups found in the search.
-          format: int32
-          type: integer
-      type: object
-      xml:
-        name: groupsuggestions
-    Group_2:
-      additionalProperties: false
-      properties:
-        expand:
-          description: Expand options that include additional group details in the response.
+        isLast:
+          description: Whether this is the last page.
           readOnly: true
-          type: string
-          xml:
-            attribute: true
-        groupId:
-          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
-          type:
-          - string
-          - 'null'
-        name:
-          description: The name of group.
-          type: string
-        self:
-          description: The URL for these group details.
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
           format: uri
           readOnly: true
           type: string
-        users:
-          allOf:
-          - $ref: '#/components/schemas/PagedListUserDetailsApplicationUser'
-          description: A paginated list of the users that are members of the group. A maximum of 50 users is returned in the list, to access additional users append `[start-index:end-index]` to the expand request. For example, to access the next 50 users, use`?expand=users[51:100]`.
+        self:
+          description: The URL of the page.
+          format: uri
           readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/GroupDetails'
+          readOnly: true
+          type: array
+      type: object
+    AddGroupBean:
+      additionalProperties: true
+      properties:
+        name:
+          description: The name of the group.
+          type: string
+      required:
+      - name
       type: object
     AvatarUrlsBean:
       additionalProperties: false
@@ -873,14 +892,63 @@ components:
           format: uri
           type: string
       type: object
-    AddGroupBean:
-      additionalProperties: true
+    FoundGroups:
+      additionalProperties: false
+      description: The list of groups found in a search, including header text (Showing X of Y matching groups) and total of matched groups.
       properties:
-        name:
-          description: The name of the group.
+        groups:
+          items:
+            $ref: '#/components/schemas/FoundGroup'
+          type: array
+        header:
+          description: Header text indicating the number of groups in the response and the total number of groups found in the search.
           type: string
-      required:
-      - name
+        total:
+          description: The total number of groups found in the search.
+          format: int32
+          type: integer
+      type: object
+      xml:
+        name: groupsuggestions
+    PageBeanUserDetails:
+      additionalProperties: false
+      description: A page of items.
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          readOnly: true
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          readOnly: true
+          type: integer
+        nextPage:
+          description: If there is another page of results, the URL of the next page.
+          format: uri
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the page.
+          format: uri
+          readOnly: true
+          type: string
+        startAt:
+          description: The index of the first item returned.
+          format: int64
+          readOnly: true
+          type: integer
+        total:
+          description: The number of items returned.
+          format: int64
+          readOnly: true
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/UserDetails'
+          readOnly: true
+          type: array
       type: object
     PagedListUserDetailsApplicationUser:
       additionalProperties: false
@@ -924,66 +992,6 @@ components:
             attribute: true
             name: start-index
       type: object
-    PageBeanGroupDetails:
-      additionalProperties: false
-      description: A page of items.
-      properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
-          type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/GroupDetails'
-          readOnly: true
-          type: array
-      type: object
-    FoundGroup:
-      additionalProperties: false
-      description: A group found in a search.
-      properties:
-        groupId:
-          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
-          type: string
-        html:
-          description: The group name with the matched query string highlighted with the HTML bold tag.
-          type: string
-        labels:
-          items:
-            $ref: '#/components/schemas/GroupLabel'
-          type: array
-        name:
-          description: The name of the group. The name of a group is mutable, to reliably identify a group use ``groupId`.`
-          type: string
-      type: object
-      xml:
-        name: group
     GroupLabel:
       additionalProperties: false
       description: A group label.
@@ -1004,46 +1012,38 @@ components:
       type: object
       xml:
         name: grouplabel
-    PageBeanUserDetails:
-      additionalProperties: false
-      description: A page of items.
+    UpdateUserToGroupBean:
+      additionalProperties: true
       properties:
-        isLast:
-          description: Whether this is the last page.
-          readOnly: true
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          readOnly: true
-          type: integer
-        nextPage:
-          description: If there is another page of results, the URL of the next page.
-          format: uri
-          readOnly: true
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
           type: string
-        self:
-          description: The URL of the page.
-          format: uri
-          readOnly: true
+        name:
+          description: This property is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.
           type: string
-        startAt:
-          description: The index of the first item returned.
-          format: int64
-          readOnly: true
-          type: integer
-        total:
-          description: The number of items returned.
-          format: int64
-          readOnly: true
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/UserDetails'
-          readOnly: true
-          type: array
       type: object
+    GroupDetails:
+      additionalProperties: false
+      description: Details about a group.
+      properties:
+        groupId:
+          description: The ID of the group, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.
+          type:
+          - string
+          - 'null'
+        name:
+          description: The name of the group.
+          type: string
+      type: object
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      description: The unique identifier of the organization.
+      schema:
+        type: string
   securitySchemes:
     bearerAuth:
       type: http

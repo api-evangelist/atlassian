@@ -932,39 +932,41 @@ paths:
       x-atlassian-connect-scope: PROJECT_ADMIN
 components:
   schemas:
-    SimpleLink:
+    CustomFieldReplacement:
       additionalProperties: false
-      description: Details about the operations available in this version.
+      description: Details about the replacement for a deleted version.
       properties:
-        href:
-          type: string
-        iconClass:
-          type: string
-        id:
-          type: string
-        label:
-          type: string
-        styleClass:
-          type: string
-        title:
-          type: string
-        weight:
-          format: int32
+        customFieldId:
+          description: The ID of the custom field in which to replace the version number.
+          format: int64
+          type: integer
+        moveTo:
+          description: The version number to use as a replacement for the deleted version.
+          format: int64
           type: integer
       type: object
-      xml:
-        name: link
-    VersionUnresolvedIssuesCount:
+    VersionIssueCounts:
       additionalProperties: false
-      description: Count of a version's unresolved issues.
+      description: Various counts of issues within a version.
       properties:
-        issuesCount:
-          description: Count of issues.
+        customFieldUsage:
+          description: List of custom fields using the version.
+          items:
+            $ref: '#/components/schemas/VersionUsageInCustomField'
+          readOnly: true
+          type: array
+        issueCountWithCustomFieldsShowingVersion:
+          description: Count of issues where a version custom field is set to the version.
           format: int64
           readOnly: true
           type: integer
-        issuesUnresolvedCount:
-          description: Count of unresolved issues.
+        issuesAffectedCount:
+          description: Count of issues where the `affectedVersion` is set to the version.
+          format: int64
+          readOnly: true
+          type: integer
+        issuesFixedCount:
+          description: Count of issues where the `fixVersion` is set to the version.
           format: int64
           readOnly: true
           type: integer
@@ -1016,152 +1018,57 @@ components:
           readOnly: true
           type: array
       type: object
-    VersionIssuesStatus:
-      additionalProperties: true
-      description: Counts of the number of issues in various statuses.
-      properties:
-        done:
-          description: Count of issues with status *done*.
-          format: int64
-          readOnly: true
-          type: integer
-        inProgress:
-          description: Count of issues with status *in progress*.
-          format: int64
-          readOnly: true
-          type: integer
-        toDo:
-          description: Count of issues with status *to do*.
-          format: int64
-          readOnly: true
-          type: integer
-        unmapped:
-          description: Count of issues with a status other than *to do*, *in progress*, and *done*.
-          format: int64
-          readOnly: true
-          type: integer
-      type: object
-    CustomFieldReplacement:
+    VersionRelatedWork:
       additionalProperties: false
-      description: Details about the replacement for a deleted version.
+      description: Associated related work to a version
       properties:
-        customFieldId:
-          description: The ID of the custom field in which to replace the version number.
-          format: int64
-          type: integer
-        moveTo:
-          description: The version number to use as a replacement for the deleted version.
-          format: int64
-          type: integer
-      type: object
-    VersionApprover:
-      additionalProperties: true
-      description: Contains details about a version approver.
-      properties:
-        accountId:
-          description: The Atlassian account ID of the approver.
+        category:
+          description: The category of the related work
           readOnly: true
           type: string
-        declineReason:
-          description: A description of why the user is declining the approval.
-          readOnly: true
-          type: string
-        description:
-          description: A description of what the user is approving within the specified version.
-          readOnly: true
-          type: string
-        status:
-          description: The status of the approval, which can be *PENDING*, *APPROVED*, or *DECLINED*
-          readOnly: true
-          type: string
-      type: object
-    VersionMoveBean:
-      additionalProperties: false
-      properties:
-        after:
-          description: The URL (self link) of the version after which to place the moved version. Cannot be used with `position`.
-          format: uri
-          type: string
-        position:
-          description: An absolute position in which to place the moved version. Cannot be used with `after`.
-          enum:
-          - Earlier
-          - Later
-          - First
-          - Last
-          type: string
-      type: object
-      xml:
-        name: version
-    VersionIssueCounts:
-      additionalProperties: false
-      description: Various counts of issues within a version.
-      properties:
-        customFieldUsage:
-          description: List of custom fields using the version.
-          items:
-            $ref: '#/components/schemas/VersionUsageInCustomField'
-          readOnly: true
-          type: array
-        issueCountWithCustomFieldsShowingVersion:
-          description: Count of issues where a version custom field is set to the version.
+        issueId:
+          description: The title of the related work
           format: int64
           readOnly: true
           type: integer
-        issuesAffectedCount:
-          description: Count of issues where the `affectedVersion` is set to the version.
-          format: int64
+        relatedWorkId:
+          description: The id of the related work. For the native release note related work item, this will be null, and Rest API does not support updating it.
           readOnly: true
-          type: integer
-        issuesFixedCount:
-          description: Count of issues where the `fixVersion` is set to the version.
-          format: int64
+          type: string
+        title:
+          description: The title of the related work
           readOnly: true
-          type: integer
-        self:
-          description: The URL of these count details.
+          type: string
+        url:
+          description: The URL of the related work
           format: uri
           readOnly: true
           type: string
+      required:
+      - category
+      type: object
+    SimpleLink:
+      additionalProperties: false
+      description: Details about the operations available in this version.
+      properties:
+        href:
+          type: string
+        iconClass:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        styleClass:
+          type: string
+        title:
+          type: string
+        weight:
+          format: int32
+          type: integer
       type: object
       xml:
-        name: version
-    VersionUsageInCustomField:
-      additionalProperties: false
-      description: List of custom fields using the version.
-      properties:
-        customFieldId:
-          description: The ID of the custom field.
-          format: int64
-          readOnly: true
-          type: integer
-        fieldName:
-          description: The name of the custom field.
-          readOnly: true
-          type: string
-        issueCountWithVersionInCustomField:
-          description: Count of the issues where the custom field contains the version.
-          format: int64
-          readOnly: true
-          type: integer
-      type: object
-    DeleteAndReplaceVersionBean:
-      additionalProperties: false
-      properties:
-        customFieldReplacementList:
-          description: An array of custom field IDs (`customFieldId`) and version IDs (`moveTo`) to update when the fields contain the deleted version.
-          items:
-            $ref: '#/components/schemas/CustomFieldReplacement'
-          type: array
-        moveAffectedIssuesTo:
-          description: The ID of the version to update `affectedVersion` to when the field contains the deleted version.
-          format: int64
-          type: integer
-        moveFixIssuesTo:
-          description: The ID of the version to update `fixVersion` to when the field contains the deleted version.
-          format: int64
-          type: integer
-      type: object
+        name: link
     Version:
       additionalProperties: false
       description: Details about a project version.
@@ -1247,34 +1154,127 @@ components:
       type: object
       xml:
         name: version
-    VersionRelatedWork:
+    DeleteAndReplaceVersionBean:
       additionalProperties: false
-      description: Associated related work to a version
       properties:
-        category:
-          description: The category of the related work
-          readOnly: true
+        customFieldReplacementList:
+          description: An array of custom field IDs (`customFieldId`) and version IDs (`moveTo`) to update when the fields contain the deleted version.
+          items:
+            $ref: '#/components/schemas/CustomFieldReplacement'
+          type: array
+        moveAffectedIssuesTo:
+          description: The ID of the version to update `affectedVersion` to when the field contains the deleted version.
+          format: int64
+          type: integer
+        moveFixIssuesTo:
+          description: The ID of the version to update `fixVersion` to when the field contains the deleted version.
+          format: int64
+          type: integer
+      type: object
+    VersionMoveBean:
+      additionalProperties: false
+      properties:
+        after:
+          description: The URL (self link) of the version after which to place the moved version. Cannot be used with `position`.
+          format: uri
           type: string
-        issueId:
-          description: The title of the related work
+        position:
+          description: An absolute position in which to place the moved version. Cannot be used with `after`.
+          enum:
+          - Earlier
+          - Later
+          - First
+          - Last
+          type: string
+      type: object
+      xml:
+        name: version
+    VersionUsageInCustomField:
+      additionalProperties: false
+      description: List of custom fields using the version.
+      properties:
+        customFieldId:
+          description: The ID of the custom field.
           format: int64
           readOnly: true
           type: integer
-        relatedWorkId:
-          description: The id of the related work. For the native release note related work item, this will be null, and Rest API does not support updating it.
+        fieldName:
+          description: The name of the custom field.
           readOnly: true
           type: string
-        title:
-          description: The title of the related work
+        issueCountWithVersionInCustomField:
+          description: Count of the issues where the custom field contains the version.
+          format: int64
           readOnly: true
-          type: string
-        url:
-          description: The URL of the related work
+          type: integer
+      type: object
+    VersionIssuesStatus:
+      additionalProperties: true
+      description: Counts of the number of issues in various statuses.
+      properties:
+        done:
+          description: Count of issues with status *done*.
+          format: int64
+          readOnly: true
+          type: integer
+        inProgress:
+          description: Count of issues with status *in progress*.
+          format: int64
+          readOnly: true
+          type: integer
+        toDo:
+          description: Count of issues with status *to do*.
+          format: int64
+          readOnly: true
+          type: integer
+        unmapped:
+          description: Count of issues with a status other than *to do*, *in progress*, and *done*.
+          format: int64
+          readOnly: true
+          type: integer
+      type: object
+    VersionUnresolvedIssuesCount:
+      additionalProperties: false
+      description: Count of a version's unresolved issues.
+      properties:
+        issuesCount:
+          description: Count of issues.
+          format: int64
+          readOnly: true
+          type: integer
+        issuesUnresolvedCount:
+          description: Count of unresolved issues.
+          format: int64
+          readOnly: true
+          type: integer
+        self:
+          description: The URL of these count details.
           format: uri
           readOnly: true
           type: string
-      required:
-      - category
+      type: object
+      xml:
+        name: version
+    VersionApprover:
+      additionalProperties: true
+      description: Contains details about a version approver.
+      properties:
+        accountId:
+          description: The Atlassian account ID of the approver.
+          readOnly: true
+          type: string
+        declineReason:
+          description: A description of why the user is declining the approval.
+          readOnly: true
+          type: string
+        description:
+          description: A description of what the user is approving within the specified version.
+          readOnly: true
+          type: string
+        status:
+          description: The status of the approval, which can be *PENDING*, *APPROVED*, or *DECLINED*
+          readOnly: true
+          type: string
       type: object
   securitySchemes:
     OAuth2:

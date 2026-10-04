@@ -555,6 +555,28 @@ paths:
       x-atlassian-connect-scope: WRITE
 components:
   schemas:
+    ContentPropertyCreate:
+      required:
+      - key
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        key:
+          maxLength: 255
+          type: string
+          description: The key of the new property.
+        value:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+          - type: object
+            additionalProperties: true
+            properties: {}
+          - type: string
+          description: The value of the content property. This can be empty or a complex object.
     ContentPropertyArray:
       required:
       - _links
@@ -579,24 +601,19 @@ components:
           format: int32
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    ContentPropertyCreate:
+    ContentProperty:
       required:
+      - _links
+      - id
       - key
       - value
       type: object
       additionalProperties: true
       properties:
-        key:
-          maxLength: 255
+        id:
           type: string
-          description: The key of the new property.
+        key:
+          type: string
         value:
           oneOf:
           - type: array
@@ -608,6 +625,44 @@ components:
             properties: {}
           - type: string
           description: The value of the content property. This can be empty or a complex object.
+        version:
+          required:
+          - message
+          - minorEdit
+          - number
+          - when
+          type: object
+          additionalProperties: true
+          properties:
+            when:
+              type: string
+              format: date-time
+            message:
+              type: string
+            number:
+              type: integer
+              format: int32
+            minorEdit:
+              type: boolean
+            contentTypeModified:
+              type: boolean
+              description: True if content type is modifed in this version (e.g. page to blog)
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+        _expandable:
+          type: object
+          properties:
+            content:
+              type: string
+            additionalProperties:
+              type: string
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
     ContentPropertyCreateNoKey:
       required:
       - value
@@ -670,61 +725,6 @@ components:
                 stream will be generated for the change.'
               default: true
           description: The version number of the property.
-    ContentProperty:
-      required:
-      - _links
-      - id
-      - key
-      - value
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type: string
-        key:
-          type: string
-        value:
-          oneOf:
-          - type: array
-            items:
-              type: string
-          - type: boolean
-          - type: object
-            additionalProperties: true
-            properties: {}
-          - type: string
-          description: The value of the content property. This can be empty or a complex object.
-        version:
-          required:
-          - message
-          - minorEdit
-          - number
-          - when
-          type: object
-          additionalProperties: true
-          properties:
-            when:
-              type: string
-              format: date-time
-            message:
-              type: string
-            number:
-              type: integer
-              format: int32
-            minorEdit:
-              type: boolean
-            contentTypeModified:
-              type: boolean
-              description: True if content type is modifed in this version (e.g. page to blog)
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-        _expandable:
-          type: object
-          properties:
-            content:
-              type: string
-            additionalProperties:
-              type: string
   securitySchemes:
     basicAuth:
       type: http

@@ -518,6 +518,20 @@ paths:
       x-atlassian-connect-scope: ADMIN
 components:
   schemas:
+    IssueTypeUpdateBean:
+      additionalProperties: false
+      properties:
+        avatarId:
+          description: The ID of an issue type avatar.
+          format: int64
+          type: integer
+        description:
+          description: The description of the issue type.
+          type: string
+        name:
+          description: The unique name for the issue type. The maximum length is 60 characters.
+          type: string
+      type: object
     IssueTypeCreateBean:
       additionalProperties: false
       properties:
@@ -543,22 +557,43 @@ components:
       required:
       - name
       type: object
-    Scope:
+    Avatar:
       additionalProperties: true
-      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      description: Details of an avatar.
       properties:
-        project:
-          allOf:
-          - $ref: '#/components/schemas/ProjectDetails'
-          description: The project the item has scope in.
-          readOnly: true
-        type:
-          description: The type of scope.
-          enum:
-          - PROJECT
-          - TEMPLATE
+        fileName:
+          description: The file name of the avatar icon. Returned for system avatars.
           readOnly: true
           type: string
+        id:
+          description: The ID of the avatar.
+          type: string
+        isDeletable:
+          description: Whether the avatar can be deleted.
+          readOnly: true
+          type: boolean
+        isSelected:
+          description: Whether the avatar is used in Jira. For example, shown as a project's avatar.
+          readOnly: true
+          type: boolean
+        isSystemAvatar:
+          description: Whether the avatar is a system avatar.
+          readOnly: true
+          type: boolean
+        owner:
+          description: The owner of the avatar. For a system avatar the owner is null (and nothing is returned). For non-system avatars this is the appropriate identifier, such as the ID for a project or the account ID for a user.
+          readOnly: true
+          type: string
+        urls:
+          additionalProperties:
+            format: uri
+            readOnly: true
+            type: string
+          description: The list of avatar icon URLs.
+          readOnly: true
+          type: object
+      required:
+      - id
       type: object
     IssueTypeDetails:
       additionalProperties: false
@@ -609,41 +644,6 @@ components:
           readOnly: true
           type: boolean
       type: object
-    IssueTypeUpdateBean:
-      additionalProperties: false
-      properties:
-        avatarId:
-          description: The ID of an issue type avatar.
-          format: int64
-          type: integer
-        description:
-          description: The description of the issue type.
-          type: string
-        name:
-          description: The unique name for the issue type. The maximum length is 60 characters.
-          type: string
-      type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
-      properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
     AvatarUrlsBean:
       additionalProperties: false
       properties:
@@ -664,43 +664,22 @@ components:
           format: uri
           type: string
       type: object
-    Avatar:
+    Scope:
       additionalProperties: true
-      description: Details of an avatar.
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
       properties:
-        fileName:
-          description: The file name of the avatar icon. Returned for system avatars.
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
           readOnly: true
           type: string
-        id:
-          description: The ID of the avatar.
-          type: string
-        isDeletable:
-          description: Whether the avatar can be deleted.
-          readOnly: true
-          type: boolean
-        isSelected:
-          description: Whether the avatar is used in Jira. For example, shown as a project's avatar.
-          readOnly: true
-          type: boolean
-        isSystemAvatar:
-          description: Whether the avatar is a system avatar.
-          readOnly: true
-          type: boolean
-        owner:
-          description: The owner of the avatar. For a system avatar the owner is null (and nothing is returned). For non-system avatars this is the appropriate identifier, such as the ID for a project or the account ID for a user.
-          readOnly: true
-          type: string
-        urls:
-          additionalProperties:
-            format: uri
-            readOnly: true
-            type: string
-          description: The list of avatar icon URLs.
-          readOnly: true
-          type: object
-      required:
-      - id
       type: object
     ProjectDetails:
       additionalProperties: false
@@ -743,6 +722,27 @@ components:
           description: Whether or not the project is simplified.
           readOnly: true
           type: boolean
+      type: object
+    UpdatedProjectCategory:
+      additionalProperties: false
+      description: A project category.
+      properties:
+        description:
+          description: The name of the project category.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the project category.
+          readOnly: true
+          type: string
+        name:
+          description: The description of the project category.
+          readOnly: true
+          type: string
+        self:
+          description: The URL of the project category.
+          readOnly: true
+          type: string
       type: object
   securitySchemes:
     OAuth2:

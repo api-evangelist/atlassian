@@ -426,6 +426,34 @@ paths:
       x-atlassian-connect-scope: DELETE
 components:
   schemas:
+    ContentBodyCreate:
+      required:
+      - representation
+      - value
+      type: object
+      additionalProperties: true
+      properties:
+        value:
+          type: string
+          description: The body of the content in the relevant format.
+        representation:
+          type: string
+          description: 'The content format type. Set the value of this property to
+
+            the name of the format being used, e.g. ''storage''.'
+          enum:
+          - view
+          - export_view
+          - styled_view
+          - storage
+          - editor
+          - editor2
+          - anonymous_export_view
+          - wiki
+          - atlas_doc_format
+          - plain
+          - raw
+      description: This object is used when creating or updating content.
     Embeddable:
       type: object
       additionalProperties: true
@@ -469,6 +497,53 @@ components:
         _expandable:
           type: object
           additionalProperties: true
+    Label:
+      required:
+      - id
+      - label
+      - name
+      - prefix
+      type: object
+      properties:
+        prefix:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+    BlueprintTemplateArray:
+      required:
+      - _links
+      - limit
+      - results
+      - size
+      - start
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintTemplate'
+        start:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    GenericLinks:
+      type: object
+      additionalProperties:
+        oneOf:
+        - type: object
+          additionalProperties: true
+        - type: string
     ContentTemplateCreate:
       required:
       - body
@@ -510,186 +585,27 @@ components:
 
             template.'
       description: This object is used to create content templates.
-    ContentBodyCreate:
-      required:
-      - representation
-      - value
-      type: object
-      additionalProperties: true
-      properties:
-        value:
-          type: string
-          description: The body of the content in the relevant format.
-        representation:
-          type: string
-          description: 'The content format type. Set the value of this property to
-
-            the name of the format being used, e.g. ''storage''.'
-          enum:
-          - view
-          - export_view
-          - styled_view
-          - storage
-          - editor
-          - editor2
-          - anonymous_export_view
-          - wiki
-          - atlas_doc_format
-          - plain
-          - raw
-      description: This object is used when creating or updating content.
-    ContentTemplateUpdate:
-      required:
-      - body
-      - name
-      - templateId
-      - templateType
-      type: object
-      additionalProperties: true
-      properties:
-        templateId:
-          type: string
-          description: The ID of the template being updated.
-        name:
-          type: string
-          description: 'The name of the template. Set to the current `name` if this field is
-
-            not being updated.'
-        templateType:
-          type: string
-          description: The type of the template. Set to `page`.
-          enum:
-          - page
-        body:
-          $ref: '#/components/schemas/ContentTemplateBodyCreate'
-        description:
-          maxLength: 100
-          type: string
-          description: A description of the template.
-        labels:
-          type: array
-          description: Labels for the template.
-          items:
-            $ref: '#/components/schemas/Label'
-        space:
-          required:
-          - key
-          type:
-          - object
-          - 'null'
-          additionalProperties: true
-          properties:
-            key:
-              type: string
-          description: 'The key for the space of the template. Required if the template is a
-
-            space template. Set this to the current `space.key`.'
-      description: This object is used to update content templates.
-    BlueprintTemplate:
-      required:
-      - _links
-      - description
-      - labels
-      - name
-      - originalTemplate
-      - referencingBlueprint
-      - templateId
-      - templateType
-      type: object
-      properties:
-        templateId:
-          type: string
-        originalTemplate:
-          required:
-          - moduleKey
-          - pluginKey
-          type: object
-          properties:
-            pluginKey:
-              type: string
-            moduleKey:
-              type: string
-        referencingBlueprint:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        space:
-          type: object
-          additionalProperties: true
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        templateType:
-          type: string
-        editorVersion:
-          type: string
-        body:
-          $ref: '#/components/schemas/ContentTemplateBody'
-        _expandable:
-          type: object
-          properties:
-            body:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
-    GenericLinks:
-      type: object
-      additionalProperties:
-        oneOf:
-        - type: object
-          additionalProperties: true
-        - type: string
-    Label:
-      required:
-      - id
-      - label
-      - name
-      - prefix
-      type: object
-      properties:
-        prefix:
-          type: string
-        name:
-          type: string
-        id:
-          type: string
-        label:
-          type: string
-    EmbeddedContent:
-      type: object
-      additionalProperties: true
-      properties:
-        entityId:
-          type: integer
-          format: int64
-        entityType:
-          type: string
-        entity:
-          $ref: '#/components/schemas/Embeddable'
-    ContentTemplateBodyCreate:
+    ContentTemplateBody:
       type: object
       properties:
         view:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         export_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         styled_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         storage:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         editor:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         editor2:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         wiki:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         atlas_doc_format:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
         anonymous_export_view:
-          $ref: '#/components/schemas/ContentBodyCreate'
+          $ref: '#/components/schemas/ContentBody'
       description: 'The body of the new content. Does not apply to attachments.
 
         Only one body format should be specified as the property for
@@ -702,51 +618,6 @@ components:
         the same as `export_view` format but only content viewable by an anonymous
 
         user is included.'
-    ContentTemplate:
-      required:
-      - _links
-      - description
-      - labels
-      - name
-      - templateId
-      - templateType
-      type: object
-      properties:
-        templateId:
-          type: string
-        originalTemplate:
-          type: object
-          properties:
-            pluginKey:
-              type: string
-            moduleKey:
-              type: string
-        referencingBlueprint:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        space:
-          type: object
-          additionalProperties: true
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        templateType:
-          type: string
-        editorVersion:
-          type: string
-        body:
-          $ref: '#/components/schemas/ContentTemplateBody'
-        _expandable:
-          type: object
-          properties:
-            body:
-              type: string
-        _links:
-          $ref: '#/components/schemas/GenericLinks'
     ContentBody:
       required:
       - representation
@@ -804,63 +675,62 @@ components:
               type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    BlueprintTemplateArray:
+    ContentTemplate:
       required:
       - _links
-      - limit
-      - results
-      - size
-      - start
+      - description
+      - labels
+      - name
+      - templateId
+      - templateType
       type: object
       properties:
-        results:
+        templateId:
+          type: string
+        originalTemplate:
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
           type: array
           items:
-            $ref: '#/components/schemas/BlueprintTemplate'
-        start:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
-    ContentTemplateBody:
+    EmbeddedContent:
       type: object
+      additionalProperties: true
       properties:
-        view:
-          $ref: '#/components/schemas/ContentBody'
-        export_view:
-          $ref: '#/components/schemas/ContentBody'
-        styled_view:
-          $ref: '#/components/schemas/ContentBody'
-        storage:
-          $ref: '#/components/schemas/ContentBody'
-        editor:
-          $ref: '#/components/schemas/ContentBody'
-        editor2:
-          $ref: '#/components/schemas/ContentBody'
-        wiki:
-          $ref: '#/components/schemas/ContentBody'
-        atlas_doc_format:
-          $ref: '#/components/schemas/ContentBody'
-        anonymous_export_view:
-          $ref: '#/components/schemas/ContentBody'
-      description: 'The body of the new content. Does not apply to attachments.
-
-        Only one body format should be specified as the property for
-
-        this object, e.g. `storage`.
-
-
-        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
-
-        the same as `export_view` format but only content viewable by an anonymous
-
-        user is included.'
+        entityId:
+          type: integer
+          format: int64
+        entityType:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Embeddable'
     WebResourceDependencies:
       type: object
       properties:
@@ -956,6 +826,136 @@ components:
         size:
           type: integer
           format: int32
+        _links:
+          $ref: '#/components/schemas/GenericLinks'
+    ContentTemplateUpdate:
+      required:
+      - body
+      - name
+      - templateId
+      - templateType
+      type: object
+      additionalProperties: true
+      properties:
+        templateId:
+          type: string
+          description: The ID of the template being updated.
+        name:
+          type: string
+          description: 'The name of the template. Set to the current `name` if this field is
+
+            not being updated.'
+        templateType:
+          type: string
+          description: The type of the template. Set to `page`.
+          enum:
+          - page
+        body:
+          $ref: '#/components/schemas/ContentTemplateBodyCreate'
+        description:
+          maxLength: 100
+          type: string
+          description: A description of the template.
+        labels:
+          type: array
+          description: Labels for the template.
+          items:
+            $ref: '#/components/schemas/Label'
+        space:
+          required:
+          - key
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          properties:
+            key:
+              type: string
+          description: 'The key for the space of the template. Required if the template is a
+
+            space template. Set this to the current `space.key`.'
+      description: This object is used to update content templates.
+    ContentTemplateBodyCreate:
+      type: object
+      properties:
+        view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        styled_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        storage:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        editor2:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        wiki:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        atlas_doc_format:
+          $ref: '#/components/schemas/ContentBodyCreate'
+        anonymous_export_view:
+          $ref: '#/components/schemas/ContentBodyCreate'
+      description: 'The body of the new content. Does not apply to attachments.
+
+        Only one body format should be specified as the property for
+
+        this object, e.g. `storage`.
+
+
+        Note, `editor2` format is used by Atlassian only. `anonymous_export_view` is
+
+        the same as `export_view` format but only content viewable by an anonymous
+
+        user is included.'
+    BlueprintTemplate:
+      required:
+      - _links
+      - description
+      - labels
+      - name
+      - originalTemplate
+      - referencingBlueprint
+      - templateId
+      - templateType
+      type: object
+      properties:
+        templateId:
+          type: string
+        originalTemplate:
+          required:
+          - moduleKey
+          - pluginKey
+          type: object
+          properties:
+            pluginKey:
+              type: string
+            moduleKey:
+              type: string
+        referencingBlueprint:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        space:
+          type: object
+          additionalProperties: true
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        templateType:
+          type: string
+        editorVersion:
+          type: string
+        body:
+          $ref: '#/components/schemas/ContentTemplateBody'
+        _expandable:
+          type: object
+          properties:
+            body:
+              type: string
         _links:
           $ref: '#/components/schemas/GenericLinks'
   securitySchemes:

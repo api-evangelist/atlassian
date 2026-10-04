@@ -342,6 +342,139 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
+    StatusCreate:
+      additionalProperties: false
+      description: Details of the status being created.
+      properties:
+        description:
+          description: The description of the status.
+          type: string
+        name:
+          description: The name of the status.
+          maxLength: 255
+          type: string
+        statusCategory:
+          description: The category of the status.
+          enum:
+          - TODO
+          - IN_PROGRESS
+          - DONE
+          type: string
+      required:
+      - name
+      - statusCategory
+      type: object
+    WorkflowUsages:
+      additionalProperties: false
+      description: The workflows that use this status. Only available if the `workflowUsages` expand is requested.
+      properties:
+        workflowId:
+          description: Workflow ID.
+          type: string
+        workflowName:
+          description: Workflow name.
+          type: string
+      type: object
+    ProjectId:
+      additionalProperties: false
+      description: Project ID details.
+      properties:
+        id:
+          description: The ID of the project.
+          type: string
+      required:
+      - id
+      type:
+      - object
+      - 'null'
+    StatusUpdate:
+      additionalProperties: true
+      description: Details of the status being updated.
+      properties:
+        description:
+          description: The description of the status.
+          type: string
+        id:
+          description: The ID of the status.
+          type: string
+        name:
+          description: The name of the status.
+          type: string
+        statusCategory:
+          description: The category of the status.
+          enum:
+          - TODO
+          - IN_PROGRESS
+          - DONE
+          type: string
+      required:
+      - id
+      - name
+      - statusCategory
+      type: object
+    PageOfStatuses:
+      additionalProperties: false
+      properties:
+        isLast:
+          description: Whether this is the last page.
+          type: boolean
+        maxResults:
+          description: The maximum number of items that could be returned.
+          format: int32
+          type: integer
+        nextPage:
+          description: The URL of the next page of results, if any.
+          type: string
+        self:
+          description: The URL of this page.
+          type: string
+        startAt:
+          description: The index of the first item returned on the page.
+          format: int64
+          type: integer
+        total:
+          description: Number of items that satisfy the search.
+          format: int64
+          type: integer
+        values:
+          description: The list of items.
+          items:
+            $ref: '#/components/schemas/JiraStatus'
+          type: array
+      type: object
+    ProjectIssueTypes:
+      additionalProperties: false
+      description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
+      properties:
+        issueTypes:
+          description: IDs of the issue types
+          items:
+            description: IDs of the issue types
+            type:
+            - string
+            - 'null'
+          type:
+          - array
+          - 'null'
+          uniqueItems: true
+        project:
+          $ref: '#/components/schemas/ProjectId'
+      type: object
+    StatusCreateRequest:
+      additionalProperties: false
+      description: Details of the statuses being created and their scope.
+      properties:
+        scope:
+          $ref: '#/components/schemas/StatusScope'
+        statuses:
+          description: Details of the statuses being created.
+          items:
+            $ref: '#/components/schemas/StatusCreate'
+          type: array
+      required:
+      - scope
+      - statuses
+      type: object
     JiraStatus:
       additionalProperties: false
       description: Details of a status.
@@ -377,96 +510,17 @@ components:
           type: array
           uniqueItems: true
       type: object
-    StatusUpdate:
-      additionalProperties: true
-      description: Details of the status being updated.
-      properties:
-        description:
-          description: The description of the status.
-          type: string
-        id:
-          description: The ID of the status.
-          type: string
-        name:
-          description: The name of the status.
-          type: string
-        statusCategory:
-          description: The category of the status.
-          enum:
-          - TODO
-          - IN_PROGRESS
-          - DONE
-          type: string
-      required:
-      - id
-      - name
-      - statusCategory
-      type: object
-    WorkflowUsages:
+    StatusUpdateRequest:
       additionalProperties: false
-      description: The workflows that use this status. Only available if the `workflowUsages` expand is requested.
+      description: The list of statuses that will be updated.
       properties:
-        workflowId:
-          description: Workflow ID.
-          type: string
-        workflowName:
-          description: Workflow name.
-          type: string
-      type: object
-    StatusCreateRequest:
-      additionalProperties: false
-      description: Details of the statuses being created and their scope.
-      properties:
-        scope:
-          $ref: '#/components/schemas/StatusScope'
         statuses:
-          description: Details of the statuses being created.
+          description: The list of statuses that will be updated.
           items:
-            $ref: '#/components/schemas/StatusCreate'
+            $ref: '#/components/schemas/StatusUpdate'
           type: array
       required:
-      - scope
       - statuses
-      type: object
-    ProjectIssueTypes:
-      additionalProperties: false
-      description: Use the optional `workflows.usages` expand to get additional information about the projects and issue types associated with the requested workflows.
-      properties:
-        issueTypes:
-          description: IDs of the issue types
-          items:
-            description: IDs of the issue types
-            type:
-            - string
-            - 'null'
-          type:
-          - array
-          - 'null'
-          uniqueItems: true
-        project:
-          $ref: '#/components/schemas/ProjectId'
-      type: object
-    StatusCreate:
-      additionalProperties: false
-      description: Details of the status being created.
-      properties:
-        description:
-          description: The description of the status.
-          type: string
-        name:
-          description: The name of the status.
-          maxLength: 255
-          type: string
-        statusCategory:
-          description: The category of the status.
-          enum:
-          - TODO
-          - IN_PROGRESS
-          - DONE
-          type: string
-      required:
-      - name
-      - statusCategory
       type: object
     StatusScope:
       additionalProperties: false
@@ -482,60 +536,6 @@ components:
           type: string
       required:
       - type
-      type: object
-    PageOfStatuses:
-      additionalProperties: false
-      properties:
-        isLast:
-          description: Whether this is the last page.
-          type: boolean
-        maxResults:
-          description: The maximum number of items that could be returned.
-          format: int32
-          type: integer
-        nextPage:
-          description: The URL of the next page of results, if any.
-          type: string
-        self:
-          description: The URL of this page.
-          type: string
-        startAt:
-          description: The index of the first item returned on the page.
-          format: int64
-          type: integer
-        total:
-          description: Number of items that satisfy the search.
-          format: int64
-          type: integer
-        values:
-          description: The list of items.
-          items:
-            $ref: '#/components/schemas/JiraStatus'
-          type: array
-      type: object
-    ProjectId:
-      additionalProperties: false
-      description: Project ID details.
-      properties:
-        id:
-          description: The ID of the project.
-          type: string
-      required:
-      - id
-      type:
-      - object
-      - 'null'
-    StatusUpdateRequest:
-      additionalProperties: false
-      description: The list of statuses that will be updated.
-      properties:
-        statuses:
-          description: The list of statuses that will be updated.
-          items:
-            $ref: '#/components/schemas/StatusUpdate'
-          type: array
-      required:
-      - statuses
       type: object
   securitySchemes:
     OAuth2:

@@ -226,30 +226,187 @@ paths:
       x-atlassian-connect-scope: READ
 components:
   schemas:
-    Priority:
-      additionalProperties: true
-      description: An issue priority.
+    Fields:
+      additionalProperties: false
+      description: Key fields from the linked issue.
       properties:
-        description:
-          description: The description of the issue priority.
+        assignee:
+          allOf:
+          - $ref: '#/components/schemas/UserDetails'
+          description: The assignee of the linked issue.
+          readOnly: true
+        issueType:
+          allOf:
+          - $ref: '#/components/schemas/IssueTypeDetails'
+          description: The type of the linked issue.
+          readOnly: true
+        issuetype:
+          description: The type of the linked issue.
+          $ref: '#/components/schemas/IssueTypeDetails'
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/Priority'
+          description: The priority of the linked issue.
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusDetails'
+          description: The status of the linked issue.
+          readOnly: true
+        summary:
+          description: The summary description of the linked issue.
+          readOnly: true
           type: string
-        iconUrl:
-          description: The URL of the icon for the issue priority.
+        timetracking:
+          allOf:
+          - $ref: '#/components/schemas/TimeTrackingDetails'
+          description: The time tracking of the linked issue.
+          readOnly: true
+      type: object
+    StatusCategory:
+      additionalProperties: true
+      description: A status category.
+      properties:
+        colorName:
+          description: The name of the color used to represent the status category.
+          readOnly: true
           type: string
         id:
-          description: The ID of the issue priority.
+          description: The ID of the status category.
+          format: int64
+          readOnly: true
+          type: integer
+        key:
+          description: The key of the status category.
+          readOnly: true
           type: string
-        isDefault:
-          description: Whether this priority is the default.
-          type: boolean
         name:
-          description: The name of the issue priority.
+          description: The name of the status category.
+          readOnly: true
           type: string
         self:
-          description: The URL of the issue priority.
+          description: The URL of the status category.
+          readOnly: true
           type: string
-        statusColor:
-          description: The color used to indicate the issue priority.
+      type: object
+    EntityProperty:
+      additionalProperties: false
+      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+      properties:
+        key:
+          description: The key of the property. Required on create and update.
+          type: string
+        value:
+          description: The value of the property. Required on create and update.
+      type: object
+    LinkedIssue:
+      additionalProperties: false
+      description: The ID or key of a linked issue.
+      properties:
+        fields:
+          allOf:
+          - $ref: '#/components/schemas/Fields'
+          description: The fields associated with the issue.
+          readOnly: true
+        id:
+          description: The ID of an issue. Required if `key` isn't provided.
+          type: string
+        key:
+          description: The key of an issue. Required if `id` isn't provided.
+          type: string
+        self:
+          description: The URL of the issue.
+          format: uri
+          readOnly: true
+          type: string
+      type: object
+    IssueLink:
+      additionalProperties: false
+      description: Details of a link between issues.
+      properties:
+        id:
+          description: The ID of the issue link.
+          readOnly: true
+          type: string
+        inwardIssue:
+          allOf:
+          - $ref: '#/components/schemas/LinkedIssue'
+          description: Provides details about the linked issue. If presenting this link in a user interface, use the `inward` field of the issue link type to label the link.
+        outwardIssue:
+          allOf:
+          - $ref: '#/components/schemas/LinkedIssue'
+          description: Provides details about the linked issue. If presenting this link in a user interface, use the `outward` field of the issue link type to label the link.
+        self:
+          description: The URL of the issue link.
+          format: uri
+          readOnly: true
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/IssueLinkType'
+          description: The type of link between the issues.
+      required:
+      - inwardIssue
+      - outwardIssue
+      - type
+      type: object
+      xml:
+        name: issueLinks
+    StatusDetails:
+      additionalProperties: true
+      description: A status.
+      properties:
+        description:
+          description: The description of the status.
+          readOnly: true
+          type: string
+        iconUrl:
+          description: The URL of the icon used to represent the status.
+          readOnly: true
+          type: string
+        id:
+          description: The ID of the status.
+          readOnly: true
+          type: string
+        name:
+          description: The name of the status.
+          readOnly: true
+          type: string
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/Scope'
+          description: The scope of the field.
+          readOnly: true
+        self:
+          description: The URL of the status.
+          readOnly: true
+          type: string
+        statusCategory:
+          allOf:
+          - $ref: '#/components/schemas/StatusCategory'
+          description: The category assigned to the status.
+          readOnly: true
+      type: object
+    IssueLinkType:
+      additionalProperties: false
+      description: "This object is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it defines and reports on the type of link between the issues. Find a list of issue link types with [Get issue link types](#api-rest-api-3-issueLinkType-get).\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it defines and reports on issue link types."
+      properties:
+        id:
+          description: "The ID of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `name` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is read only."
+          type: string
+        inward:
+          description: "The description of the issue link type inward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+          type: string
+        name:
+          description: "The name of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `id` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+          type: string
+        outward:
+          description: "The description of the issue link type outward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+          type: string
+        self:
+          description: The URL of the issue link type. Read only.
+          format: uri
+          readOnly: true
           type: string
       type: object
     UserDetails:
@@ -297,43 +454,6 @@ components:
           description: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null.
           readOnly: true
           type: string
-      type: object
-    Fields:
-      additionalProperties: false
-      description: Key fields from the linked issue.
-      properties:
-        assignee:
-          allOf:
-          - $ref: '#/components/schemas/UserDetails'
-          description: The assignee of the linked issue.
-          readOnly: true
-        issueType:
-          allOf:
-          - $ref: '#/components/schemas/IssueTypeDetails'
-          description: The type of the linked issue.
-          readOnly: true
-        issuetype:
-          description: The type of the linked issue.
-          $ref: '#/components/schemas/IssueTypeDetails'
-        priority:
-          allOf:
-          - $ref: '#/components/schemas/Priority'
-          description: The priority of the linked issue.
-          readOnly: true
-        status:
-          allOf:
-          - $ref: '#/components/schemas/StatusDetails'
-          description: The status of the linked issue.
-          readOnly: true
-        summary:
-          description: The summary description of the linked issue.
-          readOnly: true
-          type: string
-        timetracking:
-          allOf:
-          - $ref: '#/components/schemas/TimeTrackingDetails'
-          description: The time tracking of the linked issue.
-          readOnly: true
       type: object
     Comment:
       additionalProperties: true
@@ -391,48 +511,6 @@ components:
           - $ref: '#/components/schemas/Visibility'
           description: The group or role to which this comment is visible. Optional on create and update.
       type: object
-    EntityProperty:
-      additionalProperties: false
-      description: An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
-      properties:
-        key:
-          description: The key of the property. Required on create and update.
-          type: string
-        value:
-          description: The value of the property. Required on create and update.
-      type: object
-    IssueLink:
-      additionalProperties: false
-      description: Details of a link between issues.
-      properties:
-        id:
-          description: The ID of the issue link.
-          readOnly: true
-          type: string
-        inwardIssue:
-          allOf:
-          - $ref: '#/components/schemas/LinkedIssue'
-          description: Provides details about the linked issue. If presenting this link in a user interface, use the `inward` field of the issue link type to label the link.
-        outwardIssue:
-          allOf:
-          - $ref: '#/components/schemas/LinkedIssue'
-          description: Provides details about the linked issue. If presenting this link in a user interface, use the `outward` field of the issue link type to label the link.
-        self:
-          description: The URL of the issue link.
-          format: uri
-          readOnly: true
-          type: string
-        type:
-          allOf:
-          - $ref: '#/components/schemas/IssueLinkType'
-          description: The type of link between the issues.
-      required:
-      - inwardIssue
-      - outwardIssue
-      - type
-      type: object
-      xml:
-        name: issueLinks
     Visibility:
       additionalProperties: true
       description: The group or role to which this item is visible.
@@ -451,61 +529,6 @@ components:
         value:
           description: The name of the group or role that visibility of this item is restricted to. Please note that the name of a group is mutable, to reliably identify a group use `identifier`.
           type: string
-      type: object
-    IssueLinkType:
-      additionalProperties: false
-      description: "This object is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it defines and reports on the type of link between the issues. Find a list of issue link types with [Get issue link types](#api-rest-api-3-issueLinkType-get).\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it defines and reports on issue link types."
-      properties:
-        id:
-          description: "The ID of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `name` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is read only."
-          type: string
-        inward:
-          description: "The description of the issue link type inward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
-          type: string
-        name:
-          description: "The name of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `id` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
-          type: string
-        outward:
-          description: "The description of the issue link type outward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
-          type: string
-        self:
-          description: The URL of the issue link type. Read only.
-          format: uri
-          readOnly: true
-          type: string
-      type: object
-    Scope:
-      additionalProperties: true
-      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
-      properties:
-        project:
-          allOf:
-          - $ref: '#/components/schemas/ProjectDetails'
-          description: The project the item has scope in.
-          readOnly: true
-        type:
-          description: The type of scope.
-          enum:
-          - PROJECT
-          - TEMPLATE
-          readOnly: true
-          type: string
-      type: object
-    LinkIssueRequestJsonBean:
-      additionalProperties: false
-      properties:
-        comment:
-          $ref: '#/components/schemas/Comment'
-        inwardIssue:
-          $ref: '#/components/schemas/LinkedIssue'
-        outwardIssue:
-          $ref: '#/components/schemas/LinkedIssue'
-        type:
-          $ref: '#/components/schemas/IssueLinkType'
-      required:
-      - inwardIssue
-      - outwardIssue
-      - type
       type: object
     IssueTypeDetails:
       additionalProperties: false
@@ -556,32 +579,6 @@ components:
           readOnly: true
           type: boolean
       type: object
-    StatusCategory:
-      additionalProperties: true
-      description: A status category.
-      properties:
-        colorName:
-          description: The name of the color used to represent the status category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the status category.
-          format: int64
-          readOnly: true
-          type: integer
-        key:
-          description: The key of the status category.
-          readOnly: true
-          type: string
-        name:
-          description: The name of the status category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the status category.
-          readOnly: true
-          type: string
-      type: object
     TimeTrackingDetails:
       additionalProperties: false
       description: Time tracking details.
@@ -614,27 +611,6 @@ components:
           readOnly: true
           type: integer
       type: object
-    UpdatedProjectCategory:
-      additionalProperties: false
-      description: A project category.
-      properties:
-        description:
-          description: The name of the project category.
-          readOnly: true
-          type: string
-        id:
-          description: The ID of the project category.
-          readOnly: true
-          type: string
-        name:
-          description: The description of the project category.
-          readOnly: true
-          type: string
-        self:
-          description: The URL of the project category.
-          readOnly: true
-          type: string
-      type: object
     AvatarUrlsBean:
       additionalProperties: false
       properties:
@@ -653,6 +629,23 @@ components:
         48x48:
           description: The URL of the item's 48x48 pixel avatar.
           format: uri
+          type: string
+      type: object
+    Scope:
+      additionalProperties: true
+      description: The projects the item is associated with. Indicated for items associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).
+      properties:
+        project:
+          allOf:
+          - $ref: '#/components/schemas/ProjectDetails'
+          description: The project the item has scope in.
+          readOnly: true
+        type:
+          description: The type of scope.
+          enum:
+          - PROJECT
+          - TEMPLATE
+          readOnly: true
           type: string
       type: object
     ProjectDetails:
@@ -697,61 +690,68 @@ components:
           readOnly: true
           type: boolean
       type: object
-    LinkedIssue:
+    UpdatedProjectCategory:
       additionalProperties: false
-      description: The ID or key of a linked issue.
-      properties:
-        fields:
-          allOf:
-          - $ref: '#/components/schemas/Fields'
-          description: The fields associated with the issue.
-          readOnly: true
-        id:
-          description: The ID of an issue. Required if `key` isn't provided.
-          type: string
-        key:
-          description: The key of an issue. Required if `id` isn't provided.
-          type: string
-        self:
-          description: The URL of the issue.
-          format: uri
-          readOnly: true
-          type: string
-      type: object
-    StatusDetails:
-      additionalProperties: true
-      description: A status.
+      description: A project category.
       properties:
         description:
-          description: The description of the status.
-          readOnly: true
-          type: string
-        iconUrl:
-          description: The URL of the icon used to represent the status.
+          description: The name of the project category.
           readOnly: true
           type: string
         id:
-          description: The ID of the status.
+          description: The ID of the project category.
           readOnly: true
           type: string
         name:
-          description: The name of the status.
+          description: The description of the project category.
           readOnly: true
           type: string
-        scope:
-          allOf:
-          - $ref: '#/components/schemas/Scope'
-          description: The scope of the field.
-          readOnly: true
         self:
-          description: The URL of the status.
+          description: The URL of the project category.
           readOnly: true
           type: string
-        statusCategory:
-          allOf:
-          - $ref: '#/components/schemas/StatusCategory'
-          description: The category assigned to the status.
-          readOnly: true
+      type: object
+    LinkIssueRequestJsonBean:
+      additionalProperties: false
+      properties:
+        comment:
+          $ref: '#/components/schemas/Comment'
+        inwardIssue:
+          $ref: '#/components/schemas/LinkedIssue'
+        outwardIssue:
+          $ref: '#/components/schemas/LinkedIssue'
+        type:
+          $ref: '#/components/schemas/IssueLinkType'
+      required:
+      - inwardIssue
+      - outwardIssue
+      - type
+      type: object
+    Priority:
+      additionalProperties: true
+      description: An issue priority.
+      properties:
+        description:
+          description: The description of the issue priority.
+          type: string
+        iconUrl:
+          description: The URL of the icon for the issue priority.
+          type: string
+        id:
+          description: The ID of the issue priority.
+          type: string
+        isDefault:
+          description: Whether this priority is the default.
+          type: boolean
+        name:
+          description: The name of the issue priority.
+          type: string
+        self:
+          description: The URL of the issue priority.
+          type: string
+        statusColor:
+          description: The color used to indicate the issue priority.
+          type: string
       type: object
   securitySchemes:
     OAuth2:
