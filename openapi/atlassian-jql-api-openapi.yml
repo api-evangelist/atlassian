@@ -1,0 +1,1265 @@
+openapi: 3.2.0
+info:
+  contact:
+    email: ecosystem@atlassian.com
+  description: Jira Cloud platform REST API documentation
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://atlassian.com/terms/
+  title: Atlassian The Jira Cloud platform REST JQL API
+  version: 1001.0.0-SNAPSHOT-67b5c6e5f3598d7ec1649016d026468ab2838a77
+servers:
+- url: https://your-domain.atlassian.net
+tags:
+- description: 'This resource represents JQL search auto-complete details. Use it to obtain JQL search auto-complete data and suggestions for use in programmatic construction of queries or custom query builders. It also provides operations to:
+
+
+    * convert one or more JQL queries with user identifiers (username or user key) to equivalent JQL queries with account IDs.
+
+    * convert readable details in one or more JQL queries to IDs where a user doesn''t have permission to view the entity whose details are readable.'
+  name: JQL
+paths:
+  /rest/api/3/jql/autocompletedata:
+    get:
+      deprecated: false
+      description: 'Returns reference data for JQL searches. This is a downloadable version of the documentation provided in Advanced searching - fields reference and Advanced searching - functions reference, along with a list of JQL-reserved words. Use this information to assist with the programmatic creation of JQL queries or the validation of queries built in a custom query builder.
+
+
+        To filter visible field details by project or collapse non-unique fields by field type then Get field reference data (POST) can be used.
+
+
+        This operation can be accessed anonymously.
+
+
+        **Permissions required:** None.'
+      operationId: atlassianGetautocomplete
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"jqlReservedWords":["empty","and","or","in","distinct"],"visibleFieldNames":[{"displayName":"summary","operators":["~","!~","is","is not"],"orderable":"true","searchable":"true","types":["java.lang.String"],"value":"summary"},{"auto":"true","cfid":"cf[10880]","displayName":"Sprint - cf[10880]","operators":["=","!=","in","not in","is","is not"],"orderable":"true","searchable":"true","types":["com.atlassian.greenhopper.service.sprint.Sprint"],"value":"Sprint"}],"visibleFunctionNames":[{"displayName":"standardIssueTypes()","isList":"true","types":["com.atlassian.jira.issue.issuetype.IssueType"],"value":"standardIssueTypes()"},{"displayName":"issuesWithText()","supportsListAndSingleValueOperators":"true","types":["com.atlassian.jira.issue.issuetype.IssueType"],"value":"issuesWithText()"}]}'
+              schema:
+                $ref: '#/components/schemas/JQLReferenceData'
+          description: Returned if the request is successful.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Field Reference Data Get
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+    post:
+      deprecated: false
+      description: 'Returns reference data for JQL searches. This is a downloadable version of the documentation provided in Advanced searching - fields reference and Advanced searching - functions reference, along with a list of JQL-reserved words. Use this information to assist with the programmatic creation of JQL queries or the validation of queries built in a custom query builder.
+
+
+        This operation can filter the custom fields returned by project. Invalid project IDs in `projectIds` are ignored. System fields are always returned.
+
+
+        It can also return the collapsed field for custom fields. Collapsed fields enable searches to be performed across all fields with the same name and of the same field type. For example, the collapsed field `Component - Component[Dropdown]` enables dropdown fields `Component - cf[10061]` and `Component - cf[10062]` to be searched simultaneously.
+
+
+        **Permissions required:** None.'
+      operationId: atlassianGetautocompletepost
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              includeCollapsedFields: true
+              projectIds:
+              - 10000
+              - 10001
+              - 10002
+            schema:
+              $ref: '#/components/schemas/SearchAutoCompleteFilter'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"jqlReservedWords":["empty","and","or","in","distinct"],"visibleFieldNames":[{"displayName":"summary","operators":["~","!~","is","is not"],"orderable":"true","searchable":"true","types":["java.lang.String"],"value":"summary"},{"auto":"true","cfid":"cf[10061]","displayName":"Component - cf[10061]","operators":["=","!=","in","not in","is","is not"],"orderable":"true","types":["com.atlassian.jira.issue.customfields.option.Option"],"value":"cf[10061]"},{"auto":"true","cfid":"cf[10062]","displayName":"Component - cf[10062]","operators":["=","!=","in","not in","is","is not"],"orderable":"true","types":["com.atlassian.jira.issue.customfields.option.Option"],"value":"cf[10062]"},{"auto":"true","displayName":"Component - Component[Dropdown]","operators":["=","!=","in","not in","is","is not"],"searchable":"true","types":["com.atlassian.jira.issue.customfields.option.Option"],"value":"\"Component[Dropdown]\""}],"visibleFunctionNames":[{"displayName":"standardIssueTypes()","isList":"true","types":["com.atlassian.jira.issue.issuetype.IssueType"],"value":"standardIssueTypes()"}]}'
+              schema:
+                $ref: '#/components/schemas/JQLReferenceData'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if the request is not valid.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Field Reference Data Post
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/jql/autocompletedata/suggestions:
+    get:
+      deprecated: false
+      description: 'Returns the JQL search auto complete suggestions for a field.
+
+
+        Suggestions can be obtained by providing:
+
+
+        * `fieldName` to get a list of all values for the field.
+
+        * `fieldName` and `fieldValue` to get a list of values containing the text in `fieldValue`.
+
+        * `fieldName` and `predicateName` to get a list of all predicate values for the field.
+
+        * `fieldName`, `predicateName`, and `predicateValue` to get a list of predicate values containing the text in `predicateValue`.
+
+
+        This operation can be accessed anonymously.
+
+
+        **Permissions required:** None.'
+      operationId: atlassianGetfieldautocompleteforquerystring
+      parameters:
+      - description: The name of the field.
+        in: query
+        name: fieldName
+        schema:
+          example: reporter
+          type: string
+        x-showInExample: 'true'
+      - description: The partial field item name entered by the user.
+        in: query
+        name: fieldValue
+        schema:
+          type: string
+      - description: The name of the [ CHANGED operator predicate](https://confluence.atlassian.com/x/hQORLQ#Advancedsearching-operatorsreference-CHANGEDCHANGED) for which the suggestions are generated. The valid predicate operators are *by*, *from*, and *to*.
+        in: query
+        name: predicateName
+        schema:
+          type: string
+      - description: The partial predicate item name entered by the user.
+        in: query
+        name: predicateValue
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"results":[{"displayName":"<b>Ac</b>tiveObjects (AO)","value":"ActiveObjects"},{"displayName":"Atlassian Connect (<b>AC</b>)","value":"Atlassian Connect"},{"displayName":"Atlassian Connect in Jira (<b>AC</b>JIRA)","value":"Atlassian Connect in Jira"}]}'
+              schema:
+                $ref: '#/components/schemas/AutoCompleteSuggestions'
+          description: Returned if the request is successful.
+        '400':
+          description: Returned if an invalid combination of parameters is passed.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Get Field Auto Complete Suggestions
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:issue-details:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/jql/parse:
+    post:
+      deprecated: false
+      description: 'Parses and validates JQL queries.
+
+
+        Validation is performed in context of the current user.
+
+
+        This operation can be accessed anonymously.
+
+
+        **Permissions required:** None.'
+      operationId: atlassianParsejqlqueries
+      parameters:
+      - description: "How to validate the JQL query and treat the validation results. Validation options include:\n\n *  `strict` Returns all errors. If validation fails, the query structure is not returned.\n *  `warn` Returns all errors. If validation fails but the JQL query is correctly formed, the query structure is returned.\n *  `none` No validation is performed. If JQL query is correctly formed, the query structure is returned."
+        in: query
+        name: validation
+        required: true
+        schema:
+          default: strict
+          enum:
+          - strict
+          - warn
+          - none
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              queries:
+              - summary ~ test AND (labels in (urgent, blocker) OR lastCommentedBy = currentUser()) AND status CHANGED AFTER startOfMonth(-1M) ORDER BY updated DESC
+              - issue.property["spaces here"].value in ("Service requests", Incidents)
+              - invalid query
+              - summary = test
+              - summary in test
+              - project = INVALID
+              - universe = 42
+            schema:
+              $ref: '#/components/schemas/JqlQueriesToParse'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"queries":[{"query":"summary ~ test AND (labels in (urgent, blocker) OR lastCommentedBy = currentUser()) AND status CHANGED AFTER -5d ORDER BY updated DESC","structure":{"orderBy":{"fields":[{"direction":"desc","field":{"encodedName":"updated","name":"updated"}}]},"where":{"clauses":[{"field":{"encodedName":"summary","name":"summary"},"operand":{"encodedValue":"test","value":"test"},"operator":"~"},{"clauses":[{"field":{"encodedName":"labels","name":"labels"},"operand":{"encodedOperand":"urgent, blocker)","values":[{"encodedValue":"urgent","value":"urgent"},{"encodedValue":"blocker","value":"blocker"}]},"operator":"in"},{"field":{"encodedName":"lastCommentedBy","name":"lastCommentedBy","property":[{"entity":"issue","key":"propertyKey","path":"path.in.property","type":"user"}]},"operand":{"arguments":[],"encodedOperand":"currentUser()","function":"currentUser"},"operator":"="}],"operator":"or"},{"field":{"encodedName":"status","name":"status"},"operator":"changed","predicates":[{"operand":{"arguments":["-1M"],"encodedOperand":"startOfMonth(-1M)","function":"startOfMonth"},"operator":"after"}]}],"operator":"and"}}},{"query":"issue.property[\"spaces here\"].value in (\"Service requests\", Incidents)","structure":{"where":{"field":{"encodedName":"issue.property[\"spaces here\"].value","name":"issue.property[spaces here].value","property":[{"entity":"issue","key":"spaces here","path":"value"}]},"operand":{"encodedOperand":"(\"Service requests\", Incidents)","values":[{"encodedValue":"\"Service requests\"","value":"Service requests"},{"encodedValue":"Incidents","value":"Incidents"}]},"operator":"in"}}},{"errors":["Error in the JQL Query: Expecting operator but got ''query''. The valid operators are ''='', ''!='', ''<'', ''>'', ''<='', ''>='', ''~'', ''!~'', ''IN'', ''NOT IN'', ''IS'' and ''IS NOT''. (line 1, character 9)"],"query":"invalid query"},{"errors":["The operator ''='' is not supported by the ''summary'' field."],"query":"summary = test"},{"errors":["Operator ''in'' does not support the non-list value ''\"test\"'' for field ''summary''."],"query":"summary in test"},{"errors":["The value ''INVALID'' does not exist for the field ''project''."],"query":"project = INVALID"},{"errors":["Field ''universe'' does not exist or you do not have permission to view it."],"query":"universe = 42"}]}'
+              schema:
+                $ref: '#/components/schemas/ParsedJqlQueries'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          description: Returned if the authentication credentials are incorrect.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-work
+      - {}
+      summary: Atlassian Parse Jql Query
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-work
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:field:jira
+        - validate:jql:jira
+        - read:jql:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: READ
+  /rest/api/3/jql/pdcleaner:
+    post:
+      deprecated: false
+      description: 'Converts one or more JQL queries with user identifiers (username or user key) to equivalent JQL queries with account IDs.
+
+
+        You may wish to use this operation if your system stores JQL queries and you want to make them GDPR-compliant. For more information about GDPR-related changes, see the migration guide.
+
+
+        **Permissions required:** Permission to access Jira.'
+      operationId: atlassianMigratequeries
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              queryStrings:
+              - assignee = mia
+              - issuetype = Bug AND assignee in (mia) AND reporter in (alana) order by lastViewed DESC
+            schema:
+              $ref: '#/components/schemas/JQLPersonalDataMigrationRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"queriesWithUnknownUsers":[{"convertedQuery":"assignee = unknown","originalQuery":"assignee = mia"}],"queryStrings":["issuetype = Bug AND assignee in (abcde-12345) AND reporter in (abc551-c4e99) order by lastViewed DESC"]}'
+              schema:
+                $ref: '#/components/schemas/ConvertedJQLQueries'
+          description: Returned if the request is successful. Note that the JQL queries are returned in the same order that they were passed.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Returned if at least one of the queries cannot be converted. For example, the JQL has invalid operators or invalid keywords, or the users in the query cannot be found.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Returned if the authentication credentials are incorrect or missing.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - read:jira-user
+      summary: Atlassian Convert User Identifiers To Account Ids In Jql Queries
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: true
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - read:jira-user
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:user:jira
+        - read:jql:jira
+        - validate:jql:jira
+        state: Beta
+      x-atlassian-connect-scope: READ
+  /rest/api/3/jql/sanitize:
+    post:
+      deprecated: false
+      description: 'Sanitizes one or more JQL queries by converting readable details into IDs where a user doesn''t have permission to view the entity.
+
+
+        For example, if the query contains the clause *project = ''Secret project''*, and a user does not have browse permission for the project "Secret project", the sanitized query replaces the clause with *project = 12345"* (where 12345 is the ID of the project). If a user has the required permission, the clause is not sanitized. If the account ID is null, sanitizing is performed for an anonymous user.
+
+
+        Note that sanitization doesn''t make the queries GDPR-compliant, because it doesn''t remove user identifiers (username or user key). If you need to make queries GDPR-compliant, use Convert user identifiers to account IDs in JQL queries.
+
+
+        Before sanitization each JQL query is parsed. The queries are returned in the same order that they were passed.
+
+
+        **Permissions required:** *Administer Jira* global permission.'
+      operationId: atlassianSanitisejqlqueries
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              queries:
+              - query: project = 'Sample project'
+              - accountId: 5b10ac8d82e05b22cc7d4ef5
+                query: project = 'Sample project'
+              - accountId: cda2aa1395ac195d951b3387
+                query: project = 'Sample project'
+              - accountId: 5b10ac8d82e05b22cc7d4ef5
+                query: invalid query
+            schema:
+              $ref: '#/components/schemas/JqlQueriesToSanitize'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              example: '{"queries":[{"initialQuery":"project = ''Sample project''","sanitizedQuery":"project = 12345"},{"initialQuery":"project = ''Sample project''","sanitizedQuery":"project = ''Sample project''","accountId":"5b10ac8d82e05b22cc7d4ef5"},{"initialQuery":"project = ''Sample project''","sanitizedQuery":"project = 12345","accountId":"cda2aa1395ac195d951b3387"},{"initialQuery":"non-parsable query","errors":{"errorMessages":["Error in the JQL Query: Expecting operator but got ''query''. The valid operators are ''='', ''!='', ''<'', ''>'', ''<='', ''>='', ''~'', ''!~'', ''IN'', ''NOT IN'', ''IS'' and ''IS NOT''. (line 1, character 9)"],"errors":{}},"accountId":"5b10ac8d82e05b22cc7d4ef5"}]}'
+              schema:
+                $ref: '#/components/schemas/SanitizedJqlQueries'
+          description: Returned if the request is successful.
+        '400':
+          content:
+            application/json:
+              example: '{"errorMessages":["The queries has to be provided."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the request is invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the authentication credentials are incorrect or missing.
+        '403':
+          content:
+            application/json:
+              example: '{"errorMessages":["You are not authorized to perform this action. Administrator privileges are required."],"errors":{}}'
+              schema:
+                $ref: '#/components/schemas/ErrorCollection'
+          description: Returned if the user does not have the necessary permission.
+      security:
+      - basicAuth: []
+      - OAuth2:
+        - manage:jira-configuration
+      summary: Atlassian Sanitize Jql Queries
+      tags:
+      - JQL
+      x-atlassian-data-security-policy:
+      - app-access-rule-exempt: false
+      x-atlassian-oauth2-scopes:
+      - scheme: OAuth2
+        scopes:
+        - manage:jira-configuration
+        state: Current
+      - scheme: OAuth2
+        scopes:
+        - read:jql:jira
+        state: Beta
+      x-experimental: true
+      x-atlassian-connect-scope: ADMIN
+components:
+  schemas:
+    FunctionOperand:
+      description: An operand that is a function. See [Advanced searching - functions reference](https://confluence.atlassian.com/x/dwiiLQ) for more information about JQL functions.
+      properties:
+        arguments:
+          description: The list of function arguments.
+          items:
+            type: string
+          type: array
+        encodedOperand:
+          description: Encoded operand, which can be used directly in a JQL query.
+          type: string
+        function:
+          description: The name of the function.
+          type: string
+      required:
+      - arguments
+      - function
+      type: object
+    FieldWasClause:
+      description: A clause that asserts a previous value of a field. For example, `status WAS "Resolved" BY currentUser() BEFORE "2019/02/02"`. See [WAS](https://confluence.atlassian.com/x/dgiiLQ#Advancedsearching-operatorsreference-WASWAS) for more information about the WAS operator.
+      properties:
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+        operand:
+          $ref: '#/components/schemas/JqlQueryClauseOperand'
+        operator:
+          description: The operator between the field and operand.
+          enum:
+          - was
+          - was in
+          - was not in
+          - was not
+          type: string
+        predicates:
+          description: The list of time predicates.
+          items:
+            $ref: '#/components/schemas/JqlQueryClauseTimePredicate'
+          type: array
+      required:
+      - field
+      - operand
+      - operator
+      - predicates
+      type: object
+    JqlQueryUnitaryOperand:
+      anyOf:
+      - $ref: '#/components/schemas/ValueOperand'
+      - $ref: '#/components/schemas/FunctionOperand'
+      - $ref: '#/components/schemas/KeywordOperand'
+      description: An operand that can be part of a list operand.
+      type: object
+    JqlQueryClauseTimePredicate:
+      description: A time predicate for a temporal JQL clause.
+      properties:
+        operand:
+          $ref: '#/components/schemas/JqlQueryClauseOperand'
+        operator:
+          description: The operator between the field and the operand.
+          enum:
+          - before
+          - after
+          - from
+          - to
+          - 'on'
+          - during
+          - by
+          type: string
+      required:
+      - operand
+      - operator
+      type: object
+    JqlQueryClause:
+      additionalProperties: false
+      anyOf:
+      - $ref: '#/components/schemas/CompoundClause'
+      - $ref: '#/components/schemas/FieldValueClause'
+      - $ref: '#/components/schemas/FieldWasClause'
+      - $ref: '#/components/schemas/FieldChangedClause'
+      description: A JQL query clause.
+      type: object
+    JQLQueryWithUnknownUsers:
+      additionalProperties: false
+      description: JQL queries that contained users that could not be found
+      properties:
+        convertedQuery:
+          description: The converted query, with accountIDs instead of user identifiers, or 'unknown' for users that could not be found
+          type: string
+        originalQuery:
+          description: The original query, for reference
+          type: string
+      type: object
+    FieldReferenceData:
+      additionalProperties: false
+      description: Details of a field that can be used in advanced searches.
+      properties:
+        auto:
+          description: Whether the field provide auto-complete suggestions.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        cfid:
+          description: If the item is a custom field, the ID of the custom field.
+          type: string
+        deprecated:
+          description: Whether this field has been deprecated.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        deprecatedSearcherKey:
+          description: The searcher key of the field, only passed when the field is deprecated.
+          type: string
+        displayName:
+          description: "The display name contains the following:\n\n *  for system fields, the field name. For example, `Summary`.\n *  for collapsed custom fields, the field name followed by a hyphen and then the field name and field type. For example, `Component - Component[Dropdown]`.\n *  for other custom fields, the field name followed by a hyphen and then the custom field ID. For example, `Component - cf[10061]`."
+          type: string
+        operators:
+          description: The valid search operators for the field.
+          items:
+            type: string
+          type: array
+        orderable:
+          description: Whether the field can be used in a query's `ORDER BY` clause.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        searchable:
+          description: Whether the content of this field can be searched.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        types:
+          description: The data types of items in the field.
+          items:
+            type: string
+          type: array
+        value:
+          description: The field identifier.
+          type: string
+      type: object
+    ParsedJqlQuery:
+      additionalProperties: false
+      description: Details of a parsed JQL query.
+      minLength: 1
+      properties:
+        errors:
+          description: The list of syntax or validation errors.
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+        query:
+          description: The JQL query that was parsed and validated.
+          type: string
+        structure:
+          allOf:
+          - $ref: '#/components/schemas/JqlQuery'
+          description: The syntax tree of the query. Empty if the query was invalid.
+      required:
+      - query
+      type: object
+    JqlQueryClauseOperand:
+      anyOf:
+      - $ref: '#/components/schemas/ListOperand'
+      - $ref: '#/components/schemas/ValueOperand'
+      - $ref: '#/components/schemas/FunctionOperand'
+      - $ref: '#/components/schemas/KeywordOperand'
+      description: Details of an operand in a JQL clause.
+      type: object
+    AutoCompleteSuggestions:
+      additionalProperties: false
+      description: The results from a JQL query.
+      properties:
+        results:
+          description: The list of suggested item.
+          items:
+            $ref: '#/components/schemas/AutoCompleteSuggestion'
+          type: array
+      type: object
+    JqlQueriesToSanitize:
+      additionalProperties: false
+      description: The list of JQL queries to sanitize for the given account IDs.
+      properties:
+        queries:
+          description: The list of JQL queries to sanitize. Must contain unique values. Maximum of 20 queries.
+          items:
+            $ref: '#/components/schemas/JqlQueryToSanitize'
+          type: array
+      required:
+      - queries
+      type: object
+      writeOnly: true
+    SanitizedJqlQuery:
+      additionalProperties: false
+      description: Details of the sanitized JQL query.
+      properties:
+        accountId:
+          description: The account ID of the user for whom sanitization was performed.
+          maxLength: 128
+          type:
+          - string
+          - 'null'
+        errors:
+          allOf:
+          - $ref: '#/components/schemas/ErrorCollection'
+          description: The list of errors.
+        initialQuery:
+          description: The initial query.
+          type: string
+        sanitizedQuery:
+          description: The sanitized query, if there were no errors.
+          type:
+          - string
+          - 'null'
+      type: object
+    SanitizedJqlQueries:
+      additionalProperties: false
+      description: The sanitized JQL queries for the given account IDs.
+      properties:
+        queries:
+          description: The list of sanitized JQL queries.
+          items:
+            $ref: '#/components/schemas/SanitizedJqlQuery'
+          type: array
+      type: object
+    ValueOperand:
+      description: An operand that is a user-provided value.
+      properties:
+        encodedValue:
+          description: Encoded value, which can be used directly in a JQL query.
+          type: string
+        value:
+          description: The operand value.
+          type: string
+      required:
+      - value
+      type: object
+    FieldChangedClause:
+      description: A clause that asserts whether a field was changed. For example, `status CHANGED AFTER startOfMonth(-1M)`.See [CHANGED](https://confluence.atlassian.com/x/dgiiLQ#Advancedsearching-operatorsreference-CHANGEDCHANGED) for more information about the CHANGED operator.
+      properties:
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+        operator:
+          description: The operator applied to the field.
+          enum:
+          - changed
+          type: string
+        predicates:
+          description: The list of time predicates.
+          items:
+            $ref: '#/components/schemas/JqlQueryClauseTimePredicate'
+          type: array
+      required:
+      - field
+      - operator
+      - predicates
+      type: object
+    CompoundClause:
+      description: A JQL query clause that consists of nested clauses. For example, `(labels in (urgent, blocker) OR lastCommentedBy = currentUser()). Note that, where nesting is not defined, the parser nests JQL clauses based on the operator precedence. For example, "A OR B AND C" is parsed as "(A OR B) AND C". See Setting the precedence of operators for more information about precedence in JQL queries.`
+      properties:
+        clauses:
+          description: The list of nested clauses.
+          items:
+            $ref: '#/components/schemas/JqlQueryClause'
+          type: array
+        operator:
+          description: The operator between the clauses.
+          enum:
+          - and
+          - or
+          - not
+          type: string
+      required:
+      - clauses
+      - operator
+      type: object
+    ParsedJqlQueries:
+      additionalProperties: false
+      description: A list of parsed JQL queries.
+      properties:
+        queries:
+          description: A list of parsed JQL queries.
+          items:
+            $ref: '#/components/schemas/ParsedJqlQuery'
+          minLength: 1
+          type: array
+      required:
+      - queries
+      type: object
+    JqlQueryFieldEntityProperty:
+      description: Details of an entity property.
+      properties:
+        entity:
+          description: The object on which the property is set.
+          example: issue
+          type: string
+        key:
+          description: The key of the property.
+          example: stats
+          type: string
+        path:
+          description: The path in the property value to query.
+          example: comments.count
+          type: string
+        type:
+          description: The type of the property value extraction. Not available if the extraction for the property is not registered on the instance with the [Entity property](https://developer.atlassian.com/cloud/jira/platform/modules/entity-property/) module.
+          enum:
+          - number
+          - string
+          - text
+          - date
+          - user
+          example: number
+          type: string
+      required:
+      - entity
+      - key
+      - path
+      type: object
+    KeywordOperand:
+      description: An operand that is a JQL keyword. See [Advanced searching - keywords reference](https://confluence.atlassian.com/jiracorecloud/advanced-searching-keywords-reference-765593717.html#Advancedsearching-keywordsreference-EMPTYEMPTY) for more information about operand keywords.
+      properties:
+        keyword:
+          description: The keyword that is the operand value.
+          enum:
+          - empty
+          type: string
+      required:
+      - keyword
+      type: object
+    JQLReferenceData:
+      additionalProperties: false
+      description: Lists of JQL reference data.
+      properties:
+        jqlReservedWords:
+          description: List of JQL query reserved words.
+          items:
+            type: string
+          type: array
+        visibleFieldNames:
+          description: List of fields usable in JQL queries.
+          items:
+            $ref: '#/components/schemas/FieldReferenceData'
+          type: array
+        visibleFunctionNames:
+          description: List of functions usable in JQL queries.
+          items:
+            $ref: '#/components/schemas/FunctionReferenceData'
+          type: array
+      type: object
+    ConvertedJQLQueries:
+      additionalProperties: false
+      description: The converted JQL queries.
+      properties:
+        queriesWithUnknownUsers:
+          description: List of queries containing user information that could not be mapped to an existing user
+          items:
+            $ref: '#/components/schemas/JQLQueryWithUnknownUsers'
+          type: array
+        queryStrings:
+          description: The list of converted query strings with account IDs in place of user identifiers.
+          items:
+            type: string
+          type: array
+      type: object
+    JqlQueriesToParse:
+      additionalProperties: false
+      description: A list of JQL queries to parse.
+      properties:
+        queries:
+          description: A list of queries to parse.
+          items:
+            minLength: 1
+            type: string
+          minLength: 1
+          type: array
+      required:
+      - queries
+      type: object
+      writeOnly: true
+    FunctionReferenceData:
+      additionalProperties: false
+      description: Details of functions that can be used in advanced searches.
+      properties:
+        displayName:
+          description: The display name of the function.
+          type: string
+        isList:
+          description: Whether the function can take a list of arguments.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        supportsListAndSingleValueOperators:
+          description: Whether the function supports both single and list value operators.
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+        types:
+          description: The data types returned by the function.
+          items:
+            type: string
+          type: array
+        value:
+          description: The function identifier.
+          type: string
+      type: object
+    FieldValueClause:
+      description: A clause that asserts the current value of a field. For example, `summary ~ test`.
+      properties:
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+        operand:
+          $ref: '#/components/schemas/JqlQueryClauseOperand'
+        operator:
+          description: The operator between the field and operand.
+          enum:
+          - '='
+          - '!='
+          - '>'
+          - <
+          - '>='
+          - <=
+          - in
+          - not in
+          - '~'
+          - ~=
+          - is
+          - is not
+          type: string
+      required:
+      - field
+      - operand
+      - operator
+      type: object
+    ErrorCollection:
+      additionalProperties: false
+      description: Error messages from an operation.
+      properties:
+        errorMessages:
+          description: The list of error messages produced by this operation. For example, "input parameter 'key' must be provided"
+          items:
+            type: string
+          type: array
+        errors:
+          additionalProperties:
+            type: string
+          description: 'The list of errors by parameter returned by the operation. For example,"projectKey": "Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters."'
+          type: object
+        status:
+          format: int32
+          type: integer
+      type: object
+    JQLPersonalDataMigrationRequest:
+      additionalProperties: false
+      description: The JQL queries to be converted.
+      properties:
+        queryStrings:
+          description: A list of queries with user identifiers. Maximum of 100 queries.
+          items:
+            type: string
+          type: array
+      type: object
+    AutoCompleteSuggestion:
+      additionalProperties: false
+      description: A field auto-complete suggestion.
+      properties:
+        displayName:
+          description: The display name of a suggested item. If `fieldValue` or `predicateValue` are provided, the matching text is highlighted with the HTML bold tag.
+          type: string
+        value:
+          description: The value of a suggested item.
+          type: string
+      type: object
+    SearchAutoCompleteFilter:
+      additionalProperties: false
+      description: Details of how to filter and list search auto complete information.
+      properties:
+        includeCollapsedFields:
+          default: false
+          description: Include collapsed fields for fields that have non-unique names.
+          type: boolean
+        projectIds:
+          description: List of project IDs used to filter the visible field details returned.
+          items:
+            format: int64
+            type: integer
+          type: array
+      type: object
+    JqlQueryOrderByClause:
+      additionalProperties: false
+      description: Details of the order-by JQL clause.
+      properties:
+        fields:
+          description: The list of order-by clause fields and their ordering directives.
+          items:
+            $ref: '#/components/schemas/JqlQueryOrderByClauseElement'
+          type: array
+      required:
+      - fields
+      type: object
+    ListOperand:
+      description: An operand that is a list of values.
+      properties:
+        encodedOperand:
+          description: Encoded operand, which can be used directly in a JQL query.
+          type: string
+        values:
+          description: The list of operand values.
+          items:
+            $ref: '#/components/schemas/JqlQueryUnitaryOperand'
+          minLength: 1
+          type: array
+      required:
+      - values
+      type: object
+    JqlQueryToSanitize:
+      additionalProperties: false
+      description: The JQL query to sanitize for the account ID. If the account ID is null, sanitizing is performed for an anonymous user.
+      properties:
+        accountId:
+          description: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.
+          maxLength: 128
+          type:
+          - string
+          - 'null'
+        query:
+          description: The query to sanitize.
+          type: string
+      required:
+      - query
+      type: object
+      writeOnly: true
+    JqlQueryOrderByClauseElement:
+      additionalProperties: false
+      description: An element of the order-by JQL clause.
+      properties:
+        direction:
+          description: The direction in which to order the results.
+          enum:
+          - asc
+          - desc
+          type: string
+        field:
+          $ref: '#/components/schemas/JqlQueryField'
+      required:
+      - field
+      type: object
+    JqlQueryField:
+      additionalProperties: false
+      description: A field used in a JQL query. See [Advanced searching - fields reference](https://confluence.atlassian.com/x/dAiiLQ) for more information about fields in JQL queries.
+      properties:
+        encodedName:
+          description: The encoded name of the field, which can be used directly in a JQL query.
+          type: string
+        name:
+          description: The name of the field.
+          type: string
+        property:
+          description: When the field refers to a value in an entity property, details of the entity property value.
+          items:
+            $ref: '#/components/schemas/JqlQueryFieldEntityProperty'
+          type: array
+      required:
+      - name
+      type: object
+    JqlQuery:
+      additionalProperties: false
+      description: A parsed JQL query.
+      properties:
+        orderBy:
+          $ref: '#/components/schemas/JqlQueryOrderByClause'
+        where:
+          $ref: '#/components/schemas/JqlQueryClause'
+      type: object
+  securitySchemes:
+    OAuth2:
+      description: OAuth2 scopes for Jira
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.atlassian.com/authorize
+          scopes:
+            delete:async-task:jira: Delete asynchronous task.
+            delete:attachment:jira: Delete issue attachments.
+            delete:avatar:jira: Delete system and custom avatars.
+            delete:comment.property:jira: Delete issue comment properties.
+            delete:comment:jira: Delete issue comments.
+            delete:dashboard.property:jira: Delete dashboard properties.
+            delete:dashboard:jira: Delete dashboards.
+            delete:field-configuration-scheme:jira: Delete field configuration schemes.
+            delete:field-configuration:jira: Delete field configurations.
+            delete:field.option:jira: Delete field options.
+            delete:field:jira: Delete fields.
+            delete:filter.column:jira: Delete filter columns.
+            delete:filter:jira: Delete filters.
+            delete:group:jira: Delete user groups.
+            delete:issue-link-type:jira: Delete issue link types.
+            delete:issue-link:jira: Delete issue links.
+            delete:issue-type-scheme:jira: Delete issue type schemes.
+            delete:issue-type-screen-scheme:jira: Delete issue type screen schemes.
+            delete:issue-type.property:jira: Delete issue type properties.
+            delete:issue-type:jira: Delete issue types.
+            delete:issue-worklog.property:jira: Delete issue worklog properties.
+            delete:issue-worklog:jira: Delete issue worklogs.
+            delete:issue.property:jira: Delete issue properties.
+            delete:issue.remote-link:jira: Delete issue remote links.
+            delete:issue:jira: Delete issues.
+            delete:permission-scheme:jira: Delete permission schemes.
+            delete:permission:jira: Delete permissions.
+            delete:project-category:jira: Delete project categories.
+            delete:project-role:jira: Delete project roles.
+            delete:project-version:jira: Delete project versions.
+            delete:project.avatar:jira: Delete project avatars.
+            delete:project.component:jira: Delete project components.
+            delete:project.property:jira: Delete project properties.
+            delete:project:jira: Delete projects and their details, such as issue types, project lead, and avatars.
+            delete:screen-scheme:jira: Delete screen schemes.
+            delete:screen-tab:jira: Delete screen tabs.
+            delete:screen:jira: Delete screens.
+            delete:screenable-field:jira: Delete screenable fields.
+            delete:user-configuration:jira: Delete user configurations.
+            delete:user.property:jira: Delete user properties.
+            delete:webhook:jira: Delete webhooks.
+            delete:workflow-scheme:jira: Delete workflow schemes.
+            delete:workflow.property:jira: Delete workflow properties.
+            delete:workflow:jira: Delete workflows.
+            manage:jira-configuration: Configure Jira settings that require the Jira administrators permission, for example, create projects and custom fields, view workflows, manage issue link types.
+            manage:jira-project: Create and edit project settings and create new project-level objects, for example, versions, components.
+            manage:jira-webhook: Manage Jira webhooks. Enables an OAuth app to register and unregister dynamic webhooks in Jira. It also provides for fetching of registered webhooks.
+            read:application-role:jira: View application roles.
+            read:attachment:jira: View issue attachments.
+            read:audit-log:jira: View audit logs.
+            read:avatar:jira: View system and custom avatars.
+            read:comment.property:jira: View issue comment properties.
+            read:comment:jira: View issue comments.
+            read:custom-field-contextual-configuration:jira: Read custom field contextual configurations.
+            read:dashboard.property:jira: View dashboard properties.
+            read:dashboard:jira: View dashboards.
+            read:field-configuration-scheme:jira: View field configuration schemes.
+            read:field-configuration:jira: Read field configurations.
+            read:field.default-value:jira: View field default values.
+            read:field.option:jira: View field options.
+            read:field.options:jira: Read field options.
+            read:field:jira: View fields.
+            read:filter.column:jira: View filter columns.
+            read:filter.default-share-scope:jira: View filter default share scopes.
+            read:filter:jira: View filters.
+            read:group:jira: View user groups.
+            read:instance-configuration:jira: View instance configurations.
+            read:issue-details:jira: View issue details.
+            read:issue-event:jira: Read issue events.
+            read:issue-field-values:jira: View issue field valueses.
+            read:issue-link-type:jira: View issue link types.
+            read:issue-link:jira: View issue links.
+            read:issue-meta:jira: View issue meta.
+            read:issue-security-level:jira: View issue security levels.
+            read:issue-security-scheme:jira: View issue security schemes.
+            read:issue-status:jira: View issue statuses.
+            read:issue-type-hierarchy:jira: Read issue type hierarchies.
+            read:issue-type-scheme:jira: View issue type schemes.
+            read:issue-type-screen-scheme:jira: View issue type screen schemes.
+            read:issue-type.property:jira: View issue type properties.
+            read:issue-type:jira: View issue types.
+            read:issue-worklog.property:jira: View issue worklog properties.
+            read:issue-worklog:jira: View issue worklogs.
+            read:issue.changelog:jira: View issue changelogs.
+            read:issue.property:jira: View issue properties.
+            read:issue.remote-link:jira: View issue remote links.
+            read:issue.time-tracking:jira: View issue time trackings.
+            read:issue.transition:jira: View issue transitions.
+            read:issue.vote:jira: View issue votes.
+            read:issue.votes:jira: View issue voteses.
+            read:issue.watcher:jira: View issue watchers.
+            read:issue:jira: View issues.
+            read:jira-expressions:jira: View jira expressions.
+            read:jira-user: View user information in Jira that you have access to, including usernames, email addresses, and avatars.
+            read:jira-work: Read project and issue data. Search for issues and objects associated with issues (such as attachments and worklogs).
+            read:jql:jira: View JQL.
+            read:label:jira: View labels.
+            read:license:jira: View licenses.
+            read:notification-scheme:jira: View notification schemes.
+            read:permission-scheme:jira: View permission schemes.
+            read:permission:jira: View permissions.
+            read:priority:jira: View priorities.
+            read:project-category:jira: View project categories.
+            read:project-role:jira: View project roles.
+            read:project-type:jira: View project types.
+            read:project-version:jira: View project versions.
+            read:project.avatar:jira: Read project avatars.
+            read:project.component:jira: View project components.
+            read:project.email:jira: View project emails.
+            read:project.feature:jira: Read project features.
+            read:project.property:jira: View project properties.
+            read:project:jira: View projects.
+            read:resolution:jira: View resolutions.
+            read:role:jira: View roles.
+            read:screen-field:jira: View screen fields.
+            read:screen-scheme:jira: View screen schemes.
+            read:screen-tab:jira: View screen tabs.
+            read:screen:jira: View screens.
+            read:screenable-field:jira: View screenable fields.
+            read:status:jira: View statuses.
+            read:user-configuration:jira: View user configurations.
+            read:user.columns:jira: View user columnses.
+            read:user.property:jira: View user properties.
+            read:user:jira: View users.
+            read:webhook:jira: View webhooks.
+            read:workflow-scheme:jira: View workflow schemes.
+            read:workflow.property:jira: View workflow properties.
+            read:workflow:jira: View workflows.
+            send:notification:jira: Send notifications.
+            validate:jql:jira: Validate JQL.
+            write:attachment:jira: Create and update issue attachments.
+            write:avatar:jira: Create and update system and custom avatars.
+            write:comment.property:jira: Create and update issue comment properties.
+            write:comment:jira: Create and update issue comments.
+            write:custom-field-contextual-configuration:jira: Save custom field contextual configurations.
+            write:dashboard.property:jira: Create and update dashboard properties.
+            write:dashboard:jira: Create and update dashboards.
+            write:field-configuration-scheme:jira: Create and update field configuration schemes.
+            write:field-configuration:jira: Save field configurations.
+            write:field.default-value:jira: Create and update field default values.
+            write:field.option:jira: Create and update field options.
+            write:field:jira: Create and update fields.
+            write:filter.column:jira: Create and update filter columns.
+            write:filter.default-share-scope:jira: Create and update filter default share scopes.
+            write:filter:jira: Create and update filters.
+            write:group:jira: Create and update user groups.
+            write:instance-configuration:jira: Create and update instance configurations.
+            write:issue-link-type:jira: Create and update issue link types.
+            write:issue-link:jira: Create and update issue links.
+            write:issue-type-scheme:jira: Create and update issue type schemes.
+            write:issue-type-screen-scheme:jira: Create and update issue type screen schemes.
+            write:issue-type.property:jira: Create and update issue type properties.
+            write:issue-type:jira: Create and update issue types.
+            write:issue-worklog.property:jira: Create and update issue worklog properties.
+            write:issue-worklog:jira: Create and update issue worklogs.
+            write:issue.property:jira: Create and update issue properties.
+            write:issue.remote-link:jira: Create and update issue remote links.
+            write:issue.time-tracking:jira: Create and update issue time trackings.
+            write:issue.vote:jira: Create and update issue votes.
+            write:issue.watcher:jira: Create and update issue watchers.
+            write:issue:jira: Create and update issues.
+            write:jira-work: Create and edit issues in Jira, post comments, create worklogs, and delete issues.
+            write:permission-scheme:jira: Create and update permission schemes.
+            write:permission:jira: Create and update permissions.
+            write:project-category:jira: Create and update project categories.
+            write:project-role:jira: Create and update project roles.
+            write:project-version:jira: Create and update project versions.
+            write:project.avatar:jira: Create and update project avatars.
+            write:project.component:jira: Create and update project components.
+            write:project.email:jira: Create and update project emails.
+            write:project.feature:jira: Save project features.
+            write:project.property:jira: Create and update project properties.
+            write:project:jira: Create and update projects.
+            write:screen-scheme:jira: Create and update screen schemes.
+            write:screen-tab:jira: Create and update screen tabs.
+            write:screen:jira: Create and update screens.
+            write:screenable-field:jira: Create and update screenable fields.
+            write:user-configuration:jira: Create and update user configurations.
+            write:user.property:jira: Create and update user properties.
+            write:webhook:jira: Create and update webhooks.
+            write:workflow-scheme:jira: Create and update workflow schemes.
+            write:workflow.property:jira: Create and update workflow properties.
+            write:workflow:jira: Create and update workflows.
+          tokenUrl: https://auth.atlassian.com/oauth/token
+      type: oauth2
+    basicAuth:
+      description: You can access this resource via basic auth.
+      scheme: basic
+      type: http
+externalDocs:
+  description: Find out more about Atlassian products and services.
+  url: http://www.atlassian.com
+x-atlassian-narrative:
+  documents:
+  - anchor: about
+    body: "The Jira REST API enables you to interact with Jira programmatically. Use this API to \n[build apps](https://developer.atlassian.com/cloud/jira/platform/integrating-with-jira-cloud/), script interactions with \nJira, or develop any other type of integration. This page documents the REST resources available in Jira Cloud, including \nthe HTTP response codes and example requests and responses."
+    title: About
+  - anchor: version
+    body: "This documentation is for **version 3** of the Jira Cloud platform REST API, which is the latest version\nbut is in **beta**. [Version 2](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) and \nversion 3 of the API offer the same collection of operations. However, version 3 provides support for \nthe [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) \n(ADF) in: \n- `body` in comments, including where comments are used in issue, issue link, and transition resources.\n- `comment` in worklogs.\n- `description` and `environment` fields in issues.\n- `textarea` type custom fields (multi-line text fields) in issues. Single line custom fields \n  (`textfield`) accept a string and don't handle Atlassian Document Format content.\n\nHowever, these new features are under development and may change.\n"
+    title: Version
+  - anchor: authentication
+    body: "### Forge apps\n\nFor Forge apps, [REST API scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) \nare used when authenticating with Jira Cloud platform. See [Add scopes to call an Atlassian REST API](https://developer.atlassian.com/platform/forge/add-scopes-to-call-an-atlassian-rest-api/) for more details.\n\nThe URIs for Forge app REST API calls have this structure:\n\n`/rest/api/3/<resource-name>`\n\nFor example, `/rest/api/3/issue/DEMO-1`\n\n### Connect apps\n\nFor Connect apps, authentication (JWT-based) is built into the Connect libraries. Authorization is implemented using either \nscopes (shown as _App scope required_ for operations on this page) or user impersonation. See \n[Security for Connect apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/) \nfor details.\n\nThe URIs for Connect app REST API calls have this structure:\n\n`https://<site-url>/rest/api/3/<resource-name>`\n\nFor example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`\n\n### Other integrations\n\nFor integrations that are not Forge or Connect apps, use OAuth 2.0 authorization code grants (3LO) for security \n(3LO scopes are shown as for operations _OAuth scopes required_). See \n[OAuth 2.0 (3LO) apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) \nfor details.\n\nThe URIs for OAuth 2.0 (3LO) app REST API calls have this structure:\n\n`https://api.atlassian.com/ex/jira/<cloudId>/rest/api/3/<resource-name>`\n\nFor example, `https://api.atlassian.com/ex/jira/35273b54-3f06-40d2-880f-dd28cf8daafa/rest/api/3/issue/DEMO-1`\n\n### Ad-hoc API calls\n\nFor personal scripts, bots, and ad-hoc execution of the REST APIs use basic authentication. See [Basic auth for REST APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/) for details. \n\nThe URIs for basic authentication REST API calls have this structure:\n\n`https://<site-url>/rest/api/3/<resource-name>`\n\nFor example, `https://your-domain.atlassian.net/rest/api/3/issue/DEMO-1`\n"
+    title: Authentication and authorization
+  - anchor: permissions
+    body: "### Operation permissions\n\nMost operations in this API require permissions. The calling user must have the required permissions for an operation to \nuse it. Note that for Connect apps, the app user must have the required permissions for the operation and the app must \nhave scopes that permit the operation.\n\nA permission can be granted to a group, project role, or issue role that the user is a member of, or granted directly to a user. \nSee [Permissions overview](https://confluence.atlassian.com/x/FQiiLQ) for details. The most common permissions are:\n\n- **Administer the Cloud site**: Users in the _site-admins_ group have this \npermission. See [Manage groups](https://confluence.atlassian.com/x/24xjL) for details.\n- **Administer Jira**: Granted by the _Jira Administrators_ global permission. There is a default group for this permission. \nSee [Manage groups](https://confluence.atlassian.com/x/24xjL) and [Managing global permissions](https://confluence.atlassian.com/x/x4dKLg) for details.\n- **Administer a project in Jira**: Granted by the _Administer projects_ project permission for a project. This can be \ngranted to a user, a group, a project role, and more. \nSee [Managing project permissions](https://confluence.atlassian.com/x/yodKLg) for details.\n- **Access a project in Jira**: Granted by the _Browse projects_ project permission for a project. This can be \ngranted to a user, a group, a project role, and more. \nSee [Managing project permissions](https://confluence.atlassian.com/x/yodKLg) for details.\n- **Access Jira**: Granted by the _Jira Users_ global permission. Users in the default product access group (for example, \n_jira-software-users-acmesite_) have this permission. \nSee [Manage groups](https://confluence.atlassian.com/x/24xjL) and \n[Managing global permissions](https://confluence.atlassian.com/x/x4dKLg) for details.\n\n### Anonymous access\n\nSome operations provide support for anonymous access. However, anonymous access is only available if \nthe Jira permission needed to access the object or records returned by the operation is granted to \nthe _Public_ group. See [Allowing anonymous access to your project](https://confluence.atlassian.com/x/GDxxLg) \nfor details.\n\nIf an operation is called anonymously and anonymous access is not available, the operation will return \nan error. Note that not all operations that correspond to objects that can be given public access \nprovide for anonymous access.\n"
+    title: Permissions
+  - anchor: expansion
+    body: "### Expansion\n\nThe Jira REST API uses resource expansion, which means that some parts of a resource are not returned unless specified \nin the request. This simplifies responses and minimizes network traffic.\n\nTo expand part of a resource in a request, use the expand query parameter and specify the object(s) to be expanded. \nIf you need to expand nested objects, use the `.` dot notation. If you need to expand multiple objects, use a \ncomma-separated list. \n\nFor example, the following request expands the `names` and `renderedFields` properties for the _JRACLOUD-34423_ issue:\n\n`GET issue/JRACLOUD-34423?expand=names,renderedFields`\n\nTo discover which object can be expanded, refer to the `expand` property in the object. \nIn the JSON example below, the resource declares `widgets` as expandable.\n\n```json\n{\n  \"expand\": \"widgets\", \n  \"self\": \"https://your-domain.atlassian.net/rest/api/3/resource/KEY-1\", \n  \"widgets\": {\n    \"widgets\": [],\n    \"size\": 5\n   }\n}\n```\n\n### Pagination\n\nThe Jira REST API uses pagination to improve performance. Pagination is enforced for operations that could return a large \ncollection of items. When you make a request to a paginated resource, the response wraps the returned array of values in \na JSON object with paging metadata. For example:\n\n```json\n{\n    \"startAt\" : 0,\n    \"maxResults\" : 10,\n    \"total\": 200,\n    \"isLast\": false,\n    \"values\": [\n        { /* result 0 */ },\n        { /* result 1 */ },\n        { /* result 2 */ }\n    ]\n}\n```\n\n*   `startAt` is the index of the first item returned in the page.\n*   `maxResults` is the maximum number of items that a page can return. Each operation can have a different limit for\n    the number of items returned, and these limits may change without notice. To find the maximum number of items \n    that an operation could return, set `maxResults` to a large number—for example, over 1000—and if the returned value of `maxResults` is less than the requested value, the returned value is the maximum.\n*    `total` is the total number of items contained in all pages. This number **_may change_** as the client \nrequests the subsequent pages, therefore the client should always assume that the requested page can be empty. Note \nthat this property is not returned for all operations.\n*   `isLast` indicates whether the page returned is the last one. Note that this property is not returned for all operations.\n\n### Ordering\n\nSome operations support ordering the elements of a response by a field. Check the documentation for the operation to \nconfirm whether ordering of a response is supported and which fields can be used. Responses are listed in ascending order \nby default. You can change the order using the `orderby` query parameter with a `-` or `+` symbol. For example:\n\n*   `?orderBy=name` to order by `name` field ascending.\n*   `?orderBy=+name` to order by `name` field ascending.\n*   `?orderBy=-name` to order by `name` field descending.\n\n\n"
+    title: Expansion, pagination, and ordering
+  - anchor: timestamps
+    body: 'By default, top-level timestamps (e.g. updated and created) are returned in [ISO 8601](https://www.w3.org/TR/NOTE-datetime) format, in the system default user time zone.
+
+
+      To return date time data in the logged in user''s timezone, please refer to `renderedFields` property under the `expand` query parameter in relevant APIs.
+
+      '
+    title: Timestamps
+  - anchor: special-request-headers
+    body: 'The following request and response headers define important metadata for the Jira Cloud REST API resources.
+
+
+      -   `X-Atlassian-Token` (request): Operations that accept multipart/form-data must include the `X-Atlassian-Token: no-check`
+
+      header in requests. Otherwise the request is blocked by cross-site request forgery (CSRF/XSRF) protection.
+
+      -   `X-Force-Accept-Language` (request): controls how the standard HTTP `Accept-Language` header is processed.
+
+      By default `Accept-Language` is ignored and the response is in the language configured in the user''s profile or,
+
+      when no language is configured for the user, the default Jira instance language. For the response to recognize
+
+      `Accept-Language` send `X-Force-Accept-Language = true` as well. If `Accept-Language` requests a language that Jira
+
+      can return the response is in that language, otherwise Jira returns the response in the default language. If
+
+      `Accept-Language` is not specified the response is in the default language.
+
+      -   `X-AAccountId` (response): This response header contains the Atlassian account ID of the authenticated user.'
+    title: Special headers
+  - anchor: anonymous-operations
+    body: " Jira provides for all permissions, except the [global permission](https://confluence.atlassian.com/x/x4dKLg) Administer Jira, to be assigned to *Anyone*. Once a permission is assigned to *Anyone*, anyone knowing a project's URL is able to use the features in Jira enabled by the permission. However, the Jira REST API does not enable anonymous access for operations by default. This means that an anonymous user who may be able to perform an action through Jira, may not be able to perform the same action where it's enabled by the REST API. \n\n The operations that provide anonymous access are annotated \"This operation can be accessed anonymously.\""
+    title: Anonymous operations
+  - anchor: async-operations
+    body: "Some Jira REST API operations may trigger long-running or computationally expensive tasks. In these cases, the operation \nwill schedule an asynchronous task and return a `303 (See Other)` response, indicating the location of the queued task \nin the `Location` header. You can query this task to get progress updates.\n\nWhen the task finishes, the response object will contain the `result` field. The content of the field is specific to the \noperation that created the task. Refer to the operation’s documentation for more information.\n\nNote that asynchronous tasks are not guaranteed to be run in order. In other words, if you need your tasks to execute \nin a certain order, you should start a task only after the prerequisite task(s) have finished."
+    title: Asynchronous operations
+  - anchor: experimental
+    body: "Features and methods marked as experimental may change without notice. Feedback on experimental functionality is welcome. \nReport your suggestions and bugs in the [ACJIRA project](https://ecosystem.atlassian.net/projects/ACJIRA) (preferred) or use the \n**Give docs feedback** link at the top of this page. \n"
+    title: Experimental features
+  - anchor: status-codes
+    body: "The Jira Cloud platform REST API uses the [standard HTTP status codes](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).\n\nOperations that return an error status code may also return a response body containing details of the error or errors. \nThe schema for the response body is shown below:\n\n\n```json\n{\n  \"id\": \"https://docs.atlassian.com/jira/REST/schema/error-collection#\",\n  \"title\": \"Error Collection\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"errorMessages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"errors\": {\n      \"type\": \"object\",\n      \"patternProperties\": {\n        \".+\": {\n          \"type\": \"string\"\n        }\n      },\n      \"additionalProperties\": false\n    },\n    \"status\": { \n      \"type\": \"integer\"\n    }\n  },\n  \"additionalProperties\": false\n}\n```"
+    title: Status codes
